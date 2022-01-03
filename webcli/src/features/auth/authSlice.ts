@@ -37,7 +37,7 @@ export const signupAsync = createAsyncThunk<{success: boolean, email: string, pa
     console.log(result);
     try {
       const result = await axios.post('http://localhost:3001/api/signup', userinfo, config);
-      return {...result, ...userinfo};
+      return {...result.data, ...userinfo};
     } catch (error: any) {
       console.log(error)
       if(!error.response) {

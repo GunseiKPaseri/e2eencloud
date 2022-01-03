@@ -10,7 +10,7 @@ app.use(opineCors()); // Enable CORS for All Routes
 app.use(serveStatic("../webcli/dist/"));
 
 app.post("/api/signup", (req, res) => {
-  res.send({res: "Hello World", req: req.body});
+  res.send({success: true, res: req.body});
 });
 
 app.listen(
