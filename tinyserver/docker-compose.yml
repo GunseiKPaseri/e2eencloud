@@ -1,0 +1,15 @@
+version: '3.7'
+services:
+  db:
+    image: mysql:8
+    ports:
+        - "3306:3306"    
+    environment:
+      - MYSQL_ROOT_PASSWORD=Passw0rd
+      - MYSQL_DATABASE=e2ee
+    volumes:
+      - db-volume:/var/lib/mysql
+      - ./mysql/conf:/etc/mysql/conf.d
+      
+volumes:
+  db-volume:

@@ -3,6 +3,7 @@
 Denoで実装してみたサーバ
 
 ```bash
+$ docker-compose up -d
 $ deno run --allow-net --allow-read main.ts
-server has started on http://localhost:3000 🚀
+server has started on http://localhost:3001 🚀
 ```
