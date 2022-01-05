@@ -3,20 +3,26 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build --emptyOutDir",
     "preview": "vite preview"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.7.1",
+    "@types/pbkdf2": "^3.1.0",
+    "aes-js": "^3.1.2",
+    "argon2-wasm-esm": "^1.0.3",
     "axios": "^0.24.0",
+    "pbkdf2": "^3.1.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.6",
     "redux": "^4.1.2",
     "redux-logger": "^3.0.6",
+    "sha256-uint8array": "^0.10.3",
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
+    "@types/aes-js": "^3.1.1",
     "@types/react": "^17.0.33",
     "@types/react-dom": "^17.0.10",
     "@types/redux-logger": "^3.0.9",

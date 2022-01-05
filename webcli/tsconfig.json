@@ -14,7 +14,11 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": "./",
+    "paths": {
+      "argon2-wasm-esm": ["types/argon2-wasm-esm"]
+    }
   },
   "include": ["./src"]
 }

@@ -41,8 +41,8 @@ export const Signup:React.FC = ():ReactElement => {
         (confirmMode ?
           <>
             <label>パスワード（確認のため再入力）：<input type="password" value={confirmPassword} onChange={(e)=>setConfirmPassword(e.target.value)} /></label><br/>
-            <button onClick={signup}disabled={password!==confirmPassword}>送信</button><br/>
-            <button onClick={cancel}>取り消し</button>
+            <button type="button" onClick={signup}disabled={password!==confirmPassword}>送信</button><br/>
+            <button type="button" onClick={cancel}>取り消し</button>
           </>
           :
           <>
@@ -54,7 +54,7 @@ export const Signup:React.FC = ():ReactElement => {
               setPassword(e.target.value);
             }} /></label><br />
             <PasswordChecker score={passwordScore} /><br />
-            <button onClick={confirm} disabled={!isGoodMailAddress || passwordScore<2}>確認</button>
+            <button type="button" onClick={confirm} disabled={!isGoodMailAddress || passwordScore<2}>確認</button>
           </>
           )
       }

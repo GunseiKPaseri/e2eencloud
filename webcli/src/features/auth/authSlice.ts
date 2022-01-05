@@ -1,5 +1,6 @@
-import {createAsyncThunk, createSlice, isRejectedWithValue} from '@reduxjs/toolkit';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import axios, { AxiosRequestConfig } from 'axios';
+import { AESECB, createSalt, SHA256, argon2encrypt, byteArray2base64 } from './util';
 
 interface UserForm {
   email: string;
@@ -11,12 +12,12 @@ interface UserState {
   token: string;
 }
 export interface AuthState {
-  user: UserState | undefined;
+  user: UserState | null;
   status: 'idle' | 'loading' | 'failed';
 }
 
 const initialState: AuthState = {
-  user: undefined,
+  user: null,
   status: 'idle',
 };
 
@@ -25,6 +26,31 @@ const initialState: AuthState = {
 export const signupAsync = createAsyncThunk<{success: boolean, email: string, password: string}, UserForm>(
   'auth/signup',
   async (userinfo) => {
+    // 128 bit MasterKey
+    const MasterKey = window.crypto.getRandomValues(new Uint8Array(16));
+    // 128 bit Client Random Value
+    const ClientRandomValue = window.crypto.getRandomValues(new Uint8Array(16));
+    // 256 bit Salt
+    const salt = createSalt(ClientRandomValue);
+    // 256bit Derived Key
+    console.log(salt);
+    const DerivedKey = await argon2encrypt(userinfo.password, salt);
+    console.log(DerivedKey);
+    // 128bit Derived Encryption Key & Derived Authentication Key
+    const DerivedEncryptionKey = DerivedKey.slice(0,16);
+    const DerivedAuthenticationKey = DerivedKey.slice(16,32);
+    // 128bit Encrypted Master Key
+    const EncryptedMasterKey = AESECB(MasterKey, DerivedEncryptionKey);
+    const HashedAuthenticationKey = SHA256(DerivedAuthenticationKey);
+
+    const sendData = {
+      email: userinfo.email,
+      client_random_value: byteArray2base64(ClientRandomValue),
+      encrypted_master_key: byteArray2base64(EncryptedMasterKey),
+      hashed_authentication_key: byteArray2base64(HashedAuthenticationKey),
+    };
+    console.log(sendData);
+
     const config: AxiosRequestConfig = {
       headers: {
         'Content-type': 'application/json',
@@ -33,18 +59,9 @@ export const signupAsync = createAsyncThunk<{success: boolean, email: string, pa
 
     console.log(userinfo);
 
-    const result = await axios.post('http://localhost:3001/api/signup', userinfo, config);
+    const result = await axios.post('http://localhost:3001/api/signup', sendData, config);
     console.log(result);
-    try {
-      const result = await axios.post('http://localhost:3001/api/signup', userinfo, config);
-      return {...result.data, ...userinfo};
-    } catch (error: any) {
-      console.log(error)
-      if(!error.response) {
-        throw error;
-      }
-      return isRejectedWithValue(error.response.data);
-    }
+    return {success: result.data.success ?? false, ...userinfo};
   },
 );
 
@@ -70,3 +87,4 @@ export const authSlice = createSlice({
 });
 
 export default authSlice.reducer;
+
