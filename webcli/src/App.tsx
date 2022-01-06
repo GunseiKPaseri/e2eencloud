@@ -1,4 +1,5 @@
 import './App.css'
+import { Setup } from './features/auth/setup'
 import { Signup } from './features/auth/signup'
 
 function App() {
@@ -7,6 +8,7 @@ function App() {
       <header className="App-header">
         <h1>APIテスト用</h1>
         <Signup />
+        <Setup />
       </header>
     </div>
   )

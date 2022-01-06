@@ -1,5 +1,5 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse, AxiosResponseHeaders } from 'axios';
 import { AESECB, createSalt, SHA256, argon2encrypt, byteArray2base64 } from './util';
 
 interface UserForm {
@@ -9,17 +9,20 @@ interface UserForm {
 
 interface UserState {
   email: string;
-  token: string;
 }
 export interface AuthState {
   user: UserState | null;
   status: 'idle' | 'loading' | 'failed';
+  confirmstate: 0|1;
 }
 
 const initialState: AuthState = {
   user: null,
   status: 'idle',
+  confirmstate: 0,
 };
+
+const appLocation = "http://localhost:3001";
 
 // Thunk
 // サインアップ処理
@@ -59,9 +62,30 @@ export const signupAsync = createAsyncThunk<{success: boolean, email: string, pa
 
     console.log(userinfo);
 
-    const result = await axios.post('http://localhost:3001/api/signup', sendData, config);
+    const result = await axios.post<UserForm, AxiosResponse<{success: boolean}>>(`${appLocation}/api/signup`, sendData, config);
     console.log(result);
     return {success: result.data.success ?? false, ...userinfo};
+  },
+);
+
+// メールアドレス確認処理
+export const confirmEmailAsync = createAsyncThunk<{success: boolean}, {email: string, token: string}>(
+  'auth/confirm_email',
+  async (usertoken) => {
+    const sendData = {
+      email: usertoken.email,
+      email_confirmation_token: usertoken.token,
+    }
+    const config: AxiosRequestConfig = {
+      headers: {
+        'Content-type': 'application/json',
+      },
+    };
+    const result = await axios.post<{email: string, email_confirmation_token: string}, AxiosResponse<{success: boolean}>>(`${appLocation}/api/email_confirm`, sendData, config);
+    if(!result.data.success){
+      throw new Error("email confirm failed");
+    }
+    return {success: true};
   },
 );
 
@@ -81,7 +105,17 @@ export const authSlice = createSlice({
       })
       .addCase(signupAsync.fulfilled, (state, action) => {
         state.status = 'idle';
-        state.user = {email: action.payload.email, token: action.payload.password};
+        state.user = {email: action.payload.email};
+      })
+      .addCase(confirmEmailAsync.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(confirmEmailAsync.rejected, (state) => {
+        state.status = 'idle';
+      })
+      .addCase(confirmEmailAsync.fulfilled, (state) => {
+        state.status = 'idle';
+        state.confirmstate = 1;
       });
   }
 });
