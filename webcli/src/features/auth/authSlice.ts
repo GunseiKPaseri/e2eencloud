@@ -9,6 +9,7 @@ interface UserForm {
 
 interface UserState {
   email: string;
+  useTowFactorAuth: boolean;
 }
 export interface AuthState {
   user: UserState | null;
@@ -105,7 +106,7 @@ export const authSlice = createSlice({
       })
       .addCase(signupAsync.fulfilled, (state, action) => {
         state.status = 'idle';
-        state.user = {email: action.payload.email};
+        state.user = {email: action.payload.email, useTowFactorAuth: false};
       })
       .addCase(confirmEmailAsync.pending, (state) => {
         state.status = 'loading';

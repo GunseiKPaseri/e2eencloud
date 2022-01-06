@@ -1,5 +1,5 @@
 import client from '../dbclient.ts';
-import { isEmailConfirmSuccess } from './EmailConfirmations.ts';
+import { deleteEmailConfirm, isEmailConfirmSuccess } from './EmailConfirmations.ts';
 
 export class User{
   readonly email: string;
@@ -17,14 +17,32 @@ export class User{
 }
 
 export const addUser = async (email: string, client_random_value: string, encrypted_master_key: string, hashed_authentication_key: string) => {
-  await client.execute(`INSERT INTO users(
-    email,
-    client_random_value,
-    encrypted_master_key,
-    hashed_authentication_key,
-    is_email_confirmed) values(?, ?, ?, ?, ?)`,
-    [email, client_random_value, encrypted_master_key, hashed_authentication_key, false]);
-
+  try{
+    await client.execute(`INSERT INTO users(
+      email,
+      client_random_value,
+      encrypted_master_key,
+      hashed_authentication_key,
+      is_email_confirmed) values(?, ?, ?, ?, ?)`,
+      [email, client_random_value, encrypted_master_key, hashed_authentication_key, false]);
+  }catch (e){
+    // ユーザが既に存在する
+    const existUser = await client.query(`SELECT * FROM users WHERE email = ?`,
+    [email]);
+    if(existUser.length !== 1) throw new Error("why!?");
+    const is_email_confirmed: boolean = existUser[0].is_email_confirmed;
+    if(!is_email_confirmed){
+      // メールが確認状態ならば既存のカラムは無視し、パスワードを書き換える
+      await client.execute(`UPDATE users
+        SET client_random_value = ?,
+        encrypted_master_key = ?,
+        hashed_authentication_key = ?
+        WHERE email = ?`, [client_random_value, encrypted_master_key, hashed_authentication_key, email]);
+      // これまでの確認メールに付属していたリンクは削除する
+      await deleteEmailConfirm(email);
+    }
+  }
+  
   const newuser=new User(email, client_random_value, encrypted_master_key, hashed_authentication_key);
   return newuser;
 }
