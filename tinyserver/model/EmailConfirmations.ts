@@ -35,7 +35,7 @@ export const isEmailConfirmSuccess = async (email: string, email_confirmation_to
   return emailConfirms.length > 0;
 }
 
-export const deleteEmailConfirm = async (email: string) => {
+export const deleteEmailConfirms = async (email: string) => {
   await client.execute(`DELETE FROM email_confirmations WHERE email = ?`, [email]);
 };
 

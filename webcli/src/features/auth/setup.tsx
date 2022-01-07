@@ -23,6 +23,7 @@ export const Setup: React.FC = ():ReactElement => {
           </>
           :
           <form>
+            <label>メールアドレス：<input type="text" value={selector.user?.email || ""} disabled /></label><br />
             <label>メール確認トークン：<input type="text" value={token} onChange={(e)=>{
               setToken(e.target.value);
             }} /></label><br />

@@ -14,7 +14,8 @@ export default class extends AbstractMigration<ClientMySQL> {
         two_factor_authentication_secret_key VARCHAR(32),
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX(id)
+        INDEX(id),
+        INDEX(email)
       )`);
     await this.client.query(`
       CREATE TABLE email_confirmations (
@@ -24,6 +25,15 @@ export default class extends AbstractMigration<ClientMySQL> {
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX(email)
+      )`);
+    await this.client.query(`
+      CREATE TABLE sessions (
+        id varchar(36) UNIQUE NOT NULL,
+        data TEXT NOT NULL,
+        expired_at datetime NOT NULL,
+        created_at datetime DEFAULT CURRENT_TIMESTAMP,
+        updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX(id)
       )`);
   }
 
