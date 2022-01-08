@@ -28,7 +28,8 @@ export const Signup:React.FC = ():ReactElement => {
     setConfirmMode(false);
   };
   // 確認が取れたらサインアップ
-  const signup = async () => {
+  const signup:React.FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault();
     await dispatch(signupAsync({email, password}));
   };
 
@@ -36,21 +37,22 @@ export const Signup:React.FC = ():ReactElement => {
     <article>
       <h2>サインアップ</h2>
       <p>パスワードは絶対忘れないようにしてください</p>
-      <form>
+      <form onSubmit={signup}>
       {
         (confirmMode ?
           <>
-            <label>パスワード（確認のため再入力）：<input type="password" value={confirmPassword} onChange={(e)=>setConfirmPassword(e.target.value)} /></label><br/>
-            <button type="button" onClick={signup}disabled={password!==confirmPassword}>送信</button><br/>
+            <label>メールアドレス：<input autoComplete="username" type="email" value={email} readOnly /></label><br />
+            <label>パスワード（確認のため再入力）：<input type="password" name="password" value={confirmPassword} onChange={(e)=>setConfirmPassword(e.target.value)} /></label><br/>
+            <button type="submit" disabled={password!==confirmPassword}>送信</button><br/>
             <button type="button" onClick={cancel}>取り消し</button>
           </>
           :
           <>
-            <label>メールアドレス：<input type="email" value={email} onChange={(e)=>{
+            <label>メールアドレス：<input autoComplete="username" type="email" value={email} onChange={(e)=>{
               setEmail(e.target.value);
             }} /></label><br />
             {!isGoodMailAddress ? <><span style={{color: 'red'}}>正しくないメールアドレスです</span><br /></> : <></> }
-            <label>パスワード：<input type="password" value={password} onChange={(e)=>{
+            <label>パスワード：<input autoComplete='new-password' type="password" value={password} onChange={(e)=>{
               setPassword(e.target.value);
             }} /></label><br />
             <PasswordChecker score={passwordScore} /><br />

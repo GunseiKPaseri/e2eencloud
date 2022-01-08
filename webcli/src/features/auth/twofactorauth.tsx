@@ -58,7 +58,7 @@ export const TowFactorAuth:React.FC = ():ReactElement => {
           <p>二段階認証を利用していません</p>
           <img src={qrlink} /><br />
           <input value={secretkey.toString()} readOnly/><br />
-          <label>一時キー<input value={token} onChange={(e) => setToken(e.target.value)} /></label><br />
+          <label>一時キー<input autoComplete="one-time-code" value={token} onChange={(e) => setToken(e.target.value)} /></label><br />
           <button type="button" onClick={reloadkey} disabled={qrlink===""}>再生成</button>
           <button type="button" onClick={reloadkey} disabled={!codeVerified}>登録</button>
         </>
