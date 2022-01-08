@@ -30,7 +30,6 @@ export default class extends AbstractMigration<ClientMySQL> {
       CREATE TABLE sessions (
         id varchar(36) UNIQUE NOT NULL,
         data TEXT NOT NULL,
-        expired_at datetime NOT NULL,
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX(id)
@@ -41,5 +40,6 @@ export default class extends AbstractMigration<ClientMySQL> {
   async down(): Promise<void> {
     await this.client.query("DROP TABLE users");
     await this.client.query("DROP TABLE email_confirmations");
+    await this.client.query("DROP TABLE sessions");
   }
 }

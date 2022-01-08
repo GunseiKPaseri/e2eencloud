@@ -1,4 +1,7 @@
-import { Application, send } from "https://deno.land/x/oak@v10.1.0/mod.ts";
+import { Application, Router, send, Status } from "https://deno.land/x/oak@v10.1.0/mod.ts";
+import { Session } from "https://deno.land/x/oak_sessions@v3.2.3/mod.ts";
+import SessionsStore from './model/Sessions.ts';
+import client from './dbclient.ts';
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
 import apiRouter from "./router/api.ts";
 
@@ -11,19 +14,35 @@ const PORT = 3001;
 
 const app = new Application();
 
-app.use(oakCors()); // Enable CORS for All Routes
+// Enable CORS for All Routes
+app.use(oakCors());
+
+// use Session
+const session = new Session(new SessionsStore(client));
+app.use(session.initMiddleware());
 
 // api router
 app.use(apiRouter.routes());
 app.use(apiRouter.allowedMethods());
 
-// static
-app.use(async (context) => {
-  await send(context, context.request.url.pathname, {
-    root: `${Deno.cwd()}/../webcli/dist`,
-    index: "index.html",
-  });
+// static assets router
+app.use(async (ctx, next) => {
+  try{
+    await ctx.send({
+      root: `${Deno.cwd()}/../webcli/dist`,
+      index: "index.html",
+    });
+  } catch(e) {
+    next();
+  }
+});
+
+// 404
+app.use( ctx => {
+  ctx.response.status = Status.NotFound
+  ctx.response.body = `"${ctx.request.url}" not found`
 })
+
 
 // service onetimemailaddr
 const d = new Date(Date.now());
@@ -35,7 +54,7 @@ ${("00"+d.getHours()).slice(-2)}
 ${("00"+d.getMinutes()).slice(-2)}
 ${("00"+d.getSeconds()).slice(-2)}
 ${("000"+d.getMilliseconds()).slice(-3)}`.replace(/\n|\r|\s/g, '');
-console.log(`let's use hoge+${str}@example.com`);
+console.log(`let's use ${ bold(`hoge+${str}@example.com`)}`);
 
 app.addEventListener("listen", ({ hostname, port, serverType }) => {
   console.log(`${bold("server has started")} on ${yellow(`http://${hostname}:${port}`)}`);
