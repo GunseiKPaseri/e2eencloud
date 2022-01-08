@@ -23,11 +23,15 @@ const genTOTP = () => {
   });
 }
 
-export const TowFactorAuth:React.FC = ():ReactElement => {
+const GenTwoFactorAuth: React.FC = ():ReactElement => {
   const [secretkey, setSecretKey] = useState(genTOTP());
   const [qrlink, setQRLink] = useState("");
   const [token, setToken] = useState("");
   const [codeVerified, setCodeVerified] = useState(false);
+  
+  const reloadkey = () => {
+    setSecretKey(genTOTP());
+  }
 
   useEffect(() => {
     (async () => {
@@ -45,22 +49,24 @@ export const TowFactorAuth:React.FC = ():ReactElement => {
     }, 1000);
     return () => clearInterval(interval);
   }, [secretkey, token]);
+  return (<>
+    <img src={qrlink} /><br />
+    <input value={secretkey.toString()} readOnly/><br />
+    <label>一時キー<input autoComplete="one-time-code" value={token} onChange={(e) => setToken(e.target.value)} /></label><br />
+    <button type="button" onClick={reloadkey} disabled={qrlink===""}>再生成</button>
+    <button type="button" onClick={reloadkey} disabled={!codeVerified}>登録</button>
+  </>);
+}
 
+export const TowFactorAuth:React.FC = ():ReactElement => {
   const selector = useAppSelector<AuthState>((state) => state.auth);
-  const reloadkey = () => {
-    setSecretKey(genTOTP());
-  }
   return (
     <article>
       {(selector.user?.useTowFactorAuth) ?
         <p>二段階認証を利用しています</p>
       : <>
-          <p>二段階認証を利用していません</p>
-          <img src={qrlink} /><br />
-          <input value={secretkey.toString()} readOnly/><br />
-          <label>一時キー<input autoComplete="one-time-code" value={token} onChange={(e) => setToken(e.target.value)} /></label><br />
-          <button type="button" onClick={reloadkey} disabled={qrlink===""}>再生成</button>
-          <button type="button" onClick={reloadkey} disabled={!codeVerified}>登録</button>
+          <p>二段階認証を利用していません。新しく追加しましょう。</p>
+          <GenTwoFactorAuth />
         </>
       }
     </article>
