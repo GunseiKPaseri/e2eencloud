@@ -12,7 +12,9 @@
     "aes-js": "^3.1.2",
     "argon2-wasm-esm": "^1.0.3",
     "axios": "^0.24.0",
+    "otpauth": "^7.0.9",
     "pbkdf2": "^3.1.2",
+    "qrcode": "^1.5.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.6",
@@ -23,6 +25,7 @@
   },
   "devDependencies": {
     "@types/aes-js": "^3.1.1",
+    "@types/qrcode": "^1.4.2",
     "@types/react": "^17.0.33",
     "@types/react-dom": "^17.0.10",
     "@types/redux-logger": "^3.0.9",

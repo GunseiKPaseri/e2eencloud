@@ -15,22 +15,20 @@ export const Setup: React.FC = ():ReactElement => {
   return (
     <article>
       <h2>ユーザ登録手続き</h2>
-      <form>
-        {selector.confirmstate === 1 ?
-          <>
-            <p>メールアドレスが確認されました。</p>
-            <TowFactorAuth />
-          </>
-          :
-          <form>
-            <label>メールアドレス：<input type="text" value={selector.user?.email || ""} disabled /></label><br />
-            <label>メール確認トークン：<input type="text" value={token} onChange={(e)=>{
-              setToken(e.target.value);
-            }} /></label><br />
-            <button type="button" onClick={confirmToken}>確認</button>
-          </form>
-        }
-      </form>
+      {selector.confirmstate === 1 ?
+        <>
+          <p>メールアドレスが確認されました。</p>
+          <TowFactorAuth />
+        </>
+        :
+        <form>
+          <label>メールアドレス：<input type="text" value={selector.user?.email || ""} disabled /></label><br />
+          <label>メール確認トークン：<input type="text" value={token} onChange={(e)=>{
+            setToken(e.target.value);
+          }} /></label><br />
+          <button type="button" onClick={confirmToken}>確認</button>
+        </form>
+      }
     </article>
   );
 }

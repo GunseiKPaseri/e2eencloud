@@ -1,5 +1,6 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import axios, { AxiosRequestConfig, AxiosResponse, AxiosResponseHeaders } from 'axios';
+import { AxiosResponse, AxiosResponseHeaders } from 'axios';
+import axiosWithSession from '../apirequest';
 import { AESECB, createSalt, SHA256, argon2encrypt, byteArray2base64 } from './util';
 
 interface UserForm {
@@ -55,15 +56,7 @@ export const signupAsync = createAsyncThunk<{success: boolean, email: string, pa
     };
     console.log(sendData);
 
-    const config: AxiosRequestConfig = {
-      headers: {
-        'Content-type': 'application/json',
-      },
-    };
-
-    console.log(userinfo);
-
-    const result = await axios.post<UserForm, AxiosResponse<{success: boolean}>>(`${appLocation}/api/signup`, sendData, config);
+    const result = await axiosWithSession.post<UserForm, AxiosResponse<{success: boolean}>>(`${appLocation}/api/signup`, sendData);
     console.log(result);
     return {success: result.data.success ?? false, ...userinfo};
   },
@@ -77,12 +70,7 @@ export const confirmEmailAsync = createAsyncThunk<{success: boolean}, {email: st
       email: usertoken.email,
       email_confirmation_token: usertoken.token,
     }
-    const config: AxiosRequestConfig = {
-      headers: {
-        'Content-type': 'application/json',
-      },
-    };
-    const result = await axios.post<{email: string, email_confirmation_token: string}, AxiosResponse<{success: boolean}>>(`${appLocation}/api/email_confirm`, sendData, config);
+    const result = await axiosWithSession.post<{email: string, email_confirmation_token: string}, AxiosResponse<{success: boolean}>>(`${appLocation}/api/email_confirm`, sendData);
     if(!result.data.success){
       throw new Error("email confirm failed");
     }

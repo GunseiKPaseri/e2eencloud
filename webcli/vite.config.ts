@@ -9,4 +9,7 @@ export default defineConfig({
   },
   root: './src',
   plugins: [react()],
+  define: {
+    'process.env': {},
+  },
 })
