@@ -84,9 +84,9 @@ interface POSTAddTwoFactorSecretKeyJSON{
   token: string,
 }
 
-router.post("/user/two_factor", async (ctx) => {
+router.put("/user/totp", async (ctx) => {
   // auth
-  const uid: number | null = ctx.state.session.get("uid");
+  const uid: number | null = await ctx.state.session.get("uid");
   const user = await getUserById(uid);
   if(!user) return ctx.throw(Status.Unauthorized, "Unauthorized");
 
@@ -99,6 +99,23 @@ router.post("/user/two_factor", async (ctx) => {
   if (typeof data.secret_key !== 'string' || typeof data.token !== 'string')
       return ctx.throw(Status.BadRequest, "Bad Request");
   
+  // verify token
+  const totp = new OTPAuth.TOTP({
+    issuer: "E2EE",
+    label: `${user.email}`,
+    algorithm: "SHA1",
+    digits: 6,
+    period: 30,
+    secret: data.secret_key,
+  });
+  console.log(data);
+  const result = totp.validate({
+    token: data.token,
+    window: 1
+  });
+
+  if(!result) return ctx.throw(Status.BadRequest, "Bad Token");
+
   await user.addTwoFactorAuthSecretKey(data.secret_key);
 
   return ctx.response.status = Status.NoContent;

@@ -32,7 +32,7 @@ app.use(async (ctx, next) => {
       root: `${Deno.cwd()}/../webcli/dist`,
       index: "index.html",
     });
-  } catch(e) {
+  } catch(_) {
     next();
   }
 });

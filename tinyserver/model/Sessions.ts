@@ -23,7 +23,7 @@ export default class SessionsStore implements Store {
     return sessions.length>0 ? true : false;
   }
 
-  async getSessionById(sessionId : string) {
+  async getSessionById(sessionId : string): Promise<SessionData|null> {
     const sessions = await this.db.query(`SELECT data FROM ${this.tableName} WHERE id = ?`, [sessionId]);
     return sessions.length!==1 ? null : JSON.parse(sessions[0].data);
   }

@@ -3,7 +3,7 @@ import * as OTPAuth from 'otpauth';
 import QRcode from 'qrcode';
 
 import { useAppDispatch, useAppSelector } from '../../../src/app/hooks';
-import { AuthState, confirmEmailAsync } from './authSlice';
+import { addTOTPAsync, AuthState, confirmEmailAsync } from './authSlice';
 
 const genQR = (totp: OTPAuth.TOTP) => new Promise<string>((resolve, reject) => {
   QRcode.toDataURL(totp.toString(), (err, qrcode) => {
@@ -12,10 +12,10 @@ const genQR = (totp: OTPAuth.TOTP) => new Promise<string>((resolve, reject) => {
   });
 });
 
-const genTOTP = () => {
+const genTOTP = (email: string) => {
   return new OTPAuth.TOTP({
     issuer: 'E2EE',
-    label: 'E2EE<hoge>',
+    label: `${email}`,
     algorithm: 'SHA1',
     digits: 6,
     period: 30,
@@ -23,15 +23,19 @@ const genTOTP = () => {
   });
 }
 
-const GenTwoFactorAuth: React.FC = ():ReactElement => {
-  const [secretkey, setSecretKey] = useState(genTOTP());
+const GenTwoFactorAuth: React.FC<{email: string}> = (props):ReactElement => {
+  const [secretkey, setSecretKey] = useState(genTOTP(props.email));
   const [qrlink, setQRLink] = useState("");
   const [token, setToken] = useState("");
   const [codeVerified, setCodeVerified] = useState(false);
+  const dispatch = useAppDispatch();
   
   const reloadkey = () => {
-    setSecretKey(genTOTP());
-  }
+    setSecretKey(genTOTP(props.email));
+  };
+  const sendKey = () => {
+    dispatch(addTOTPAsync({secret_key: secretkey.secret.base32, token}));
+  };
 
   useEffect(() => {
     (async () => {
@@ -54,7 +58,7 @@ const GenTwoFactorAuth: React.FC = ():ReactElement => {
     <input value={secretkey.toString()} readOnly/><br />
     <label>一時キー<input autoComplete="one-time-code" value={token} onChange={(e) => setToken(e.target.value)} /></label><br />
     <button type="button" onClick={reloadkey} disabled={qrlink===""}>再生成</button>
-    <button type="button" onClick={reloadkey} disabled={!codeVerified}>登録</button>
+    <button type="button" onClick={sendKey} disabled={!codeVerified}>登録</button>
   </>);
 }
 
@@ -62,12 +66,14 @@ export const TowFactorAuth:React.FC = ():ReactElement => {
   const selector = useAppSelector<AuthState>((state) => state.auth);
   return (
     <article>
-      {(selector.user?.useTowFactorAuth) ?
-        <p>二段階認証を利用しています</p>
-      : <>
-          <p>二段階認証を利用していません。新しく追加しましょう。</p>
-          <GenTwoFactorAuth />
-        </>
+      {selector.user ? (
+        (selector.user.useTowFactorAuth) ?
+            <p>二段階認証を利用しています</p>
+          : <>
+              <p>二段階認証を利用していません。新しく追加しましょう。</p>
+              <GenTwoFactorAuth email={selector.user.email} />
+            </>
+      ): <></>
       }
     </article>
   );

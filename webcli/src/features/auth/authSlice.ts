@@ -78,6 +78,20 @@ export const confirmEmailAsync = createAsyncThunk<{success: boolean}, {email: st
   },
 );
 
+// TOTP追加処理
+export const addTOTPAsync = createAsyncThunk<void, {secret_key: string, token: string}>(
+  'auth/add_totp',
+  async (secretkey) => {
+    await axiosWithSession.put<{secret_key: string, token: string}>(`${appLocation}/api/user/totp`, secretkey);
+  },
+);
+
+export const deleteTOTPAsync = createAsyncThunk<void, void>(
+  'auth/delete_totp',
+  async (_) => {
+    await axiosWithSession.delete(`${appLocation}/api/user/totp`);
+  },
+);
 
 // Slice
 export const authSlice = createSlice({
@@ -105,6 +119,30 @@ export const authSlice = createSlice({
       .addCase(confirmEmailAsync.fulfilled, (state) => {
         state.status = 'idle';
         state.confirmstate = 1;
+      })
+      .addCase(addTOTPAsync.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(addTOTPAsync.rejected, (state) => {
+        state.status = 'idle';
+      })
+      .addCase(addTOTPAsync.fulfilled, (state) => {
+        state.status = 'idle';
+        if(state.user){
+          state.user.useTowFactorAuth = true;
+        }
+      })
+      .addCase(deleteTOTPAsync.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(deleteTOTPAsync.rejected, (state) => {
+        state.status = 'idle';
+      })
+      .addCase(deleteTOTPAsync.fulfilled, (state) => {
+        state.status = 'idle';
+        if(state.user){
+          state.user.useTowFactorAuth = false;
+        }
       });
   }
 });
