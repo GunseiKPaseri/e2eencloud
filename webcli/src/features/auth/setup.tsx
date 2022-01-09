@@ -5,12 +5,11 @@ import { TowFactorAuth } from './twofactorauth';
 
 export const Setup: React.FC = ():ReactElement => {
   const [token, setToken] = useState("");
+  const [email, setEmail] = useState("");
   const dispatch = useAppDispatch();
   const selector = useAppSelector<AuthState>((state) => state.auth);
   const confirmToken = async () => {
-    if(selector.user){
-      await dispatch(confirmEmailAsync({email: selector.user.email, token}));
-    }
+    await dispatch(confirmEmailAsync({email, token}));
   };
   return (
     <article>
@@ -22,7 +21,7 @@ export const Setup: React.FC = ():ReactElement => {
         </>
         :
         <form>
-          <label>メールアドレス：<input type="text" value={selector.user?.email || ""} disabled /></label><br />
+          <label>メールアドレス：<input type="text" value={email} onChange={(e)=>setEmail(e.target.value)} /></label><br />
           <label>メール確認トークン：<input type="text" value={token} onChange={(e)=>{
             setToken(e.target.value);
           }} /></label><br />

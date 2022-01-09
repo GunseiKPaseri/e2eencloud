@@ -86,10 +86,19 @@ export const addTOTPAsync = createAsyncThunk<void, {secret_key: string, token: s
   },
 );
 
+// TOTP削除処理
 export const deleteTOTPAsync = createAsyncThunk<void, void>(
   'auth/delete_totp',
   async (_) => {
     await axiosWithSession.delete(`${appLocation}/api/user/totp`);
+  },
+);
+
+// ログイン処理
+export const loginAsync = createAsyncThunk<{success: boolean}, {email: string, password: string, token: string}>(
+  'auth/login',
+  async (userinfo) => {
+    return {success: false};
   },
 );
 
@@ -108,7 +117,6 @@ export const authSlice = createSlice({
       })
       .addCase(signupAsync.fulfilled, (state, action) => {
         state.status = 'idle';
-        state.user = {email: action.payload.email, useTowFactorAuth: false};
       })
       .addCase(confirmEmailAsync.pending, (state) => {
         state.status = 'loading';
