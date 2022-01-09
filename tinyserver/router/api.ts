@@ -108,15 +108,27 @@ router.put("/user/totp", async (ctx) => {
     period: 30,
     secret: data.secret_key,
   });
-  console.log(data);
   const result = totp.validate({
     token: data.token,
     window: 1
   });
+  console.log(data,user, result);
 
-  if(!result) return ctx.throw(Status.BadRequest, "Bad Token");
+  if(result === null) return ctx.throw(Status.BadRequest, "Bad Token");
 
   await user.addTwoFactorAuthSecretKey(data.secret_key);
+
+  return ctx.response.status = Status.NoContent;
+});
+
+router.delete("/user/totp", async (ctx) => {
+  // auth
+  const uid: number | null = await ctx.state.session.get("uid");
+  const user = await getUserById(uid);
+  if(!user) return ctx.throw(Status.Unauthorized, "Unauthorized");
+
+  // verify token
+  await user.addTwoFactorAuthSecretKey(null);
 
   return ctx.response.status = Status.NoContent;
 });

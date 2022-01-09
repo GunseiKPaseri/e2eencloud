@@ -3,7 +3,7 @@ import * as OTPAuth from 'otpauth';
 import QRcode from 'qrcode';
 
 import { useAppDispatch, useAppSelector } from '../../../src/app/hooks';
-import { addTOTPAsync, AuthState, confirmEmailAsync } from './authSlice';
+import { addTOTPAsync, AuthState, confirmEmailAsync, deleteTOTPAsync } from './authSlice';
 
 const genQR = (totp: OTPAuth.TOTP) => new Promise<string>((resolve, reject) => {
   QRcode.toDataURL(totp.toString(), (err, qrcode) => {
@@ -50,7 +50,7 @@ const GenTwoFactorAuth: React.FC<{email: string}> = (props):ReactElement => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCodeVerified(secretkey.validate({token, window: 0}) !== null);
-    }, 1000);
+    }, 500);
     return () => clearInterval(interval);
   }, [secretkey, token]);
   return (<>
@@ -64,13 +64,20 @@ const GenTwoFactorAuth: React.FC<{email: string}> = (props):ReactElement => {
 
 export const TowFactorAuth:React.FC = ():ReactElement => {
   const selector = useAppSelector<AuthState>((state) => state.auth);
+  const dispatch = useAppDispatch();
+  const deleteKey = () => {
+    dispatch(deleteTOTPAsync());
+  };
   return (
     <article>
       {selector.user ? (
         (selector.user.useTowFactorAuth) ?
-            <p>二段階認証を利用しています</p>
+            <>
+              <p>二要素認証を利用しています</p>
+              <button type="button" onClick={deleteKey}>二要素認証を停止</button>
+            </>
           : <>
-              <p>二段階認証を利用していません。新しく追加しましょう。</p>
+              <p>二要素認証を利用していません。新しく追加しましょう。</p>
               <GenTwoFactorAuth email={selector.user.email} />
             </>
       ): <></>

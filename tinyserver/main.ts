@@ -1,4 +1,4 @@
-import { Application, Router, send, Status } from "https://deno.land/x/oak@v10.1.0/mod.ts";
+import { Application, Status } from "https://deno.land/x/oak@v10.1.0/mod.ts";
 import { Session } from "https://deno.land/x/oak_sessions@v3.2.3/mod.ts";
 import SessionsStore from './model/Sessions.ts';
 import client from './dbclient.ts';
