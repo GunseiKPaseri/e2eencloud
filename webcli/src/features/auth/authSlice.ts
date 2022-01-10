@@ -136,12 +136,12 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
       console.log(MasterKey);
       const genKey = await generateRSAKey(MasterKey);
       await axiosWithSession.put<{
-                      encrypted_rsa_secret_key: string,
-                      encrypted_rsa_secret_key_iv: string,
+                      encrypted_rsa_private_key: string,
+                      encrypted_rsa_private_key_iv: string,
                       rsa_public_key: string
                     }>(`${appLocation}/api/user/pubkey`, {
-                      encrypted_rsa_secret_key: genKey.encripted_private_key,
-                      encrypted_rsa_secret_key_iv: genKey.encripted_private_key_iv,
+                      encrypted_rsa_private_key: genKey.encripted_private_key,
+                      encrypted_rsa_private_key_iv: genKey.encripted_private_key_iv,
                       rsa_public_key: genKey.public_key
                     });
       setRSAKey({rsaPrivateKey: genKey.privateKey, rsaPublicKey: genKey.publicKey});

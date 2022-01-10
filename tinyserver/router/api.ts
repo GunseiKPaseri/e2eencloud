@@ -227,8 +227,8 @@ router.delete("/user/totp", async (ctx) => {
 // public key
 
 interface PUTpubkeyJSON{
-  encrypted_rsa_secret_key: string,
-  encrypted_rsa_secret_key_iv: string,
+  encrypted_rsa_private_key: string,
+  encrypted_rsa_private_key_iv: string,
   rsa_public_key: string,
 }
 router.put("/user/pubkey", async (ctx) => {
@@ -243,14 +243,14 @@ router.put("/user/pubkey", async (ctx) => {
   if(body.type !== "json") return ctx.throw(Status.BadRequest, "Bad Request");
   const data: Partial<PUTpubkeyJSON> = await body.value;
 
-  if (typeof data.encrypted_rsa_secret_key !== 'string'
-      || typeof data.encrypted_rsa_secret_key_iv !== 'string'
+  if (typeof data.encrypted_rsa_private_key !== 'string'
+      || typeof data.encrypted_rsa_private_key_iv !== 'string'
       || typeof data.rsa_public_key !== 'string')
       return ctx.throw(Status.BadRequest, "Bad Request");
   
   await user.addRSAPublicKey({
-    encrypted_rsa_secret_key: data.encrypted_rsa_secret_key,
-    encrypted_rsa_secret_key_iv: data.encrypted_rsa_secret_key_iv,
+    encrypted_rsa_private_key: data.encrypted_rsa_private_key,
+    encrypted_rsa_private_key_iv: data.encrypted_rsa_private_key_iv,
     rsa_public_key: data.rsa_public_key
   });
 

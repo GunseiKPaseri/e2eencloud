@@ -13,8 +13,8 @@ export class User{
   readonly is_email_confirmed: boolean;
   #two_factor_authentication_secret_key: string|null;
   #rsa_public_key: string|null;
-  #encrypted_rsa_secret_key: string|null;
-  #encrypted_rsa_secret_key_iv: string|null;
+  #encrypted_rsa_private_key: string|null;
+  #encrypted_rsa_private_key_iv: string|null;
   constructor(user: {
       id: number,
       email: string,
@@ -25,8 +25,8 @@ export class User{
       is_email_confirmed: boolean,
       two_factor_authentication_secret_key: string|null,
       rsa_public_key: string|null,
-      encrypted_rsa_secret_key: string|null,
-      encrypted_rsa_secret_key_iv: string|null,
+      encrypted_rsa_private_key: string|null,
+      encrypted_rsa_private_key_iv: string|null,
     }) {
     this.id = user.id;
     this.email = user.email;
@@ -37,8 +37,8 @@ export class User{
     this.is_email_confirmed = user.is_email_confirmed;
     this.#two_factor_authentication_secret_key = user.two_factor_authentication_secret_key;
     this.#rsa_public_key = user.rsa_public_key;
-    this.#encrypted_rsa_secret_key = user.encrypted_rsa_secret_key;
-    this.#encrypted_rsa_secret_key_iv = user.encrypted_rsa_secret_key_iv;
+    this.#encrypted_rsa_private_key = user.encrypted_rsa_private_key;
+    this.#encrypted_rsa_private_key_iv = user.encrypted_rsa_private_key_iv;
   }
 
   get two_factor_authentication_secret_key() {
@@ -47,11 +47,11 @@ export class User{
   get rsa_public_key() {
     return this.#rsa_public_key;
   }
-  get encrypted_rsa_secret_key() {
-    return this.#encrypted_rsa_secret_key;
+  get encrypted_rsa_private_key() {
+    return this.#encrypted_rsa_private_key;
   }
-  get encrypted_rsa_secret_key_iv() {
-    return this.#encrypted_rsa_secret_key_iv;
+  get encrypted_rsa_private_key_iv() {
+    return this.#encrypted_rsa_private_key_iv;
   }
   async addTwoFactorAuthSecretKey(key: string | null){
     try {
@@ -64,19 +64,19 @@ export class User{
   }
 
   async addRSAPublicKey(params: {
-      encrypted_rsa_secret_key: string,
-      encrypted_rsa_secret_key_iv: string,
+      encrypted_rsa_private_key: string,
+      encrypted_rsa_private_key_iv: string,
       rsa_public_key: string
     }){
     try {
-      await client.execute(`UPDATE users SET encrypted_rsa_secret_key = ?, encrypted_rsa_secret_key_iv = ?, rsa_public_key = ? WHERE id = ?`,[
-                            params.encrypted_rsa_secret_key,
-                            params.encrypted_rsa_secret_key_iv,
+      await client.execute(`UPDATE users SET encrypted_rsa_private_key = ?, encrypted_rsa_private_key_iv = ?, rsa_public_key = ? WHERE id = ?`,[
+                            params.encrypted_rsa_private_key,
+                            params.encrypted_rsa_private_key_iv,
                             params.rsa_public_key,
                             this.id
                           ]);
-      this.#encrypted_rsa_secret_key = params.encrypted_rsa_secret_key;
-      this.#encrypted_rsa_secret_key_iv = params.encrypted_rsa_secret_key_iv;
+      this.#encrypted_rsa_private_key = params.encrypted_rsa_private_key;
+      this.#encrypted_rsa_private_key_iv = params.encrypted_rsa_private_key_iv;
       this.#rsa_public_key = params.rsa_public_key;
       return true;
     } catch (_){
