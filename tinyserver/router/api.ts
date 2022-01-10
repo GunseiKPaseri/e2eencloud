@@ -143,6 +143,17 @@ router.post("/login", async (ctx) => {
   ctx.response.status = Status.OK;
   ctx.response.body = {encrypted_master_key: user.encrypted_master_key, useTwoFactorAuth: user.two_factor_authentication_secret_key !== null};
   ctx.response.type = "json";
+});
+
+router.post("/logout", async (ctx) => {
+  // auth
+  const uid: number | null = await ctx.state.session.get("uid");
+  const user = await getUserById(uid);
+  if(!user) return ctx.response.status = Status.NoContent;
+
+  // logout
+  await ctx.state.session.set("uid", null);
+  ctx.response.status = Status.NoContent;
 }); 
 
 

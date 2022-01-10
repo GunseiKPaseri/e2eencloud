@@ -1,7 +1,6 @@
 import React, { useState, ReactElement } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../src/app/hooks';
 import { AuthState, confirmEmailAsync } from './authSlice';
-import { TowFactorAuth } from './twofactorauth';
 
 export const Setup: React.FC = ():ReactElement => {
   const [token, setToken] = useState("");
@@ -17,7 +16,6 @@ export const Setup: React.FC = ():ReactElement => {
       {selector.confirmstate === 1 ?
         <>
           <p>メールアドレスが確認されました。</p>
-          <TowFactorAuth />
         </>
         :
         <form>

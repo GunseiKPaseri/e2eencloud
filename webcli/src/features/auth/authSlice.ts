@@ -122,6 +122,16 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
   },
 );
 
+// ログアウト処理
+export const logoutAsync = createAsyncThunk(
+  'auth/logout',
+  async (_) => {
+    // logout
+    const result = await axiosWithSession.post(`${appLocation}/api/logout`);
+    return;
+  },
+);
+
 // Slice
 export const authSlice = createSlice({
   name: "auth",
@@ -182,6 +192,16 @@ export const authSlice = createSlice({
         state.status = 'idle';
         console.log("get", action.payload.MasterKey);
         state.user = action.payload;
+      })
+      .addCase(logoutAsync.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(logoutAsync.rejected, (state) => {
+        state.status = 'idle';
+      })
+      .addCase(logoutAsync.fulfilled, (state, action) => {
+        state.status = 'idle';
+        state.user = null;
       });
   }
 });

@@ -56,7 +56,7 @@ const GenTwoFactorAuth: React.FC<{email: string}> = (props):ReactElement => {
   return (<>
     <img src={qrlink} /><br />
     <input value={secretkey.toString()} readOnly/><br />
-    <label>一時キー<input autoComplete="one-time-code" value={token} onChange={(e) => setToken(e.target.value)} /></label><br />
+    <label>表示されたトークン<input autoComplete="one-time-code" value={token} onChange={(e) => setToken(e.target.value)} /></label><br />
     <button type="button" onClick={reloadkey} disabled={qrlink===""}>再生成</button>
     <button type="button" onClick={sendKey} disabled={!codeVerified}>登録</button>
   </>);
