@@ -26,7 +26,7 @@ export const addEmailConfirmation = async (email: string, email_confirmation_tok
 }
 
 export const isEmailConfirmSuccess = async (email: string, email_confirmation_token: string) => {
-  const emailConfirms = await client.query(`SELECT * FROM email_confirmations
+  const emailConfirms = await client.query(`SELECT email FROM email_confirmations
     WHERE email = ?
     AND email_confirmation_token = ?
     AND expired_at > ?
