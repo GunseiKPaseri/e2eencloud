@@ -1,7 +1,8 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import { AxiosResponse, AxiosResponseHeaders } from 'axios';
 import axiosWithSession from '../apirequest';
-import { AESECB, createSalt, SHA256, argon2encrypt, byteArray2base64, base642ByteArray, decryptAESECB } from './util';
+import { createSalt, SHA256, argon2encrypt, byteArray2base64, base642ByteArray, generateRSAKey, importRSAKey, AESCTR, genAESCTRKey, decryptAESCTR } from '../../util';
+import { setRSAKey } from '../../encrypt';
 
 interface UserForm {
   email: string;
@@ -41,19 +42,20 @@ export const signupAsync = createAsyncThunk<{success: boolean}, UserForm>(
     // 256bit Derived Key
     const DerivedKey = await argon2encrypt(userinfo.password, salt);
     // 128bit Derived Encryption Key & Derived Authentication Key
-    const DerivedEncryptionKey = DerivedKey.slice(0,16);
+    const DerivedEncryptionKey = await genAESCTRKey(DerivedKey.slice(0,16));
     const DerivedAuthenticationKey = DerivedKey.slice(16,32);
     // 128bit Encrypted Master Key
-    const EncryptedMasterKey = AESECB(MasterKey, DerivedEncryptionKey);
+    const EncryptedMasterKey = await AESCTR(MasterKey, DerivedEncryptionKey);
     const HashedAuthenticationKey = SHA256(DerivedAuthenticationKey);
+    console.log(MasterKey, DerivedEncryptionKey, EncryptedMasterKey);
 
     const sendData = {
       email: userinfo.email,
       client_random_value: byteArray2base64(ClientRandomValue),
-      encrypted_master_key: byteArray2base64(EncryptedMasterKey),
+      encrypted_master_key: byteArray2base64(EncryptedMasterKey.encrypt),
+      encrypted_master_key_iv: byteArray2base64(EncryptedMasterKey.iv),
       hashed_authentication_key: byteArray2base64(HashedAuthenticationKey),
     };
-    console.log(MasterKey);
 
     const result = await axiosWithSession.post<UserForm, AxiosResponse<{success: boolean}>>(`${appLocation}/api/signup`, sendData);
     console.log(result);
@@ -106,7 +108,7 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
 
     const DerivedKey = await argon2encrypt(userinfo.password, salt);
 
-    const DerivedEncryptionKey = DerivedKey.slice(0,16);
+    const DerivedEncryptionKey = await genAESCTRKey(DerivedKey.slice(0,16));
     const DerivedAuthenticationKey = DerivedKey.slice(16,32);
 
     const authentication_key = byteArray2base64(DerivedAuthenticationKey);
@@ -114,11 +116,46 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
     // login
     const result = await axiosWithSession.post<
                       {email: string, authentication_key: string, token: string},
-                      AxiosResponse<{encrypted_master_key: string, useTwoFactorAuth: boolean}>
+                      AxiosResponse<{
+                        encrypted_master_key: string,
+                        encrypted_master_key_iv: string,
+                        useTwoFactorAuth: boolean,
+                        encrypted_rsa_private_key?: string,
+                        encrypted_rsa_private_key_iv?: string,
+                        rsa_public_key?: string,
+                      }>
                     >(`${appLocation}/api/login`, {email: userinfo.email, authentication_key,token: userinfo.token});
     const EncryptedMasterKey = base642ByteArray(result.data.encrypted_master_key);
-    const MasterKey = decryptAESECB(EncryptedMasterKey, DerivedEncryptionKey);
-    return {email: userinfo.email, MasterKey: Array.from(MasterKey), useTowFactorAuth: result.data.useTwoFactorAuth};
+    console.log(result.data.encrypted_master_key_iv);
+    const MasterKeyRaw = await decryptAESCTR(EncryptedMasterKey, DerivedEncryptionKey, base642ByteArray(result.data.encrypted_master_key_iv));
+    console.log(MasterKeyRaw);
+    const MasterKey = await genAESCTRKey(MasterKeyRaw);
+    // encrypt key
+    if(!result.data.rsa_public_key || !result.data.encrypted_rsa_private_key || !result.data.encrypted_rsa_private_key_iv){
+      // add key
+      console.log(MasterKey);
+      const genKey = await generateRSAKey(MasterKey);
+      await axiosWithSession.put<{
+                      encrypted_rsa_secret_key: string,
+                      encrypted_rsa_secret_key_iv: string,
+                      rsa_public_key: string
+                    }>(`${appLocation}/api/user/pubkey`, {
+                      encrypted_rsa_secret_key: genKey.encripted_private_key,
+                      encrypted_rsa_secret_key_iv: genKey.encripted_private_key_iv,
+                      rsa_public_key: genKey.public_key
+                    });
+      setRSAKey({rsaPrivateKey: genKey.privateKey, rsaPublicKey: genKey.publicKey});
+    } else {
+      const importKey = await importRSAKey({
+        masterkey:MasterKey,
+        encrypted_private_key: result.data.encrypted_rsa_private_key,
+        encrypted_private_key_iv: result.data.encrypted_rsa_private_key_iv,
+        public_key: result.data.rsa_public_key
+      });
+      setRSAKey({rsaPublicKey: importKey.publicKey, rsaPrivateKey: importKey.privateKey});
+    }
+
+    return {email: userinfo.email, MasterKey: Array.from(MasterKeyRaw), useTowFactorAuth: result.data.useTwoFactorAuth};
   },
 );
 

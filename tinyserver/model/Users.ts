@@ -8,21 +8,50 @@ export class User{
   readonly email: string;
   readonly client_random_value: string;
   readonly encrypted_master_key: string;
+  readonly encrypted_master_key_iv: string;
   readonly hashed_authentication_key: string;
   readonly is_email_confirmed: boolean;
   #two_factor_authentication_secret_key: string|null;
-  constructor(user:{id: number, email: string, client_random_value: string, encrypted_master_key: string, hashed_authentication_key: string, is_email_confirmed: boolean, two_factor_authentication_secret_key: string|null}) {
+  #rsa_public_key: string|null;
+  #encrypted_rsa_secret_key: string|null;
+  #encrypted_rsa_secret_key_iv: string|null;
+  constructor(user: {
+      id: number,
+      email: string,
+      client_random_value: string,
+      encrypted_master_key: string,
+      encrypted_master_key_iv: string,
+      hashed_authentication_key: string,
+      is_email_confirmed: boolean,
+      two_factor_authentication_secret_key: string|null,
+      rsa_public_key: string|null,
+      encrypted_rsa_secret_key: string|null,
+      encrypted_rsa_secret_key_iv: string|null,
+    }) {
     this.id = user.id;
     this.email = user.email;
     this.client_random_value = user.client_random_value;
     this.encrypted_master_key = user.encrypted_master_key;
+    this.encrypted_master_key_iv = user.encrypted_master_key_iv;
     this.hashed_authentication_key = user.hashed_authentication_key;
     this.is_email_confirmed = user.is_email_confirmed;
     this.#two_factor_authentication_secret_key = user.two_factor_authentication_secret_key;
+    this.#rsa_public_key = user.rsa_public_key;
+    this.#encrypted_rsa_secret_key = user.encrypted_rsa_secret_key;
+    this.#encrypted_rsa_secret_key_iv = user.encrypted_rsa_secret_key_iv;
   }
 
   get two_factor_authentication_secret_key() {
     return this.#two_factor_authentication_secret_key;
+  }
+  get rsa_public_key() {
+    return this.#rsa_public_key;
+  }
+  get encrypted_rsa_secret_key() {
+    return this.#encrypted_rsa_secret_key;
+  }
+  get encrypted_rsa_secret_key_iv() {
+    return this.#encrypted_rsa_secret_key_iv;
   }
   async addTwoFactorAuthSecretKey(key: string | null){
     try {
@@ -33,21 +62,54 @@ export class User{
       return false;
     }
   }
+
+  async addRSAPublicKey(params: {
+      encrypted_rsa_secret_key: string,
+      encrypted_rsa_secret_key_iv: string,
+      rsa_public_key: string
+    }){
+    try {
+      await client.execute(`UPDATE users SET encrypted_rsa_secret_key = ?, encrypted_rsa_secret_key_iv = ?, rsa_public_key = ? WHERE id = ?`,[
+                            params.encrypted_rsa_secret_key,
+                            params.encrypted_rsa_secret_key_iv,
+                            params.rsa_public_key,
+                            this.id
+                          ]);
+      this.#encrypted_rsa_secret_key = params.encrypted_rsa_secret_key;
+      this.#encrypted_rsa_secret_key_iv = params.encrypted_rsa_secret_key_iv;
+      this.#rsa_public_key = params.rsa_public_key;
+      return true;
+    } catch (_){
+      return false;
+    }
+  }
 }
 
-export const addUser = async (email: string, client_random_value: string, encrypted_master_key: string, hashed_authentication_key: string) => {
+export const addUser = async (params: {
+    email: string,
+    client_random_value: string,
+    encrypted_master_key: string,
+    encrypted_master_key_iv: string,
+    hashed_authentication_key: string,
+  }) => {
   try{
     await client.execute(`INSERT INTO users(
       email,
       client_random_value,
       encrypted_master_key,
+      encrypted_master_key_iv,
       hashed_authentication_key,
-      is_email_confirmed) values(?, ?, ?, ?, ?)`,
-      [email, client_random_value, encrypted_master_key, hashed_authentication_key, false]);
+      is_email_confirmed) values(?, ?, ?, ?, ?, ?)`, [
+        params.email,
+        params.client_random_value,
+        params.encrypted_master_key,
+        params.encrypted_master_key_iv,
+        params.hashed_authentication_key,
+        false]);
   }catch (_){
     // ユーザが既に存在する場合
     const alreadyExistUsers = await client.query(`SELECT * FROM users WHERE email = ?`,
-    [email]);
+    [params.email]);
     if(alreadyExistUsers.length !== 1) throw new Error("why!?");
     const is_email_confirmed: boolean = alreadyExistUsers[0].is_email_confirmed;
     if(!is_email_confirmed){
@@ -57,10 +119,16 @@ export const addUser = async (email: string, client_random_value: string, encryp
     await client.execute(`UPDATE users
       SET client_random_value = ?,
       encrypted_master_key = ?,
+      encrypted_master_key_iv = ?,
       hashed_authentication_key = ?
-      WHERE email = ?`, [client_random_value, encrypted_master_key, hashed_authentication_key, email]);
+      WHERE email = ?`, [
+        params.client_random_value,
+        params.encrypted_master_key,
+        params.encrypted_master_key_iv,
+        params.hashed_authentication_key,
+        params.email]);
     // これまでの確認メールに付属していたリンクは削除する
-    await deleteEmailConfirms(email);
+    await deleteEmailConfirms(params.email);
   }
   return true;
 }

@@ -11,6 +11,7 @@ interface POSTSignUpJSON{
   email: string,
   client_random_value: string,
   encrypted_master_key: string,
+  encrypted_master_key_iv: string,
   hashed_authentication_key: string
 }
 
@@ -23,11 +24,17 @@ router.post("/signup", async (ctx) => {
       || typeof data.email !== 'string'
       || typeof data.client_random_value !== 'string'
       || typeof data.encrypted_master_key !== 'string'
+      || typeof data.encrypted_master_key_iv !== 'string'
       || typeof data.hashed_authentication_key !== 'string')
         return ctx.throw(Status.BadRequest, "Bad Request");
   try{
-    const issuccess = await addUser(
-      data.email, data.client_random_value, data.encrypted_master_key, data.hashed_authentication_key);
+    const issuccess = await addUser({
+      email: data.email,
+      client_random_value: data.client_random_value,
+      encrypted_master_key: data.encrypted_master_key,
+      encrypted_master_key_iv: data.encrypted_master_key_iv,
+      hashed_authentication_key: data.hashed_authentication_key,
+    });
     console.log(issuccess);
     // 128 bit email confirmation token
     const email_confirmation_token = crypto.getRandomValues(new Uint8Array(16));
@@ -141,7 +148,11 @@ router.post("/login", async (ctx) => {
   await ctx.state.session.set("uid", user.id);
   
   ctx.response.status = Status.OK;
-  ctx.response.body = {encrypted_master_key: user.encrypted_master_key, useTwoFactorAuth: user.two_factor_authentication_secret_key !== null};
+  ctx.response.body = {
+    encrypted_master_key: user.encrypted_master_key,
+    encrypted_master_key_iv: user.encrypted_master_key_iv,
+    useTwoFactorAuth: user.two_factor_authentication_secret_key !== null,
+  };
   ctx.response.type = "json";
 });
 
@@ -209,6 +220,39 @@ router.delete("/user/totp", async (ctx) => {
 
   // verify token
   await user.addTwoFactorAuthSecretKey(null);
+
+  return ctx.response.status = Status.NoContent;
+});
+
+// public key
+
+interface PUTpubkeyJSON{
+  encrypted_rsa_secret_key: string,
+  encrypted_rsa_secret_key_iv: string,
+  rsa_public_key: string,
+}
+router.put("/user/pubkey", async (ctx) => {
+  // auth
+  const uid: number | null = await ctx.state.session.get("uid");
+  const user = await getUserById(uid);
+  if(!user) return ctx.throw(Status.Unauthorized, "Unauthorized");
+
+  // verify body
+  if(!ctx.request.hasBody) return ctx.throw(Status.BadRequest, "Bad Request");
+  const body = ctx.request.body();
+  if(body.type !== "json") return ctx.throw(Status.BadRequest, "Bad Request");
+  const data: Partial<PUTpubkeyJSON> = await body.value;
+
+  if (typeof data.encrypted_rsa_secret_key !== 'string'
+      || typeof data.encrypted_rsa_secret_key_iv !== 'string'
+      || typeof data.rsa_public_key !== 'string')
+      return ctx.throw(Status.BadRequest, "Bad Request");
+  
+  await user.addRSAPublicKey({
+    encrypted_rsa_secret_key: data.encrypted_rsa_secret_key,
+    encrypted_rsa_secret_key_iv: data.encrypted_rsa_secret_key_iv,
+    rsa_public_key: data.rsa_public_key
+  });
 
   return ctx.response.status = Status.NoContent;
 });
