@@ -94,10 +94,13 @@ export const deleteTOTPAsync = createAsyncThunk<void, void>(
 );
 
 // ログイン処理
-export const loginAsync = createAsyncThunk<{success: boolean, MasterKey: number[]}, {email: string, password: string, token: string}>(
+export const loginAsync = createAsyncThunk<UserState, {email: string, password: string, token: string}>(
   'auth/login',
   async (userinfo) => {
-    const getSalt = await axiosWithSession.post<{email: string}, AxiosResponse<{salt: string}>>(`${appLocation}/api/salt`, {email: userinfo.email});
+    const getSalt = await axiosWithSession.post<
+                        {email: string},
+                        AxiosResponse<{salt: string}>
+                      >(`${appLocation}/api/salt`, {email: userinfo.email});
     
     const salt = base642ByteArray(getSalt.data.salt);
 
@@ -109,10 +112,13 @@ export const loginAsync = createAsyncThunk<{success: boolean, MasterKey: number[
     const authentication_key = byteArray2base64(DerivedAuthenticationKey);
 
     // login
-    const result = await axiosWithSession.post<{email: string, authentication_key: string, token: string}, AxiosResponse<{encrypted_master_key: string}>>(`${appLocation}/api/login`, {email: userinfo.email, authentication_key,token: userinfo.token});
+    const result = await axiosWithSession.post<
+                      {email: string, authentication_key: string, token: string},
+                      AxiosResponse<{encrypted_master_key: string, useTwoFactorAuth: boolean}>
+                    >(`${appLocation}/api/login`, {email: userinfo.email, authentication_key,token: userinfo.token});
     const EncryptedMasterKey = base642ByteArray(result.data.encrypted_master_key);
     const MasterKey = decryptAESECB(EncryptedMasterKey, DerivedEncryptionKey);
-    return {success: true, MasterKey: Array.from(MasterKey)};
+    return {email: userinfo.email, MasterKey: Array.from(MasterKey), useTowFactorAuth: result.data.useTwoFactorAuth};
   },
 );
 
@@ -174,10 +180,8 @@ export const authSlice = createSlice({
       })
       .addCase(loginAsync.fulfilled, (state, action) => {
         state.status = 'idle';
-        if(state.user){
-          console.log("get", action.payload.MasterKey);
-          state.user.MasterKey = action.payload.MasterKey;
-        }
+        console.log("get", action.payload.MasterKey);
+        state.user = action.payload;
       });
   }
 });

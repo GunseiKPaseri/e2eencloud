@@ -141,7 +141,7 @@ router.post("/login", async (ctx) => {
   await ctx.state.session.set("uid", user.id);
   
   ctx.response.status = Status.OK;
-  ctx.response.body = {encrypted_master_key: user.encrypted_master_key};
+  ctx.response.body = {encrypted_master_key: user.encrypted_master_key, useTwoFactorAuth: user.two_factor_authentication_secret_key !== null};
   ctx.response.type = "json";
 }); 
 
