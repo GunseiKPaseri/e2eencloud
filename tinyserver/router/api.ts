@@ -1,12 +1,11 @@
+import { encode as byteArray2base64, decode as base642ByteArray } from "https://deno.land/std/encoding/base64.ts"
 import { Router, Status } from "https://deno.land/x/oak@v10.1.0/mod.ts";
 import { addEmailConfirmation } from "../model/EmailConfirmations.ts";
-import { addUser, getUserByEmail, getUserById, userEmailConfirm } from '../model/Users.ts';
+import { addUser, getClientRandomSalt, getUserByEmail, getUserById, userEmailConfirm } from '../model/Users.ts';
 // @deno-types="https://deno.land/x/otpauth/dist/otpauth.d.ts"
 import * as OTPAuth from 'https://deno.land/x/otpauth/dist/otpauth.esm.js'
 
 const router = new Router({ prefix: "/api" });
-
-const byteArray2base64 = (x: Uint8Array) => btoa(String.fromCharCode(...x));
 
 interface POSTSignUpJSON{
   email: string,
@@ -76,6 +75,76 @@ router.post("/email_confirm", async (ctx) => {
   ctx.response.body = {success: status};
   ctx.response.type = "json";
 }); 
+
+// client random salt
+
+interface GETSaltJSON{
+  email: string,
+}
+
+// GETではBODYに格納するのが困難
+router.post("/salt", async (ctx) => {
+  if(!ctx.request.hasBody) return ctx.throw(Status.BadRequest, "Bad Request");
+  const body = ctx.request.body();
+  if(body.type !== "json") return ctx.throw(Status.BadRequest, "Bad Request");
+  const data: Partial<GETSaltJSON> = await body.value;
+
+  if (typeof data.email !== 'string')
+      return ctx.throw(Status.BadRequest, "Bad Request");
+  
+  // OK
+  const salt = await getClientRandomSalt(data.email);
+  
+  ctx.response.status = Status.OK;
+  ctx.response.body = {salt};
+  ctx.response.type = "json";
+});
+
+// login
+interface POSTloginJSON{
+  email: string,
+  token: string,
+  authentication_key: string,
+}
+
+router.post("/login", async (ctx) => {
+  if(!ctx.request.hasBody) return ctx.throw(Status.BadRequest, "Bad Request");
+  const body = ctx.request.body();
+  if(body.type !== "json") return ctx.throw(Status.BadRequest, "Bad Request");
+  const data: Partial<POSTloginJSON> = await body.value;
+
+  if (typeof data.email !== 'string' || typeof data.authentication_key !== 'string' || typeof data.token !== 'string')
+      return ctx.throw(Status.BadRequest, "Bad Request");
+  
+  // OK
+  const hashedAuthenticationKey = await crypto.subtle.digest("SHA-256", base642ByteArray(data.authentication_key));
+  const hashed_authentication_key = byteArray2base64(hashedAuthenticationKey);
+
+  const user = await getUserByEmail(data.email);
+  // there is no user || same hash?
+  if(!user || user.hashed_authentication_key !== hashed_authentication_key)
+    return ctx.throw(Status.Unauthorized, "Unauthorized");
+  // use totp?
+  if(user.two_factor_authentication_secret_key){
+    const totp = new OTPAuth.TOTP({
+      issuer: "E2EE",
+      label: `${user.email}`,
+      algorithm: "SHA1",
+      digits: 6,
+      period: 30,
+      secret: user.two_factor_authentication_secret_key,
+    });
+    if(totp.validate({token: data.token, window: 1}) === null)
+      return ctx.throw(Status.Unauthorized, "Unauthorized");
+  }
+  // login!!
+  await ctx.state.session.set("uid", user.id);
+  
+  ctx.response.status = Status.OK;
+  ctx.response.body = {encrypted_master_key: user.encrypted_master_key};
+  ctx.response.type = "json";
+}); 
+
 
 // user
 

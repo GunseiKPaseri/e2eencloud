@@ -1,5 +1,7 @@
 import client from '../dbclient.ts';
+import { createSalt } from "../util.ts";
 import { deleteEmailConfirms, isEmailConfirmSuccess } from './EmailConfirmations.ts';
+import { encode as byteArray2base64 } from "https://deno.land/std/encoding/base64.ts"
 
 export class User{
   readonly id: number;
@@ -86,6 +88,12 @@ export const getUserByEmail = async(email: string): Promise<User|null> => {
   const users = await client.query(`SELECT * FROM users WHERE email = ?`, [email]);
   if(users.length !== 1) return null;
   return new User(users[0]);
+};
+
+export const getClientRandomSalt = async(email: string): Promise<string> => {
+  const users = await client.query(`SELECT client_random_value FROM users WHERE email = ?`, [email]);
+  const hashedClientRandomSalt = await createSalt(email, users.length === 1 ? users[0].client_random_value : null); 
+  return byteArray2base64(hashedClientRandomSalt);
 };
 
 

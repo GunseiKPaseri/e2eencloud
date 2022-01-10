@@ -6,23 +6,26 @@ const textencoder = new TextEncoder();
 const textdecoder = new TextDecoder();
 export const string2ByteArray = (str: string) => textencoder.encode(str);
 export const byteArray2base64 = (x: Uint8Array) => btoa(String.fromCharCode(...x));
+export const base642ByteArray = (x: string) => new Uint8Array(Array.from(atob(x)).map(c=>c.charCodeAt(0)));
 
 export const AESECB = (message: Uint8Array , key: Uint8Array) => {
   const aesEcb = new aesjs.ModeOfOperation.ecb(key);
   return aesEcb.encrypt(message);
 };
+export const decryptAESECB = (encrypted_message: Uint8Array , key: Uint8Array) => {
+  const aesEcb = new aesjs.ModeOfOperation.ecb(key);
+  return aesEcb.decrypt(encrypted_message);
+};
 
 const iteration = 100;
 
 export const argon2encrypt = (password: string, salt: Uint8Array) =>{
-  console.log(password, salt);
   return argon2.hash({
   pass: password,
   salt,
   hashLen: 32,
   time: iteration,
 }).then((res)=>{
-  console.log(res);
   return res.hash;
 }).catch((e)=>{
   console.log(e);

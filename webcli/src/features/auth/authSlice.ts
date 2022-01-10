@@ -1,7 +1,7 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import { AxiosResponse, AxiosResponseHeaders } from 'axios';
 import axiosWithSession from '../apirequest';
-import { AESECB, createSalt, SHA256, argon2encrypt, byteArray2base64 } from './util';
+import { AESECB, createSalt, SHA256, argon2encrypt, byteArray2base64, base642ByteArray, decryptAESECB } from './util';
 
 interface UserForm {
   email: string;
@@ -11,6 +11,7 @@ interface UserForm {
 interface UserState {
   email: string;
   useTowFactorAuth: boolean;
+  MasterKey: number[];
 }
 export interface AuthState {
   user: UserState | null;
@@ -28,7 +29,7 @@ const appLocation = "http://localhost:3001";
 
 // Thunk
 // サインアップ処理
-export const signupAsync = createAsyncThunk<{success: boolean, email: string, password: string}, UserForm>(
+export const signupAsync = createAsyncThunk<{success: boolean}, UserForm>(
   'auth/signup',
   async (userinfo) => {
     // 128 bit MasterKey
@@ -38,9 +39,7 @@ export const signupAsync = createAsyncThunk<{success: boolean, email: string, pa
     // 256 bit Salt
     const salt = createSalt(ClientRandomValue);
     // 256bit Derived Key
-    console.log(salt);
     const DerivedKey = await argon2encrypt(userinfo.password, salt);
-    console.log(DerivedKey);
     // 128bit Derived Encryption Key & Derived Authentication Key
     const DerivedEncryptionKey = DerivedKey.slice(0,16);
     const DerivedAuthenticationKey = DerivedKey.slice(16,32);
@@ -54,11 +53,11 @@ export const signupAsync = createAsyncThunk<{success: boolean, email: string, pa
       encrypted_master_key: byteArray2base64(EncryptedMasterKey),
       hashed_authentication_key: byteArray2base64(HashedAuthenticationKey),
     };
-    console.log(sendData);
+    console.log(MasterKey);
 
     const result = await axiosWithSession.post<UserForm, AxiosResponse<{success: boolean}>>(`${appLocation}/api/signup`, sendData);
     console.log(result);
-    return {success: result.data.success ?? false, ...userinfo};
+    return {success: result.data.success ?? false};
   },
 );
 
@@ -95,10 +94,25 @@ export const deleteTOTPAsync = createAsyncThunk<void, void>(
 );
 
 // ログイン処理
-export const loginAsync = createAsyncThunk<{success: boolean}, {email: string, password: string, token: string}>(
+export const loginAsync = createAsyncThunk<{success: boolean, MasterKey: number[]}, {email: string, password: string, token: string}>(
   'auth/login',
   async (userinfo) => {
-    return {success: false};
+    const getSalt = await axiosWithSession.post<{email: string}, AxiosResponse<{salt: string}>>(`${appLocation}/api/salt`, {email: userinfo.email});
+    
+    const salt = base642ByteArray(getSalt.data.salt);
+
+    const DerivedKey = await argon2encrypt(userinfo.password, salt);
+
+    const DerivedEncryptionKey = DerivedKey.slice(0,16);
+    const DerivedAuthenticationKey = DerivedKey.slice(16,32);
+
+    const authentication_key = byteArray2base64(DerivedAuthenticationKey);
+
+    // login
+    const result = await axiosWithSession.post<{email: string, authentication_key: string, token: string}, AxiosResponse<{encrypted_master_key: string}>>(`${appLocation}/api/login`, {email: userinfo.email, authentication_key,token: userinfo.token});
+    const EncryptedMasterKey = base642ByteArray(result.data.encrypted_master_key);
+    const MasterKey = decryptAESECB(EncryptedMasterKey, DerivedEncryptionKey);
+    return {success: true, MasterKey: Array.from(MasterKey)};
   },
 );
 
@@ -150,6 +164,19 @@ export const authSlice = createSlice({
         state.status = 'idle';
         if(state.user){
           state.user.useTowFactorAuth = false;
+        }
+      })
+      .addCase(loginAsync.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(loginAsync.rejected, (state) => {
+        state.status = 'idle';
+      })
+      .addCase(loginAsync.fulfilled, (state, action) => {
+        state.status = 'idle';
+        if(state.user){
+          console.log("get", action.payload.MasterKey);
+          state.user.MasterKey = action.payload.MasterKey;
         }
       });
   }

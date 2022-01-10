@@ -2,7 +2,7 @@ import React, { useState, ReactElement } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../src/app/hooks';
 import { AuthState, loginAsync } from './authSlice';
 
-export const Setup: React.FC = ():ReactElement => {
+export const Login: React.FC = ():ReactElement => {
 const [email, setEmail] = useState("");
 const [password, setPassword] = useState("");
   const [token, setToken] = useState("");
