@@ -7,21 +7,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@peculiar/webcrypto": "^1.2.3",
     "@reduxjs/toolkit": "^1.7.1",
     "@types/pbkdf2": "^3.1.0",
     "argon2-wasm-esm": "^1.0.3",
     "axios": "^0.24.0",
-    "js-base64": "^3.7.2",
+    "base64-js": "^1.5.1",
+    "form-data": "^4.0.0",
     "otpauth": "^7.0.9",
     "pbkdf2": "^3.1.2",
     "qrcode": "^1.5.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-dropzone": "^11.5.1",
     "react-redux": "^7.2.6",
     "redux": "^4.1.2",
     "redux-logger": "^3.0.6",
     "sha256-uint8array": "^0.10.3",
+    "uuid": "^8.3.2",
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
@@ -29,6 +31,7 @@
     "@types/react": "^17.0.33",
     "@types/react-dom": "^17.0.10",
     "@types/redux-logger": "^3.0.9",
+    "@types/uuid": "^8.3.4",
     "@types/zxcvbn": "^4.4.1",
     "@vitejs/plugin-react": "^1.0.7",
     "typescript": "^4.3.2",

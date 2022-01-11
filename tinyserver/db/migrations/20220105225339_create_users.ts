@@ -38,6 +38,18 @@ export default class extends AbstractMigration<ClientMySQL> {
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX(id)
       )`);
+    await this.client.query(`
+      CREATE TABLE files (
+        id varchar(36) UNIQUE NOT NULL,
+        encrypted_file_iv TEXT NOT NULL,
+        encrypted_file_key TEXT NOT NULL,
+        encrypted_file_info TEXT NOT NULL,
+        encrypted_file_info_iv TEXT NOT NULL,
+        size BIGINT NOT NULL,
+        created_at datetime DEFAULT CURRENT_TIMESTAMP,
+        updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX(id)
+      )`);
   }
 
   /** Runs on rollback */
@@ -45,5 +57,6 @@ export default class extends AbstractMigration<ClientMySQL> {
     await this.client.query("DROP TABLE users");
     await this.client.query("DROP TABLE email_confirmations");
     await this.client.query("DROP TABLE sessions");
+    await this.client.query("DROP TABLE files");
   }
 }

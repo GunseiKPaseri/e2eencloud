@@ -4,6 +4,7 @@ import { addEmailConfirmation } from "../model/EmailConfirmations.ts";
 import { addUser, getClientRandomSalt, getUserByEmail, getUserById, userEmailConfirm } from '../model/Users.ts';
 // @deno-types="https://deno.land/x/otpauth/dist/otpauth.d.ts"
 import * as OTPAuth from 'https://deno.land/x/otpauth/dist/otpauth.esm.js'
+import { addFile } from "../model/Files.ts";
 
 const router = new Router({ prefix: "/api" });
 
@@ -256,5 +257,60 @@ router.put("/user/pubkey", async (ctx) => {
 
   return ctx.response.status = Status.NoContent;
 });
+
+interface POSTFilesForm{
+  id: string,
+  encryptedFile: Uint8Array,
+  encryptedFileIVBase64: string,
+  encryptedFileKeyBase64: string,
+  encryptedFileInfoBase64: string,
+  encryptedFileInfoIVBase64: string,
+}
+
+router.post("/files", async (ctx) => {
+  // auth
+  const uid: number | null = await ctx.state.session.get("uid");
+  const user = await getUserById(uid);
+  if(!user) return ctx.response.status = Status.NoContent;
+
+  // MultipartReader
+  const body = ctx.request.body({type: "form-data"});
+  const reader = await body.value;
+  const data = await reader.read({maxSize: 10000000});
+  const receivedFile:Partial<POSTFilesForm> = {};
+
+  receivedFile.id = data.fields.id;
+  receivedFile.encryptedFileIVBase64 = data.fields.encryptedFileIVBase64;
+  receivedFile.encryptedFileInfoBase64 = data.fields.encryptedFileInfoBase64;
+  receivedFile.encryptedFileInfoIVBase64 = data.fields.encryptedFileInfoIVBase64;
+  receivedFile.encryptedFileKeyBase64 = data.fields.encryptedFileKeyBase64;
+
+  if(!data.files) return ctx.throw(Status.BadRequest, "Bad Request");
+
+  for(const x of data.files){
+    if(x.name === "encryptedFile")
+      receivedFile[x.name] = x.content;
+  }
+  if(receivedFile.id === undefined
+    || receivedFile.encryptedFile === undefined
+    || receivedFile.encryptedFileIVBase64 === undefined
+    || receivedFile.encryptedFileKeyBase64 === undefined
+    || receivedFile.encryptedFileInfoBase64 === undefined
+    || receivedFile.encryptedFileInfoIVBase64 === undefined)
+    return ctx.throw(Status.BadRequest, "Bad Request");
+
+  // save file
+  const x = await addFile({
+    id: receivedFile.id,
+    encrypted_file_iv: receivedFile.encryptedFileIVBase64,
+    encrypted_file_info: receivedFile.encryptedFileInfoBase64,
+    encrypted_file_info_iv: receivedFile.encryptedFileInfoIVBase64,
+    encrypted_file_key: receivedFile.encryptedFileKeyBase64,
+    bin: receivedFile.encryptedFile,
+  });
+  console.log(x);
+
+  return ctx.response.status = Status.NoContent;
+}); 
 
 export default router;

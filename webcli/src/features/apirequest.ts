@@ -1,10 +1,10 @@
 import axios from "axios";
 
-const instance = axios.create({
+export const axiosWithSession = axios.create({
   withCredentials: true,
   headers: {
     "Content-Type": "application/json;charset=utf-8",
   }
 });
 
-export default instance;
+export const appLocation = "http://localhost:3001";

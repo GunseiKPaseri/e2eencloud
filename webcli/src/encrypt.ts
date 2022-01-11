@@ -6,3 +6,8 @@ export const setRSAKey = (params: {rsaPrivateKey: CryptoKey, rsaPublicKey: Crypt
   _rsaPublicKey = params.rsaPublicKey;
   console.log(params);
 };
+
+export const encriptByRSA = (data: BufferSource): Promise<ArrayBuffer> => {
+  if(!_rsaPublicKey) return Promise.reject();
+  return crypto.subtle.encrypt({name: "RSA-OAEP"}, _rsaPublicKey, data)
+};

@@ -1,24 +1,36 @@
 import { createHash as createSHA256Hash } from 'sha256-uint8array';
-import { Base64 } from 'js-base64';
+import { toByteArray, fromByteArray } from 'base64-js';
 import argon2 from 'argon2-wasm-esm';
 
 const textencoder = new TextEncoder();
 const textdecoder = new TextDecoder();
 export const string2ByteArray = (str: string) => textencoder.encode(str);
-export const byteArray2base64 = (x: Uint8Array) => Base64.fromUint8Array(x);
-export const base642ByteArray = (x: string) => Base64.toUint8Array(x);
+export const byteArray2base64 = (x: Uint8Array) => fromByteArray(x);
+export const base642ByteArray = (x: string) => toByteArray(x);
 
-export const genAESCTRKey = (key: Uint8Array) =>
+// AES-CTR
+export const getAESCTRKey = (key: Uint8Array) =>
   crypto.subtle.importKey("raw", key, "AES-CTR", false, ["encrypt", "decrypt"]);
 
-export const AESCTR = async (message: Uint8Array , key: CryptoKey) => {
+export const AESCTR = async (message: BufferSource , key: CryptoKey) => {
   const iv = window.crypto.getRandomValues(new Uint8Array(16));
   const aesctr:ArrayBuffer = await crypto.subtle.encrypt({name: "AES-CTR", counter: iv, length: 64}, key, message);
-  console.log(message, aesctr);
   return {encrypt: new Uint8Array(aesctr, 0) , iv};
 };
-export const decryptAESCTR = (encrypted_message: Uint8Array , key: CryptoKey, iv: Uint8Array): Promise<Uint8Array> =>
+
+export const decryptAESCTR = (encrypted_message: BufferSource, key: CryptoKey, iv: Uint8Array): Promise<Uint8Array> =>
   crypto.subtle.decrypt({name: "AES-CTR", counter: iv, length: 64}, key, encrypted_message);
+
+// AES-GCM
+export const getAESGCMKey = (key: Uint8Array) =>
+  crypto.subtle.importKey("raw", key, "AES-GCM", false, ["encrypt", "decrypt"]);
+
+export const AESGCM = async (message: BufferSource, key: CryptoKey) => {
+  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+  const aesgcm: ArrayBuffer = await crypto.subtle.encrypt({name: "AES-GCM", iv}, key, message);
+  return {encrypt: aesgcm, iv};
+}
+  
 
 const iteration = 100;
 
@@ -59,10 +71,9 @@ export const generateRSAKey = async(masterkey: CryptoKey) =>{
   const {privateKey, publicKey} = await crypto.subtle.generateKey({name: "RSA-OAEP", modulusLength: 4096, hash: "SHA-512", publicExponent: new Uint8Array([0x01,0x00,0x01])}, true, ["encrypt", "decrypt"]);
   if(!privateKey || !publicKey) throw new Error("why!!???");
   const [privateKeyArrayBuffer, publicKeyArrayBuffer] = await Promise.all([crypto.subtle.exportKey("pkcs8", privateKey), crypto.subtle.exportKey("spki", publicKey)]);
-  const privateKeyU = new Uint8Array(privateKeyArrayBuffer);
   const publicKeyU = new Uint8Array(publicKeyArrayBuffer);
 
-  const encriptedPrivateKey = AESCTR(privateKeyU,masterkey);
+  const encriptedPrivateKey = AESCTR(privateKeyArrayBuffer,masterkey);
 
   return {
     privateKey,

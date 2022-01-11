@@ -1,7 +1,7 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import { AxiosResponse, AxiosResponseHeaders } from 'axios';
-import axiosWithSession from '../apirequest';
-import { createSalt, SHA256, argon2encrypt, byteArray2base64, base642ByteArray, generateRSAKey, importRSAKey, AESCTR, genAESCTRKey, decryptAESCTR } from '../../util';
+import { axiosWithSession, appLocation } from '../apirequest';
+import { createSalt, SHA256, argon2encrypt, byteArray2base64, base642ByteArray, generateRSAKey, importRSAKey, AESCTR, getAESCTRKey, decryptAESCTR } from '../../util';
 import { setRSAKey } from '../../encrypt';
 
 interface UserForm {
@@ -26,8 +26,6 @@ const initialState: AuthState = {
   confirmstate: 0,
 };
 
-const appLocation = "http://localhost:3001";
-
 // Thunk
 // サインアップ処理
 export const signupAsync = createAsyncThunk<{success: boolean}, UserForm>(
@@ -42,7 +40,7 @@ export const signupAsync = createAsyncThunk<{success: boolean}, UserForm>(
     // 256bit Derived Key
     const DerivedKey = await argon2encrypt(userinfo.password, salt);
     // 128bit Derived Encryption Key & Derived Authentication Key
-    const DerivedEncryptionKey = await genAESCTRKey(DerivedKey.slice(0,16));
+    const DerivedEncryptionKey = await getAESCTRKey(DerivedKey.slice(0,16));
     const DerivedAuthenticationKey = DerivedKey.slice(16,32);
     // 128bit Encrypted Master Key
     const EncryptedMasterKey = await AESCTR(MasterKey, DerivedEncryptionKey);
@@ -108,7 +106,7 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
 
     const DerivedKey = await argon2encrypt(userinfo.password, salt);
 
-    const DerivedEncryptionKey = await genAESCTRKey(DerivedKey.slice(0,16));
+    const DerivedEncryptionKey = await getAESCTRKey(DerivedKey.slice(0,16));
     const DerivedAuthenticationKey = DerivedKey.slice(16,32);
 
     const authentication_key = byteArray2base64(DerivedAuthenticationKey);
@@ -129,7 +127,7 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
     console.log(result.data.encrypted_master_key_iv);
     const MasterKeyRaw = await decryptAESCTR(EncryptedMasterKey, DerivedEncryptionKey, base642ByteArray(result.data.encrypted_master_key_iv));
     console.log(MasterKeyRaw);
-    const MasterKey = await genAESCTRKey(MasterKeyRaw);
+    const MasterKey = await getAESCTRKey(MasterKeyRaw);
     // encrypt key
     if(!result.data.rsa_public_key || !result.data.encrypted_rsa_private_key || !result.data.encrypted_rsa_private_key_iv){
       // add key
