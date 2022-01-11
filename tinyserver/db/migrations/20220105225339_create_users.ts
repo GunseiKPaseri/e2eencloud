@@ -5,8 +5,8 @@ export default class extends AbstractMigration<ClientMySQL> {
   async up(): Promise<void> {
     await this.client.query(`
       CREATE TABLE users (
-        id int auto_increment NOT NULL,
-        email varchar(256) NOT NULL UNIQUE,
+        id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+        email VARCHAR(256) NOT NULL UNIQUE,
         client_random_value VARCHAR(24) NOT NULL,
         encrypted_master_key VARCHAR(24) NOT NULL,
         encrypted_master_key_iv VARCHAR(24) NOT NULL,
@@ -32,7 +32,7 @@ export default class extends AbstractMigration<ClientMySQL> {
       )`);
     await this.client.query(`
       CREATE TABLE sessions (
-        id varchar(36) UNIQUE NOT NULL,
+        id varchar(36) PRIMARY KEY NOT NULL,
         data TEXT NOT NULL,
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -40,15 +40,20 @@ export default class extends AbstractMigration<ClientMySQL> {
       )`);
     await this.client.query(`
       CREATE TABLE files (
-        id varchar(36) UNIQUE NOT NULL,
+        id varchar(36) PRIMARY KEY NOT NULL,
         encrypted_file_iv TEXT NOT NULL,
         encrypted_file_key TEXT NOT NULL,
         encrypted_file_info TEXT NOT NULL,
         encrypted_file_info_iv TEXT NOT NULL,
         size BIGINT NOT NULL,
+        created_by INT NOT NULL,
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX(id)
+        INDEX(id),
+        CONSTRAINT fk_user_id
+          FOREIGN KEY (created_by)
+          REFERENCES users (id)
+          ON DELETE RESTRICT ON UPDATE RESTRICT
       )`);
   }
 

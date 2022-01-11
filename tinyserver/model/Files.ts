@@ -1,5 +1,6 @@
 import client from '../dbclient.ts';
 import { v4 } from "https://deno.land/std@0.120.0/uuid/mod.ts";
+import { User } from "./Users.ts";
 
 const validateFileId = (x: string ) =>
     x.indexOf("-") === -1 && v4.validate(x.replace(/_/g, '-'));
@@ -11,6 +12,7 @@ export class File{
   readonly encrypted_file_info: string;
   readonly encrypted_file_info_iv: string;
   readonly size: number;
+  readonly created_by: User | number;
   constructor(file: {
       id: string,
       encrypted_file_iv: string,
@@ -18,6 +20,7 @@ export class File{
       encrypted_file_info: string,
       encrypted_file_info_iv: string,
       size: number;
+      created_by: User | number;
     }) {
     this.id = file.id;
     this.encrypted_file_iv = file.encrypted_file_iv;
@@ -25,6 +28,7 @@ export class File{
     this.encrypted_file_info_iv = file.encrypted_file_info_iv;
     this.encrypted_file_key = file.encrypted_file_key;
     this.size = file.size;
+    this.created_by = file.created_by;
   }
 
   async saveFile(file : Uint8Array){
@@ -39,6 +43,7 @@ export const addFile = async (params: {
   encrypted_file_info: string,
   encrypted_file_info_iv: string,
   bin: Uint8Array,
+  created_by: User | number,
 }) => {
   if(!validateFileId(params.id)) return null;
   try {
@@ -48,13 +53,16 @@ export const addFile = async (params: {
       encrypted_file_key,
       encrypted_file_info,
       encrypted_file_info_iv,
-      size) values(?, ?, ?, ?, ?, ?)`, [
+      size,
+      created_by) values(?, ?, ?, ?, ?, ?, ?)`, [
         params.id,
         params.encrypted_file_iv,
         params.encrypted_file_key,
         params.encrypted_file_info,
         params.encrypted_file_info_iv,
-        params.bin.length]);
+        params.bin.length,
+        (typeof params.created_by === 'number' ? params.created_by : params.created_by.id ),
+      ]);
     const newfile = new File({...params, size: params.bin.length});
     await newfile.saveFile(params.bin);
     return newfile;

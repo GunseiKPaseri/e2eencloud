@@ -307,6 +307,7 @@ router.post("/files", async (ctx) => {
     encrypted_file_info_iv: receivedFile.encryptedFileInfoIVBase64,
     encrypted_file_key: receivedFile.encryptedFileKeyBase64,
     bin: receivedFile.encryptedFile,
+    created_by: user,
   });
   console.log(x);
 
