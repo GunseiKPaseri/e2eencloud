@@ -128,6 +128,7 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
     const MasterKeyRaw = await decryptAESCTR(EncryptedMasterKey, DerivedEncryptionKey, base642ByteArray(result.data.encrypted_master_key_iv));
     console.log(MasterKeyRaw);
     const MasterKey = await getAESCTRKey(MasterKeyRaw);
+    console.log(result.data);
     // encrypt key
     if(!result.data.rsa_public_key || !result.data.encrypted_rsa_private_key || !result.data.encrypted_rsa_private_key_iv){
       // add key
@@ -144,13 +145,18 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
                     });
       setRSAKey({rsaPrivateKey: genKey.privateKey, rsaPublicKey: genKey.publicKey});
     } else {
-      const importKey = await importRSAKey({
-        masterkey:MasterKey,
-        encrypted_private_key: result.data.encrypted_rsa_private_key,
-        encrypted_private_key_iv: result.data.encrypted_rsa_private_key_iv,
-        public_key: result.data.rsa_public_key
-      });
-      setRSAKey({rsaPublicKey: importKey.publicKey, rsaPrivateKey: importKey.privateKey});
+      try{
+        const importKey = await importRSAKey({
+          masterkey:MasterKey,
+          encrypted_private_key: result.data.encrypted_rsa_private_key,
+          encrypted_private_key_iv: result.data.encrypted_rsa_private_key_iv,
+          public_key: result.data.rsa_public_key
+        });
+        setRSAKey({rsaPublicKey: importKey.publicKey, rsaPrivateKey: importKey.privateKey});
+      }catch(e){
+        console.log(e);
+        throw e;
+      }
     }
 
     return {email: userinfo.email, MasterKey: Array.from(MasterKeyRaw), useTowFactorAuth: result.data.useTwoFactorAuth};

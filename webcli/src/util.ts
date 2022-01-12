@@ -5,8 +5,9 @@ import argon2 from 'argon2-wasm-esm';
 const textencoder = new TextEncoder();
 const textdecoder = new TextDecoder();
 export const string2ByteArray = (str: string) => textencoder.encode(str);
+export const byteArray2string = (x: Uint8Array) => textdecoder.decode(x);
 export const byteArray2base64 = (x: Uint8Array) => fromByteArray(x);
-export const base642ByteArray = (x: string) => toByteArray(x);
+export const base642ByteArray = (base64: string) => toByteArray(base64);
 
 // AES-CTR
 export const getAESCTRKey = (key: Uint8Array) =>
@@ -30,6 +31,9 @@ export const AESGCM = async (message: BufferSource, key: CryptoKey) => {
   const aesgcm: ArrayBuffer = await crypto.subtle.encrypt({name: "AES-GCM", iv}, key, message);
   return {encrypt: aesgcm, iv};
 }
+
+export const decryptAESGCM = (encrypted_message: BufferSource, key: CryptoKey, iv: Uint8Array): Promise<Uint8Array> =>
+  crypto.subtle.decrypt({name: "AES-GCM", iv}, key, encrypted_message);
   
 
 const iteration = 100;
@@ -85,11 +89,15 @@ export const generateRSAKey = async(masterkey: CryptoKey) =>{
 };
 
 export const importRSAKey = async (params: {masterkey: CryptoKey, encrypted_private_key: string, encrypted_private_key_iv: string, public_key: string}) =>{
-  const PrivateKeyArrayBuffer = await decryptAESCTR(string2ByteArray(params.encrypted_private_key), params.masterkey, string2ByteArray(params.encrypted_private_key_iv));
-  const PublicKeyArrayBuffer = string2ByteArray(params.public_key);
+  const PrivateKeyArrayBuffer = await decryptAESCTR(
+    base642ByteArray(params.encrypted_private_key),
+    params.masterkey,
+    base642ByteArray(params.encrypted_private_key_iv)
+  );
+  const PublicKeyArrayBuffer = base642ByteArray(params.public_key);
   const [privateKey, publicKey] = await Promise.all([
-    crypto.subtle.importKey("pkcs8", PrivateKeyArrayBuffer, {name: "RSA-OAEP", hash: "SHA-512"}, true, ["encrypt", "decrypt"]),
-    crypto.subtle.importKey("spki", PublicKeyArrayBuffer, {name: "RSA-OAEP", hash: "SHA-512"}, true, ["encrypt", "decrypt"])
+    crypto.subtle.importKey("pkcs8", PrivateKeyArrayBuffer, {name: "RSA-OAEP", hash: "SHA-512"}, true, ["decrypt"]),
+    crypto.subtle.importKey("spki", PublicKeyArrayBuffer, {name: "RSA-OAEP", hash: "SHA-512"}, true, ["encrypt"])
   ]);
   return {privateKey, publicKey};
 };

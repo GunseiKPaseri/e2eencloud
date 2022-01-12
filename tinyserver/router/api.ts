@@ -4,7 +4,7 @@ import { addEmailConfirmation } from "../model/EmailConfirmations.ts";
 import { addUser, getClientRandomSalt, getUserByEmail, getUserById, userEmailConfirm } from '../model/Users.ts';
 // @deno-types="https://deno.land/x/otpauth/dist/otpauth.d.ts"
 import * as OTPAuth from 'https://deno.land/x/otpauth/dist/otpauth.esm.js'
-import { addFile } from "../model/Files.ts";
+import { addFile, getFileById } from "../model/Files.ts";
 
 const router = new Router({ prefix: "/api" });
 
@@ -147,13 +147,19 @@ router.post("/login", async (ctx) => {
   }
   // login!!
   await ctx.state.session.set("uid", user.id);
-  
-  ctx.response.status = Status.OK;
-  ctx.response.body = {
+
+  const result = {
     encrypted_master_key: user.encrypted_master_key,
     encrypted_master_key_iv: user.encrypted_master_key_iv,
     useTwoFactorAuth: user.two_factor_authentication_secret_key !== null,
   };
+  const result_rsa_key = {
+    encrypted_rsa_private_key: user.encrypted_rsa_private_key,
+    encrypted_rsa_private_key_iv: user.encrypted_rsa_private_key_iv,
+    rsa_public_key: user.rsa_public_key,
+  }
+  ctx.response.status = Status.OK;
+  ctx.response.body = (result_rsa_key.rsa_public_key? {...result, ...result_rsa_key} : result);
   ctx.response.type = "json";
 });
 
@@ -288,8 +294,8 @@ router.post("/files", async (ctx) => {
   if(!data.files) return ctx.throw(Status.BadRequest, "Bad Request");
 
   for(const x of data.files){
-    if(x.name === "encryptedFile")
-      receivedFile[x.name] = x.content;
+    if(x.name === "encryptedFile" && x.content)
+      receivedFile[x.name] = new Uint8Array(x.content.buffer, 0, x.content.buffer.byteLength - 2); // remove CRLF
   }
   if(receivedFile.id === undefined
     || receivedFile.encryptedFile === undefined
@@ -313,5 +319,16 @@ router.post("/files", async (ctx) => {
 
   return ctx.response.status = Status.NoContent;
 }); 
+
+router.get("/files/:fileid", async (ctx) => {
+  const fileinfo = await getFileById(ctx.params.fileid);
+  if(!fileinfo) return ctx.throw(Status.NotFound, "Not Found");
+  const {created_by: _, ...sendingFileinfo} = fileinfo;
+  
+  ctx.response.status = Status.OK;
+  ctx.response.body = sendingFileinfo;
+  ctx.response.type = "json";
+});
+
 
 export default router;
