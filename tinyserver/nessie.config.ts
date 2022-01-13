@@ -1,7 +1,4 @@
-import {
-    ClientMySQL,
-    NessieConfig,
-} from "https://deno.land/x/nessie@2.0.4/mod.ts";
+import { ClientMySQL, NessieConfig } from "https://deno.land/x/nessie@2.0.4/mod.ts";
 
 /** Select one of the supported clients */
 // const client = new ClientPostgreSQL({
@@ -24,9 +21,9 @@ const client = new ClientMySQL({
 
 /** This is the final config object */
 const config: NessieConfig = {
-    client,
-    migrationFolders: ["./db/migrations"],
-    seedFolders: ["./db/seeds"],
+  client,
+  migrationFolders: ["./db/migrations"],
+  seedFolders: ["./db/seeds"],
 };
 
 export default config;
