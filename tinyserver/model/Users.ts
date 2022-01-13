@@ -1,7 +1,7 @@
-import client from "../dbclient.ts";
-import { createSalt } from "../util.ts";
-import { deleteEmailConfirms, isEmailConfirmSuccess } from "./EmailConfirmations.ts";
-import { encode as byteArray2base64 } from "https://deno.land/std/encoding/base64.ts";
+import client from '../dbclient.ts';
+import { createSalt } from '../util.ts';
+import { deleteEmailConfirms, isEmailConfirmSuccess } from './EmailConfirmations.ts';
+import { encode as byteArray2base64 } from 'https://deno.land/std/encoding/base64.ts';
 
 export class User {
   readonly id: number;
@@ -122,7 +122,7 @@ export const addUser = async (params: {
       `SELECT * FROM users WHERE email = ?`,
       [params.email],
     );
-    if (alreadyExistUsers.length !== 1) throw new Error("why!?");
+    if (alreadyExistUsers.length !== 1) throw new Error('why!?');
     const is_email_confirmed: boolean = alreadyExistUsers[0].is_email_confirmed;
     if (!is_email_confirmed) {
       // メールが確認状態ならば追加不可

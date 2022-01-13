@@ -1,12 +1,12 @@
-import { Client } from "https://deno.land/x/mysql/mod.ts";
-import Store from "https://deno.land/x/oak_sessions@v3.2.3/src/stores/Store.ts";
-import { SessionData } from "https://deno.land/x/oak_sessions@v3.2.3/src/Session.ts";
+import { Client } from 'https://deno.land/x/mysql/mod.ts';
+import Store from 'https://deno.land/x/oak_sessions@v3.2.3/src/stores/Store.ts';
+import { SessionData } from 'https://deno.land/x/oak_sessions@v3.2.3/src/Session.ts';
 
 export default class SessionsStore implements Store {
   db: Client;
   tableName: string;
 
-  constructor(db: Client, tableName = "sessions") {
+  constructor(db: Client, tableName = 'sessions') {
     this.db = db;
     this.tableName = tableName;
     this.db.query(`CREATE TABLE IF NOT EXISTS ${this.tableName}(

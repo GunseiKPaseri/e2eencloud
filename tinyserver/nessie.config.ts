@@ -1,4 +1,4 @@
-import { ClientMySQL, NessieConfig } from "https://deno.land/x/nessie@2.0.4/mod.ts";
+import { ClientMySQL, NessieConfig } from 'https://deno.land/x/nessie@2.0.4/mod.ts';
 
 /** Select one of the supported clients */
 // const client = new ClientPostgreSQL({
@@ -10,11 +10,11 @@ import { ClientMySQL, NessieConfig } from "https://deno.land/x/nessie@2.0.4/mod.
 // });
 
 const client = new ClientMySQL({
-  hostname: "localhost",
+  hostname: 'localhost',
   port: 3306,
-  username: "root",
-  password: "Passw0rd", // uncomment this line for <8
-  db: "e2ee",
+  username: 'root',
+  password: 'Passw0rd', // uncomment this line for <8
+  db: 'e2ee',
 });
 
 // const client = new ClientSQLite("./sqlite.db");
@@ -22,8 +22,8 @@ const client = new ClientMySQL({
 /** This is the final config object */
 const config: NessieConfig = {
   client,
-  migrationFolders: ["./db/migrations"],
-  seedFolders: ["./db/seeds"],
+  migrationFolders: ['./db/migrations'],
+  seedFolders: ['./db/seeds'],
 };
 
 export default config;

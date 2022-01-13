@@ -1,4 +1,4 @@
-import client from "../dbclient.ts";
+import client from '../dbclient.ts';
 
 export class EmailConfirmation {
   readonly email: string;

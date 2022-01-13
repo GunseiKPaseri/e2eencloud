@@ -1,10 +1,11 @@
+import React from 'react'
 import './App.css'
 import { Login } from './features/auth/login'
 import { Setup } from './features/auth/setup'
 import { Signup } from './features/auth/signup'
 import { FileDropZone } from './features/file/filedrop'
 
-function App() {
+function App () {
   return (
     <div className="App">
       <header className="App-header">

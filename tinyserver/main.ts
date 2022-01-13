@@ -1,11 +1,11 @@
-import { Application, Status } from "https://deno.land/x/oak@v10.1.0/mod.ts";
-import { Session } from "https://deno.land/x/oak_sessions@v3.2.3/mod.ts";
-import SessionsStore from "./model/Sessions.ts";
-import client from "./dbclient.ts";
-import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
-import apiRouter from "./router/api.ts";
+import { Application, Status } from 'https://deno.land/x/oak@v10.1.0/mod.ts';
+import { Session } from 'https://deno.land/x/oak_sessions@v3.2.3/mod.ts';
+import SessionsStore from './model/Sessions.ts';
+import client from './dbclient.ts';
+import { oakCors } from 'https://deno.land/x/cors@v1.2.2/mod.ts';
+import apiRouter from './router/api.ts';
 
-import { bold, yellow } from "https://deno.land/std@0.118.0/fmt/colors.ts";
+import { bold, yellow } from 'https://deno.land/std@0.118.0/fmt/colors.ts';
 
 const PORT = 3001;
 
@@ -14,7 +14,7 @@ const app = new Application();
 // Enable CORS
 app.use(
   oakCors({
-    origin: [`http://localhost:${PORT}`, "http://localhost:3000"],
+    origin: [`http://localhost:${PORT}`, 'http://localhost:3000'],
     credentials: true,
   }),
 );
@@ -32,7 +32,7 @@ app.use(async (ctx, next) => {
   try {
     await ctx.send({
       root: `${Deno.cwd()}/../webcli/dist`,
-      index: "index.html",
+      index: 'index.html',
     });
   } catch (_) {
     next();
@@ -49,21 +49,21 @@ app.use((ctx) => {
 const d = new Date(Date.now());
 const str = `
 ${d.getFullYear()}
-${("00" + (d.getMonth() + 1)).slice(-2)}
-${("00" + d.getDate()).slice(-2)}
-${("00" + d.getHours()).slice(-2)}
-${("00" + d.getMinutes()).slice(-2)}
-${("00" + d.getSeconds()).slice(-2)}
-${("000" + d.getMilliseconds()).slice(-3)}`.replace(/\n|\r|\s/g, "");
+${('00' + (d.getMonth() + 1)).slice(-2)}
+${('00' + d.getDate()).slice(-2)}
+${('00' + d.getHours()).slice(-2)}
+${('00' + d.getMinutes()).slice(-2)}
+${('00' + d.getSeconds()).slice(-2)}
+${('000' + d.getMilliseconds()).slice(-3)}`.replace(/\n|\r|\s/g, '');
 console.log(`let's use ${bold(`hoge+${str}@example.com`)}`);
 
-app.addEventListener("listen", ({ hostname, port, serverType }) => {
+app.addEventListener('listen', ({ hostname, port, serverType }) => {
   console.log(
-    `${bold("server has started")} on ${yellow(`http://${hostname}:${port}`)}`,
+    `${bold('server has started')} on ${yellow(`http://${hostname}:${port}`)}`,
   );
-  console.log("  using HTTP server: " + yellow(serverType));
+  console.log('  using HTTP server: ' + yellow(serverType));
 });
 
-await app.listen({ hostname: "127.0.0.1", port: PORT });
+await app.listen({ hostname: '127.0.0.1', port: PORT });
 
-console.log("finished...");
+console.log('finished...');

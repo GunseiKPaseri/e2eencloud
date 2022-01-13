@@ -6,7 +6,7 @@
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.1
 
-export { };
+export { }
 
 // Argon2Error is provided on promise rejection
 export function hash(

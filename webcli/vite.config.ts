@@ -5,11 +5,11 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   build: {
     // root (= ./src) から見た相対パスで指定
-    outDir: '../dist',
+    outDir: '../dist'
   },
   root: './src',
   plugins: [react()],
   define: {
-    'process.env': {},
-  },
+    'process.env': {}
+  }
 })

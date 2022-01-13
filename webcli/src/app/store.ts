@@ -1,16 +1,16 @@
-import {configureStore} from "@reduxjs/toolkit";
-import logger from 'redux-logger';
-import authReducer from '../features/auth/authSlice';
-import fileReducer from '../features/file/fileSlice';
+import { configureStore } from '@reduxjs/toolkit'
+import logger from 'redux-logger'
+import authReducer from '../features/auth/authSlice'
+import fileReducer from '../features/file/fileSlice'
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    file: fileReducer,
+    file: fileReducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
-  devTools: true,
-});
+  devTools: true
+})
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>;

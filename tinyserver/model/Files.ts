@@ -1,8 +1,8 @@
-import client from "../dbclient.ts";
-import { v4 } from "https://deno.land/std@0.120.0/uuid/mod.ts";
-import { User } from "./Users.ts";
+import client from '../dbclient.ts';
+import { v4 } from 'https://deno.land/std@0.120.0/uuid/mod.ts';
+import { User } from './Users.ts';
 
-const validateFileId = (x: string) => x.indexOf("-") === -1 && v4.validate(x.replace(/_/g, "-"));
+const validateFileId = (x: string) => x.indexOf('-') === -1 && v4.validate(x.replace(/_/g, '-'));
 
 export class File {
   readonly id: string;
@@ -64,7 +64,7 @@ export const addFile = async (params: {
         params.encrypted_file_info,
         params.encrypted_file_info_iv,
         params.bin.length,
-        typeof params.created_by === "number" ? params.created_by : params.created_by.id,
+        typeof params.created_by === 'number' ? params.created_by : params.created_by.id,
       ],
     );
     const newfile = new File({ ...params, size: params.bin.length });

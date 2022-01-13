@@ -1,29 +1,29 @@
-import React, { useState, ReactElement, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { filedownloadAsync, FileState, fileuploadAsync } from './fileSlice';
+import React, { useState } from 'react'
+import { useDropzone } from 'react-dropzone'
+import { useAppDispatch } from '../../app/hooks'
+import { filedownloadAsync, fileuploadAsync } from './fileSlice'
 
 const style = {
   width: 200,
   height: 150,
-  border: "1px dotted #888"
-};
+  border: '1px dotted #888'
+}
 
-export const FileDropZone: React.FC = ():ReactElement => {
-  const dispatch = useAppDispatch();
-  const selector = useAppSelector<FileState>((state) => state.file);
+export const FileDropZone = () => {
+  const dispatch = useAppDispatch()
+  // const selector = useAppSelector<FileState>((state) => state.file)
 
-  const [fileId, setFileId] = useState("");
-  
+  const [fileId, setFileId] = useState('')
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (acceptedFiles) => {
       // Do something with the files
-      dispatch(fileuploadAsync({files: acceptedFiles}));
-      console.log('acceptedFiles:', acceptedFiles);
-      }
-    });
+      dispatch(fileuploadAsync({ files: acceptedFiles }))
+      console.log('acceptedFiles:', acceptedFiles)
+    }
+  })
   const download = () => {
-    dispatch(filedownloadAsync({fileId}));
+    dispatch(filedownloadAsync({ fileId }))
   }
 
   return (
@@ -32,9 +32,9 @@ export const FileDropZone: React.FC = ():ReactElement => {
       <div {...getRootProps()} style={style}>
             <input {...getInputProps()} />
             {
-                isDragActive ?
-                    <p>Drop the files here ...</p> :
-                    <p>Drag 'n' drop some files here, or click to select files</p>
+                isDragActive
+                  ? <p>Drop the files here ...</p>
+                  : <p>Drag &apos;n&apos; drop some files here, or click to select files</p>
             }
         </div>
         <h2>ファイルダウンロード</h2>
@@ -43,5 +43,5 @@ export const FileDropZone: React.FC = ():ReactElement => {
           <button type="button" onClick={download}>ダウンロード</button>
         </div>
     </article>
-  );
+  )
 }

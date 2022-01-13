@@ -1,4 +1,4 @@
-import { AbstractMigration, ClientMySQL } from "https://deno.land/x/nessie@2.0.4/mod.ts";
+import { AbstractMigration, ClientMySQL } from 'https://deno.land/x/nessie@2.0.4/mod.ts';
 
 export default class extends AbstractMigration<ClientMySQL> {
   /** Runs on migrate */
@@ -59,9 +59,9 @@ export default class extends AbstractMigration<ClientMySQL> {
 
   /** Runs on rollback */
   async down(): Promise<void> {
-    await this.client.query("DROP TABLE users");
-    await this.client.query("DROP TABLE email_confirmations");
-    await this.client.query("DROP TABLE sessions");
-    await this.client.query("DROP TABLE files");
+    await this.client.query('DROP TABLE users');
+    await this.client.query('DROP TABLE email_confirmations');
+    await this.client.query('DROP TABLE sessions');
+    await this.client.query('DROP TABLE files');
   }
 }
