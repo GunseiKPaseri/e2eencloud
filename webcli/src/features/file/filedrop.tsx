@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { useAppDispatch } from '../../app/hooks'
+import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { filedownloadAsync, fileuploadAsync } from './fileSlice'
 
 const style = {
@@ -11,6 +11,7 @@ const style = {
 
 export const FileDropZone = () => {
   const dispatch = useAppDispatch()
+  const fileState = useAppSelector((store) => store.file)
   // const selector = useAppSelector<FileState>((state) => state.file)
 
   const [fileId, setFileId] = useState('')
@@ -41,6 +42,10 @@ export const FileDropZone = () => {
         <div>
           <input value={fileId} onChange={(e) => setFileId(e.target.value)}/>
           <button type="button" onClick={download}>ダウンロード</button>
+          {fileState.downloadlink !== '' && <a href={fileState.downloadlink} download={fileState.downloadname}>{fileState.downloadname}</a>}
+        </div>
+        <div>
+          <ul>{fileState.files.map((x) => <li key={x.id}>{x.name}[{x.id}]</li>)}</ul>
         </div>
     </article>
   )

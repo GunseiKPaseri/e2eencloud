@@ -35,6 +35,17 @@ export class File {
       append: true,
     });
   }
+
+  toSendObj() {
+    return {
+      id: this.id,
+      encryptedFileIVBase64: this.encrypted_file_iv,
+      encryptedFileKeyBase64: this.encrypted_file_key,
+      encryptedFileInfoBase64: this.encrypted_file_info,
+      encryptedFileInfoIVBase64: this.encrypted_file_info_iv,
+      site: this.size,
+    };
+  }
 }
 
 export const addFile = async (params: {
@@ -85,4 +96,9 @@ export const getFileById = async (id: string) => {
 export const getFileBinById = async (id: string) => {
   if (!validateFileId(id)) return null;
   return await Deno.readFile(`${Deno.cwd()}/../webcli/dist/bin/${id}`);
+};
+
+export const getFileInfo = async (uid: number) => {
+  const files: any[] = await client.query(`SELECT * FROM files WHERE created_by = ?`, [uid]);
+  return files.map((x) => new File(x));
 };

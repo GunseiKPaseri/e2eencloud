@@ -4,7 +4,7 @@ import { addEmailConfirmation } from '../model/EmailConfirmations.ts';
 import { addUser, getClientRandomSalt, getUserByEmail, getUserById, userEmailConfirm } from '../model/Users.ts';
 // @deno-types="https://deno.land/x/otpauth/dist/otpauth.d.ts"
 import * as OTPAuth from 'https://deno.land/x/otpauth/dist/otpauth.esm.js';
-import { addFile, getFileById } from '../model/Files.ts';
+import { addFile, getFileById, getFileInfo } from '../model/Files.ts';
 
 const router = new Router({ prefix: '/api' });
 
@@ -230,7 +230,6 @@ router.put('/user/totp', async (ctx) => {
     token: data.token,
     window: 1,
   });
-  console.log(data, user, result);
 
   if (result === null) return ctx.throw(Status.BadRequest, 'Bad Token');
 
@@ -251,7 +250,7 @@ router.delete('/user/totp', async (ctx) => {
   return ctx.response.status = Status.NoContent;
 });
 
-// public key
+// ADD public key
 
 interface PUTpubkeyJSON {
   encryptedRSAPrivateKeyBase64: string;
@@ -287,6 +286,19 @@ router.put('/user/pubkey', async (ctx) => {
   return ctx.response.status = Status.NoContent;
 });
 
+router.get('/user/files', async (ctx) => {
+  // auth
+  const uid: number | null = await ctx.state.session.get('uid');
+  const user = await getUserById(uid);
+  if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
+  const files = (await getFileInfo(user.id)).map((x) => x.toSendObj());
+
+  ctx.response.status = Status.OK;
+  ctx.response.body = files;
+  ctx.response.type = 'json';
+});
+
+// ADD FILE
 interface POSTFilesForm {
   id: string;
   encryptedFile: Uint8Array;
@@ -346,18 +358,18 @@ router.post('/files', async (ctx) => {
     bin: receivedFile.encryptedFile,
     created_by: user,
   });
-  console.log(x);
+  console.log('save ', x?.id);
 
   return ctx.response.status = Status.NoContent;
 });
 
+// GET FILEINFO
 router.get('/files/:fileid', async (ctx) => {
   const fileinfo = await getFileById(ctx.params.fileid);
   if (!fileinfo) return ctx.throw(Status.NotFound, 'Not Found');
-  const { created_by: _, ...sendingFileinfo } = fileinfo;
 
   ctx.response.status = Status.OK;
-  ctx.response.body = sendingFileinfo;
+  ctx.response.body = fileinfo.toSendObj();
   ctx.response.type = 'json';
 });
 

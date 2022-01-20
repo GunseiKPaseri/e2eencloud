@@ -3,6 +3,7 @@ import { AxiosResponse } from 'axios'
 import { axiosWithSession, appLocation } from '../apirequest'
 import { createSalt, SHA256, argon2encrypt, byteArray2base64, base642ByteArray, generateRSAKey, importRSAKey, AESCTR, getAESCTRKey, decryptAESCTR } from '../../util'
 import { setRSAKey } from '../../encrypt'
+import { createFileTreeAsync } from '../file/fileSlice'
 
 interface UserForm {
   email: string;
@@ -96,7 +97,7 @@ export const deleteTOTPAsync = createAsyncThunk<void, void>(
 // ログイン処理
 export const loginAsync = createAsyncThunk<UserState, {email: string, password: string, token: string}>(
   'auth/login',
-  async (userinfo) => {
+  async (userinfo, { dispatch }) => {
     const getSalt = await axiosWithSession.post<
                         {email: string},
                         AxiosResponse<{salt: string}>
@@ -159,6 +160,7 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
         throw e
       }
     }
+    dispatch(createFileTreeAsync())
 
     return { email: userinfo.email, MasterKey: Array.from(MasterKeyRaw), useTowFactorAuth: result.data.useTwoFactorAuth }
   }

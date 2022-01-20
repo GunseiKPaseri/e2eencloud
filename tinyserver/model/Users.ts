@@ -1,7 +1,10 @@
-import client from '../dbclient.ts';
-import { createSalt } from '../util.ts';
-import { deleteEmailConfirms, isEmailConfirmSuccess } from './EmailConfirmations.ts';
-import { encode as byteArray2base64 } from 'https://deno.land/std/encoding/base64.ts';
+import client from "../dbclient.ts";
+import { createSalt } from "../util.ts";
+import {
+  deleteEmailConfirms,
+  isEmailConfirmSuccess,
+} from "./EmailConfirmations.ts";
+import { encode as byteArray2base64 } from "https://deno.land/std/encoding/base64.ts";
 
 export class User {
   readonly id: number;
@@ -34,8 +37,9 @@ export class User {
     this.encrypted_master_key = user.encrypted_master_key;
     this.encrypted_master_key_iv = user.encrypted_master_key_iv;
     this.hashed_authentication_key = user.hashed_authentication_key;
-    this.is_email_confirmed = user.is_email_confirmed;
-    this.#two_factor_authentication_secret_key = user.two_factor_authentication_secret_key;
+    this.is_email_confirmed = !!(user.is_email_confirmed);
+    this.#two_factor_authentication_secret_key =
+      user.two_factor_authentication_secret_key;
     this.#rsa_public_key = user.rsa_public_key;
     this.#encrypted_rsa_private_key = user.encrypted_rsa_private_key;
     this.#encrypted_rsa_private_key_iv = user.encrypted_rsa_private_key_iv;
@@ -122,7 +126,7 @@ export const addUser = async (params: {
       `SELECT * FROM users WHERE email = ?`,
       [params.email],
     );
-    if (alreadyExistUsers.length !== 1) throw new Error('why!?');
+    if (alreadyExistUsers.length !== 1) throw new Error("why!?");
     const is_email_confirmed: boolean = alreadyExistUsers[0].is_email_confirmed;
     if (!is_email_confirmed) {
       // メールが確認状態ならば追加不可

@@ -21,3 +21,10 @@ Checked 10 files
 $ deno fmt --config ./deno.jsonc
 Checked 13 files
 ```
+
+## test
+
+```bash
+$ deno test --allow-net --allow-read --allow-write
+...
+```

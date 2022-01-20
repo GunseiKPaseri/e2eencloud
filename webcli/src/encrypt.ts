@@ -8,7 +8,6 @@ export const setRSAKey = (params: {rsaPrivateKey: CryptoKey, rsaPublicKey: Crypt
 }
 
 export const decryptByRSA = (data: ArrayBuffer): Promise<ArrayBuffer> => {
-  console.log(_rsaPrivateKey)
   if (!_rsaPrivateKey) return Promise.reject(new Error('there is no rsa privatekey'))
   return crypto.subtle.decrypt({ name: 'RSA-OAEP' }, _rsaPrivateKey, data)
 }

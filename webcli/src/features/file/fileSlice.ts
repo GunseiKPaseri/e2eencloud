@@ -5,20 +5,29 @@ import { v4 as uuidv4 } from 'uuid'
 import { axiosWithSession, appLocation } from '../apirequest'
 import FormData from 'form-data'
 import { AxiosResponse } from 'axios'
+import { db } from '../../indexeddb'
 
+type FileNode = {type: 'file', id: string, name: string} | {type: 'folder', id: string, name: string, files: FileTree};
+type FileTree = FileNode[]
 export interface FileState {
   loading: 0|1,
-}
+  files: FileTree,
+  downloadlink: string,
+  downloadname: string,
+};
 
-const initialState: FileState = {
-  loading: 0
-}
-
-interface FileInfo {
+export interface FileInfo {
   id: string,
   name: string,
   sha256: string,
-};
+}
+
+const initialState: FileState = {
+  loading: 0,
+  files: [],
+  downloadlink: '',
+  downloadname: ''
+}
 
 const readfile = (x: File) => new Promise<ArrayBuffer>((resolve, reject) => {
   const fileReader = new FileReader()
@@ -102,19 +111,17 @@ interface getfileinfoJSON {
   size: string;
 }
 
-const getFileInfo = async (fileId: string) => {
-  const fileinforaw = await axiosWithSession.get<{}, AxiosResponse<getfileinfoJSON>>(`${appLocation}/api/files/${fileId}`)
-
-  const encryptedFileIV = base642ByteArray(fileinforaw.data.encryptedFileIVBase64)
-  const encryptedFileKey = base642ByteArray(fileinforaw.data.encryptedFileKeyBase64)
-  const encryptedFileInfo = base642ByteArray(fileinforaw.data.encryptedFileInfoBase64)
-  const encryptedFileInfoIV = base642ByteArray(fileinforaw.data.encryptedFileInfoIVBase64)
+const decryptoFileInfo = async (fileinforaw: getfileinfoJSON) => {
+  const encryptedFileIV = base642ByteArray(fileinforaw.encryptedFileIVBase64)
+  const encryptedFileKey = base642ByteArray(fileinforaw.encryptedFileKeyBase64)
+  const encryptedFileInfo = base642ByteArray(fileinforaw.encryptedFileInfoBase64)
+  const encryptedFileInfoIV = base642ByteArray(fileinforaw.encryptedFileInfoIVBase64)
 
   const fileKeyRaw = new Uint8Array(await decryptByRSA(encryptedFileKey))
 
   const fileKey = await getAESGCMKey(fileKeyRaw)
   const fileInfo:FileInfo = JSON.parse(byteArray2string(await decryptAESGCM(encryptedFileInfo, fileKey, encryptedFileInfoIV)))
-  return { encryptedFileIV, fileKey, fileInfo }
+  return { encryptedFileIV, fileKey, fileInfo, fileKeyRaw }
 }
 
 const getEncryptedFileRaw = async (fileId: string) => {
@@ -122,21 +129,45 @@ const getEncryptedFileRaw = async (fileId: string) => {
   return encryptedFileRowDL.data
 }
 
-export const filedownloadAsync = createAsyncThunk<{success: boolean}, {fileId: string}>(
+export const filedownloadAsync = createAsyncThunk<{url: string, name: string}, {fileId: string}>(
   'file/filedownload',
   async (fileinput) => {
-    const [{ encryptedFileIV, fileKey, fileInfo }, encryptedFile] =
-      await Promise.all([getFileInfo(fileinput.fileId), getEncryptedFileRaw(fileinput.fileId)])
+    const [file, encryptedFile] =
+      await Promise.all([db.files.get(fileinput.fileId), getEncryptedFileRaw(fileinput.fileId)])
 
-    const file = await decryptAESGCM(encryptedFile, fileKey, encryptedFileIV)
+    if (!file) throw new Error(`${fileinput.fileId}は存在しません`)
+    const { fileKeyRaw, sha256, encryptedFileIV } = file
+    const fileKey = await getAESGCMKey(fileKeyRaw)
 
-    const { hashStr } = await getFileHash(file)
+    const filebin = await decryptAESGCM(encryptedFile, fileKey, encryptedFileIV)
 
-    if (hashStr !== fileInfo.sha256) throw new Error('hashが異なります')
+    const { hashStr } = await getFileHash(filebin)
 
-    console.log(fileInfo, file)
+    if (hashStr !== sha256) throw new Error('hashが異なります')
 
-    return { success: true }
+    const url = URL.createObjectURL(new Blob([filebin], { type: 'application/octet-binary' }))
+    return {
+      url,
+      name: file.name
+    }
+  }
+)
+
+export const createFileTreeAsync = createAsyncThunk<FileTree>(
+  'file/createfiletree',
+  async () => {
+    const rowfiles = await axiosWithSession.get<{}, AxiosResponse<getfileinfoJSON[]>>(`${appLocation}/api/user/files`)
+    const files = await Promise.all(rowfiles.data.map(x => decryptoFileInfo(x)))
+    await db.files.bulkPut(files.map(x => ({
+      id: x.fileInfo.id,
+      name: x.fileInfo.name,
+      sha256: x.fileInfo.sha256,
+      type: 'file',
+      encryptedFileIV: x.encryptedFileIV,
+      fileKeyRaw: x.fileKeyRaw
+    })))
+    console.log(files)
+    return files.map(x => ({ type: 'file', id: x.fileInfo.id, name: x.fileInfo.name }))
   }
 )
 
@@ -146,11 +177,12 @@ export const fileSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fileuploadAsync.pending, (state) => {
+      .addCase(createFileTreeAsync.fulfilled, (state, action) => {
+        state.files = action.payload
       })
-      .addCase(fileuploadAsync.rejected, (state) => {
-      })
-      .addCase(fileuploadAsync.fulfilled, (state, action) => {
+      .addCase(filedownloadAsync.fulfilled, (state, action) => {
+        state.downloadlink = action.payload.url
+        state.downloadname = action.payload.name
       })
   }
 })
