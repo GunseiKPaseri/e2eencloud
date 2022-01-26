@@ -33,10 +33,18 @@ export default class extends AbstractMigration<ClientMySQL> {
     await this.client.query(`
       CREATE TABLE sessions (
         id varchar(36) PRIMARY KEY NOT NULL,
+        session_key varchar(36) NOT NULL UNIQUE,
         data TEXT NOT NULL,
+        user_id INT,
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX(id)
+        INDEX(id),
+        INDEX(session_key),
+        INDEX(user_id),
+        CONSTRAINT fk_session_user_id
+          FOREIGN KEY (user_id)
+          REFERENCES users (id)
+          ON DELETE CASCADE ON UPDATE RESTRICT
       )`);
     await this.client.query(`
       CREATE TABLE files (
@@ -59,9 +67,9 @@ export default class extends AbstractMigration<ClientMySQL> {
 
   /** Runs on rollback */
   async down(): Promise<void> {
-    await this.client.query('DROP TABLE users');
     await this.client.query('DROP TABLE email_confirmations');
     await this.client.query('DROP TABLE sessions');
     await this.client.query('DROP TABLE files');
+    await this.client.query('DROP TABLE users');
   }
 }

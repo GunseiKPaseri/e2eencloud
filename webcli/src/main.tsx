@@ -8,6 +8,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Signup } from './features/auth/signup'
 import { Login } from './features/auth/login'
 import { Setup } from './features/auth/setup'
+import { SessionConfig } from './features/session/sessionConfing'
 
 ReactDOM.render(
   <React.StrictMode>
@@ -18,6 +19,7 @@ ReactDOM.render(
           <Route path="/signup" element={<Signup />}/>
           <Route path="/setup" element={<Setup />}/>
           <Route path="/login" element={<Login />}/>
+          <Route path="/session" element={<SessionConfig />}/>
         </Routes>
       </BrowserRouter>
     </Provider>

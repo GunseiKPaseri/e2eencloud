@@ -1,56 +1,104 @@
 import { Client } from 'https://deno.land/x/mysql/mod.ts';
 import Store from 'https://deno.land/x/oak_sessions@v3.2.3/src/stores/Store.ts';
 import { SessionData } from 'https://deno.land/x/oak_sessions@v3.2.3/src/Session.ts';
-
-export default class SessionsStore implements Store {
+import client from '../dbclient.ts';
+class SessionsStore implements Store {
   db: Client;
   tableName: string;
 
   constructor(db: Client, tableName = 'sessions') {
     this.db = db;
     this.tableName = tableName;
-    this.db.query(`CREATE TABLE IF NOT EXISTS ${this.tableName}(
-        id VARCHAR(36) UNIQUE NOT NULL,
-        data TEXT NOT NULL,
-        created_at datetime DEFAULT CURRENT_TIMESTAMP,
-        updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX(id)
-    )`);
   }
 
-  async sessionExists(sessionId: string) {
+  async sessionExists(sessionKey: string) {
     const sessions = await this.db.query(
-      `SELECT data FROM ${this.tableName} WHERE id = ?`,
-      [sessionId],
+      `SELECT session_key FROM ${this.tableName} WHERE session_key = ?`,
+      [sessionKey],
     );
     return sessions.length > 0 ? true : false;
   }
 
-  async getSessionById(sessionId: string): Promise<SessionData | null> {
+  async getSessionById(sessionKey: string): Promise<SessionData | null> {
     const sessions = await this.db.query(
-      `SELECT data FROM ${this.tableName} WHERE id = ?`,
-      [sessionId],
+      `SELECT id, data, user_id FROM ${this.tableName} WHERE session_key = ?`,
+      [sessionKey],
     );
-    return sessions.length !== 1 ? null : JSON.parse(sessions[0].data);
+    if (sessions.length !== 1) return null;
+    const sessionData: SessionData = JSON.parse(sessions[0].data);
+    if (sessions[0].user_id) sessionData.uid = sessions[0].user_id;
+    sessionData.id = sessions[0].id;
+    return sessionData;
   }
 
-  async createSession(sessionId: string, initialData: SessionData) {
+  async createSession(sessionKey: string, initialData: SessionData) {
+    const copied = { ...initialData };
+    const uid = copied.uid;
+    delete copied.uid;
+    delete copied.id;
     await this.db.query(
-      `INSERT INTO ${this.tableName} (id, data) VALUES (?, ?)`,
-      [sessionId, JSON.stringify(initialData)],
+      `INSERT INTO ${this.tableName} (id, session_key, data, user_id) VALUES (?, ?, ?, ?)`,
+      [crypto.randomUUID(), sessionKey, JSON.stringify(copied), uid],
     );
   }
 
-  async deleteSession(sessionId: string) {
-    await this.db.query(`DELETE FROM ${this.tableName} WHERE id = ?`, [
-      sessionId,
+  async deleteSession(sessionKey: string) {
+    await this.db.query(`DELETE FROM ${this.tableName} WHERE session_key = ?`, [
+      sessionKey,
     ]);
   }
 
-  async persistSessionData(sessionId: string, sessionData: SessionData) {
-    await this.db.query(`UPDATE ${this.tableName} SET data = ? WHERE id = ?`, [
-      JSON.stringify(sessionData),
-      sessionId,
+  async deleteSessionById(id: string, user_id: number) {
+    await this.db.query(`DELETE FROM ${this.tableName} WHERE id = ? AND user_id = ?`, [
+      id,
+      user_id,
     ]);
+  }
+
+  async persistSessionData(sessionKey: string, sessionData: SessionData) {
+    const copied = { ...sessionData };
+    const uid = copied.uid;
+    delete copied.uid;
+    delete copied.id;
+    await this.db.query(`UPDATE ${this.tableName} SET data = ?, user_id = ? WHERE session_key = ?`, [
+      JSON.stringify(copied),
+      uid,
+      sessionKey,
+    ]);
+  }
+
+  async persistSessionDataById(id: string, sessionData: SessionData) {
+    const copied = { ...sessionData };
+    const uid = copied.uid;
+    delete copied.uid;
+    delete copied.id;
+    console.log(copied, uid, id);
+    await this.db.query(`UPDATE ${this.tableName} SET data = ?, user_id = ? WHERE id = ?`, [
+      JSON.stringify(copied),
+      uid,
+      id,
+    ]);
+    console.log(await this.db.query(`SELECT * FROM ${this.tableName} WHERE id = ?`, [id]));
+  }
+
+  async getSessionsByUserId(userId: number) {
+    const sessions: any[] = await this.db.query(`SELECT id, data FROM ${this.tableName} WHERE user_id = ?`, [
+      userId,
+    ]);
+    return sessions.map((x): { id: string; data: SessionData } => ({ id: x.id, data: JSON.parse(x.data) }));
+  }
+
+  async getSessionByUniqueId(id: string) {
+    const sessions: any[] = await this.db.query(`SELECT id, data, user_id FROM ${this.tableName} WHERE id = ?`, [
+      id,
+    ]);
+    if (sessions.length !== 1) return null;
+    const sessionData: SessionData = JSON.parse(sessions[0].data);
+    if (sessions[0].user_id) sessionData.uid = sessions[0].user_id;
+    sessionData.id = sessions[0].id;
+    return sessionData;
   }
 }
+
+const sessionStore = new SessionsStore(client);
+export default sessionStore;

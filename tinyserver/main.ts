@@ -1,7 +1,6 @@
 import { Application, Status } from 'https://deno.land/x/oak@v10.1.0/mod.ts';
 import { Session } from 'https://deno.land/x/oak_sessions@v3.2.3/mod.ts';
 import SessionsStore from './model/Sessions.ts';
-import client from './dbclient.ts';
 import { oakCors } from 'https://deno.land/x/cors@v1.2.2/mod.ts';
 import apiRouter from './router/api.ts';
 
@@ -20,7 +19,7 @@ app.use(
 );
 
 // use Session
-const session = new Session(new SessionsStore(client));
+const session = new Session(SessionsStore);
 app.use(session.initMiddleware());
 
 // api router

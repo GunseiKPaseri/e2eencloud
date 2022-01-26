@@ -6,6 +6,10 @@ import { addUser, getClientRandomSalt, getUserByEmail, getUserById, userEmailCon
 import * as OTPAuth from 'https://deno.land/x/otpauth/dist/otpauth.esm.js';
 import { addFile, getFileById, getFileInfo } from '../model/Files.ts';
 
+// @deno-types="https://cdn.skypack.dev/@types/ua-parser-js?dts"
+import uaparser from 'https://cdn.skypack.dev/ua-parser-js@1.0.2?dts';
+import SessionsStore from '../model/Sessions.ts';
+
 const router = new Router({ prefix: '/api' });
 
 interface POSTSignUpJSON {
@@ -168,6 +172,17 @@ router.post('/login', async (ctx) => {
   // login!!
   await ctx.state.session.set('uid', user.id);
 
+  // add clientname
+  if (!await ctx.state.session.get('client_name')) {
+    const ua = ctx.request.headers.get('user-agent');
+    if (ua) {
+      const userEnv = uaparser(ua);
+      await ctx.state.session.set('client_name', `${userEnv.os.name}${userEnv.os.version} ${userEnv.browser.name}`);
+    } else {
+      await ctx.state.session.set('client_name', `unknown`);
+    }
+  }
+
   const result = {
     encryptedMasterKeyBase64: user.encrypted_master_key,
     encryptedMasterKeyIVBase64: user.encrypted_master_key_iv,
@@ -295,6 +310,61 @@ router.get('/user/files', async (ctx) => {
 
   ctx.response.status = Status.OK;
   ctx.response.body = files;
+  ctx.response.type = 'json';
+});
+
+router.get('/user/sessions', async (ctx) => {
+  // auth
+  const uid: number | null = await ctx.state.session.get('uid');
+  const me: string = await ctx.state.session.get('id');
+  const user = await getUserById(uid);
+  if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
+  const sessions = (await SessionsStore.getSessionsByUserId(user.id)).map((x) => ({
+    id: x.id,
+    clientName: x.data.client_name,
+    accessed: x.data._accessed,
+    isMe: x.id === me,
+  }));
+
+  ctx.response.status = Status.OK;
+  ctx.response.body = sessions;
+  ctx.response.type = 'json';
+});
+
+interface PATCHsessionsJSON {
+  clientName?: string;
+}
+
+router.patch('/user/sessions', async (ctx) => {
+  // auth
+  const uid: number | null = await ctx.state.session.get('uid');
+  const user = await getUserById(uid);
+
+  if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
+
+  // verify body
+  if (!ctx.request.hasBody) return ctx.throw(Status.BadRequest, 'Bad Request');
+  const body = ctx.request.body();
+  if (body.type !== 'json') return ctx.throw(Status.BadRequest, 'Bad Request');
+  const data: Partial<PATCHsessionsJSON> = await body.value;
+
+  if (!data.clientName) return ctx.throw(Status.BadRequest, 'BadRequest');
+  await ctx.state.session.set('client_name', data.clientName);
+  ctx.response.status = Status.NoContent;
+});
+
+router.delete('/user/sessions/:id', async (ctx) => {
+  // auth
+  const uid: number | null = await ctx.state.session.get('uid');
+  const user = await getUserById(uid);
+
+  if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
+
+  const id = ctx.params.id;
+
+  SessionsStore.deleteSessionById(id, user.id);
+
+  ctx.response.status = Status.NoContent;
   ctx.response.type = 'json';
 });
 

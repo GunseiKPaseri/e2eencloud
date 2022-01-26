@@ -2,11 +2,13 @@ import { configureStore } from '@reduxjs/toolkit'
 import logger from 'redux-logger'
 import authReducer from '../features/auth/authSlice'
 import fileReducer from '../features/file/fileSlice'
+import sessionReducer from '../features/session/sessionSlice'
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    file: fileReducer
+    file: fileReducer,
+    session: sessionReducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
   devTools: true

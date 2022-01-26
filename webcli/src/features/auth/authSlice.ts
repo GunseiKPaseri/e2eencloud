@@ -160,6 +160,7 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
         throw e
       }
     }
+    // file tree
     dispatch(createFileTreeAsync())
 
     return { email: userinfo.email, MasterKey: Array.from(MasterKeyRaw), useTowFactorAuth: result.data.useTwoFactorAuth }
