@@ -7,8 +7,8 @@ import FormData from 'form-data'
 import { AxiosResponse } from 'axios'
 import { db } from '../../indexeddb'
 
-type FileNode = {type: 'file', id: string, name: string} | {type: 'folder', id: string, name: string, files: FileTree};
-type FileTree = FileNode[]
+export type FileNode = {type: 'file', id: string, name: string} | {type: 'folder', id: string, name: string, files: FileTree};
+export type FileTree = FileNode[]
 export interface FileState {
   loading: 0|1,
   files: FileTree,

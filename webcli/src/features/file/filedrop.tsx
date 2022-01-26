@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { filedownloadAsync, fileuploadAsync } from './fileSlice'
+import { FileTreeViewer } from './fileTreeViewer'
 
 const style = {
   width: 200,
@@ -39,13 +40,11 @@ export const FileDropZone = () => {
             }
         </div>
         <h2>ファイルダウンロード</h2>
+        <FileTreeViewer onSelect={(id) => setFileId(id)} />
         <div>
           <input value={fileId} onChange={(e) => setFileId(e.target.value)}/>
           <button type="button" onClick={download}>ダウンロード</button>
           {fileState.downloadlink !== '' && <a href={fileState.downloadlink} download={fileState.downloadname}>{fileState.downloadname}</a>}
-        </div>
-        <div>
-          <ul>{fileState.files.map((x) => <li key={x.id}>{x.name}[{x.id}]</li>)}</ul>
         </div>
     </article>
   )
