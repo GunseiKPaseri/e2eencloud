@@ -3,8 +3,7 @@ import { useAppDispatch } from '../../app/hooks'
 import { signupAsync } from './authSlice'
 import zxcvbn from 'zxcvbn'
 import PasswordChecker from './PasswordChecker'
-
-const correctEmailaddr = /^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$/
+import { correctEmailaddr } from '../../util'
 
 export const Signup:React.FC = ():ReactElement => {
   const [confirmMode, setConfirmMode] = useState(false)

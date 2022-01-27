@@ -1,5 +1,4 @@
 import React from 'react'
-import './App.css'
 import { Login } from './features/auth/login'
 import { FileDropZone } from './features/file/filedrop'
 

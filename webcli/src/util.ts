@@ -1,6 +1,9 @@
 /* eslint-disable no-undef */
 import { createHash as createSHA256Hash } from 'sha256-uint8array'
 import { toByteArray, fromByteArray } from 'base64-js'
+
+import { createBrowserHistory } from 'history'
+
 import argon2 from 'argon2-wasm-esm'
 
 const textencoder = new TextEncoder()
@@ -101,3 +104,7 @@ export const importRSAKey = async (params: {masterkey: CryptoKey, encryptedPriva
   ])
   return { privateKey, publicKey }
 }
+
+export const correctEmailaddr = /^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$/
+
+export const browserHistory = createBrowserHistory()

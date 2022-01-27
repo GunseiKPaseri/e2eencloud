@@ -7,6 +7,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.7.1",
+    "@emotion/styled": "^11.6.0",
+    "@lagunovsky/redux-react-router": "^2.2.0",
+    "@mui/icons-material": "^5.3.1",
+    "@mui/material": "^5.3.1",
     "@reduxjs/toolkit": "^1.7.1",
     "@types/pbkdf2": "^3.1.0",
     "argon2-wasm-esm": "^1.0.3",

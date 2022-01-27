@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { AxiosResponse } from 'axios'
-import { axiosWithSession, appLocation } from '../apirequest'
+import { axiosWithSession, appLocation } from '../componentutils'
 import { createSalt, SHA256, argon2encrypt, byteArray2base64, base642ByteArray, generateRSAKey, importRSAKey, AESCTR, getAESCTRKey, decryptAESCTR } from '../../util'
 import { setRSAKey } from '../../encrypt'
 import { createFileTreeAsync } from '../file/fileSlice'

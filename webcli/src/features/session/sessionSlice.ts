@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { AxiosResponse } from 'axios'
-import { appLocation, axiosWithSession } from '../apirequest'
+import { appLocation, axiosWithSession } from '../componentutils'
 
 export interface SessionsState {
   sessions: SessionInfo[],
