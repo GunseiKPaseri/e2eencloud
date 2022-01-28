@@ -35,32 +35,27 @@ router.post('/signup', async (ctx) => {
   ) {
     return ctx.throw(Status.BadRequest, 'Bad Request');
   }
-  try {
-    const issuccess = await addUser({
-      email: data.email,
-      client_random_value: data.clientRandomValueBase64,
-      encrypted_master_key: data.encryptedMasterKeyBase64,
-      encrypted_master_key_iv: data.encryptedMasterKeyIVBase64,
-      hashed_authentication_key: data.hashedAuthenticationKeyBase64,
-    });
-    console.log(issuccess);
+
+  const issuccess = await addUser({
+    email: data.email,
+    client_random_value: data.clientRandomValueBase64,
+    encrypted_master_key: data.encryptedMasterKeyBase64,
+    encrypted_master_key_iv: data.encryptedMasterKeyIVBase64,
+    hashed_authentication_key: data.hashedAuthenticationKeyBase64,
+  });
+  console.log(issuccess);
+  if (issuccess) {
     // 128 bit email confirmation token
     const email_confirmation_token = crypto.getRandomValues(new Uint8Array(16));
     const token = byteArray2base64(email_confirmation_token);
     await addEmailConfirmation(data.email, token);
     console.log('SEND<', data.email, '> ', token);
-
-    ctx.response.status = Status.OK;
-    ctx.response.body = { success: true };
-    ctx.response.type = 'json';
-    return;
-  } catch (e) {
-    // userがそのメールアドレスが登録済か知る必要はない
-    console.log(e);
-    ctx.response.status = Status.OK;
-    ctx.response.body = { success: true };
-    ctx.response.type = 'json';
   }
+  // userがそのメールアドレスが登録済か知る必要はない
+  ctx.response.status = Status.OK;
+  ctx.response.body = { success: true };
+  ctx.response.type = 'json';
+  return;
 });
 
 interface POSTEmailConfirmJSON {
