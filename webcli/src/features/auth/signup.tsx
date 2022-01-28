@@ -1,6 +1,7 @@
 import React, { useState, ReactElement } from 'react'
 import { useAppDispatch } from '../../app/hooks'
 import { signupAsync } from './authSlice'
+import { PasswordField } from './PasswordField'
 import zxcvbn from 'zxcvbn'
 import PasswordChecker from './PasswordChecker'
 import { correctEmailaddr } from '../../util'
@@ -130,13 +131,12 @@ export const Signup:React.FC = ():ReactElement => {
                 helperText={isGoodMailAddress ? '' : '正しくないメールアドレスです' }
                 onChange={(e) => setEmail(e.target.value)}
               />
-              <TextField
+              <PasswordField
                 margin="normal"
                 required
                 fullWidth
                 name="password"
                 label={stepState === 1 ? 'パスワード（確認のため再入力）' : 'パスワード'}
-                type="password"
                 id="password"
                 autoComplete="current-password"
                 value={stepState === 1 ? confirmPassword : password}

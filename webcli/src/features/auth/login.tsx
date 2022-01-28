@@ -2,6 +2,7 @@ import React, { useState, ReactElement } from 'react'
 import { Link } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { AuthState, loginAsync, logoutAsync } from './authSlice'
+import { PasswordField } from './PasswordField'
 import { TowFactorAuth } from './twofactorauth'
 import { correctEmailaddr } from '../../util'
 import { Avatar, Box, Button, Typography, TextField, Grid } from '@mui/material'
@@ -63,18 +64,18 @@ export const Login: React.FC = ():ReactElement => {
           error={!isGoodMailAddress}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <TextField
-          margin="normal"
-          required
-          fullWidth
+        <PasswordField
+          id="password"
           name="password"
           label="パスワード"
-          type="password"
-          id="password"
-          autoComplete="current-password"
+          margin="normal"
+          variant="outlined"
+          fullWidth
+          required
           value={password}
-          onChange={(e) => { setPassword(e.target.value) }}
-        />
+          autoComplete="current-password"
+          onChange={(e) => setPassword(e.target.value)}
+          />
         <TextField
           margin="normal"
           fullWidth
