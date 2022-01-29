@@ -4,7 +4,6 @@ import { drawerWidth } from '../../util'
 
 import { styled } from '@mui/material/styles'
 
-import Box from '@mui/material/Box'
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
 import List from '@mui/material/List'
@@ -51,7 +50,7 @@ export const SideMenu = () => {
     setOpen(!open)
   }
   return (
-    <Box sx={{ display: 'flex' }}>
+    <>
       <HeadAppBar open={open} setOpen={setOpen} />
       <Drawer variant="permanent" open={open}>
         <Toolbar
@@ -76,6 +75,6 @@ export const SideMenu = () => {
           </ListItem>
         </List>
       </Drawer>
-    </Box>
+    </>
   )
 }

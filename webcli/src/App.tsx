@@ -10,13 +10,26 @@ function App () {
   return (
     <Box sx={{ display: 'flex' }}>
       <SideMenu/>
-      <div className="App">
-        <header className="App-header">
-          <h1>APIテスト用</h1>
-          <Login />
-          <FileDropZone />
-        </header>
-      </div>
+      <Box
+        component="main"
+        sx={{
+          backgroundColor: (theme) =>
+            theme.palette.mode === 'light'
+              ? theme.palette.grey[100]
+              : theme.palette.grey[900],
+          flexGrow: 1,
+          height: '100vh',
+          overflow: 'auto'
+        }}
+      >
+        <div className="App">
+          <header className="App-header">
+            <h1>APIテスト用</h1>
+            <Login />
+            <FileDropZone />
+          </header>
+        </div>
+      </Box>
     </Box>
   )
 }
