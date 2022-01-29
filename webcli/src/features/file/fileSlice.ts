@@ -6,8 +6,12 @@ import { axiosWithSession, appLocation } from '../componentutils'
 import FormData from 'form-data'
 import { AxiosResponse } from 'axios'
 import { db } from '../../indexeddb'
+import { RootState } from '../../app/store'
 
-export type FileNode = {type: 'file', id: string, name: string} | {type: 'folder', id: string, name: string, files: FileTree};
+type FileObject = {type: 'file', id: string, name: string}
+type FolderObject = {type: 'folder', id: string, name: string, files: FileTree}
+
+export type FileNode = FileObject | FolderObject
 export type FileTree = FileNode[]
 export interface FileState {
   loading: 0|1,
@@ -29,6 +33,41 @@ const initialState: FileState = {
   downloadname: ''
 }
 
+const getAddingNumberFileName = (name: string, idx: number) => {
+  if (idx === 0) return name
+  const t = name.lastIndexOf('.')
+  return `${name.slice(0, t)} (${idx})${name.slice(t)}`
+}
+
+const getSafeName = (hopedName: string[], tree: FileTree) => {
+  const safeName = hopedName.map(x =>
+    x
+      .replaceAll('\\', '＼')
+      .replaceAll('/', '／')
+      .replaceAll(':', '：')
+      .replaceAll('*', '＊')
+      .replaceAll('?', '？')
+      .replaceAll('<', '＜')
+      .replaceAll('>', '＞')
+      .replaceAll('|', '｜')
+  )
+  const existFiles = new Set(tree.flatMap(x => x.type === 'file' ? x.name : []))
+  const result:string[] = []
+  console.log(existFiles, safeName)
+  for (const name of safeName) {
+    for (let i = 0; true; i++) {
+      const suggestName = getAddingNumberFileName(name, i)
+      if (!existFiles.has(suggestName)) {
+        result.push(suggestName)
+        existFiles.add(suggestName)
+        break
+      }
+    }
+  }
+  console.log(result)
+  return result
+}
+
 const readfile = (x: File) => new Promise<ArrayBuffer>((resolve, reject) => {
   const fileReader = new FileReader()
   fileReader.readAsArrayBuffer(x)
@@ -43,7 +82,7 @@ const getFileHash = async (bin: ArrayBuffer) => {
   return { hashStr: Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join(''), bin: bin }
 }
 
-const addFileWithEncryption = async (x: File) => {
+const addFileWithEncryption = async (x: File, name: string) => {
   // gen unique name
   const uuid = uuidv4().replace(/-/g, '_')
   const fileKeyRaw = crypto.getRandomValues(new Uint8Array(32))
@@ -52,7 +91,7 @@ const addFileWithEncryption = async (x: File) => {
 
   const fileinfo:FileInfo = {
     id: uuid,
-    name: x.name,
+    name: name,
     sha256: hashStr
   }
 
@@ -88,17 +127,20 @@ const addFileWithEncryption = async (x: File) => {
 
   // memory file to indexedDB
 
-  return { uuid, sha256: hashStr }
+  return fileinfo
 }
 
-export const fileuploadAsync = createAsyncThunk<{success: boolean}, {files: File[]}>(
+export const fileuploadAsync = createAsyncThunk<FileInfo[], {files: File[]}, {state: RootState}>(
   'file/fileupload',
-  async (fileinput) => {
+  async (fileinput, { getState }) => {
+    const state = getState()
+    const changedNameFile = getSafeName(fileinput.files.map(x => x.name), state.file.files)
+
     const loadedfile = await Promise.all(
-      fileinput.files.map((x) => addFileWithEncryption(x)))
+      fileinput.files.map((x, i) => addFileWithEncryption(x, changedNameFile[i])))
     console.log(loadedfile)
 
-    return { success: true }
+    return loadedfile
   }
 )
 
@@ -179,6 +221,12 @@ export const fileSlice = createSlice({
     builder
       .addCase(createFileTreeAsync.fulfilled, (state, action) => {
         state.files = action.payload
+      })
+      .addCase(fileuploadAsync.fulfilled, (state, action) => {
+        state.files = [
+          ...state.files,
+          ...action.payload.map<FileObject>(x => ({ type: 'file', id: x.id, name: x.name }))
+        ]
       })
       .addCase(filedownloadAsync.fulfilled, (state, action) => {
         state.downloadlink = action.payload.url
