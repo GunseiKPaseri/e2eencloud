@@ -1,6 +1,15 @@
 import React, { useState, ReactNode } from 'react'
-import { FormControl, InputLabel, Input, FilledInput, OutlinedInput, InputAdornment, IconButton, FormHelperText } from '@mui/material'
-import { Visibility, VisibilityOff } from '@mui/icons-material'
+
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel'
+import Input from '@mui/material/Input'
+import FilledInput from '@mui/material/FilledInput'
+import OutlinedInput from '@mui/material/OutlinedInput'
+import InputAdornment from '@mui/material/InputAdornment'
+import IconButton from '@mui/material/IconButton'
+import FormHelperText from '@mui/material/FormHelperText'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 
 const variantComponent = {
   standard: Input,
@@ -51,7 +60,7 @@ export const PasswordField = (params:{
               onClick={(e) => setShowPassword(!showPassword)}
               onMouseDown={(e) => e.preventDefault()}
             >
-              {showPassword ? <VisibilityOff /> : <Visibility />}
+              {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
             </IconButton>
           </InputAdornment>
         }

@@ -9,8 +9,9 @@ import { Signup } from './features/auth/signup'
 import { Login } from './features/auth/login'
 import { Setup } from './features/auth/setup'
 import { SessionConfig } from './features/session/sessionConfing'
+
 import { createTheme, ThemeProvider } from '@mui/material/styles'
-import { CssBaseline } from '@mui/material'
+import CssBaseline from '@mui/material/CssBaseline'
 
 const mdTheme = createTheme()
 

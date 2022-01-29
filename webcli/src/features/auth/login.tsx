@@ -5,7 +5,13 @@ import { AuthState, loginAsync, logoutAsync } from './authSlice'
 import { PasswordField } from './PasswordField'
 import { TowFactorAuth } from './twofactorauth'
 import { correctEmailaddr } from '../../util'
-import { Avatar, Box, Button, Typography, TextField, Grid } from '@mui/material'
+
+import Avatar from '@mui/material/Avatar'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Typography from '@mui/material/Typography'
+import TextField from '@mui/material/TextField'
+import Grid from '@mui/material/Grid'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 
 export const Login: React.FC = ():ReactElement => {
