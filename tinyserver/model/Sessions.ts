@@ -1,8 +1,7 @@
-import { Client } from 'https://deno.land/x/mysql/mod.ts';
-import Store from 'https://deno.land/x/oak_sessions@v3.2.3/src/stores/Store.ts';
-import { SessionData } from 'https://deno.land/x/oak_sessions@v3.2.3/src/Session.ts';
+import type { OakSessionStore } from '../deps.ts';
+import { Client, SessionData } from '../deps.ts';
 import client from '../dbclient.ts';
-class SessionsStore implements Store {
+class SessionsStore implements OakSessionStore {
   db: Client;
   tableName: string;
 

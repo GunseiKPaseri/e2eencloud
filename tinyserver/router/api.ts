@@ -1,13 +1,10 @@
-import { decode as base642ByteArray, encode as byteArray2base64 } from 'https://deno.land/std/encoding/base64.ts';
-import { Router, Status } from 'https://deno.land/x/oak@v10.1.0/mod.ts';
+import { base642ByteArray, byteArray2base64 } from '../deps.ts';
+import { Router, Status } from '../deps.ts';
 import { addEmailConfirmation } from '../model/EmailConfirmations.ts';
 import { addUser, getClientRandomSalt, getUserByEmail, getUserById, userEmailConfirm } from '../model/Users.ts';
-// @deno-types="https://deno.land/x/otpauth/dist/otpauth.d.ts"
-import * as OTPAuth from 'https://deno.land/x/otpauth/dist/otpauth.esm.js';
+import { OTPAuth } from '../deps.ts';
 import { addFile, getFileById, getFileInfo } from '../model/Files.ts';
-
-// @deno-types="https://cdn.skypack.dev/@types/ua-parser-js?dts"
-import uaparser from 'https://cdn.skypack.dev/ua-parser-js@1.0.2?dts';
+import { uaparser } from '../deps.ts';
 import SessionsStore from '../model/Sessions.ts';
 
 const router = new Router({ prefix: '/api' });

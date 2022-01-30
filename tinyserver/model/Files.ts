@@ -1,5 +1,5 @@
 import client from '../dbclient.ts';
-import { v4 } from 'https://deno.land/std@0.120.0/uuid/mod.ts';
+import { v4 } from '../deps.ts';
 import { User } from './Users.ts';
 
 const validateFileId = (x: string) => x.indexOf('-') === -1 && v4.validate(x.replace(/_/g, '-'));

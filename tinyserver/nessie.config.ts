@@ -1,4 +1,5 @@
-import { ClientMySQL, NessieConfig } from 'https://deno.land/x/nessie@2.0.4/mod.ts';
+import { ClientMySQL } from './deps.ts';
+import type { NessieConfig } from './deps.ts';
 
 /** Select one of the supported clients */
 // const client = new ClientPostgreSQL({

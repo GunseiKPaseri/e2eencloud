@@ -1,4 +1,4 @@
-import { decode as base642ByteArray, encode as byteArray2base64 } from 'https://deno.land/std/encoding/base64.ts';
+import { base642ByteArray, byteArray2base64 } from './deps.ts';
 const textencoder = new TextEncoder();
 export const string2ByteArray = (str: string) => textencoder.encode(str);
 

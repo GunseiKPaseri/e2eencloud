@@ -1,7 +1,7 @@
 import client from '../dbclient.ts';
 import { createSalt } from '../util.ts';
 import { deleteEmailConfirms, isEmailConfirmSuccess } from './EmailConfirmations.ts';
-import { encode as byteArray2base64 } from 'https://deno.land/std/encoding/base64.ts';
+import { byteArray2base64 } from '../deps.ts';
 
 export class User {
   readonly id: number;

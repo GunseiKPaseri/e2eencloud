@@ -1,4 +1,4 @@
-import { Client, ClientConfig, configLogger } from 'https://deno.land/x/mysql@v2.10.2/mod.ts';
+import { Client, ClientConfig, configLogger } from './deps.ts';
 
 // ロギング
 await configLogger({ enable: false });
