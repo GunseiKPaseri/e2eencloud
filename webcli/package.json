@@ -11,6 +11,7 @@
     "@emotion/styled": "^11.6.0",
     "@lagunovsky/redux-react-router": "^2.2.0",
     "@mui/icons-material": "^5.3.1",
+    "@mui/lab": "^5.0.0-alpha.66",
     "@mui/material": "^5.3.1",
     "@reduxjs/toolkit": "^1.7.1",
     "@types/pbkdf2": "^3.1.0",

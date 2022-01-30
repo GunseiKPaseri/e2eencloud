@@ -18,6 +18,7 @@ export interface FileState {
   files: FileTree,
   downloadlink: string,
   downloadname: string,
+  active: string
 };
 
 export interface FileInfo {
@@ -30,7 +31,8 @@ const initialState: FileState = {
   loading: 0,
   files: [],
   downloadlink: '',
-  downloadname: ''
+  downloadname: '',
+  active: ''
 }
 
 const getAddingNumberFileName = (name: string, idx: number) => {
@@ -53,7 +55,6 @@ const getSafeName = (hopedName: string[], tree: FileTree) => {
   )
   const existFiles = new Set(tree.flatMap(x => x.type === 'file' ? x.name : []))
   const result:string[] = []
-  console.log(existFiles, safeName)
   for (const name of safeName) {
     for (let i = 0; true; i++) {
       const suggestName = getAddingNumberFileName(name, i)
@@ -64,7 +65,6 @@ const getSafeName = (hopedName: string[], tree: FileTree) => {
       }
     }
   }
-  console.log(result)
   return result
 }
 

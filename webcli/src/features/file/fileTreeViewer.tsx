@@ -2,18 +2,35 @@ import React from 'react'
 import { useAppSelector } from '../../app/hooks'
 import { FileTree } from './fileSlice'
 
-const FileTreeNodes = (props: {name?: string, tree: FileTree, onSelect: (id :string)=>void}) => {
-  return (<ul>{props.name || ''}{
-    props.tree.map(x => <li key={x.id}>{
-      x.type === 'folder'
-        ? <FileTreeNodes tree={x.files} onSelect={props.onSelect}/>
-        : <a onClick={(e) => { e.preventDefault(); props.onSelect(x.id) }}>{x.name}</a>
-      }</li>)
-  }</ul>)
+import StyledTreeItem from '../../components/customed/StyledTreeItem'
+
+import TreeView from '@mui/lab/TreeView'
+
+import FolderIcon from '@mui/icons-material/Folder'
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile'
+
+const renderTree = ({ tree, onSelect }: {tree: FileTree, onSelect: (id :string)=>void}) => {
+  return tree.map((x) =>
+    <StyledTreeItem
+      key={x.id}
+      nodeId={x.id}
+      labelText={x.name}
+      labelIcon={x.type === 'folder' ? FolderIcon : InsertDriveFileIcon }
+      onClick={(e) => { e.preventDefault(); onSelect(x.id) }}
+    >
+      {x.type === 'folder'
+        ? renderTree({ tree: x.files, onSelect })
+        : null}
+    </StyledTreeItem>
+  )
 }
 
-export const FileTreeViewer = (props: {onSelect: (id :string)=>void}) => {
+export const FileTreeViewer = ({ onSelect }: {onSelect: (id :string)=>void}) => {
   const fileState = useAppSelector((store) => store.file)
 
-  return <FileTreeNodes tree={fileState.files} onSelect={props.onSelect} />
+  return (
+    <TreeView>
+      {renderTree({ tree: fileState.files, onSelect })}
+    </TreeView>
+  )
 }
