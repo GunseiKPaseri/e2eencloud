@@ -5,8 +5,10 @@ import { v4 as uuidv4 } from 'uuid'
 import { axiosWithSession, appLocation } from '../componentutils'
 import FormData from 'form-data'
 import { AxiosResponse } from 'axios'
-import { db } from '../../indexeddb'
+import { db, Files } from '../../indexeddb'
 import { RootState } from '../../app/store'
+
+import { setProgress, deleteProgress, progress } from '../progress/progressSlice'
 
 type FileObject = {type: 'file', id: string, name: string}
 type FolderObject = {type: 'folder', id: string, name: string, files: FileTree}
@@ -16,8 +18,10 @@ export type FileTree = FileNode[]
 export interface FileState {
   loading: 0|1,
   files: FileTree,
-  downloadlink: string,
-  downloadname: string,
+  activeFile: {
+    link: string,
+    fileInfo: FileInfo,
+  } | null
   active: string
 };
 
@@ -25,13 +29,13 @@ export interface FileInfo {
   id: string,
   name: string,
   sha256: string,
+  mime: string,
 }
 
 const initialState: FileState = {
   loading: 0,
   files: [],
-  downloadlink: '',
-  downloadname: '',
+  activeFile: null,
   active: ''
 }
 
@@ -89,10 +93,11 @@ const addFileWithEncryption = async (x: File, name: string) => {
   // readfile,getHash | getKey
   const [{ bin, hashStr }, fileKey] = await Promise.all([readfile(x).then((bin) => getFileHash(bin)), getAESGCMKey(fileKeyRaw)])
 
-  const fileinfo:FileInfo = {
+  const fileInfo:FileInfo = {
     id: uuid,
     name: name,
-    sha256: hashStr
+    sha256: hashStr,
+    mime: x.type
   }
 
   // encrypt
@@ -102,11 +107,12 @@ const addFileWithEncryption = async (x: File, name: string) => {
     encryptedFileKey
   ] = await Promise.all([
     AESGCM(bin, fileKey),
-    AESGCM(string2ByteArray(JSON.stringify(fileinfo)), fileKey),
+    AESGCM(string2ByteArray(JSON.stringify(fileInfo)), fileKey),
     encryptByRSA(fileKeyRaw)
   ])
   const encryptedFileBlob = new Blob([encryptedFile.encrypt], { type: 'application/octet-binary' })
 
+  const encryptedFileIV = encryptedFile.iv
   const encryptedFileIVBase64 = byteArray2base64(encryptedFile.iv)
   console.log(encryptedFile, encryptedFile.iv, fileKey)
 
@@ -127,7 +133,7 @@ const addFileWithEncryption = async (x: File, name: string) => {
 
   // memory file to indexedDB
 
-  return fileinfo
+  return { encryptedFileIV, fileKey, fileInfo, fileKeyRaw }
 }
 
 export const fileuploadAsync = createAsyncThunk<FileInfo[], {files: File[]}, {state: RootState}>(
@@ -139,6 +145,15 @@ export const fileuploadAsync = createAsyncThunk<FileInfo[], {files: File[]}, {st
     const loadedfile = await Promise.all(
       fileinput.files.map((x, i) => addFileWithEncryption(x, changedNameFile[i])))
     console.log(loadedfile)
+    await db.files.bulkPut(loadedfile.map(x => ({
+      id: x.fileInfo.id,
+      name: x.fileInfo.name,
+      sha256: x.fileInfo.sha256,
+      type: 'file',
+      encryptedFileIV: x.encryptedFileIV,
+      fileKeyRaw: x.fileKeyRaw,
+      mime: x.fileInfo.mime
+    })))
 
     return loadedfile
   }
@@ -171,44 +186,62 @@ const getEncryptedFileRaw = async (fileId: string) => {
   return encryptedFileRowDL.data
 }
 
-export const filedownloadAsync = createAsyncThunk<{url: string, name: string}, {fileId: string}>(
+export const filedownloadAsync = createAsyncThunk<{url: string, fileInfo: FileInfo}, {fileId: string}>(
   'file/filedownload',
-  async (fileinput) => {
+  async (fileinput, { dispatch }) => {
+    const step = 4
+    dispatch(setProgress(progress(0, step)))
     const [file, encryptedFile] =
       await Promise.all([db.files.get(fileinput.fileId), getEncryptedFileRaw(fileinput.fileId)])
 
     if (!file) throw new Error(`${fileinput.fileId}は存在しません`)
-    const { fileKeyRaw, sha256, encryptedFileIV } = file
+    const { fileKeyRaw, sha256, encryptedFileIV, mime } = file
+    dispatch(setProgress(progress(1, step)))
     const fileKey = await getAESGCMKey(fileKeyRaw)
+    dispatch(setProgress(progress(2, step)))
 
     const filebin = await decryptAESGCM(encryptedFile, fileKey, encryptedFileIV)
-
+    dispatch(setProgress(progress(3, step)))
     const { hashStr } = await getFileHash(filebin)
 
     if (hashStr !== sha256) throw new Error('hashが異なります')
 
-    const url = URL.createObjectURL(new Blob([filebin], { type: 'application/octet-binary' }))
+    const url = URL.createObjectURL(new Blob([filebin], { type: mime }))
+    dispatch(deleteProgress())
     return {
       url,
-      name: file.name
+      fileInfo: { id: file.id, name: file.name, sha256: file.sha256, mime: file.mime }
     }
   }
 )
 
 export const createFileTreeAsync = createAsyncThunk<FileTree>(
   'file/createfiletree',
-  async () => {
-    const rowfiles = await axiosWithSession.get<{}, AxiosResponse<getfileinfoJSON[]>>(`${appLocation}/api/user/files`)
+  async (_, { dispatch }) => {
+    const step = 3
+    dispatch(setProgress(progress(0, step)))
+    const rowfiles = await axiosWithSession.get<{}, AxiosResponse<getfileinfoJSON[]>>(
+      `${appLocation}/api/user/files`,
+      {
+        onDownloadProgress: (progressEvent) => {
+          dispatch(setProgress(progress(0, step, progressEvent.loaded / progressEvent.total)))
+        }
+      }
+    )
+    dispatch(setProgress(progress(1, step)))
     const files = await Promise.all(rowfiles.data.map(x => decryptoFileInfo(x)))
+    dispatch(setProgress(progress(2, step)))
     await db.files.bulkPut(files.map(x => ({
       id: x.fileInfo.id,
       name: x.fileInfo.name,
       sha256: x.fileInfo.sha256,
       type: 'file',
       encryptedFileIV: x.encryptedFileIV,
-      fileKeyRaw: x.fileKeyRaw
+      fileKeyRaw: x.fileKeyRaw,
+      mime: x.fileInfo.mime
     })))
     console.log(files)
+    dispatch(deleteProgress())
     return files.map(x => ({ type: 'file', id: x.fileInfo.id, name: x.fileInfo.name }))
   }
 )
@@ -229,8 +262,10 @@ export const fileSlice = createSlice({
         ]
       })
       .addCase(filedownloadAsync.fulfilled, (state, action) => {
-        state.downloadlink = action.payload.url
-        state.downloadname = action.payload.name
+        state.activeFile = {
+          link: action.payload.url,
+          fileInfo: action.payload.fileInfo
+        }
       })
   }
 })

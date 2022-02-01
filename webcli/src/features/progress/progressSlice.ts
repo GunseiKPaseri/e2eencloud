@@ -38,7 +38,5 @@ export default progressSlice.reducer
 
 export const { setProgress, deleteProgress } = progressSlice.actions
 
-export const progress = (numberator: number, denominator: number, subprogress?: number) => {
-  console.log((numberator + (subprogress ?? 0)) / denominator, (numberator + 1) / denominator)
-  return ({ progress: (numberator + (subprogress ?? 0)) / denominator, progressBuffer: (numberator + 1) / denominator })
-}
+export const progress = (numberator: number, denominator: number, subprogress?: number) =>
+  ({ progress: (numberator + (subprogress ?? 0)) / denominator, progressBuffer: (numberator + 1) / denominator })

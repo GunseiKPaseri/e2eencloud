@@ -33,7 +33,7 @@ const initialState: AuthState = {
 // サインアップ処理
 export const signupAsync = createAsyncThunk<{success: boolean}, UserForm>(
   'auth/signup',
-  async (userinfo) => {
+  async (userinfo, { dispatch }) => {
     // 128 bit MasterKey
     const MasterKey = window.crypto.getRandomValues(new Uint8Array(16))
     // 128 bit Client Random Value
@@ -58,8 +58,20 @@ export const signupAsync = createAsyncThunk<{success: boolean}, UserForm>(
       hashedAuthenticationKeyBase64: byteArray2base64(HashedAuthenticationKey)
     }
 
-    const result = await axiosWithSession.post<UserForm, AxiosResponse<{success: boolean}>>(`${appLocation}/api/signup`, sendData)
-    console.log(result)
+    const result = await axiosWithSession.post<
+                          UserForm,
+                          AxiosResponse<{success: boolean}>
+                        >(
+                          `${appLocation}/api/signup`,
+                          sendData,
+                          {
+                            onUploadProgress: (progressEvent) => {
+                              dispatch(setProgress(progress(0, 1, progressEvent.loaded / progressEvent.total)))
+                            }
+                          }
+                        )
+
+    dispatch(deleteProgress())
     return { success: result.data.success ?? false }
   }
 )
@@ -67,15 +79,27 @@ export const signupAsync = createAsyncThunk<{success: boolean}, UserForm>(
 // メールアドレス確認処理
 export const confirmEmailAsync = createAsyncThunk<{success: boolean}, {email: string, token: string}>(
   'auth/confirm_email',
-  async (usertoken) => {
+  async (usertoken, { dispatch }) => {
     const sendData = {
       email: usertoken.email,
       emailConfirmationToken: usertoken.token
     }
-    const result = await axiosWithSession.post<{email: string, emailConfirmationToken: string}, AxiosResponse<{success: boolean}>>(`${appLocation}/api/email_confirm`, sendData)
+    const result = await axiosWithSession.post<
+                          {email: string, emailConfirmationToken: string},
+                          AxiosResponse<{success: boolean}>
+                        >(
+                          `${appLocation}/api/email_confirm`,
+                          sendData,
+                          {
+                            onUploadProgress: (progressEvent) => {
+                              dispatch(setProgress(progress(0, 1, progressEvent.loaded / progressEvent.total)))
+                            }
+                          }
+                        )
     if (!result.data.success) {
       throw new Error('email confirm failed')
     }
+    dispatch(deleteProgress())
     return { success: true }
   }
 )
@@ -83,8 +107,17 @@ export const confirmEmailAsync = createAsyncThunk<{success: boolean}, {email: st
 // TOTP追加処理
 export const addTOTPAsync = createAsyncThunk<void, {secretKey: string, token: string}>(
   'auth/add_totp',
-  async (secretkey) => {
-    await axiosWithSession.put<{secretKey: string, token: string}>(`${appLocation}/api/user/totp`, secretkey)
+  async (secretkey, { dispatch }) => {
+    await axiosWithSession.put<{secretKey: string, token: string}>(
+      `${appLocation}/api/user/totp`,
+      secretkey,
+      {
+        onUploadProgress: (progressEvent) => {
+          dispatch(setProgress(progress(0, 1, progressEvent.loaded / progressEvent.total)))
+        }
+      }
+    )
+    dispatch(deleteProgress())
   }
 )
 
@@ -101,6 +134,7 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
   'auth/login',
   async (userinfo, { dispatch }) => {
     const step = 4
+    dispatch(setProgress(progress(0, step)))
     const getSalt = await axiosWithSession.post<
                         {email: string},
                         AxiosResponse<{salt: string}>

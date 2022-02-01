@@ -7,6 +7,7 @@ export interface Files{
   type: 'file',
   encryptedFileIV: Uint8Array,
   fileKeyRaw: Uint8Array,
+  mime: string,
 };
 
 class E2EEDB extends Dexie {
@@ -17,7 +18,7 @@ class E2EEDB extends Dexie {
 
     // Define tables and indexes
     this.version(1).stores({
-      files: '&id, name, sha256, type, encryptedFileIV, fileKeyRaw'
+      files: '&id, name, sha256, type, encryptedFileIV, fileKeyRaw, mime'
     })
   }
 }
