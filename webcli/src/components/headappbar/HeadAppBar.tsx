@@ -5,6 +5,11 @@ import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
 import Toolbar from '@mui/material/Toolbar'
 import IconButton from '@mui/material/IconButton'
+import LinearProgress from '@mui/material/LinearProgress'
+
+import { useAppSelector } from '../../app/hooks'
+
+import { ProgressState } from '../../features/progress/progressSlice'
 
 import MenuIcon from '@mui/icons-material/Menu'
 
@@ -35,6 +40,7 @@ const AppBar = styled(MuiAppBar, {
 }))
 
 export const HeadAppBar = (props: {open: boolean, setOpen: React.Dispatch<React.SetStateAction<boolean>>}) => {
+  const selector = useAppSelector<ProgressState>((state) => state.progress)
   return (
       <AppBar position="fixed" open={props.open}>
         <Toolbar>
@@ -54,6 +60,14 @@ export const HeadAppBar = (props: {open: boolean, setOpen: React.Dispatch<React.
             <UserIcon />
           </Box>
         </Toolbar>
+        {(
+          selector.progress
+            ? <LinearProgress
+                variant="buffer"
+                value={selector.progress.real * 100}
+                valueBuffer={selector.progress.buffer * 100} />
+            : <></>
+        )}
       </AppBar>
   )
 }

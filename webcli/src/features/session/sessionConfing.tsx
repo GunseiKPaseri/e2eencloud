@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { changeClientNameAsync, deleteSessionAsync, getSessionsAsync } from './sessionSlice'
+import { changeClientNameAsync, deleteSessionAsync, getSessionsAsync, SessionsState } from './sessionSlice'
 
 const NameChanger = (params:{id: string, name: string}) => {
   const [name, setName] = useState(params.name)
@@ -23,7 +23,7 @@ const NameChanger = (params:{id: string, name: string}) => {
 
 export const SessionConfig = () => {
   const dispatch = useAppDispatch()
-  const sessionState = useAppSelector((store) => store.session)
+  const sessionState = useAppSelector<SessionsState>((store) => store.session)
   // const selector = useAppSelector<FileState>((state) => state.file)
 
   const getSession = () => {
