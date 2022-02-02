@@ -10,6 +10,7 @@ import FolderIcon from '@mui/icons-material/Folder'
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile'
 
 const renderTree = ({ tree, onSelect }: {tree: FileTree, onSelect: (id :string)=>void}) => {
+  console.log(tree)
   return tree.map((x) =>
     <StyledTreeItem
       key={x.id}
@@ -26,11 +27,11 @@ const renderTree = ({ tree, onSelect }: {tree: FileTree, onSelect: (id :string)=
 }
 
 export const FileTreeViewer = ({ onSelect }: {onSelect: (id :string)=>void}) => {
-  const fileState = useAppSelector((store) => store.file)
+  const filetree = useAppSelector((store) => store.file.filetree)
 
   return (
     <TreeView>
-      {renderTree({ tree: fileState.files, onSelect })}
+      {renderTree({ tree: filetree, onSelect })}
     </TreeView>
   )
 }

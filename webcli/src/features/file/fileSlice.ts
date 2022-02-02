@@ -13,11 +13,11 @@ import { setProgress, deleteProgress, progress } from '../progress/progressSlice
 /**
  * ディレクトリツリー要素
  */
-type FileObject = {type: 'file', id: string, name: string}
+type FileObject = {type: 'file', id: string, name: string, diff: string[]}
 /**
  * ディレクトリツリー要素
  */
- type FolderObject = {type: 'folder', id: string, name: string, files: FileTree}
+ type FolderObject = {type: 'folder', id: string, name: string, files: FileTree, diff: string[]}
 
 /**
  * ディレクトリツリー要素
@@ -119,7 +119,8 @@ export interface FileInfoWithCrypto {
  */
 export interface FileState {
   loading: 0|1,
-  files: FileTree,
+  filetree: FileTree,
+  tagtree: { [key: string]: {id: string, name: string}[] },
   activeFile: {
     link: string,
     fileInfo: FileInfoFile,
@@ -129,7 +130,8 @@ export interface FileState {
 
 const initialState: FileState = {
   loading: 0,
-  files: [],
+  filetree: [],
+  tagtree: {},
   activeFile: null,
   activeDir: ''
 }
@@ -258,7 +260,7 @@ export const fileuploadAsync = createAsyncThunk<FileInfo[], {files: File[]}, {st
   'file/fileupload',
   async (fileinput, { getState }) => {
     const state = getState()
-    const changedNameFile = getSafeName(fileinput.files.map(x => x.name), state.file.files)
+    const changedNameFile = getSafeName(fileinput.files.map(x => x.name), state.file.filetree)
 
     const loadedfile = await Promise.all(
       fileinput.files.map((x, i) => addFileWithEncryption(x, changedNameFile[i])))
@@ -334,10 +336,20 @@ export const filedownloadAsync = createAsyncThunk<{url: string, fileInfo: FileIn
   }
 )
 
+const createFileTree = (target: { [key: string]: FileNode[] }, id: string):FileTree => {
+  if (!target[id]) return []
+  for (const x of target[id]) {
+    if (x.type === 'folder') {
+      x.files = createFileTree(target, x.id)
+    }
+  }
+  return target[id]
+}
+
 /**
  * ファイル情報を解析してディレクトリツリーを構成するReduxThunk
  */
-export const createFileTreeAsync = createAsyncThunk<FileTree>(
+export const createFileTreeAsync = createAsyncThunk<{ fileTree: FileTree, tagTree: { [key: string]: {id: string, name: string}[] } }>(
   'file/createfiletree',
   async (_, { dispatch }) => {
     const step = 3
@@ -356,9 +368,37 @@ export const createFileTreeAsync = createAsyncThunk<FileTree>(
     dispatch(setProgress(progress(2, step)))
     await db.files.bulkPut(files.map(x => FileInfo2IndexDBFiles(x.fileInfo, x.encryptedFileIV, x.fileKeyRaw)))
 
+    // create filetree
+    const dirTree: { [key: string]: FileNode[] } = { }
+    for (const x of files) {
+      const newEntry: FileNode = x.fileInfo.type === 'folder'
+        ? { type: x.fileInfo.type, id: x.fileInfo.id, name: x.fileInfo.name, files: [], diff: [] }
+        : { type: x.fileInfo.type, id: x.fileInfo.id, name: x.fileInfo.name, diff: [] }
+      const key = x.fileInfo.prevId ?? 'root'
+      if (dirTree[key]) {
+        dirTree[key].push(newEntry)
+      } else {
+        dirTree[key] = [newEntry]
+      }
+    }
+    const fileTree = createFileTree(dirTree, 'root')
+
+    // create tagtree
+    const tagTree: { [key: string]: {id: string, name: string}[] } = {}
+    for (const x of files) {
+      if (x.fileInfo.type !== 'file') continue
+      for (const tag of x.fileInfo.tag) {
+        if (tagTree[tag]) {
+          tagTree[tag].push({ id: x.fileInfo.id, name: x.fileInfo.name })
+        } else {
+          tagTree[tag] = [{ id: x.fileInfo.id, name: x.fileInfo.name }]
+        }
+      }
+    }
     console.log(files)
+
     dispatch(deleteProgress())
-    return files.map(x => ({ type: 'file', id: x.fileInfo.id, name: x.fileInfo.name }))
+    return { fileTree, tagTree }
   }
 )
 
@@ -369,12 +409,13 @@ export const fileSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(createFileTreeAsync.fulfilled, (state, action) => {
-        state.files = action.payload
+        state.filetree = action.payload.fileTree
+        state.tagtree = action.payload.tagTree
       })
       .addCase(fileuploadAsync.fulfilled, (state, action) => {
-        state.files = [
-          ...state.files,
-          ...action.payload.map<FileObject>(x => ({ type: 'file', id: x.id, name: x.name }))
+        state.filetree = [
+          ...state.filetree,
+          ...action.payload.map<FileObject>(x => ({ type: 'file', id: x.id, name: x.name, diff: [] }))
         ]
       })
       .addCase(filedownloadAsync.fulfilled, (state, action) => {
