@@ -10,12 +10,28 @@ import { RootState } from '../../app/store'
 
 import { setProgress, deleteProgress, progress } from '../progress/progressSlice'
 
+/**
+ * ディレクトリツリー要素
+ */
 type FileObject = {type: 'file', id: string, name: string}
-type FolderObject = {type: 'folder', id: string, name: string, files: FileTree}
+/**
+ * ディレクトリツリー要素
+ */
+ type FolderObject = {type: 'folder', id: string, name: string, files: FileTree}
 
+/**
+ * ディレクトリツリー要素
+ */
 export type FileNode = FileObject | FolderObject
+
+/**
+ * ディレクトリツリー
+ */
 export type FileTree = FileNode[]
 
+/**
+ *  サーバDBに保存するファイル情報
+ */
 export interface FileInfo {
   id: string,
   name: string,
@@ -23,9 +39,15 @@ export interface FileInfo {
   mime: string,
 }
 
+/**
+ * IndexDB情報からサーバDB保存用データを抽出
+ */
 const IndexDBFiles2FileInfo = (file: IndexDBFiles):FileInfo =>
   ({ id: file.id, name: file.name, sha256: file.sha256, mime: file.mime })
 
+/**
+ * サーバDBから取得した情報
+ */
 export interface FileInfoWithCrypto {
   encryptedFileIV: Uint8Array,
   fileKey: CryptoKey,
@@ -33,6 +55,9 @@ export interface FileInfoWithCrypto {
   fileKeyRaw: Uint8Array
 }
 
+/**
+ * ファイル関連のReduxState
+ */
 export interface FileState {
   loading: 0|1,
   files: FileTree,
@@ -50,12 +75,18 @@ const initialState: FileState = {
   active: ''
 }
 
+/**
+ * ファイル名に指定番号を追加したものを取得(Like Windows)
+ */
 const getAddingNumberFileName = (name: string, idx: number) => {
   if (idx === 0) return name
   const t = name.lastIndexOf('.')
   return `${name.slice(0, t)} (${idx})${name.slice(t)}`
 }
 
+/**
+ * 指定階層に保存して問題のないファイル名を取得
+ */
 const getSafeName = (hopedName: string[], tree: FileTree) => {
   const safeName = hopedName.map(x =>
     x
@@ -83,6 +114,9 @@ const getSafeName = (hopedName: string[], tree: FileTree) => {
   return result
 }
 
+/**
+ * FileオブジェクトをArrayBufferに変換
+ */
 const readfile = (x: File) => new Promise<ArrayBuffer>((resolve, reject) => {
   const fileReader = new FileReader()
   fileReader.readAsArrayBuffer(x)
@@ -92,11 +126,17 @@ const readfile = (x: File) => new Promise<ArrayBuffer>((resolve, reject) => {
   }
 })
 
+/**
+ * ファイルのハッシュ値を生成
+ */
 const getFileHash = async (bin: ArrayBuffer) => {
   const hash = await crypto.subtle.digest('SHA-256', bin)
   return { hashStr: Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join(''), bin: bin }
 }
 
+/**
+ * ファイルをenryptoしてサーバに保存
+ */
 const addFileWithEncryption = async (x: File, name: string): Promise<FileInfoWithCrypto> => {
   // gen unique name
   const uuid = uuidv4().replace(/-/g, '_')
@@ -147,6 +187,9 @@ const addFileWithEncryption = async (x: File, name: string): Promise<FileInfoWit
   return { encryptedFileIV, fileKey, fileInfo, fileKeyRaw }
 }
 
+/**
+ * ファイルをアップロードするReduxThunk
+ */
 export const fileuploadAsync = createAsyncThunk<FileInfo[], {files: File[]}, {state: RootState}>(
   'file/fileupload',
   async (fileinput, { getState }) => {
@@ -179,6 +222,9 @@ interface getfileinfoJSON {
   size: string;
 }
 
+/**
+ * 取得したファイル情報を複合
+ */
 const decryptoFileInfo = async (fileinforaw: getfileinfoJSON): Promise<FileInfoWithCrypto> => {
   const encryptedFileIV = base642ByteArray(fileinforaw.encryptedFileIVBase64)
   const encryptedFileKey = base642ByteArray(fileinforaw.encryptedFileKeyBase64)
@@ -192,11 +238,17 @@ const decryptoFileInfo = async (fileinforaw: getfileinfoJSON): Promise<FileInfoW
   return { encryptedFileIV, fileKey, fileInfo, fileKeyRaw }
 }
 
+/**
+ * 対象ファイルの生データを取得
+ */
 const getEncryptedFileRaw = async (fileId: string) => {
   const encryptedFileRowDL = await axiosWithSession.get<{}, AxiosResponse<ArrayBuffer>>(`${appLocation}/bin/${fileId}`, { responseType: 'arraybuffer' })
   return encryptedFileRowDL.data
 }
 
+/**
+ * ファイルをダウンロードするThunk
+ */
 export const filedownloadAsync = createAsyncThunk<{url: string, fileInfo: FileInfo}, {fileId: string}>(
   'file/filedownload',
   async (fileinput, { dispatch }) => {
@@ -226,6 +278,9 @@ export const filedownloadAsync = createAsyncThunk<{url: string, fileInfo: FileIn
   }
 )
 
+/**
+ * ファイル情報を解析してディレクトリツリーを構成するReduxThunk
+ */
 export const createFileTreeAsync = createAsyncThunk<FileTree>(
   'file/createfiletree',
   async (_, { dispatch }) => {
