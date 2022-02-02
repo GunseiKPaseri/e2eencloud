@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { axiosWithSession, appLocation } from '../componentutils'
 import FormData from 'form-data'
 import { AxiosResponse } from 'axios'
-import { db, Files } from '../../indexeddb'
+import { db, IndexDBFiles } from '../../indexeddb'
 import { RootState } from '../../app/store'
 
 import { setProgress, deleteProgress, progress } from '../progress/progressSlice'
@@ -15,6 +15,24 @@ type FolderObject = {type: 'folder', id: string, name: string, files: FileTree}
 
 export type FileNode = FileObject | FolderObject
 export type FileTree = FileNode[]
+
+export interface FileInfo {
+  id: string,
+  name: string,
+  sha256: string,
+  mime: string,
+}
+
+const IndexDBFiles2FileInfo = (file: IndexDBFiles):FileInfo =>
+  ({ id: file.id, name: file.name, sha256: file.sha256, mime: file.mime })
+
+export interface FileInfoWithCrypto {
+  encryptedFileIV: Uint8Array,
+  fileKey: CryptoKey,
+  fileInfo: FileInfo,
+  fileKeyRaw: Uint8Array
+}
+
 export interface FileState {
   loading: 0|1,
   files: FileTree,
@@ -24,13 +42,6 @@ export interface FileState {
   } | null
   active: string
 };
-
-export interface FileInfo {
-  id: string,
-  name: string,
-  sha256: string,
-  mime: string,
-}
 
 const initialState: FileState = {
   loading: 0,
@@ -86,7 +97,7 @@ const getFileHash = async (bin: ArrayBuffer) => {
   return { hashStr: Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join(''), bin: bin }
 }
 
-const addFileWithEncryption = async (x: File, name: string) => {
+const addFileWithEncryption = async (x: File, name: string): Promise<FileInfoWithCrypto> => {
   // gen unique name
   const uuid = uuidv4().replace(/-/g, '_')
   const fileKeyRaw = crypto.getRandomValues(new Uint8Array(32))
@@ -168,7 +179,7 @@ interface getfileinfoJSON {
   size: string;
 }
 
-const decryptoFileInfo = async (fileinforaw: getfileinfoJSON) => {
+const decryptoFileInfo = async (fileinforaw: getfileinfoJSON): Promise<FileInfoWithCrypto> => {
   const encryptedFileIV = base642ByteArray(fileinforaw.encryptedFileIVBase64)
   const encryptedFileKey = base642ByteArray(fileinforaw.encryptedFileKeyBase64)
   const encryptedFileInfo = base642ByteArray(fileinforaw.encryptedFileInfoBase64)
@@ -210,7 +221,7 @@ export const filedownloadAsync = createAsyncThunk<{url: string, fileInfo: FileIn
     dispatch(deleteProgress())
     return {
       url,
-      fileInfo: { id: file.id, name: file.name, sha256: file.sha256, mime: file.mime }
+      fileInfo: IndexDBFiles2FileInfo(file)
     }
   }
 )

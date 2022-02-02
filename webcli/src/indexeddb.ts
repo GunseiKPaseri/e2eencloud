@@ -1,6 +1,6 @@
 import Dexie from 'dexie'
 
-export interface Files{
+export interface IndexDBFiles{
   id: string,
   name: string,
   sha256: string,
@@ -11,7 +11,7 @@ export interface Files{
 };
 
 class E2EEDB extends Dexie {
-  files!: Dexie.Table<Files, string>
+  files!: Dexie.Table<IndexDBFiles, string>
 
   constructor () {
     super('E2EEDB')
