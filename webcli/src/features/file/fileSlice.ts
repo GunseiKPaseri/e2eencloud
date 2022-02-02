@@ -32,18 +32,77 @@ export type FileTree = FileNode[]
 /**
  *  サーバDBに保存するファイル情報
  */
-export interface FileInfo {
+interface FileInfoFile {
+  type: 'file',
   id: string,
   name: string,
   sha256: string,
   mime: string,
+  size: number,
+  parentId: string | null,
+  prevId: string | null,
+  tag: string[]
 }
+interface FileInfoFolder {
+  type: 'folder',
+  id: string,
+  name: string,
+  parentId: string | null,
+  prevId: string | null,
+}
+
+export type FileInfo = FileInfoFile | FileInfoFolder
 
 /**
  * IndexDB情報からサーバDB保存用データを抽出
  */
-const IndexDBFiles2FileInfo = (file: IndexDBFiles):FileInfo =>
-  ({ id: file.id, name: file.name, sha256: file.sha256, mime: file.mime })
+const IndexDBFiles2FileInfo = (file: IndexDBFiles):FileInfo => (
+  file.type === 'folder'
+    ? {
+        id: file.id,
+        name: file.name,
+        type: file.type,
+        parentId: file.parentId,
+        prevId: file.prevId
+      }
+    : {
+        id: file.id,
+        name: file.name,
+        sha256: file.sha256,
+        type: file.type,
+        mime: file.mime,
+        size: file.size,
+        parentId: file.parentId,
+        prevId: file.prevId,
+        tag: file.tag
+      })
+/**
+ * サーバDB保存データからIndexDB情報を生成
+ */
+const FileInfo2IndexDBFiles = (fileinfo: FileInfo, encryptedFileIV: Uint8Array, fileKeyRaw: Uint8Array):IndexDBFiles => (
+  fileinfo.type === 'folder'
+    ? {
+        id: fileinfo.id,
+        name: fileinfo.name,
+        type: fileinfo.type,
+        parentId: fileinfo.parentId,
+        prevId: fileinfo.prevId,
+        encryptedFileIV,
+        fileKeyRaw
+      }
+    : {
+        id: fileinfo.id,
+        name: fileinfo.name,
+        sha256: fileinfo.sha256,
+        mime: fileinfo.mime,
+        size: fileinfo.size,
+        parentId: fileinfo.parentId,
+        prevId: fileinfo.prevId,
+        tag: fileinfo.tag,
+        type: fileinfo.type,
+        encryptedFileIV,
+        fileKeyRaw
+      })
 
 /**
  * サーバDBから取得した情報
@@ -63,16 +122,16 @@ export interface FileState {
   files: FileTree,
   activeFile: {
     link: string,
-    fileInfo: FileInfo,
+    fileInfo: FileInfoFile,
   } | null
-  active: string
+  activeDir: string
 };
 
 const initialState: FileState = {
   loading: 0,
   files: [],
   activeFile: null,
-  active: ''
+  activeDir: ''
 }
 
 /**
@@ -148,7 +207,12 @@ const addFileWithEncryption = async (x: File, name: string): Promise<FileInfoWit
     id: uuid,
     name: name,
     sha256: hashStr,
-    mime: x.type
+    mime: x.type,
+    type: 'file',
+    size: bin.byteLength,
+    parentId: null,
+    prevId: null,
+    tag: []
   }
 
   // encrypt
@@ -199,33 +263,25 @@ export const fileuploadAsync = createAsyncThunk<FileInfo[], {files: File[]}, {st
     const loadedfile = await Promise.all(
       fileinput.files.map((x, i) => addFileWithEncryption(x, changedNameFile[i])))
     console.log(loadedfile)
-    await db.files.bulkPut(loadedfile.map(x => ({
-      id: x.fileInfo.id,
-      name: x.fileInfo.name,
-      sha256: x.fileInfo.sha256,
-      type: 'file',
-      encryptedFileIV: x.encryptedFileIV,
-      fileKeyRaw: x.fileKeyRaw,
-      mime: x.fileInfo.mime
-    })))
+    await db.files.bulkPut(loadedfile.map(x => FileInfo2IndexDBFiles(x.fileInfo, x.encryptedFileIV, x.fileKeyRaw)))
 
-    return loadedfile
+    return loadedfile.map(x => x.fileInfo)
   }
 )
 
-interface getfileinfoJSON {
+interface getfileinfoJSONRow {
   id: string,
   encryptedFileIVBase64: string,
   encryptedFileKeyBase64: string,
   encryptedFileInfoBase64: string,
   encryptedFileInfoIVBase64: string,
-  size: string;
+  encryptedSize: string;
 }
 
 /**
  * 取得したファイル情報を複合
  */
-const decryptoFileInfo = async (fileinforaw: getfileinfoJSON): Promise<FileInfoWithCrypto> => {
+const decryptoFileInfo = async (fileinforaw: getfileinfoJSONRow): Promise<FileInfoWithCrypto> => {
   const encryptedFileIV = base642ByteArray(fileinforaw.encryptedFileIVBase64)
   const encryptedFileKey = base642ByteArray(fileinforaw.encryptedFileKeyBase64)
   const encryptedFileInfo = base642ByteArray(fileinforaw.encryptedFileInfoBase64)
@@ -249,7 +305,7 @@ const getEncryptedFileRaw = async (fileId: string) => {
 /**
  * ファイルをダウンロードするThunk
  */
-export const filedownloadAsync = createAsyncThunk<{url: string, fileInfo: FileInfo}, {fileId: string}>(
+export const filedownloadAsync = createAsyncThunk<{url: string, fileInfo: FileInfoFile}, {fileId: string}>(
   'file/filedownload',
   async (fileinput, { dispatch }) => {
     const step = 4
@@ -258,6 +314,7 @@ export const filedownloadAsync = createAsyncThunk<{url: string, fileInfo: FileIn
       await Promise.all([db.files.get(fileinput.fileId), getEncryptedFileRaw(fileinput.fileId)])
 
     if (!file) throw new Error(`${fileinput.fileId}は存在しません`)
+    if (file.type === 'folder') throw new Error('フォルダはダウンロードできません')
     const { fileKeyRaw, sha256, encryptedFileIV, mime } = file
     dispatch(setProgress(progress(1, step)))
     const fileKey = await getAESGCMKey(fileKeyRaw)
@@ -271,10 +328,9 @@ export const filedownloadAsync = createAsyncThunk<{url: string, fileInfo: FileIn
 
     const url = URL.createObjectURL(new Blob([filebin], { type: mime }))
     dispatch(deleteProgress())
-    return {
-      url,
-      fileInfo: IndexDBFiles2FileInfo(file)
-    }
+    const fileInfo: FileInfo = IndexDBFiles2FileInfo(file)
+    if (fileInfo.type === 'folder') throw new Error('フォルダはダウンロードできません')
+    return { url, fileInfo }
   }
 )
 
@@ -286,7 +342,8 @@ export const createFileTreeAsync = createAsyncThunk<FileTree>(
   async (_, { dispatch }) => {
     const step = 3
     dispatch(setProgress(progress(0, step)))
-    const rowfiles = await axiosWithSession.get<{}, AxiosResponse<getfileinfoJSON[]>>(
+    // get all file info
+    const rowfiles = await axiosWithSession.get<{}, AxiosResponse<getfileinfoJSONRow[]>>(
       `${appLocation}/api/user/files`,
       {
         onDownloadProgress: (progressEvent) => {
@@ -297,15 +354,8 @@ export const createFileTreeAsync = createAsyncThunk<FileTree>(
     dispatch(setProgress(progress(1, step)))
     const files = await Promise.all(rowfiles.data.map(x => decryptoFileInfo(x)))
     dispatch(setProgress(progress(2, step)))
-    await db.files.bulkPut(files.map(x => ({
-      id: x.fileInfo.id,
-      name: x.fileInfo.name,
-      sha256: x.fileInfo.sha256,
-      type: 'file',
-      encryptedFileIV: x.encryptedFileIV,
-      fileKeyRaw: x.fileKeyRaw,
-      mime: x.fileInfo.mime
-    })))
+    await db.files.bulkPut(files.map(x => FileInfo2IndexDBFiles(x.fileInfo, x.encryptedFileIV, x.fileKeyRaw)))
+
     console.log(files)
     dispatch(deleteProgress())
     return files.map(x => ({ type: 'file', id: x.fileInfo.id, name: x.fileInfo.name }))

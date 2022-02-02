@@ -43,7 +43,7 @@ export class File {
       encryptedFileKeyBase64: this.encrypted_file_key,
       encryptedFileInfoBase64: this.encrypted_file_info,
       encryptedFileInfoIVBase64: this.encrypted_file_info_iv,
-      site: this.size,
+      encryptedSize: this.size,
     };
   }
 }
