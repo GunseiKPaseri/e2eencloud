@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createAction, createSlice } from '@reduxjs/toolkit'
 import { decryptByRSA, encryptByRSA } from '../../encrypt'
 import { getAESGCMKey, AESGCM, string2ByteArray, byteArray2base64, base642ByteArray, decryptAESGCM, byteArray2string } from '../../util'
 import { v4 } from 'uuid'
@@ -23,7 +23,7 @@ type FileObject = {type: 'file', name: string, diff: string[]}
 /**
  * ディレクトリツリー要素
  */
- type FolderObject = {type: 'folder', name: string, files: string[], diff: string[]}
+ type FolderObject = {type: 'folder', name: string, files: string[], parent: string | null, diff: string[]}
 
 /**
  * ディレクトリツリー要素
@@ -131,7 +131,7 @@ export interface FileInfoFolderWithCrypto {
 type FileInfoWithCrypto = FileInfoFileWithCrypto | FileInfoFolderWithCrypto
 
 type tagGroup = {type: 'tag', files: string[], tagName: string}
-type dirGroup = {type: 'dir', files: string[], prevIds: string[]}
+type dirGroup = {type: 'dir', files: string[], parents: string[]}
 
 /**
  * ファイル関連のReduxState
@@ -323,14 +323,14 @@ export const fileuploadAsync = createAsyncThunk<{uploaded: FileInfoFile[], paren
       activeFileGroup.files.flatMap(x => (state.file.fileTable[x].type === 'file' ? [state.file.fileTable[x].name] : []))
     )
 
-    const parent = activeFileGroup.prevIds.length === 0 ? null : activeFileGroup.prevIds[activeFileGroup.prevIds.length - 1]
+    const parent = activeFileGroup.parents.length === 0 ? null : activeFileGroup.parents[activeFileGroup.parents.length - 1]
     const loadedfile = await Promise.all(
       fileinput.files.map((x, i) => submitFileWithEncryption(x, changedNameFile[i], parent)))
     console.log(loadedfile)
 
     await db.files.bulkPut(loadedfile.map(x => FileInfo2IndexDBFiles(x)))
 
-    return { uploaded: loadedfile.map(x => x.fileInfo), parents: activeFileGroup.prevIds }
+    return { uploaded: loadedfile.map(x => x.fileInfo), parents: activeFileGroup.parents }
   }
 )
 
@@ -348,7 +348,7 @@ export const createFolderAsync = createAsyncThunk<{uploaded: FileInfoFolder, par
       activeFileGroup.files.flatMap(x => (state.file.fileTable[x].type === 'folder' ? [state.file.fileTable[x].name] : []))
     )
 
-    const parent = activeFileGroup.prevIds.length === 0 ? null : activeFileGroup.prevIds[activeFileGroup.prevIds.length - 1]
+    const parent = activeFileGroup.parents.length === 0 ? null : activeFileGroup.parents[activeFileGroup.parents.length - 1]
     const addFolder = await submitFileInfoWithEncryption({
       id: genUUID(),
       name: changedFolderName,
@@ -358,7 +358,7 @@ export const createFolderAsync = createAsyncThunk<{uploaded: FileInfoFolder, par
     })
     await db.files.put(FileInfo2IndexDBFiles(addFolder))
 
-    return { uploaded: addFolder.fileInfo, parents: activeFileGroup.prevIds }
+    return { uploaded: addFolder.fileInfo, parents: activeFileGroup.parents }
   }
 )
 
@@ -454,10 +454,10 @@ export const createFileTreeAsync = createAsyncThunk<{ fileTable: FileTable, tagT
     await db.files.bulkPut(files.map(x => FileInfo2IndexDBFiles(x)))
 
     // create filetable
-    const fileTable: FileTable = { root: { type: 'folder', name: 'root', files: [], diff: [] } }
+    const fileTable: FileTable = { root: { type: 'folder', name: 'root', files: [], parent: null, diff: [] } }
     for (const x of files) {
       fileTable[x.fileInfo.id] = x.fileInfo.type === 'folder'
-        ? { type: x.fileInfo.type, name: x.fileInfo.name, files: [], diff: [] }
+        ? { type: x.fileInfo.type, name: x.fileInfo.name, files: [], parent: x.fileInfo.parentId ?? 'root', diff: [] }
         : { type: x.fileInfo.type, name: x.fileInfo.name, diff: [] }
     }
 
@@ -485,6 +485,11 @@ export const createFileTreeAsync = createAsyncThunk<{ fileTable: FileTable, tagT
   }
 )
 
+/**
+ * activeFileGroupを変更(ディレクトリ)
+ * */
+export const changeActiveDir = createAction<{id: string}>('file/changeActiveFileGroup')
+
 export const fileSlice = createSlice({
   name: 'file',
   initialState,
@@ -492,11 +497,13 @@ export const fileSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(createFileTreeAsync.fulfilled, (state, action) => {
+        // 生成したファイルツリーをstateに反映
         state.fileTable = action.payload.fileTable
         state.tagTree = action.payload.tagTree
-        state.activeFileGroup = { type: 'dir', files: (action.payload.fileTable.root as FolderObject).files, prevIds: [] }
+        state.activeFileGroup = { type: 'dir', files: (action.payload.fileTable.root as FolderObject).files, parents: [] }
       })
       .addCase(fileuploadAsync.fulfilled, (state, action) => {
+        // アップロードしたファイルをstateに反映
         const parent:string =
           action.payload.parents.length === 0
             ? 'root'
@@ -511,23 +518,44 @@ export const fileSlice = createSlice({
             ...action.payload.uploaded.map<string>(x => x.id)
           ]
         // add activeGroup
-        state.activeFileGroup = { type: 'dir', files: (state.fileTable[parent] as WritableDraft<FolderObject>).files, prevIds: action.payload.parents }
+        state.activeFileGroup = { type: 'dir', files: (state.fileTable[parent] as WritableDraft<FolderObject>).files, parents: action.payload.parents }
       })
       .addCase(createFolderAsync.fulfilled, (state, action) => {
+        // 作成したフォルダをstateに反映
         const parent:string =
           action.payload.parents.length === 0
             ? 'root'
             : action.payload.parents[action.payload.parents.length - 1]
         // add table
-        state.fileTable[action.payload.uploaded.id] = { type: 'folder', name: action.payload.uploaded.name, files: [], diff: [] };
+        state.fileTable[action.payload.uploaded.id] = { type: 'folder', name: action.payload.uploaded.name, files: [], parent: parent, diff: [] };
         (state.fileTable[parent] as WritableDraft<FolderObject>).files.push(action.payload.uploaded.id)
         // add activeGroup
-        state.activeFileGroup = { type: 'dir', files: (state.fileTable[parent] as WritableDraft<FolderObject>).files, prevIds: action.payload.parents }
+        state.activeFileGroup = { type: 'dir', files: (state.fileTable[parent] as WritableDraft<FolderObject>).files, parents: action.payload.parents }
       })
       .addCase(filedownloadAsync.fulfilled, (state, action) => {
+        // 生成したblobリンク等を反映
         state.activeFile = {
           link: action.payload.url,
           fileInfo: action.payload.fileInfo
+        }
+      })
+      .addCase(changeActiveDir, (state, action) => {
+        // 指定idのディレクトリをactiveディレクトリにする
+        const parents: string[] = []
+        const firstId = action.payload.id
+        const activeDir = state.fileTable[firstId]
+        if (activeDir.type === 'file') throw new Error('ファイルはactiveDirになれません')
+        let id: string | null = firstId
+        while (id) {
+          parents.unshift(id)
+          const parent: FileNode = state.fileTable[id]
+          if (parent.type === 'file') throw new Error('ディレクトリ構造が壊れています')
+          id = parent.parent
+        }
+        state.activeFileGroup = {
+          type: 'dir',
+          files: activeDir.files,
+          parents
         }
       })
   }

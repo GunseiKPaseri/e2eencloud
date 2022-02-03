@@ -7,35 +7,65 @@ import StyledTreeItem from '../../components/customed/StyledTreeItem'
 import TreeView from '@mui/lab/TreeView'
 
 import FolderIcon from '@mui/icons-material/Folder'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile'
 
-const FileTree = ({ fileTable, target, onSelect }: {fileTable: FileState['fileTable'], target: string, onSelect: (id :string)=>void}) => {
+const FileTree = ({
+  fileTable,
+  target,
+  onSelectFile,
+  onSelectFolder
+}: {
+  fileTable: FileState['fileTable'],
+  target: string,
+  onSelectFile: (id :string) => void
+  onSelectFolder: (id: string) => void
+}) => {
   const t = fileTable[target]
   if (!t) return null
   return t.type === 'folder'
     ? <StyledTreeItem
         nodeId={target}
         labelText={t.name}
-        labelIcon={FolderIcon}
+        endIcon={<FolderIcon />}
+        onClick={(e) => { onSelectFolder(target) }}
       >
-        {t.files.map(c => <FileTree key={c} fileTable={fileTable} target={c} onSelect= {onSelect} />)}
+        {
+          t.files.map(c =>
+            <FileTree
+              key={c}
+              fileTable={fileTable}
+              target={c}
+              onSelectFile={onSelectFile}
+              onSelectFolder={onSelectFolder}
+            />)
+        }
       </StyledTreeItem>
     : <StyledTreeItem
         key={target}
         nodeId={target}
         labelText={t.name}
-        labelIcon={InsertDriveFileIcon}
-        onClick={(e) => { e.preventDefault(); onSelect(target) }}
+        endIcon={<InsertDriveFileIcon />}
+        onClick={(e) => { onSelectFile(target) }}
       >
       </StyledTreeItem>
 }
 
-export const FileTreeViewer = ({ onSelect }: {onSelect: (id :string)=>void}) => {
+export const FileTreeViewer = ({ onSelectFile, onSelectFolder }: {onSelectFile: (id :string)=>void, onSelectFolder: (id :string)=>void}) => {
   const fileTable = useAppSelector<FileState['fileTable']>((store) => store.file.fileTable)
 
   return (
-    <TreeView>
-      <FileTree fileTable={fileTable} target='root' onSelect= {onSelect} />
+    <TreeView
+      defaultExpandIcon={<FolderIcon />}
+      defaultCollapseIcon={<FolderOpenIcon />}
+      defaultEndIcon={<InsertDriveFileIcon />}
+    >
+      <FileTree
+        fileTable={fileTable}
+        target='root'
+        onSelectFile= {onSelectFile}
+        onSelectFolder= {onSelectFolder}
+      />
     </TreeView>
   )
 }

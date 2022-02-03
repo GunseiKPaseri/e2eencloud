@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useAppDispatch } from '../../app/hooks'
-import { filedownloadAsync, fileuploadAsync } from './fileSlice'
+import { changeActiveDir, filedownloadAsync, fileuploadAsync } from './fileSlice'
 import { FileTreeViewer } from './fileTreeViewer'
 import { Viewer } from './Viewer'
 import { AddFolder } from './addFolder'
@@ -28,6 +28,9 @@ export const FileDropZone = () => {
   const download = () => {
     dispatch(filedownloadAsync({ fileId }))
   }
+  const setFolderId = (id: string) => {
+    dispatch(changeActiveDir({ id }))
+  }
 
   return (
     <article>
@@ -41,7 +44,7 @@ export const FileDropZone = () => {
           }
       </div>
       <h2>ファイルダウンロード</h2>
-      <FileTreeViewer onSelect={(id) => setFileId(id)} />
+      <FileTreeViewer onSelectFile={(id) => setFileId(id)} onSelectFolder={(id) => setFolderId(id)} />
       <div>
         <input value={fileId} onChange={(e) => setFileId(e.target.value)}/>
         <button type="button" onClick={download}>ダウンロード</button>
