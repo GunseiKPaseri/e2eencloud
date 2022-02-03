@@ -16,8 +16,6 @@ export const FileDropZone = () => {
   const dispatch = useAppDispatch()
   // const selector = useAppSelector<FileState>((state) => state.file)
 
-  const [fileId, setFileId] = useState('')
-
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (acceptedFiles) => {
       // Do something with the files
@@ -25,9 +23,7 @@ export const FileDropZone = () => {
       console.log('acceptedFiles:', acceptedFiles)
     }
   })
-  const download = () => {
-    dispatch(filedownloadAsync({ fileId }))
-  }
+
   const setFolderId = (id: string) => {
     dispatch(changeActiveDir({ id }))
   }
@@ -44,12 +40,8 @@ export const FileDropZone = () => {
           }
       </div>
       <h2>ファイルダウンロード</h2>
-      <FileTreeViewer onSelectFile={(id) => setFileId(id)} onSelectFolder={(id) => setFolderId(id)} />
-      <div>
-        <input value={fileId} onChange={(e) => setFileId(e.target.value)}/>
-        <button type="button" onClick={download}>ダウンロード</button>
-        <Viewer />
-      </div>
+      <FileTreeViewer onSelectFile={(fileId) => dispatch(filedownloadAsync({ fileId }))} onSelectFolder={(id) => setFolderId(id)} />
+      <Viewer />
       <h2>フォルダ作成</h2>
       <AddFolder />
     </article>

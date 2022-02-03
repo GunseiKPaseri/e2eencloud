@@ -46,7 +46,7 @@ const FileTree = ({
         nodeId={target}
         labelText={t.name}
         endIcon={<InsertDriveFileIcon />}
-        onClick={(e) => { onSelectFile(target) }}
+        onDoubleClick={(e) => { onSelectFile(target) }}
       >
       </StyledTreeItem>
 }
