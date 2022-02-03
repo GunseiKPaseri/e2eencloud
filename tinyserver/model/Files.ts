@@ -6,7 +6,7 @@ const validateFileId = (x: string) => x.indexOf('-') === -1 && v4.validate(x.rep
 
 export class File {
   readonly id: string;
-  readonly encrypted_file_iv: string;
+  readonly encrypted_file_iv?: string;
   readonly encrypted_file_key: string;
   readonly encrypted_file_info: string;
   readonly encrypted_file_info_iv: string;
@@ -14,7 +14,7 @@ export class File {
   readonly created_by: User | number;
   constructor(file: {
     id: string;
-    encrypted_file_iv: string;
+    encrypted_file_iv?: string;
     encrypted_file_key: string;
     encrypted_file_info: string;
     encrypted_file_info_iv: string;
@@ -50,11 +50,11 @@ export class File {
 
 export const addFile = async (params: {
   id: string;
-  encrypted_file_iv: string;
+  encrypted_file_iv?: string;
   encrypted_file_key: string;
   encrypted_file_info: string;
   encrypted_file_info_iv: string;
-  bin: Uint8Array;
+  bin?: Uint8Array;
   created_by: User | number;
 }) => {
   if (!validateFileId(params.id)) return null;
@@ -70,16 +70,16 @@ export const addFile = async (params: {
       created_by) values(?, ?, ?, ?, ?, ?, ?)`,
       [
         params.id,
-        params.encrypted_file_iv,
+        params.encrypted_file_iv ?? null,
         params.encrypted_file_key,
         params.encrypted_file_info,
         params.encrypted_file_info_iv,
-        params.bin.length,
+        params.bin?.length ?? 0,
         typeof params.created_by === 'number' ? params.created_by : params.created_by.id,
       ],
     );
-    const newfile = new File({ ...params, size: params.bin.length });
-    await newfile.saveFile(params.bin);
+    const newfile = new File({ ...params, size: params.bin?.length ?? 0 });
+    if (params.bin) await newfile.saveFile(params.bin);
     return newfile;
   } catch (e) {
     console.log(e);
@@ -91,11 +91,6 @@ export const getFileById = async (id: string) => {
   const files = await client.query(`SELECT * FROM files WHERE id = ?`, [id]);
   if (files.length !== 1) return null;
   return new File(files[0]);
-};
-
-export const getFileBinById = async (id: string) => {
-  if (!validateFileId(id)) return null;
-  return await Deno.readFile(`${Deno.cwd()}/../webcli/dist/bin/${id}`);
 };
 
 export const getFileInfo = async (uid: number) => {

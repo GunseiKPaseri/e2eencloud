@@ -1,6 +1,6 @@
 import React from 'react'
 import { useAppSelector } from '../../app/hooks'
-import { FileTree } from './fileSlice'
+import { FileState } from './fileSlice'
 
 import StyledTreeItem from '../../components/customed/StyledTreeItem'
 
@@ -9,29 +9,33 @@ import TreeView from '@mui/lab/TreeView'
 import FolderIcon from '@mui/icons-material/Folder'
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile'
 
-const renderTree = ({ tree, onSelect }: {tree: FileTree, onSelect: (id :string)=>void}) => {
-  console.log(tree)
-  return tree.map((x) =>
-    <StyledTreeItem
-      key={x.id}
-      nodeId={x.id}
-      labelText={x.name}
-      labelIcon={x.type === 'folder' ? FolderIcon : InsertDriveFileIcon }
-      onClick={(e) => { e.preventDefault(); onSelect(x.id) }}
-    >
-      {x.type === 'folder'
-        ? renderTree({ tree: x.files, onSelect })
-        : null}
-    </StyledTreeItem>
-  )
+const FileTree = ({ fileTable, target, onSelect }: {fileTable: FileState['fileTable'], target: string, onSelect: (id :string)=>void}) => {
+  const t = fileTable[target]
+  if (!t) return null
+  return t.type === 'folder'
+    ? <StyledTreeItem
+        nodeId={target}
+        labelText={t.name}
+        labelIcon={FolderIcon}
+      >
+        {t.files.map(c => <FileTree key={c} fileTable={fileTable} target={c} onSelect= {onSelect} />)}
+      </StyledTreeItem>
+    : <StyledTreeItem
+        key={target}
+        nodeId={target}
+        labelText={t.name}
+        labelIcon={InsertDriveFileIcon}
+        onClick={(e) => { e.preventDefault(); onSelect(target) }}
+      >
+      </StyledTreeItem>
 }
 
 export const FileTreeViewer = ({ onSelect }: {onSelect: (id :string)=>void}) => {
-  const filetree = useAppSelector((store) => store.file.filetree)
+  const fileTable = useAppSelector<FileState['fileTable']>((store) => store.file.fileTable)
 
   return (
     <TreeView>
-      {renderTree({ tree: filetree, onSelect })}
+      <FileTree fileTable={fileTable} target='root' onSelect= {onSelect} />
     </TreeView>
   )
 }

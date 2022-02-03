@@ -4,6 +4,7 @@ import { useAppDispatch } from '../../app/hooks'
 import { filedownloadAsync, fileuploadAsync } from './fileSlice'
 import { FileTreeViewer } from './fileTreeViewer'
 import { Viewer } from './Viewer'
+import { AddFolder } from './addFolder'
 
 const style = {
   width: 200,
@@ -32,20 +33,22 @@ export const FileDropZone = () => {
     <article>
       <h2>ファイルアップロード</h2>
       <div {...getRootProps()} style={style}>
-            <input {...getInputProps()} />
-            {
-                isDragActive
-                  ? <p>Drop the files here ...</p>
-                  : <p>Drag &apos;n&apos; drop some files here, or click to select files</p>
-            }
-        </div>
-        <h2>ファイルダウンロード</h2>
-        <FileTreeViewer onSelect={(id) => setFileId(id)} />
-        <div>
-          <input value={fileId} onChange={(e) => setFileId(e.target.value)}/>
-          <button type="button" onClick={download}>ダウンロード</button>
-          <Viewer />
-        </div>
+        <input {...getInputProps()} />
+          {
+            isDragActive
+              ? <p>Drop the files here ...</p>
+              : <p>Drag &apos;n&apos; drop some files here, or click to select files</p>
+          }
+      </div>
+      <h2>ファイルダウンロード</h2>
+      <FileTreeViewer onSelect={(id) => setFileId(id)} />
+      <div>
+        <input value={fileId} onChange={(e) => setFileId(e.target.value)}/>
+        <button type="button" onClick={download}>ダウンロード</button>
+        <Viewer />
+      </div>
+      <h2>フォルダ作成</h2>
+      <AddFolder />
     </article>
   )
 }

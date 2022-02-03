@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { decryptByRSA, encryptByRSA } from '../../encrypt'
 import { getAESGCMKey, AESGCM, string2ByteArray, byteArray2base64, base642ByteArray, decryptAESGCM, byteArray2string } from '../../util'
-import { v4 as uuidv4 } from 'uuid'
+import { v4 } from 'uuid'
 import { axiosWithSession, appLocation } from '../componentutils'
 import FormData from 'form-data'
 import { AxiosResponse } from 'axios'
@@ -9,15 +9,21 @@ import { db, IndexDBFiles } from '../../indexeddb'
 import { RootState } from '../../app/store'
 
 import { setProgress, deleteProgress, progress } from '../progress/progressSlice'
+import { WritableDraft } from 'immer/dist/internal'
+
+/**
+ * 生成
+ */
+const genUUID = () => v4().replace(/-/g, '_')
 
 /**
  * ディレクトリツリー要素
  */
-type FileObject = {type: 'file', id: string, name: string, diff: string[]}
+type FileObject = {type: 'file', name: string, diff: string[]}
 /**
  * ディレクトリツリー要素
  */
- type FolderObject = {type: 'folder', id: string, name: string, files: FileTree, diff: string[]}
+ type FolderObject = {type: 'folder', name: string, files: string[], diff: string[]}
 
 /**
  * ディレクトリツリー要素
@@ -25,9 +31,9 @@ type FileObject = {type: 'file', id: string, name: string, diff: string[]}
 export type FileNode = FileObject | FolderObject
 
 /**
- * ディレクトリツリー
+ * ディレクトリテーブル
  */
-export type FileTree = FileNode[]
+export type FileTable = { [key: string]: FileNode }
 
 /**
  *  サーバDBに保存するファイル情報
@@ -79,61 +85,74 @@ const IndexDBFiles2FileInfo = (file: IndexDBFiles):FileInfo => (
 /**
  * サーバDB保存データからIndexDB情報を生成
  */
-const FileInfo2IndexDBFiles = (fileinfo: FileInfo, encryptedFileIV: Uint8Array, fileKeyRaw: Uint8Array):IndexDBFiles => (
-  fileinfo.type === 'folder'
-    ? {
-        id: fileinfo.id,
-        name: fileinfo.name,
-        type: fileinfo.type,
-        parentId: fileinfo.parentId,
-        prevId: fileinfo.prevId,
-        encryptedFileIV,
-        fileKeyRaw
-      }
-    : {
-        id: fileinfo.id,
-        name: fileinfo.name,
-        sha256: fileinfo.sha256,
-        mime: fileinfo.mime,
-        size: fileinfo.size,
-        parentId: fileinfo.parentId,
-        prevId: fileinfo.prevId,
-        tag: fileinfo.tag,
-        type: fileinfo.type,
-        encryptedFileIV,
-        fileKeyRaw
-      })
+const FileInfo2IndexDBFiles = (
+  props: {fileInfo: FileInfoFile, encryptedFileIV: Uint8Array, fileKeyRaw: Uint8Array} |
+  {fileInfo: FileInfoFolder, fileKeyRaw: Uint8Array}
+):IndexDBFiles => ('encryptedFileIV' in props
+  ? {
+      id: props.fileInfo.id,
+      name: props.fileInfo.name,
+      sha256: props.fileInfo.sha256,
+      mime: props.fileInfo.mime,
+      size: props.fileInfo.size,
+      parentId: props.fileInfo.parentId,
+      prevId: props.fileInfo.prevId,
+      tag: props.fileInfo.tag,
+      type: props.fileInfo.type,
+      encryptedFileIV: props.encryptedFileIV,
+      fileKeyRaw: props.fileKeyRaw
+    }
+  : {
+      id: props.fileInfo.id,
+      name: props.fileInfo.name,
+      type: props.fileInfo.type,
+      parentId: props.fileInfo.parentId,
+      prevId: props.fileInfo.prevId,
+      fileKeyRaw: props.fileKeyRaw
+    }
+)
 
 /**
  * サーバDBから取得した情報
  */
-export interface FileInfoWithCrypto {
+export interface FileInfoFileWithCrypto {
   encryptedFileIV: Uint8Array,
   fileKey: CryptoKey,
-  fileInfo: FileInfo,
+  fileInfo: FileInfoFile,
   fileKeyRaw: Uint8Array
 }
+
+export interface FileInfoFolderWithCrypto {
+  fileKey: CryptoKey,
+  fileInfo: FileInfoFolder,
+  fileKeyRaw: Uint8Array
+}
+
+type FileInfoWithCrypto = FileInfoFileWithCrypto | FileInfoFolderWithCrypto
+
+type tagGroup = {type: 'tag', files: string[], tagName: string}
+type dirGroup = {type: 'dir', files: string[], prevIds: string[]}
 
 /**
  * ファイル関連のReduxState
  */
 export interface FileState {
   loading: 0|1,
-  filetree: FileTree,
-  tagtree: { [key: string]: {id: string, name: string}[] },
+  fileTable: FileTable,
+  tagTree: { [key: string]: string[] },
   activeFile: {
     link: string,
     fileInfo: FileInfoFile,
-  } | null
-  activeDir: string
+  } | null,
+  activeFileGroup: null | tagGroup | dirGroup
 };
 
 const initialState: FileState = {
   loading: 0,
-  filetree: [],
-  tagtree: {},
+  fileTable: {},
+  tagTree: {},
   activeFile: null,
-  activeDir: ''
+  activeFileGroup: null
 }
 
 /**
@@ -148,7 +167,7 @@ const getAddingNumberFileName = (name: string, idx: number) => {
 /**
  * 指定階層に保存して問題のないファイル名を取得
  */
-const getSafeName = (hopedName: string[], tree: FileTree) => {
+const getSafeName = (hopedName: string[], samelevelfiles: string[]) => {
   const safeName = hopedName.map(x =>
     x
       .replaceAll('\\', '＼')
@@ -160,7 +179,7 @@ const getSafeName = (hopedName: string[], tree: FileTree) => {
       .replaceAll('>', '＞')
       .replaceAll('|', '｜')
   )
-  const existFiles = new Set(tree.flatMap(x => x.type === 'file' ? x.name : []))
+  const existFiles = new Set(samelevelfiles)
   const result:string[] = []
   for (const name of safeName) {
     for (let i = 0; true; i++) {
@@ -196,23 +215,60 @@ const getFileHash = async (bin: ArrayBuffer) => {
 }
 
 /**
+ * ファイル情報のみをサーバに保存
+ */
+const submitFileInfoWithEncryption = async (fileInfo: FileInfoFolder): Promise<FileInfoFolderWithCrypto> => {
+  // genkey
+  const fileKeyRaw = crypto.getRandomValues(new Uint8Array(32))
+  // readfile,getHash | getKey
+  const fileKey = await getAESGCMKey(fileKeyRaw)
+  // encrypt
+  const [
+    encryptedFileInfo,
+    encryptedFileKey
+  ] = await Promise.all([
+    AESGCM(string2ByteArray(JSON.stringify(fileInfo)), fileKey),
+    encryptByRSA(fileKeyRaw)
+  ])
+
+  console.log(fileKey)
+
+  const encryptedFileInfoBase64 = byteArray2base64(new Uint8Array(encryptedFileInfo.encrypt))
+  const encryptedFileInfoIVBase64 = byteArray2base64(encryptedFileInfo.iv)
+
+  const encryptedFileKeyBase64 = byteArray2base64(new Uint8Array(encryptedFileKey))
+
+  // send encryptedfile, send encryptedfileinfo, encryptedfilekey iv,iv
+  const fileSendData = new FormData()
+  fileSendData.append('id', fileInfo.id)
+  fileSendData.append('encryptedFileInfoBase64', encryptedFileInfoBase64)
+  fileSendData.append('encryptedFileInfoIVBase64', encryptedFileInfoIVBase64)
+  fileSendData.append('encryptedFileKeyBase64', encryptedFileKeyBase64)
+  await axiosWithSession.post(`${appLocation}/api/files`, fileSendData)
+
+  // memory file to indexedDB
+
+  return { fileKey, fileInfo, fileKeyRaw }
+}
+/**
  * ファイルをenryptoしてサーバに保存
  */
-const addFileWithEncryption = async (x: File, name: string): Promise<FileInfoWithCrypto> => {
+const submitFileWithEncryption = async (x: File, name: string, parentId: string | null): Promise<FileInfoFileWithCrypto> => {
   // gen unique name
-  const uuid = uuidv4().replace(/-/g, '_')
+  const uuid = genUUID()
+
   const fileKeyRaw = crypto.getRandomValues(new Uint8Array(32))
   // readfile,getHash | getKey
   const [{ bin, hashStr }, fileKey] = await Promise.all([readfile(x).then((bin) => getFileHash(bin)), getAESGCMKey(fileKeyRaw)])
 
-  const fileInfo:FileInfo = {
+  const fileInfo:FileInfoFile = {
     id: uuid,
     name: name,
     sha256: hashStr,
     mime: x.type,
     type: 'file',
     size: bin.byteLength,
-    parentId: null,
+    parentId,
     prevId: null,
     tag: []
   }
@@ -256,24 +312,59 @@ const addFileWithEncryption = async (x: File, name: string): Promise<FileInfoWit
 /**
  * ファイルをアップロードするReduxThunk
  */
-export const fileuploadAsync = createAsyncThunk<FileInfo[], {files: File[]}, {state: RootState}>(
+export const fileuploadAsync = createAsyncThunk<{uploaded: FileInfoFile[], parents: string[]}, {files: File[]}, {state: RootState}>(
   'file/fileupload',
   async (fileinput, { getState }) => {
     const state = getState()
-    const changedNameFile = getSafeName(fileinput.files.map(x => x.name), state.file.filetree)
+    const activeFileGroup = state.file.activeFileGroup
+    if (activeFileGroup?.type !== 'dir') throw new Error('ここにアップロードできません')
+    const changedNameFile = getSafeName(
+      fileinput.files.map(x => x.name),
+      activeFileGroup.files.flatMap(x => (state.file.fileTable[x].type === 'file' ? [state.file.fileTable[x].name] : []))
+    )
 
+    const parent = activeFileGroup.prevIds.length === 0 ? null : activeFileGroup.prevIds[activeFileGroup.prevIds.length - 1]
     const loadedfile = await Promise.all(
-      fileinput.files.map((x, i) => addFileWithEncryption(x, changedNameFile[i])))
+      fileinput.files.map((x, i) => submitFileWithEncryption(x, changedNameFile[i], parent)))
     console.log(loadedfile)
-    await db.files.bulkPut(loadedfile.map(x => FileInfo2IndexDBFiles(x.fileInfo, x.encryptedFileIV, x.fileKeyRaw)))
 
-    return loadedfile.map(x => x.fileInfo)
+    await db.files.bulkPut(loadedfile.map(x => FileInfo2IndexDBFiles(x)))
+
+    return { uploaded: loadedfile.map(x => x.fileInfo), parents: activeFileGroup.prevIds }
+  }
+)
+
+/**
+ * フォルダを作成するReduxThunk
+ */
+export const createFolderAsync = createAsyncThunk<{uploaded: FileInfoFolder, parents: string[]}, {name: string}, {state: RootState}>(
+  'file/createFolder',
+  async ({ name }, { getState }) => {
+    const state = getState()
+    const activeFileGroup = state.file.activeFileGroup
+    if (activeFileGroup?.type !== 'dir') throw new Error('ここにアップロードできません')
+    if (name === '') throw new Error('空文字は許容されません')
+    const [changedFolderName] = getSafeName([name],
+      activeFileGroup.files.flatMap(x => (state.file.fileTable[x].type === 'folder' ? [state.file.fileTable[x].name] : []))
+    )
+
+    const parent = activeFileGroup.prevIds.length === 0 ? null : activeFileGroup.prevIds[activeFileGroup.prevIds.length - 1]
+    const addFolder = await submitFileInfoWithEncryption({
+      id: genUUID(),
+      name: changedFolderName,
+      type: 'folder',
+      parentId: parent,
+      prevId: null
+    })
+    await db.files.put(FileInfo2IndexDBFiles(addFolder))
+
+    return { uploaded: addFolder.fileInfo, parents: activeFileGroup.prevIds }
   }
 )
 
 interface getfileinfoJSONRow {
   id: string,
-  encryptedFileIVBase64: string,
+  encryptedFileIVBase64?: string,
   encryptedFileKeyBase64: string,
   encryptedFileInfoBase64: string,
   encryptedFileInfoIVBase64: string,
@@ -284,7 +375,6 @@ interface getfileinfoJSONRow {
  * 取得したファイル情報を複合
  */
 const decryptoFileInfo = async (fileinforaw: getfileinfoJSONRow): Promise<FileInfoWithCrypto> => {
-  const encryptedFileIV = base642ByteArray(fileinforaw.encryptedFileIVBase64)
   const encryptedFileKey = base642ByteArray(fileinforaw.encryptedFileKeyBase64)
   const encryptedFileInfo = base642ByteArray(fileinforaw.encryptedFileInfoBase64)
   const encryptedFileInfoIV = base642ByteArray(fileinforaw.encryptedFileInfoIVBase64)
@@ -293,7 +383,12 @@ const decryptoFileInfo = async (fileinforaw: getfileinfoJSONRow): Promise<FileIn
 
   const fileKey = await getAESGCMKey(fileKeyRaw)
   const fileInfo:FileInfo = JSON.parse(byteArray2string(await decryptAESGCM(encryptedFileInfo, fileKey, encryptedFileInfoIV)))
-  return { encryptedFileIV, fileKey, fileInfo, fileKeyRaw }
+  if (fileInfo.type === 'file') {
+    if (!fileinforaw.encryptedFileIVBase64) throw new Error('取得情報が矛盾しています。fileにも関わらずencryptedFileIVが含まれていません')
+    const encryptedFileIV = base642ByteArray(fileinforaw.encryptedFileIVBase64)
+    return { encryptedFileIV, fileKey, fileInfo, fileKeyRaw }
+  }
+  return { fileKey, fileInfo, fileKeyRaw }
 }
 
 /**
@@ -336,20 +431,10 @@ export const filedownloadAsync = createAsyncThunk<{url: string, fileInfo: FileIn
   }
 )
 
-const createFileTree = (target: { [key: string]: FileNode[] }, id: string):FileTree => {
-  if (!target[id]) return []
-  for (const x of target[id]) {
-    if (x.type === 'folder') {
-      x.files = createFileTree(target, x.id)
-    }
-  }
-  return target[id]
-}
-
 /**
  * ファイル情報を解析してディレクトリツリーを構成するReduxThunk
  */
-export const createFileTreeAsync = createAsyncThunk<{ fileTree: FileTree, tagTree: { [key: string]: {id: string, name: string}[] } }>(
+export const createFileTreeAsync = createAsyncThunk<{ fileTable: FileTable, tagTree: { [key: string]: string[] } }>(
   'file/createfiletree',
   async (_, { dispatch }) => {
     const step = 3
@@ -366,39 +451,37 @@ export const createFileTreeAsync = createAsyncThunk<{ fileTree: FileTree, tagTre
     dispatch(setProgress(progress(1, step)))
     const files = await Promise.all(rowfiles.data.map(x => decryptoFileInfo(x)))
     dispatch(setProgress(progress(2, step)))
-    await db.files.bulkPut(files.map(x => FileInfo2IndexDBFiles(x.fileInfo, x.encryptedFileIV, x.fileKeyRaw)))
+    await db.files.bulkPut(files.map(x => FileInfo2IndexDBFiles(x)))
 
-    // create filetree
-    const dirTree: { [key: string]: FileNode[] } = { }
+    // create filetable
+    const fileTable: FileTable = { root: { type: 'folder', name: 'root', files: [], diff: [] } }
     for (const x of files) {
-      const newEntry: FileNode = x.fileInfo.type === 'folder'
-        ? { type: x.fileInfo.type, id: x.fileInfo.id, name: x.fileInfo.name, files: [], diff: [] }
-        : { type: x.fileInfo.type, id: x.fileInfo.id, name: x.fileInfo.name, diff: [] }
-      const key = x.fileInfo.prevId ?? 'root'
-      if (dirTree[key]) {
-        dirTree[key].push(newEntry)
-      } else {
-        dirTree[key] = [newEntry]
-      }
+      fileTable[x.fileInfo.id] = x.fileInfo.type === 'folder'
+        ? { type: x.fileInfo.type, name: x.fileInfo.name, files: [], diff: [] }
+        : { type: x.fileInfo.type, name: x.fileInfo.name, diff: [] }
     }
-    const fileTree = createFileTree(dirTree, 'root')
+
+    // add children
+    for (const x of files) {
+      (fileTable[x.fileInfo.parentId ?? 'root'] as FolderObject).files.push(x.fileInfo.id)
+    }
 
     // create tagtree
-    const tagTree: { [key: string]: {id: string, name: string}[] } = {}
+    const tagTree: { [key: string]: string[] } = {}
     for (const x of files) {
       if (x.fileInfo.type !== 'file') continue
       for (const tag of x.fileInfo.tag) {
         if (tagTree[tag]) {
-          tagTree[tag].push({ id: x.fileInfo.id, name: x.fileInfo.name })
+          tagTree[tag].push(x.fileInfo.id)
         } else {
-          tagTree[tag] = [{ id: x.fileInfo.id, name: x.fileInfo.name }]
+          tagTree[tag] = [x.fileInfo.id]
         }
       }
     }
     console.log(files)
 
     dispatch(deleteProgress())
-    return { fileTree, tagTree }
+    return { fileTable, tagTree }
   }
 )
 
@@ -409,14 +492,37 @@ export const fileSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(createFileTreeAsync.fulfilled, (state, action) => {
-        state.filetree = action.payload.fileTree
-        state.tagtree = action.payload.tagTree
+        state.fileTable = action.payload.fileTable
+        state.tagTree = action.payload.tagTree
+        state.activeFileGroup = { type: 'dir', files: (action.payload.fileTable.root as FolderObject).files, prevIds: [] }
       })
       .addCase(fileuploadAsync.fulfilled, (state, action) => {
-        state.filetree = [
-          ...state.filetree,
-          ...action.payload.map<FileObject>(x => ({ type: 'file', id: x.id, name: x.name, diff: [] }))
-        ]
+        const parent:string =
+          action.payload.parents.length === 0
+            ? 'root'
+            : action.payload.parents[action.payload.parents.length - 1]
+        // add table
+        for (const t of action.payload.uploaded) {
+          state.fileTable[t.id] = { type: 'file', name: t.name, diff: [] }
+        }
+        (state.fileTable[parent] as WritableDraft<FolderObject>).files =
+          [
+            ...(state.fileTable[parent] as WritableDraft<FolderObject>).files,
+            ...action.payload.uploaded.map<string>(x => x.id)
+          ]
+        // add activeGroup
+        state.activeFileGroup = { type: 'dir', files: (state.fileTable[parent] as WritableDraft<FolderObject>).files, prevIds: action.payload.parents }
+      })
+      .addCase(createFolderAsync.fulfilled, (state, action) => {
+        const parent:string =
+          action.payload.parents.length === 0
+            ? 'root'
+            : action.payload.parents[action.payload.parents.length - 1]
+        // add table
+        state.fileTable[action.payload.uploaded.id] = { type: 'folder', name: action.payload.uploaded.name, files: [], diff: [] };
+        (state.fileTable[parent] as WritableDraft<FolderObject>).files.push(action.payload.uploaded.id)
+        // add activeGroup
+        state.activeFileGroup = { type: 'dir', files: (state.fileTable[parent] as WritableDraft<FolderObject>).files, prevIds: action.payload.parents }
       })
       .addCase(filedownloadAsync.fulfilled, (state, action) => {
         state.activeFile = {

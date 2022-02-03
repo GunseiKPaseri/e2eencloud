@@ -49,7 +49,7 @@ export default class extends AbstractMigration<ClientMySQL> {
     await this.client.query(`
       CREATE TABLE files (
         id varchar(36) PRIMARY KEY NOT NULL,
-        encrypted_file_iv TEXT NOT NULL,
+        encrypted_file_iv TEXT,
         encrypted_file_key TEXT NOT NULL,
         encrypted_file_info TEXT NOT NULL,
         encrypted_file_info_iv TEXT NOT NULL,

@@ -361,7 +361,7 @@ router.delete('/user/sessions/:id', async (ctx) => {
 });
 
 // ADD FILE
-interface POSTFilesForm {
+interface POSTFilesFormWithBin {
   id: string;
   encryptedFile: Uint8Array;
   encryptedFileIVBase64: string;
@@ -369,6 +369,14 @@ interface POSTFilesForm {
   encryptedFileInfoBase64: string;
   encryptedFileInfoIVBase64: string;
 }
+interface POSTFilesFormWithoutBin {
+  id: string;
+  encryptedFileKeyBase64: string;
+  encryptedFileInfoBase64: string;
+  encryptedFileInfoIVBase64: string;
+}
+
+type POSTFilesForm = POSTFilesFormWithBin | POSTFilesFormWithoutBin;
 
 router.post('/files', async (ctx) => {
   // auth
@@ -380,34 +388,40 @@ router.post('/files', async (ctx) => {
   const body = ctx.request.body({ type: 'form-data' });
   const reader = await body.value;
   const data = await reader.read({ maxSize: 10000000 });
-  const receivedFile: Partial<POSTFilesForm> = {};
+  let receivedFile: Partial<POSTFilesFormWithBin> | Partial<POSTFilesFormWithoutBin> = {};
+  const { id, encryptedFileIVBase64, encryptedFileInfoBase64, encryptedFileInfoIVBase64, encryptedFileKeyBase64 } =
+    data.fields;
 
-  receivedFile.id = data.fields.id;
-  receivedFile.encryptedFileIVBase64 = data.fields.encryptedFileIVBase64;
-  receivedFile.encryptedFileInfoBase64 = data.fields.encryptedFileInfoBase64;
-  receivedFile.encryptedFileInfoIVBase64 = data.fields.encryptedFileInfoIVBase64;
-  receivedFile.encryptedFileKeyBase64 = data.fields.encryptedFileKeyBase64;
+  receivedFile = {
+    id,
+    encryptedFileIVBase64,
+    encryptedFileInfoBase64,
+    encryptedFileInfoIVBase64,
+    encryptedFileKeyBase64,
+  };
 
-  if (!data.files) return ctx.throw(Status.BadRequest, 'Bad Request');
-
-  for (const x of data.files) {
-    if (x.name === 'encryptedFile' && x.content) {
-      receivedFile[x.name] = new Uint8Array(
-        x.content.buffer,
-        0,
-        x.content.buffer.byteLength - 2,
-      ); // remove CRLF
-    }
-  }
   if (
     receivedFile.id === undefined ||
-    receivedFile.encryptedFile === undefined ||
-    receivedFile.encryptedFileIVBase64 === undefined ||
     receivedFile.encryptedFileKeyBase64 === undefined ||
     receivedFile.encryptedFileInfoBase64 === undefined ||
     receivedFile.encryptedFileInfoIVBase64 === undefined
   ) {
     return ctx.throw(Status.BadRequest, 'Bad Request');
+  }
+
+  if (receivedFile.encryptedFileIVBase64) {
+    // with bin
+    if (!data.files) return ctx.throw(Status.BadRequest, 'Bad Request');
+    for (const x of data.files) {
+      if (x.name === 'encryptedFile' && x.content) {
+        receivedFile[x.name] = new Uint8Array(
+          x.content.buffer,
+          0,
+          x.content.buffer.byteLength - 2, // remove CRLF
+        );
+      }
+    }
+    if (!receivedFile.encryptedFile) return ctx.throw(Status.BadRequest, 'Bad Request');
   }
 
   // save file

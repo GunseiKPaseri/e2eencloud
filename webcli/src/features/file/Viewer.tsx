@@ -9,7 +9,7 @@ export const Viewer = () => {
     {
       fileState.activeFile
         ? <>
-            {fileState.activeFile.fileInfo.mime.indexOf('image/') === 0 ? <img src={fileState.activeFile.link} /> : <></>}
+            {fileState.activeFile.fileInfo.mime.indexOf('image/') === 0 ? <img width='100%' src={fileState.activeFile.link} /> : <></>}
             <a href={fileState.activeFile.link} download={fileState.activeFile.fileInfo.name}>
               {fileState.activeFile.fileInfo.name}
             </a>

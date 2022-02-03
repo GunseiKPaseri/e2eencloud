@@ -20,7 +20,6 @@ interface IndexDBFilesFolder {
   name: string,
   parentId: string | null,
   prevId: string | null,
-  encryptedFileIV: Uint8Array,
   fileKeyRaw: Uint8Array
 }
 
