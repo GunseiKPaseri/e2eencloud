@@ -5,7 +5,7 @@ import { v4 } from 'uuid'
 import { axiosWithSession, appLocation } from '../componentutils'
 import FormData from 'form-data'
 import { AxiosResponse } from 'axios'
-import { db, IndexDBFiles } from '../../indexeddb'
+import { db, IndexDBFiles, IndexDBFilesFile } from '../../indexeddb'
 import { RootState } from '../../app/store'
 
 import { setProgress, deleteProgress, progress } from '../progress/progressSlice'
@@ -19,7 +19,7 @@ const genUUID = () => v4().replace(/-/g, '_')
 /**
  * ディレクトリツリー要素
  */
-type FileObject = {type: 'file', name: string, diff: string[]}
+type FileObject = {type: 'file', name: string, diff: string[], blobURL?: string}
 /**
  * ディレクトリツリー要素
  */
@@ -62,26 +62,17 @@ export type FileInfo = FileInfoFile | FileInfoFolder
 /**
  * IndexDB情報からサーバDB保存用データを抽出
  */
-const IndexDBFiles2FileInfo = (file: IndexDBFiles):FileInfo => (
-  file.type === 'folder'
-    ? {
-        id: file.id,
-        name: file.name,
-        type: file.type,
-        parentId: file.parentId,
-        prevId: file.prevId
-      }
-    : {
-        id: file.id,
-        name: file.name,
-        sha256: file.sha256,
-        type: file.type,
-        mime: file.mime,
-        size: file.size,
-        parentId: file.parentId,
-        prevId: file.prevId,
-        tag: file.tag
-      })
+const IndexDBFiles2FileInfo = (file: IndexDBFilesFile):FileInfoFile => ({
+  id: file.id,
+  name: file.name,
+  sha256: file.sha256,
+  type: file.type,
+  mime: file.mime,
+  size: file.size,
+  parentId: file.parentId,
+  prevId: file.prevId,
+  tag: file.tag
+})
 /**
  * サーバDB保存データからIndexDB情報を生成
  */
@@ -402,31 +393,38 @@ const getEncryptedFileRaw = async (fileId: string) => {
 /**
  * ファイルをダウンロードするThunk
  */
-export const filedownloadAsync = createAsyncThunk<{url: string, fileInfo: FileInfoFile}, {fileId: string}>(
+export const filedownloadAsync = createAsyncThunk<{url: string, fileInfo: FileInfoFile}, {fileId: string}, {state: RootState}>(
   'file/filedownload',
-  async (fileinput, { dispatch }) => {
+  async ({ fileId }, { getState, dispatch }) => {
     const step = 4
     dispatch(setProgress(progress(0, step)))
-    const [file, encryptedFile] =
-      await Promise.all([db.files.get(fileinput.fileId), getEncryptedFileRaw(fileinput.fileId)])
 
-    if (!file) throw new Error(`${fileinput.fileId}は存在しません`)
-    if (file.type === 'folder') throw new Error('フォルダはダウンロードできません')
-    const { fileKeyRaw, sha256, encryptedFileIV, mime } = file
-    dispatch(setProgress(progress(1, step)))
-    const fileKey = await getAESGCMKey(fileKeyRaw)
-    dispatch(setProgress(progress(2, step)))
+    const state = getState()
+    const fileObj:FileNode | undefined = state.file.fileTable[fileId]
 
-    const filebin = await decryptAESGCM(encryptedFile, fileKey, encryptedFileIV)
-    dispatch(setProgress(progress(3, step)))
-    const { hashStr } = await getFileHash(filebin)
+    if (!fileObj) throw new Error(`${fileId}は存在しません`)
+    if (fileObj.type !== 'file') throw new Error('バイナリファイルが関連付いていない要素です')
 
-    if (hashStr !== sha256) throw new Error('hashが異なります')
+    let url = fileObj.blobURL
+    const file = await db.files.get(fileId)
+    if (!file || file.type !== 'file') throw new Error('DB上に鍵情報が存在しません')
 
-    const url = URL.createObjectURL(new Blob([filebin], { type: mime }))
+    if (!url) {
+      const { fileKeyRaw, sha256, encryptedFileIV, mime } = file
+      dispatch(setProgress(progress(1, step)))
+      const fileKey = await getAESGCMKey(fileKeyRaw)
+      dispatch(setProgress(progress(2, step)))
+
+      const encryptedFile = await getEncryptedFileRaw(fileId)
+      const filebin = await decryptAESGCM(encryptedFile, fileKey, encryptedFileIV)
+      dispatch(setProgress(progress(3, step)))
+      const { hashStr } = await getFileHash(filebin)
+
+      if (hashStr !== sha256) throw new Error('hashが異なります')
+      url = URL.createObjectURL(new Blob([filebin], { type: mime }))
+    }
+    const fileInfo = IndexDBFiles2FileInfo(file)
     dispatch(deleteProgress())
-    const fileInfo: FileInfo = IndexDBFiles2FileInfo(file)
-    if (fileInfo.type === 'folder') throw new Error('フォルダはダウンロードできません')
     return { url, fileInfo }
   }
 )

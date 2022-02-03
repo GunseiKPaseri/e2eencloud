@@ -1,6 +1,6 @@
 import Dexie from 'dexie'
 
-interface IndexDBFilesFile {
+export interface IndexDBFilesFile {
   type: 'file',
   id: string,
   name: string,
@@ -14,7 +14,7 @@ interface IndexDBFilesFile {
   fileKeyRaw: Uint8Array
 }
 
-interface IndexDBFilesFolder {
+export interface IndexDBFilesFolder {
   type: 'folder',
   id: string,
   name: string,
