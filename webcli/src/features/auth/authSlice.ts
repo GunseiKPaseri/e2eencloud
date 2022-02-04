@@ -21,13 +21,15 @@ interface UserState {
 }
 export interface AuthState {
   user: UserState | null;
-  status: 'idle' | 'loading' | 'failed';
+  signupStatus: 'failed' | null;
+  loginStatus: 'failed' | null;
   confirmstate: 0|1;
 }
 
 const initialState: AuthState = {
   user: null,
-  status: 'idle',
+  signupStatus: null,
+  loginStatus: null,
   confirmstate: 0
 }
 
@@ -161,26 +163,32 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
     const authenticationKeyBase64 = byteArray2base64(DerivedAuthenticationKey)
 
     // login
-    const result = await axiosWithSession.post<
-                      {email: string, authenticationKey: string, token: string},
-                      AxiosResponse<{
-                        encryptedMasterKeyBase64: string,
-                        encryptedMasterKeyIVBase64: string,
-                        useTwoFactorAuth: boolean,
-                        encryptedRSAPrivateKeyBase64?: string,
-                        encryptedRSAPrivateKeyIVBase64?: string,
-                        RSAPublicKeyBase64?: string,
-                      }>
-                    >(
-                      `${appLocation}/api/login`,
-                      { email: userinfo.email, authenticationKeyBase64, token: userinfo.token },
-                      {
-                        onUploadProgress: (progressEvent) => {
-                          dispatch(setProgress(progress(2, step, progressEvent.loaded / progressEvent.total)))
-                        }
-                      }
-                    )
-    console.log(result.data)
+    let result
+    try {
+      result = await axiosWithSession.post<
+        {email: string, authenticationKey: string, token: string},
+        AxiosResponse<{
+          encryptedMasterKeyBase64: string,
+          encryptedMasterKeyIVBase64: string,
+          useTwoFactorAuth: boolean,
+          encryptedRSAPrivateKeyBase64?: string,
+          encryptedRSAPrivateKeyIVBase64?: string,
+          RSAPublicKeyBase64?: string,
+        }>
+      >(
+        `${appLocation}/api/login`,
+        { email: userinfo.email, authenticationKeyBase64, token: userinfo.token },
+        {
+          onUploadProgress: (progressEvent) => {
+            dispatch(setProgress(progress(2, step, progressEvent.loaded / progressEvent.total)))
+          }
+        }
+      )
+      console.log(result.data)
+    } catch (e) {
+      dispatch(deleteProgress())
+      throw e
+    }
     const EncryptedMasterKey = base642ByteArray(result.data.encryptedMasterKeyBase64)
     console.log(result.data.encryptedMasterKeyIVBase64)
 
@@ -250,69 +258,28 @@ export const authSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(signupAsync.pending, (state) => {
-        state.status = 'loading'
-      })
-      .addCase(signupAsync.rejected, (state) => {
-        state.status = 'idle'
-      })
-      .addCase(signupAsync.fulfilled, (state, action) => {
-        state.status = 'idle'
-      })
-      .addCase(confirmEmailAsync.pending, (state) => {
-        state.status = 'loading'
-      })
-      .addCase(confirmEmailAsync.rejected, (state) => {
-        state.status = 'idle'
-      })
       .addCase(confirmEmailAsync.fulfilled, (state) => {
-        state.status = 'idle'
         state.confirmstate = 1
       })
-      .addCase(addTOTPAsync.pending, (state) => {
-        state.status = 'loading'
-      })
-      .addCase(addTOTPAsync.rejected, (state) => {
-        state.status = 'idle'
-      })
       .addCase(addTOTPAsync.fulfilled, (state) => {
-        state.status = 'idle'
         if (state.user) {
           state.user.useTowFactorAuth = true
         }
       })
-      .addCase(deleteTOTPAsync.pending, (state) => {
-        state.status = 'loading'
-      })
-      .addCase(deleteTOTPAsync.rejected, (state) => {
-        state.status = 'idle'
-      })
       .addCase(deleteTOTPAsync.fulfilled, (state) => {
-        state.status = 'idle'
         if (state.user) {
           state.user.useTowFactorAuth = false
         }
       })
       .addCase(loginAsync.pending, (state) => {
-        state.status = 'loading'
+        state.loginStatus = null
       })
       .addCase(loginAsync.rejected, (state) => {
-        state.status = 'idle'
+        state.loginStatus = 'failed'
       })
       .addCase(loginAsync.fulfilled, (state, action) => {
-        state.status = 'idle'
         console.log('get', action.payload.MasterKey)
         state.user = action.payload
-      })
-      .addCase(logoutAsync.pending, (state) => {
-        state.status = 'loading'
-      })
-      .addCase(logoutAsync.rejected, (state) => {
-        state.status = 'idle'
-      })
-      .addCase(logoutAsync.fulfilled, (state, action) => {
-        state.status = 'idle'
-        state.user = null
       })
   }
 })

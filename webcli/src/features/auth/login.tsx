@@ -13,6 +13,7 @@ import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
 import Grid from '@mui/material/Grid'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
+import Alert from '@mui/lab/Alert'
 
 export const Login: React.FC = ():ReactElement => {
   const [email, setEmail] = useState('')
@@ -100,6 +101,14 @@ export const Login: React.FC = ():ReactElement => {
         >
           ログイン
         </Button>
+        {
+          (selector.loginStatus
+            ? <Alert severity='error'>
+                ログインに失敗しました。<br />メールアドレス、パスワード、二要素認証トークン（登録している場合）に誤りが無いか確認してください。
+              </Alert>
+            : <></>
+          )
+        }
         <Grid container>
           <Grid item>
             <Link to="/signup">
