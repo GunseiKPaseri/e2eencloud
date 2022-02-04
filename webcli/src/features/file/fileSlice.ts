@@ -185,6 +185,19 @@ export const createFileTreeAsync = createAsyncThunk<{ fileTable: FileTable, tagT
     for (const x of files) {
       (fileTable[x.fileInfo.parentId ?? 'root'] as FolderObject).files.push(x.fileInfo.id)
     }
+    // sort directory name
+    for (const x of [...files, { fileInfo: { id: 'root' } }]) {
+      const t = fileTable[x.fileInfo.id]
+      if (t.type === 'folder') {
+        t.files = t.files.sort((a, b) => {
+          const ta = fileTable[a]
+          const tb = fileTable[b]
+          if (ta.type === 'folder' && tb.type === 'file') return 1
+          if (ta.type === 'file' && tb.type === 'folder') return -1
+          return fileTable[a].name.localeCompare(fileTable[b].name, 'ja')
+        })
+      }
+    }
 
     // create tagtree
     const tagTree: { [key: string]: string[] } = {}
