@@ -1,5 +1,5 @@
 import {
-  genUUID, getAddingNumberFileName, getSafeName
+  genUUID, getSafeName
 } from './utils'
 
 describe('#genUUID', () => {
