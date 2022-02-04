@@ -5,7 +5,8 @@
     "dev": "vite",
     "build": "tsc && vite build --emptyOutDir",
     "preview": "vite preview",
-    "test": "jest"
+    "test": "jest -o",
+    "testall": "jest"
   },
   "dependencies": {
     "@emotion/react": "^11.7.1",
