@@ -181,7 +181,6 @@ export const submitFileWithEncryption = async (x: File, name: string, parentId: 
     type: 'file',
     size: bin.byteLength,
     parentId,
-    prevId: null,
     tag: []
   }
 

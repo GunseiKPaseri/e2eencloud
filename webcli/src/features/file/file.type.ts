@@ -1,17 +1,21 @@
 
 /**
- * ディレクトリツリー要素
+ * ノード要素
  */
-export type FileObject = {type: 'file', name: string, diff: string[], blobURL?: string}
+export type FileObject = {type: 'file', name: string, diff: string[], prevId?: string, nextId?: string, parent: string | null, blobURL?: string}
 /**
- * ディレクトリツリー要素
+ * ノード要素
  */
-export type FolderObject = {type: 'folder', name: string, files: string[], parent: string | null, diff: string[]}
+export type FolderObject = {type: 'folder', name: string, diff: string[], prevId?: string, nextId?: string, parent: string | null, files: string[]}
 
 /**
- * ディレクトリツリー要素
+ * ノード要素
  */
-export type FileNode = FileObject | FolderObject
+export type DiffObject = {type: 'diff', name: string, prevId?: string, nextId?: string, parent: string | null, blobURL?: string}
+/**
+ * ノード要素
+ */
+export type FileNode = FileObject | FolderObject | DiffObject
 
 /**
  * ディレクトリテーブル
@@ -29,7 +33,7 @@ export interface FileInfoFile {
   mime: string,
   size: number,
   parentId: string | null,
-  prevId: string | null,
+  prevId?: string,
   tag: string[]
 }
 export interface FileInfoFolder {
@@ -37,7 +41,7 @@ export interface FileInfoFolder {
   id: string,
   name: string,
   parentId: string | null,
-  prevId: string | null,
+  prevId?: string,
 }
 
 export type FileInfo = FileInfoFile | FileInfoFolder

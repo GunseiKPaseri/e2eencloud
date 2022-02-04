@@ -8,7 +8,7 @@ export interface IndexDBFilesFile {
   mime: string,
   size: number,
   parentId: string | null,
-  prevId: string | null,
+  prevId?: string,
   tag: string[],
   encryptedFileIV: Uint8Array,
   fileKeyRaw: Uint8Array
@@ -19,7 +19,7 @@ export interface IndexDBFilesFolder {
   id: string,
   name: string,
   parentId: string | null,
-  prevId: string | null,
+  prevId?: string,
   fileKeyRaw: Uint8Array
 }
 

@@ -8,7 +8,8 @@ import {
   dirGroup,
   FileNode,
   FolderObject,
-  getfileinfoJSONRow
+  getfileinfoJSONRow,
+  FileObject
 } from './file.type'
 
 import { allProgress, decryptAESGCM, getAESGCMKey } from '../../util'
@@ -103,8 +104,7 @@ export const createFolderAsync = createAsyncThunk<{uploaded: FileInfoFolder, par
       id: genUUID(),
       name: changedFolderName,
       type: 'folder',
-      parentId: parent,
-      prevId: null
+      parentId: parent
     })
     await db.files.put(FileInfo2IndexDBFiles(addFolder))
 
@@ -175,19 +175,80 @@ export const createFileTreeAsync = createAsyncThunk<{ fileTable: FileTable, tagT
 
     // create filetable
     const fileTable: FileTable = { root: { type: 'folder', name: 'root', files: [], parent: null, diff: [] } }
+    const nextTable: {[key: string]: string | undefined} = {}
     for (const x of files) {
-      fileTable[x.fileInfo.id] = x.fileInfo.type === 'folder'
-        ? { type: x.fileInfo.type, name: x.fileInfo.name, files: [], parent: x.fileInfo.parentId ?? 'root', diff: [] }
-        : { type: x.fileInfo.type, name: x.fileInfo.name, diff: [] }
+      const { id, prevId, type, name, parentId } = x.fileInfo
+      fileTable[id] = type === 'folder'
+        ? { type, name, files: [], parent: parentId ?? 'root', diff: [], prevId }
+        : { type, name, diff: [], prevId }
+      if (prevId) nextTable[prevId] = x.fileInfo.id
     }
 
-    // add children
-    for (const x of files) {
-      (fileTable[x.fileInfo.parentId ?? 'root'] as FolderObject).files.push(x.fileInfo.id)
-    }
+    // create diff tree
+    const descendantsTable:{[key: string]: {prevId?: string, nextId?: string, diffList?: string[]} | undefined} = {}
+    const fileNodes = files
+      .filter(x => x.fileInfo.type === 'folder' || x.fileInfo.type === 'file')
+      .map(x => x.fileInfo.id)
+    // 次のfileNodesまで子孫を探索・nextの更新
+    fileNodes
+      .forEach((x) => {
+        // old -> new
+        const diffList: string[] = [x]
+        let prevWatchId: string = x
+        let nowWatchId: string | undefined = nextTable[x]
+        let nowWatchObject: FileNode | undefined
+        while (nowWatchId) {
+          fileTable[prevWatchId].nextId = nowWatchId
+          diffList.push(nowWatchId)
+          nowWatchObject = fileTable[nowWatchId]
+          if (nowWatchObject.type === 'file' || nowWatchObject.type === 'folder') break
+          const nextWatchId: string | undefined = nextTable[nowWatchId]
+          prevWatchId = nowWatchId
+          nowWatchId = nextWatchId
+        }
+        if (nowWatchId && nowWatchObject && (nowWatchObject.type === 'file' || nowWatchObject.type === 'folder')) {
+          // 次のfileNodesがある
+          descendantsTable[nowWatchId] = { ...descendantsTable[nowWatchId], prevId: x }
+          descendantsTable[x] = { ...descendantsTable[x], diffList, nextId: nowWatchId }
+        } else {
+          // 末端
+          descendantsTable[x] = { ...descendantsTable[x], diffList }
+        }
+      })
+    // 末端に最も近いfileNodesがdirTreeItemsになる
+    const dirTreeItems = new Set<string>(fileNodes.filter(x => {
+      const y = descendantsTable[x]
+      return y && !y.nextId
+    }))
+
+    // 各dirTreeItemsについてdiffTreeを作成
+    dirTreeItems.forEach((x) => {
+      const childTree = descendantsTable[x]?.diffList
+      if (!childTree) return
+      let nowWatchId: string | undefined = x
+      // new -> old
+      const ancestors: string[][] = []
+      while (nowWatchId) {
+        ancestors.push(descendantsTable[nowWatchId]?.diffList ?? [])
+        nowWatchId = descendantsTable[nowWatchId]?.prevId
+      }
+      (fileTable[x] as FileObject | FolderObject).diff = ancestors.reverse().flat().reverse()
+      // 子供の差分を反映
+      for (const c of childTree) {
+        const { name, parent } = fileTable[c]
+        if (name) (fileTable[x] as FileObject | FolderObject).name = name
+        if (parent)(fileTable[x] as FileObject | FolderObject).parent = parent
+      }
+    })
+
+    // create dir tree
+    dirTreeItems.forEach((x) => {
+      (fileTable[(fileTable[x] as FileObject | FolderObject).parent ?? 'root'] as FolderObject).files.push(x)
+    })
     // sort directory name
-    for (const x of [...files, { fileInfo: { id: 'root' } }]) {
-      const t = fileTable[x.fileInfo.id]
+    dirTreeItems.add('root')
+    dirTreeItems.forEach((x) => {
+      const t = fileTable[x]
       if (t.type === 'folder') {
         t.files = t.files.sort((a, b) => {
           const ta = fileTable[a]
@@ -197,7 +258,7 @@ export const createFileTreeAsync = createAsyncThunk<{ fileTable: FileTable, tagT
           return fileTable[a].name.localeCompare(fileTable[b].name, 'ja')
         })
       }
-    }
+    })
 
     // create tagtree
     const tagTree: { [key: string]: string[] } = {}
