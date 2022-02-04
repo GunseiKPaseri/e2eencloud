@@ -16,9 +16,8 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "baseUrl": "./",
-    "paths": {
-      "argon2-wasm-esm": ["types/argon2-wasm-esm"]
-    }
+    "types": ["jest"]
   },
-  "include": ["./src"]
+  "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts"],
+  "include": ["./src/**/*.tsx", "./src/**/*.ts"]
 }

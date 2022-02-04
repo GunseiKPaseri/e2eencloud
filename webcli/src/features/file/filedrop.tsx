@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useAppDispatch } from '../../app/hooks'
 import { changeActiveDir, filedownloadAsync, fileuploadAsync } from './fileSlice'
 import { FileTreeViewer } from './fileTreeViewer'
 import { Viewer } from './Viewer'
-import { AddFolder } from './addFolder'
+import { AddFolder } from './AddFolder'
 
 const style = {
   width: 200,

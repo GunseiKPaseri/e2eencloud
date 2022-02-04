@@ -4,7 +4,7 @@ import { toByteArray, fromByteArray } from 'base64-js'
 
 import { createBrowserHistory } from 'history'
 
-import argon2 from 'argon2-wasm-esm'
+import { argon2d } from 'hash-wasm'
 
 const textencoder = new TextEncoder()
 const textdecoder = new TextDecoder()
@@ -13,46 +13,56 @@ export const byteArray2string = (x: Uint8Array) => textdecoder.decode(x)
 export const byteArray2base64 = (x: Uint8Array) => fromByteArray(x)
 export const base642ByteArray = (base64: string) => toByteArray(base64)
 
+type SupportArray = Uint8Array | ArrayBuffer | Int8Array | Int16Array | Int32Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView
+
 // AES-CTR
 export const getAESCTRKey = (key: Uint8Array) =>
   crypto.subtle.importKey('raw', key, 'AES-CTR', false, ['encrypt', 'decrypt'])
 
-export const AESCTR = async (message: BufferSource, key: CryptoKey) => {
+export const AESCTR = async (message: SupportArray, key: CryptoKey) => {
   const iv = window.crypto.getRandomValues(new Uint8Array(16))
   const aesctr:ArrayBuffer = await crypto.subtle.encrypt({ name: 'AES-CTR', counter: iv, length: 64 }, key, message)
   return { encrypt: new Uint8Array(aesctr, 0), iv }
 }
 
-export const decryptAESCTR = (encryptedMessage: BufferSource, key: CryptoKey, iv: Uint8Array): Promise<Uint8Array> =>
-  crypto.subtle.decrypt({ name: 'AES-CTR', counter: iv, length: 64 }, key, encryptedMessage)
+export const decryptAESCTR = (encryptedMessage: SupportArray, key: CryptoKey, iv: Uint8Array): Promise<Uint8Array> =>
+  crypto.subtle.decrypt({ name: 'AES-CTR', counter: iv, length: 64 }, key, encryptedMessage).then((x) => new Uint8Array(x, 0))
 
 // AES-GCM
 export const getAESGCMKey = (key: Uint8Array) =>
   crypto.subtle.importKey('raw', key, 'AES-GCM', false, ['encrypt', 'decrypt'])
 
-export const AESGCM = async (message: BufferSource, key: CryptoKey) => {
+export const AESGCM = async (message: SupportArray, key: CryptoKey) => {
   const iv = window.crypto.getRandomValues(new Uint8Array(12))
   const aesgcm: ArrayBuffer = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, message)
   return { encrypt: aesgcm, iv }
 }
 
-export const decryptAESGCM = (encryptedMessage: BufferSource, key: CryptoKey, iv: Uint8Array): Promise<Uint8Array> =>
-  crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encryptedMessage)
+export const decryptAESGCM = (encryptedMessage: SupportArray, key: CryptoKey, iv: Uint8Array): Promise<Uint8Array> =>
+  crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encryptedMessage).then((x) => new Uint8Array(x, 0))
 
-const iteration = 100
+const iterations = 100
 
-export const argon2encrypt = (password: string, salt: Uint8Array) => {
-  return argon2.hash({
-    pass: password,
+export const hex2bytearray = (hex: string) => {
+  const array = hex.match(/.{2}/g)?.map(x => parseInt(x, 16))
+  if (!array) throw new Error('bad hex')
+  return new Uint8Array(array)
+}
+
+export const argon2encrypt = async (password: string, salt: Uint8Array) => {
+  const key = await argon2d({
+    password: password,
     salt,
-    hashLen: 32,
-    time: iteration
-  }).then((res) => {
-    return res.hash
-  }).catch((e) => {
-    console.log(e)
-    return new Uint8Array([0])
+    parallelism: 1,
+    hashLength: 32,
+    iterations,
+    memorySize: 1024,
+    outputType: 'hex'
   })
+  console.log(key)
+  const bytes = hex2bytearray(key)
+  console.log(bytes)
+  return bytes
 }
 
 export const SHA256 = (array: Uint8Array) => createSHA256Hash().update(array).digest()
