@@ -16,6 +16,7 @@ import { AxiosResponse } from 'axios'
 import { IndexDBFiles, IndexDBFilesFile } from '../../indexeddb'
 
 import { v4 } from 'uuid'
+import { AES_FILE_KEY_LENGTH } from '../../const'
 
 /**
  * 生成
@@ -130,7 +131,7 @@ export const getFileHash = async (bin: ArrayBuffer) => {
  */
 export const submitFileInfoWithEncryption = async (fileInfo: FileInfoFolder): Promise<FileInfoFolderWithCrypto> => {
   // genkey
-  const fileKeyRaw = crypto.getRandomValues(new Uint8Array(32))
+  const fileKeyRaw = crypto.getRandomValues(new Uint8Array(AES_FILE_KEY_LENGTH))
   // readfile,getHash | getKey
   const fileKey = await getAESGCMKey(fileKeyRaw)
   // encrypt
@@ -168,7 +169,7 @@ export const submitFileWithEncryption = async (x: File, name: string, parentId: 
   // gen unique name
   const uuid = genUUID()
 
-  const fileKeyRaw = crypto.getRandomValues(new Uint8Array(32))
+  const fileKeyRaw = crypto.getRandomValues(new Uint8Array(AES_FILE_KEY_LENGTH))
   // readfile,getHash | getKey
   const [{ bin, hashStr }, fileKey] = await Promise.all([readfile(x).then((bin) => getFileHash(bin)), getAESGCMKey(fileKeyRaw)])
 

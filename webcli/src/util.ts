@@ -4,7 +4,8 @@ import { toByteArray, fromByteArray } from 'base64-js'
 
 import { createBrowserHistory } from 'history'
 
-import { argon2d } from 'hash-wasm'
+import { argon2id } from 'hash-wasm'
+import { AES_AUTH_KEY_LENGTH, ARGON2_ITERATIONS, ARGON2_MEMORYSISE, ARGON2_PARALLELISM } from './const'
 
 const textencoder = new TextEncoder()
 const textdecoder = new TextDecoder()
@@ -20,7 +21,7 @@ export const getAESCTRKey = (key: Uint8Array) =>
   crypto.subtle.importKey('raw', key, 'AES-CTR', false, ['encrypt', 'decrypt'])
 
 export const AESCTR = async (message: SupportArray, key: CryptoKey) => {
-  const iv = window.crypto.getRandomValues(new Uint8Array(16))
+  const iv = window.crypto.getRandomValues(new Uint8Array(AES_AUTH_KEY_LENGTH))
   const aesctr:ArrayBuffer = await crypto.subtle.encrypt({ name: 'AES-CTR', counter: iv, length: 64 }, key, message)
   return { encrypt: new Uint8Array(aesctr, 0), iv }
 }
@@ -41,8 +42,6 @@ export const AESGCM = async (message: SupportArray, key: CryptoKey) => {
 export const decryptAESGCM = (encryptedMessage: SupportArray, key: CryptoKey, iv: Uint8Array): Promise<Uint8Array> =>
   crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encryptedMessage).then((x) => new Uint8Array(x, 0))
 
-const iterations = 100
-
 export const hex2bytearray = (hex: string) => {
   const array = hex.match(/.{2}/g)?.map(x => parseInt(x, 16))
   if (!array) throw new Error('bad hex')
@@ -50,13 +49,13 @@ export const hex2bytearray = (hex: string) => {
 }
 
 export const argon2encrypt = async (password: string, salt: Uint8Array) => {
-  const key = await argon2d({
-    password: password,
+  const key = await argon2id({
+    password,
     salt,
-    parallelism: 1,
-    hashLength: 32,
-    iterations,
-    memorySize: 1024,
+    parallelism: ARGON2_PARALLELISM,
+    hashLength: AES_AUTH_KEY_LENGTH * 2,
+    iterations: ARGON2_ITERATIONS,
+    memorySize: ARGON2_MEMORYSISE,
     outputType: 'hex'
   })
   console.log(key)

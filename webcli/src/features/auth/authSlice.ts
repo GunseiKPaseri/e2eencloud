@@ -5,6 +5,8 @@ import { createSalt, SHA256, argon2encrypt, byteArray2base64, base642ByteArray, 
 import { setRSAKey } from '../../encrypt'
 import { createFileTreeAsync } from '../file/fileSlice'
 
+import { AES_AUTH_KEY_LENGTH } from '../../const'
+
 import { setProgress, deleteProgress, progress } from '../progress/progressSlice'
 
 interface UserForm {
@@ -35,16 +37,16 @@ export const signupAsync = createAsyncThunk<{success: boolean}, UserForm>(
   'auth/signup',
   async (userinfo, { dispatch }) => {
     // 128 bit MasterKey
-    const MasterKey = window.crypto.getRandomValues(new Uint8Array(16))
+    const MasterKey = window.crypto.getRandomValues(new Uint8Array(AES_AUTH_KEY_LENGTH))
     // 128 bit Client Random Value
-    const ClientRandomValue = window.crypto.getRandomValues(new Uint8Array(16))
+    const ClientRandomValue = window.crypto.getRandomValues(new Uint8Array(AES_AUTH_KEY_LENGTH))
     // 256 bit Salt
     const salt = createSalt(ClientRandomValue)
     // 256bit Derived Key
     const DerivedKey = await argon2encrypt(userinfo.password, salt)
     // 128bit Derived Encryption Key & Derived Authentication Key
-    const DerivedEncryptionKey = await getAESCTRKey(DerivedKey.slice(0, 16))
-    const DerivedAuthenticationKey = DerivedKey.slice(16, 32)
+    const DerivedEncryptionKey = await getAESCTRKey(DerivedKey.slice(0, AES_AUTH_KEY_LENGTH))
+    const DerivedAuthenticationKey = DerivedKey.slice(AES_AUTH_KEY_LENGTH, AES_AUTH_KEY_LENGTH * 2)
     // 128bit Encrypted Master Key
     const EncryptedMasterKey = await AESCTR(MasterKey, DerivedEncryptionKey)
     const HashedAuthenticationKey = SHA256(DerivedAuthenticationKey)
@@ -153,8 +155,8 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
     const DerivedKey = await argon2encrypt(userinfo.password, salt)
     dispatch(setProgress(progress(1, step)))
 
-    const DerivedEncryptionKey = await getAESCTRKey(DerivedKey.slice(0, 16))
-    const DerivedAuthenticationKey = DerivedKey.slice(16, 32)
+    const DerivedEncryptionKey = await getAESCTRKey(DerivedKey.slice(0, AES_AUTH_KEY_LENGTH))
+    const DerivedAuthenticationKey = DerivedKey.slice(AES_AUTH_KEY_LENGTH, AES_AUTH_KEY_LENGTH * 2)
 
     const authenticationKeyBase64 = byteArray2base64(DerivedAuthenticationKey)
 
