@@ -119,3 +119,19 @@ export const drawerWidth = 240
 export const correctEmailaddr = /^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$/
 
 export const browserHistory = createBrowserHistory()
+
+/**
+ * Promise all with progress
+ */
+export const allProgress = (proms: Promise<unknown>[], callback: (resolved:number, all: number) => void) => {
+  let cnt = 0
+  const all = proms.length
+  callback(cnt, all)
+  const thenFunc = (u:unknown) => {
+    callback(cnt, all)
+    cnt++
+    return u
+  }
+  proms.map(x => x.then(thenFunc))
+  return Promise.all(proms)
+}

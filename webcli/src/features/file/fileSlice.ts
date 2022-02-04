@@ -11,7 +11,7 @@ import {
   getfileinfoJSONRow
 } from './file.type'
 
-import { decryptAESGCM, getAESGCMKey } from '../../util'
+import { allProgress, decryptAESGCM, getAESGCMKey } from '../../util'
 import { axiosWithSession, appLocation } from '../componentutils'
 import { AxiosResponse } from 'axios'
 import { db } from '../../indexeddb'
@@ -59,7 +59,7 @@ const initialState: FileState = {
  */
 export const fileuploadAsync = createAsyncThunk<{uploaded: FileInfoFile[], parents: string[]}, {files: File[]}, {state: RootState}>(
   'file/fileupload',
-  async (fileinput, { getState }) => {
+  async (fileinput, { getState, dispatch }) => {
     const state = getState()
     const activeFileGroup = state.file.activeFileGroup
     if (activeFileGroup?.type !== 'dir') throw new Error('ここにアップロードできません')
@@ -69,11 +69,16 @@ export const fileuploadAsync = createAsyncThunk<{uploaded: FileInfoFile[], paren
     )
 
     const parent = activeFileGroup.parents.length === 0 ? null : activeFileGroup.parents[activeFileGroup.parents.length - 1]
-    const loadedfile = await Promise.all(
-      fileinput.files.map((x, i) => submitFileWithEncryption(x, changedNameFile[i], parent)))
+
+    const loadedfile = await allProgress(
+      fileinput.files.map((x, i) => submitFileWithEncryption(x, changedNameFile[i], parent)),
+      (resolved, all) => {
+        dispatch(setProgress({ progress: resolved / (all + 1), progressBuffer: all / (all + 1) }))
+      })
     console.log(loadedfile)
 
     await db.files.bulkPut(loadedfile.map(x => FileInfo2IndexDBFiles(x)))
+    dispatch(deleteProgress())
 
     return { uploaded: loadedfile.map(x => x.fileInfo), parents: activeFileGroup.parents }
   }
@@ -84,7 +89,7 @@ export const fileuploadAsync = createAsyncThunk<{uploaded: FileInfoFile[], paren
  */
 export const createFolderAsync = createAsyncThunk<{uploaded: FileInfoFolder, parents: string[]}, {name: string}, {state: RootState}>(
   'file/createFolder',
-  async ({ name }, { getState }) => {
+  async ({ name }, { getState, dispatch }) => {
     const state = getState()
     const activeFileGroup = state.file.activeFileGroup
     if (activeFileGroup?.type !== 'dir') throw new Error('ここにアップロードできません')
