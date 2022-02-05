@@ -24,7 +24,6 @@ export const AddFolder = () => {
         name="newname"
         label="新規ディレクトリ名"
         type="normal"
-        id="token"
         value={name}
         onChange={(e) => { setName(e.target.value) }}
       />

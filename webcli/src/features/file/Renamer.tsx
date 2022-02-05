@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAppDispatch } from '../../app/hooks'
 import { renameAsync } from './fileSlice'
 
@@ -8,6 +8,9 @@ import Button from '@mui/material/Button'
 
 export const Renamer = (props: {id: string, name: string}) => {
   const [name, setName] = useState<string>(props.name)
+  useEffect(() => {
+    setName(props.name)
+  }, [props.id])
   const dispatch = useAppDispatch()
   const handleChangeName = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -22,7 +25,6 @@ export const Renamer = (props: {id: string, name: string}) => {
         name="newname"
         label="新規名称"
         type="normal"
-        id="token"
         value={name}
         onChange={(e) => { setName(e.target.value) }}
       />
@@ -33,7 +35,7 @@ export const Renamer = (props: {id: string, name: string}) => {
         variant="contained"
         sx={{ mt: 3, mb: 2 }}
       >
-        作成
+        変更
       </Button>
     </Box>)
 }
