@@ -1,11 +1,16 @@
 import {
   FileInfoFile,
   FileInfoFolder,
-  FileInfoFolderWithCrypto,
-  FileInfoFileWithCrypto,
-  FileInfoWithCrypto,
+  FileCryptoInfoWithoutBin,
+  FileCryptoInfoWithBin,
+  FileCryptoInfo,
   FileInfo,
-  getfileinfoJSONRow
+  getfileinfoJSONRow,
+  FileTable,
+  FileNode,
+  FileObject,
+  FolderObject,
+  DiffObject
 } from './file.type'
 
 import { decryptByRSA, encryptByRSA } from '../../encrypt'
@@ -129,7 +134,7 @@ export const getFileHash = async (bin: ArrayBuffer) => {
 /**
  * ファイル情報のみをサーバに保存
  */
-export const submitFileInfoWithEncryption = async (fileInfo: FileInfoFolder): Promise<FileInfoFolderWithCrypto> => {
+export const submitFileInfoWithEncryption = async (fileInfo: FileInfoFolder): Promise<FileCryptoInfoWithoutBin> => {
   // genkey
   const fileKeyRaw = crypto.getRandomValues(new Uint8Array(AES_FILE_KEY_LENGTH))
   // readfile,getHash | getKey
@@ -165,7 +170,7 @@ export const submitFileInfoWithEncryption = async (fileInfo: FileInfoFolder): Pr
 /**
  * ファイルをenryptoしてサーバに保存
  */
-export const submitFileWithEncryption = async (x: File, name: string, parentId: string | null): Promise<FileInfoFileWithCrypto> => {
+export const submitFileWithEncryption = async (x: File, name: string, parentId: string | null): Promise<FileCryptoInfoWithBin> => {
   // gen unique name
   const uuid = genUUID()
 
@@ -223,7 +228,7 @@ export const submitFileWithEncryption = async (x: File, name: string, parentId: 
 /**
  * 取得したファイル情報を複合
  */
-export const decryptoFileInfo = async (fileinforaw: getfileinfoJSONRow): Promise<FileInfoWithCrypto> => {
+export const decryptoFileInfo = async (fileinforaw: getfileinfoJSONRow): Promise<FileCryptoInfo> => {
   const encryptedFileKey = base642ByteArray(fileinforaw.encryptedFileKeyBase64)
   const encryptedFileInfo = base642ByteArray(fileinforaw.encryptedFileInfoBase64)
   const encryptedFileInfoIV = base642ByteArray(fileinforaw.encryptedFileInfoIVBase64)
@@ -246,4 +251,142 @@ export const decryptoFileInfo = async (fileinforaw: getfileinfoJSONRow): Promise
 export const getEncryptedFileRaw = async (fileId: string) => {
   const encryptedFileRowDL = await axiosWithSession.get<{}, AxiosResponse<ArrayBuffer>>(`${appLocation}/bin/${fileId}`, { responseType: 'arraybuffer' })
   return encryptedFileRowDL.data
+}
+
+/**
+ * 取得したファイル情報からfileTableを構成
+ */
+export const buildFileTable = (files: FileCryptoInfo[]) => {
+  const fileTable: FileTable = { root: { type: 'folder', name: 'root', files: [], parent: null, history: [] } }
+  const nextTable: {[key: string]: string | undefined} = {}
+  for (const { fileInfo } of files) {
+    switch (fileInfo.type) {
+      case 'folder':
+        fileTable[fileInfo.id] = { type: fileInfo.type, name: fileInfo.name, parent: fileInfo.parentId ?? 'root', history: [], prevId: fileInfo.prevId, files: [] }
+        break
+      case 'file':
+        fileTable[fileInfo.id] = { type: fileInfo.type, name: fileInfo.name, parent: fileInfo.parentId ?? 'root', history: [], prevId: fileInfo.prevId, tag: fileInfo.tag }
+        break
+      default:
+        fileTable[fileInfo.id] = { type: fileInfo.type, name: fileInfo.name, parent: fileInfo.parentId ?? 'root', prevId: fileInfo.prevId, diff: fileInfo.diff }
+    }
+    if (fileInfo.prevId) nextTable[fileInfo.prevId] = fileInfo.id
+  }
+
+  // create diff tree
+  const descendantsTable:{[key: string]: {prevId?: string, nextId?: string, diffList?: string[]} | undefined} = {}
+  const fileNodes = files
+    .filter(x => x.fileInfo.type === 'folder' || x.fileInfo.type === 'file')
+    .map(x => x.fileInfo.id)
+  // 次のfileNodesまで子孫を探索・nextの更新
+  fileNodes
+    .forEach((x) => {
+      // old -> new
+      const diffList: string[] = [x]
+      let prevWatchId: string = x
+      let nowWatchId: string | undefined = nextTable[x]
+      let nowWatchObject: FileNode | undefined
+      while (nowWatchId) {
+        fileTable[prevWatchId].nextId = nowWatchId
+        diffList.push(nowWatchId)
+        nowWatchObject = fileTable[nowWatchId]
+        if (nowWatchObject.type === 'file' || nowWatchObject.type === 'folder') break
+        const nextWatchId: string | undefined = nextTable[nowWatchId]
+        prevWatchId = nowWatchId
+        nowWatchId = nextWatchId
+      }
+      if (nowWatchId && nowWatchObject && (nowWatchObject.type === 'file' || nowWatchObject.type === 'folder')) {
+        // 次のfileNodesがある
+        descendantsTable[nowWatchId] = { ...descendantsTable[nowWatchId], prevId: x }
+        descendantsTable[x] = { ...descendantsTable[x], diffList, nextId: nowWatchId }
+      } else {
+        // 末端
+        descendantsTable[x] = { ...descendantsTable[x], diffList }
+      }
+    })
+  // 末端に最も近いfileNodesがdirTreeItemsになる
+  const dirTreeItems = fileNodes.filter(x => {
+    const y = descendantsTable[x]
+    return y && !y.nextId
+  })
+
+  // 各dirTreeItemsについてdiffTreeを作成
+  dirTreeItems.forEach((x) => {
+    const childTree = descendantsTable[x]?.diffList
+    if (!childTree) return
+    let nowWatchId: string | undefined = x
+    // new -> old
+    const ancestors: string[][] = []
+    while (nowWatchId) {
+      ancestors.push(descendantsTable[nowWatchId]?.diffList ?? [])
+      nowWatchId = descendantsTable[nowWatchId]?.prevId
+    }
+    // new -> old
+    (fileTable[x] as FileObject | FolderObject).history =
+      ancestors
+        .map((x, i) => {
+          if (i !== 0) x.pop()
+          return x
+        })
+        .reverse()
+        .flat()
+        .reverse()
+    // 子供の差分を反映 old -> new
+    const targetFile = (fileTable[x] as FileObject | FolderObject)
+    const tagset = new Set<string>((targetFile.type === 'file' ? targetFile.tag : []))
+    for (const c of childTree.reverse()) {
+      const nextFile = fileTable[c]
+      if (nextFile.name) targetFile.name = nextFile.name
+      if (nextFile.parent) targetFile.parent = nextFile.parent
+
+      if (nextFile.type === 'diff') {
+        const { addtag, deltag } = nextFile.diff
+        if (targetFile.type === 'file') {
+          if (addtag) {
+            addtag.forEach(x => tagset.add(x))
+          }
+          if (deltag) {
+            deltag.forEach(x => tagset.delete(x))
+          }
+        }
+      }
+    }
+    if (targetFile.type === 'file') {
+      targetFile.tag = [...tagset]
+    }
+  })
+
+  // create dir tree
+  dirTreeItems.forEach((x) => {
+    (fileTable[(fileTable[x] as FileObject | FolderObject).parent ?? 'root'] as FolderObject).files.push(x)
+  })
+  // sort directory name
+  dirTreeItems.push('root')
+  dirTreeItems.forEach((x) => {
+    const t = fileTable[x]
+    if (t.type === 'folder') {
+      t.files = t.files.sort((a, b) => {
+        const ta = fileTable[a]
+        const tb = fileTable[b]
+        if (ta.type === 'folder' && tb.type === 'file') return 1
+        if (ta.type === 'file' && tb.type === 'folder') return -1
+        return fileTable[a].name.localeCompare(fileTable[b].name, 'ja')
+      })
+    }
+  })
+
+  // create tagtree
+  const tagTree: { [key: string]: string[] } = {}
+  for (const x of dirTreeItems) {
+    const t = fileTable[x]
+    if (t.type !== 'file') continue
+    for (const tag of t.tag) {
+      if (tagTree[tag]) {
+        tagTree[tag].push(x)
+      } else {
+        tagTree[tag] = [x]
+      }
+    }
+  }
+  return { fileTable, tagTree }
 }

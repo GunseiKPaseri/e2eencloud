@@ -1,17 +1,26 @@
+/**
+ * 差分情報
+ */
+export interface FileDifference{
+  addtag?: string[],
+  deltag?: string[]
+}
 
 /**
  * ノード要素
  */
-export type FileObject = {type: 'file', name: string, diff: string[], prevId?: string, nextId?: string, parent: string | null, blobURL?: string}
-/**
- * ノード要素
- */
-export type FolderObject = {type: 'folder', name: string, diff: string[], prevId?: string, nextId?: string, parent: string | null, files: string[]}
+export type FileObject = {type: 'file', name: string, history: string[], prevId?: string, nextId?: string, parent: string | null, blobURL?: string, tag: string[]}
 
 /**
  * ノード要素
  */
-export type DiffObject = {type: 'diff', name: string, prevId?: string, nextId?: string, parent: string | null, blobURL?: string}
+export type FolderObject = {type: 'folder', name: string, history: string[], prevId?: string, nextId?: string, parent: string | null, files: string[]}
+
+/**
+ * ノード要素
+ */
+export type DiffObject = {type: 'diff', name: string, prevId?: string, nextId?: string, parent: string | null, blobURL?: string, diff: FileDifference}
+
 /**
  * ノード要素
  */
@@ -43,26 +52,34 @@ export interface FileInfoFolder {
   parentId: string | null,
   prevId?: string,
 }
+export interface FileInfoDiffFile {
+  type: 'diff',
+  id: string,
+  name: string,
+  parentId: string | null,
+  prevId?: string,
+  diff: FileDifference
+}
 
-export type FileInfo = FileInfoFile | FileInfoFolder
+export type FileInfo = FileInfoFile | FileInfoFolder | FileInfoDiffFile
 
 /**
  * サーバDBから取得した情報
  */
-export interface FileInfoFileWithCrypto {
+export interface FileCryptoInfoWithBin {
   encryptedFileIV: Uint8Array,
   fileKey: CryptoKey,
   fileInfo: FileInfoFile,
   fileKeyRaw: Uint8Array
 }
 
-export interface FileInfoFolderWithCrypto {
+export interface FileCryptoInfoWithoutBin {
   fileKey: CryptoKey,
-  fileInfo: FileInfoFolder,
+  fileInfo: FileInfoFolder | FileInfoDiffFile,
   fileKeyRaw: Uint8Array
 }
 
-export type FileInfoWithCrypto = FileInfoFileWithCrypto | FileInfoFolderWithCrypto
+export type FileCryptoInfo = FileCryptoInfoWithBin | FileCryptoInfoWithoutBin
 
 export type tagGroup = {type: 'tag', files: string[], tagName: string}
 export type dirGroup = {type: 'dir', files: string[], parents: string[]}

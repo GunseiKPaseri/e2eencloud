@@ -3,7 +3,7 @@ import { AxiosResponse } from 'axios'
 import { axiosWithSession, appLocation } from '../componentutils'
 import { createSalt, SHA256, argon2encrypt, byteArray2base64, base642ByteArray, generateRSAKey, importRSAKey, AESCTR, getAESCTRKey, decryptAESCTR } from '../../util'
 import { setRSAKey } from '../../encrypt'
-import { createFileTreeAsync } from '../file/fileSlice'
+import { buildFileTableAsync } from '../file/fileSlice'
 
 import { AES_AUTH_KEY_LENGTH } from '../../const'
 
@@ -235,7 +235,7 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
       }
     }
     // file tree
-    dispatch(createFileTreeAsync())
+    dispatch(buildFileTableAsync())
 
     dispatch(deleteProgress())
     return { email: userinfo.email, MasterKey: Array.from(MasterKeyRaw), useTowFactorAuth: result.data.useTwoFactorAuth }
