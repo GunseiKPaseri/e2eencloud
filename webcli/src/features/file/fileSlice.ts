@@ -78,7 +78,6 @@ export const fileuploadAsync = createAsyncThunk<{uploaded: FileInfoFile[], paren
       (resolved, all) => {
         dispatch(setProgress({ progress: resolved / (all + 1), progressBuffer: all / (all + 1) }))
       })
-    console.log(loadedfile)
 
     await db.files.bulkPut(loadedfile.map(x => FileInfo2IndexDBFiles(x)))
     dispatch(deleteProgress())
@@ -176,6 +175,7 @@ export const renameAsync = createAsyncThunk<{uploaded: FileInfoDiffFile, targetI
       parentNode.files.flatMap(x => (fileTable[x].type === targetNode.type ? [fileTable[x].name] : []))
     )
     if (targetNode.history.length === 0) throw new Error('過去のファイルは変更できません')
+    console.log(targetNode.history)
     const prevId = targetNode.history[targetNode.history.length - 1]
 
     const uploaded: FileInfoDiffFile = {
