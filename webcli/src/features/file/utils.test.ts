@@ -5,8 +5,11 @@ import {
   isDiffExt
 } from './utils'
 import {
-  FileCrypto,
-  FileCryptoInfo, FileCryptoInfoWithBin, FileDifference, FileInfoDiffFile, FileInfoFolder, FileTable
+  FileCryptoInfoWithBin,
+  FileDifference,
+  FileInfoDiffFile,
+  FileInfoFolder,
+  FileTable
 } from './file.type'
 
 describe('#genUUID', () => {
