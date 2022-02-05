@@ -346,7 +346,7 @@ export const integrateDifference = (diffs: string[], fileTable: FileTable, targe
 export const buildFileTable = (files: FileCryptoInfo[]) => {
   const fileTable: FileTable = {
     root: {
-      id: 'id',
+      id: 'root',
       type: 'folder',
       name: 'root',
       files: [],

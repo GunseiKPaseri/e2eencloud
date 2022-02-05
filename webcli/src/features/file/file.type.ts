@@ -104,6 +104,20 @@ export type FileCryptoInfoWithoutBin = {
 
 export type FileCryptoInfo = FileCryptoInfoWithBin | FileCryptoInfoWithoutBin
 
+export type FileCrypto = {
+  'file': FileCryptoInfoWithBin,
+  'folder': {
+    fileKey: CryptoKey,
+    fileInfo: FileInfoFolder,
+    fileKeyRaw: Uint8Array
+  },
+  'diff': {
+    fileKey: CryptoKey,
+    fileInfo: FileInfoDiffFile,
+    fileKeyRaw: Uint8Array
+  }
+}
+
 export type tagGroup = {type: 'tag', files: string[], tagName: string}
 export type dirGroup = {type: 'dir', files: string[], parents: string[]}
 
