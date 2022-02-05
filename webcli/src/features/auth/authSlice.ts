@@ -281,6 +281,9 @@ export const authSlice = createSlice({
         console.log('get', action.payload.MasterKey)
         state.user = action.payload
       })
+      .addCase(logoutAsync.fulfilled, (state, action) => {
+        state.user = null
+      })
   }
 })
 
