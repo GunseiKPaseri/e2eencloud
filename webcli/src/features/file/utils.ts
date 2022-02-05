@@ -78,6 +78,17 @@ export const assertWritableDraftFileNodeFolder:
 export const genUUID = () => v4().replace(/-/g, '_')
 
 /**
+ * 拡張子が変化しているかを確認する
+ */
+export const diffExt = (a: string, b: string) => {
+  const aidx = a.lastIndexOf('.')
+  const bidx = b.lastIndexOf('.')
+  const exta = aidx === -1 ? '' : a.slice(aidx)
+  const extb = bidx === -1 ? '' : b.slice(bidx)
+  return exta !== extb
+}
+
+/**
  * IndexDB情報からサーバDB保存用データを抽出
  */
 export const IndexDBFiles2FileInfo = (file: IndexDBFilesFile):FileInfoFile => ({
