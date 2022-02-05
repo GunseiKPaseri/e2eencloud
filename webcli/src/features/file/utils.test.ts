@@ -1,7 +1,8 @@
 import {
   buildFileTable,
   genUUID,
-  getSafeName
+  getSafeName,
+  isDiffExt
 } from './utils'
 import {
   FileCrypto,
@@ -27,6 +28,15 @@ describe('#getSafeName', () => {
       'hoge.fuga (2).piyo',
       'hoge.fuga (3).piyo']
     )
+  })
+})
+
+describe('#isDiffExt', () => {
+  test('異なる拡張子を区別する', () => {
+    expect(isDiffExt('hoge.fuga', 'zan.piyo.fuga')).toBeFalsy()
+    expect(isDiffExt('hoge.fug', 'zan.piyo.fuga')).toBeTruthy()
+    expect(isDiffExt('hoge', 'fuga')).toBeFalsy()
+    expect(isDiffExt('hoge.fuga', 'fuga')).toBeTruthy()
   })
 })
 

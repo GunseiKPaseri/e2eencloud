@@ -6,7 +6,7 @@ import TextField from '@mui/material/TextField'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Alert from '@mui/material/Alert'
-import { diffExt } from './utils'
+import { isDiffExt } from './utils'
 
 export const Renamer = (props: {id: string, name: string}) => {
   const [name, setName] = useState<string>(props.name)
@@ -40,7 +40,7 @@ export const Renamer = (props: {id: string, name: string}) => {
         変更
       </Button>
       {
-        diffExt(props.name, name)
+        isDiffExt(props.name, name)
           ? <Alert severity='warning'>
               拡張子が変化しています
             </Alert>
