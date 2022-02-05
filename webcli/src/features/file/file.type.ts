@@ -7,32 +7,7 @@ export interface FileDifference{
 }
 
 /**
- * ノード要素
- */
-export type FileObject = {type: 'file', name: string, history: string[], prevId?: string, nextId?: string, parent: string | null, blobURL?: string, tag: string[]}
-
-/**
- * ノード要素
- */
-export type FolderObject = {type: 'folder', name: string, history: string[], prevId?: string, nextId?: string, parent: string | null, files: string[]}
-
-/**
- * ノード要素
- */
-export type DiffObject = {type: 'diff', name: string, prevId?: string, nextId?: string, parent: string | null, blobURL?: string, diff: FileDifference}
-
-/**
- * ノード要素
- */
-export type FileNode = FileObject | FolderObject | DiffObject
-
-/**
- * ディレクトリテーブル
- */
-export type FileTable = { [key: string]: FileNode }
-
-/**
- *  サーバDBに保存するファイル情報
+ *  サーバDBに保存するファイルに関する情報
  */
 export interface FileInfoFile {
   type: 'file',
@@ -45,6 +20,9 @@ export interface FileInfoFile {
   prevId?: string,
   tag: string[]
 }
+/**
+ *  サーバDBに保存するフォルダに関する情報
+ */
 export interface FileInfoFolder {
   type: 'folder',
   id: string,
@@ -52,6 +30,9 @@ export interface FileInfoFolder {
   parentId: string | null,
   prevId?: string,
 }
+/**
+ *  サーバDBに保存する差分に関する情報
+ */
 export interface FileInfoDiffFile {
   type: 'diff',
   id: string,
@@ -61,7 +42,35 @@ export interface FileInfoDiffFile {
   diff: FileDifference
 }
 
+/**
+ * サーバに保存する情報
+ */
 export type FileInfo = FileInfoFile | FileInfoFolder | FileInfoDiffFile
+
+/**
+ * 手元で管理するファイル情報
+ */
+export type FileNodeFile = {type: 'file', name: string, history: string[], prevId?: string, nextId?: string, parent: string | null, blobURL?: string, tag: string[]}
+
+/**
+ * 手元で管理するフォルダ情報
+ */
+export type FileNodeFolder = {type: 'folder', name: string, history: string[], prevId?: string, nextId?: string, parent: string | null, files: string[]}
+
+/**
+ * 手元で管理する差分情報
+ */
+export type FileNodeDiff = {type: 'diff', name: string, prevId?: string, nextId?: string, parent: string | null, blobURL?: string, diff: FileDifference}
+
+/**
+  * 手元で管理する情報
+  */
+export type FileNode = FileNodeFile | FileNodeFolder | FileNodeDiff
+
+/**
+  * ディレクトリテーブル
+  */
+export type FileTable = { [key: string]: FileNode }
 
 /**
  * サーバDBから取得した情報

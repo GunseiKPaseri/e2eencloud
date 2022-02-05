@@ -7,9 +7,9 @@ import {
   tagGroup,
   dirGroup,
   FileNode,
-  FolderObject,
+  FileNodeFolder,
   getfileinfoJSONRow,
-  FileObject,
+  FileNodeFile,
   FileInfoDiffFile
 } from './file.type'
 
@@ -22,10 +22,10 @@ import { RootState } from '../../app/store'
 import { setProgress, deleteProgress, progress } from '../progress/progressSlice'
 
 import {
-  assertFolderObject,
-  assertNonDiffObject,
-  assertWritableDraftFolderObject,
-  assertNonWritableDraftDiffObject,
+  assertFileNodeFolder,
+  assertNonFileNodeDiff,
+  assertWritableDraftFileNodeFolder,
+  assertNonWritableDraftFileNodeDiff,
   buildFileTable,
   decryptoFileInfo,
   FileInfo2IndexDBFiles,
@@ -175,7 +175,7 @@ export const renameAsync = createAsyncThunk<{uploaded: FileInfoDiffFile, targetI
     if (id === 'root' || targetNode.parent === null) throw new Error('rootの名称は変更できません')
     if (name === '') throw new Error('空文字は許容されません')
     const parentNode = fileTable[targetNode.parent]
-    assertFolderObject(parentNode)
+    assertFileNodeFolder(parentNode)
     const [changedName] = getSafeName([name],
       parentNode.files.flatMap(x => (fileTable[x].type === targetNode.type ? [fileTable[x].name] : []))
     )
@@ -243,7 +243,7 @@ export const fileSlice = createSlice({
         // 生成したファイルツリーをstateに反映
         state.fileTable = action.payload.fileTable
         state.tagTree = action.payload.tagTree
-        assertFolderObject(action.payload.fileTable.root)
+        assertFileNodeFolder(action.payload.fileTable.root)
         state.activeFileGroup = { type: 'dir', files: action.payload.fileTable.root.files, parents: [] }
       })
       .addCase(fileuploadAsync.fulfilled, (state, action) => {
@@ -257,7 +257,7 @@ export const fileSlice = createSlice({
           state.fileTable[t.id] = { type: 'file', name: t.name, history: [], parent, tag: [] }
         }
         const parentNode = state.fileTable[parent]
-        assertWritableDraftFolderObject(parentNode)
+        assertWritableDraftFileNodeFolder(parentNode)
         parentNode.files =
           [
             ...parentNode.files,
@@ -274,7 +274,7 @@ export const fileSlice = createSlice({
         state.fileTable[uploaded.id] = { type: 'diff', name: uploaded.name, parent: uploaded.parentId, diff: uploaded.diff, prevId: uploaded.prevId }
         // 差分反映
         const targetNode = state.fileTable[targetId]
-        assertNonWritableDraftDiffObject(targetNode)
+        assertNonWritableDraftFileNodeDiff(targetNode)
         integrateDifference([uploaded.id], state.fileTable, targetNode)
       })
       .addCase(createFolderAsync.fulfilled, (state, action) => {
@@ -286,7 +286,7 @@ export const fileSlice = createSlice({
         // add table
         state.fileTable[action.payload.uploaded.id] = { type: 'folder', name: action.payload.uploaded.name, files: [], parent: parent, history: [] }
         const parentNode = state.fileTable[parent]
-        assertWritableDraftFolderObject(parentNode)
+        assertWritableDraftFileNodeFolder(parentNode)
         parentNode.files.push(action.payload.uploaded.id)
         // add activeGroup
         state.activeFileGroup = { type: 'dir', files: parentNode.files, parents: action.payload.parents }
@@ -308,7 +308,7 @@ export const fileSlice = createSlice({
         while (id) {
           parents.unshift(id)
           const parentNode: FileNode = state.fileTable[id]
-          assertFolderObject(parentNode)
+          assertFileNodeFolder(parentNode)
           id = parentNode.parent
         }
         state.activeFileGroup = {

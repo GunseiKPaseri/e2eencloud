@@ -8,9 +8,9 @@ import {
   getfileinfoJSONRow,
   FileTable,
   FileNode,
-  FileObject,
-  FolderObject,
-  DiffObject,
+  FileNodeFile,
+  FileNodeFolder,
+  FileNodeDiff,
   FileInfoDiffFile
 } from './file.type'
 
@@ -26,11 +26,11 @@ import { AES_FILE_KEY_LENGTH } from '../../const'
 import { WritableDraft } from 'immer/dist/internal'
 
 /**
- * 要素がDiffObjectで無いと確信
- * @param fileNode FileObject | FolderObject
+ * 要素がFileNodeDiffで無いと確信
+ * @param fileNode FileNodeFile | FileNodeFolder
  */
-export const assertNonDiffObject:
-  (fileNode:FileNode) => asserts fileNode is FileObject | FolderObject =
+export const assertNonFileNodeDiff:
+  (fileNode:FileNode) => asserts fileNode is FileNodeFile | FileNodeFolder =
   (fileNode) => {
     if (fileNode.type === 'diff') {
       throw new Error('This is Diff Object!!')
@@ -38,11 +38,11 @@ export const assertNonDiffObject:
   }
 
 /**
- * 要素がFolderObjectであると確信
- * @param fileNode FolderObject
+ * 要素がFileNodeFolderであると確信
+ * @param fileNode FileNodeFolder
  */
-export const assertFolderObject:
-  (fileNode:FileNode) => asserts fileNode is FolderObject =
+export const assertFileNodeFolder:
+  (fileNode:FileNode) => asserts fileNode is FileNodeFolder =
   (fileNode) => {
     if (fileNode.type !== 'folder') {
       throw new Error('This is not Folder Object!!')
@@ -50,11 +50,11 @@ export const assertFolderObject:
   }
 
 /**
- * 要素がWritableDraft<DiffObject>で無いと確信
- * @param fileNode WritableDraft<WileObject> | WritableDraft<FolderObject>
+ * 要素がWritableDraft<FileNodeDiff>で無いと確信
+ * @param fileNode WritableDraft<WileObject> | WritableDraft<FileNodeFolder>
  */
-export const assertNonWritableDraftDiffObject:
-  (fileNode:WritableDraft<FileNode>) => asserts fileNode is WritableDraft<FileObject> | WritableDraft<FolderObject> =
+export const assertNonWritableDraftFileNodeDiff:
+  (fileNode:WritableDraft<FileNode>) => asserts fileNode is WritableDraft<FileNodeFile> | WritableDraft<FileNodeFolder> =
   (fileNode) => {
     if (fileNode.type === 'diff') {
       throw new Error('This is Diff Object!!')
@@ -62,11 +62,11 @@ export const assertNonWritableDraftDiffObject:
   }
 
 /**
- * 要素がFolderObjectであると確信
- * @param fileNode WritableDraft<FolderObject>
+ * 要素がFileNodeFolderであると確信
+ * @param fileNode WritableDraft<FileNodeFolder>
  */
-export const assertWritableDraftFolderObject:
- (fileNode:WritableDraft<FileNode>) => asserts fileNode is WritableDraft<FolderObject> =
+export const assertWritableDraftFileNodeFolder:
+ (fileNode:WritableDraft<FileNode>) => asserts fileNode is WritableDraft<FileNodeFolder> =
  (fileNode) => {
    if (fileNode.type !== 'folder') {
      throw new Error('This is not Folder Object!!')
@@ -306,7 +306,7 @@ export const getEncryptedFileRaw = async (fileId: string) => {
 /**
  * 差分をオブジェクトに反映
  */
-export const integrateDifference = (diffs: string[], fileTable: FileTable, targetFile: FileObject | FolderObject) => {
+export const integrateDifference = (diffs: string[], fileTable: FileTable, targetFile: FileNodeFile | FileNodeFolder) => {
   const tagset = new Set<string>((targetFile.type === 'file' ? targetFile.tag : []))
   for (const c of diffs) {
     const nextFile = fileTable[c]
@@ -392,7 +392,7 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
     const childTree = descendantsTable[x]?.diffList
     if (!childTree) return
     const targetNode = fileTable[x]
-    assertNonDiffObject(targetNode)
+    assertNonFileNodeDiff(targetNode)
     let nowWatchId: string | undefined = x
     // new -> old
     const ancestors: string[][] = []
@@ -416,9 +416,9 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
 
   // create dir tree
   dirTreeItems.forEach((x) => {
-    assertNonDiffObject(fileTable[x])
+    assertNonFileNodeDiff(fileTable[x])
     const parentNode = fileTable[fileTable[x].parent ?? 'root']
-    assertFolderObject(parentNode)
+    assertFileNodeFolder(parentNode)
     parentNode.files.push(x)
   })
   // sort directory name
