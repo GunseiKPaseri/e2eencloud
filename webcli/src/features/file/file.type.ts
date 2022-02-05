@@ -50,17 +50,31 @@ export type FileInfo = FileInfoFile | FileInfoFolder | FileInfoDiffFile
 /**
  * 手元で管理するファイル情報
  */
-export type FileNodeFile = {type: 'file', name: string, history: string[], prevId?: string, nextId?: string, parent: string | null, blobURL?: string, tag: string[]}
+export type FileNodeFile = FileInfoFile & {
+  history: string[],
+  nextId?: string,
+  blobURL?: string,
+  originalFileInfo: FileInfoFile
+}
 
 /**
  * 手元で管理するフォルダ情報
  */
-export type FileNodeFolder = {type: 'folder', name: string, history: string[], prevId?: string, nextId?: string, parent: string | null, files: string[]}
+export type FileNodeFolder = FileInfoFolder & {
+  history: string[],
+  nextId?: string,
+  files: string[],
+  originalFileInfo: FileInfoFolder
+}
 
 /**
  * 手元で管理する差分情報
  */
-export type FileNodeDiff = {type: 'diff', name: string, prevId?: string, nextId?: string, parent: string | null, blobURL?: string, diff: FileDifference}
+export type FileNodeDiff = FileInfoDiffFile & {
+  nextId?: string,
+  blobURL?: string,
+  originalFileInfo: FileInfoDiffFile
+}
 
 /**
   * 手元で管理する情報
@@ -75,14 +89,14 @@ export type FileTable = { [key: string]: FileNode }
 /**
  * サーバDBから取得した情報
  */
-export interface FileCryptoInfoWithBin {
+export type FileCryptoInfoWithBin = {
   encryptedFileIV: Uint8Array,
   fileKey: CryptoKey,
   fileInfo: FileInfoFile,
   fileKeyRaw: Uint8Array
 }
 
-export interface FileCryptoInfoWithoutBin {
+export type FileCryptoInfoWithoutBin = {
   fileKey: CryptoKey,
   fileInfo: FileInfoFolder | FileInfoDiffFile,
   fileKeyRaw: Uint8Array

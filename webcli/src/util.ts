@@ -123,15 +123,15 @@ export const browserHistory = createBrowserHistory()
 /**
  * Promise all with progress
  */
-export const allProgress = (proms: Promise<unknown>[], callback: (resolved:number, all: number) => void) => {
+export const allProgress = <T>(values: Array<PromiseLike<T>>, callback: (resolved:number, all: number) => void): Promise<Awaited<T>[]> => {
   let cnt = 0
-  const all = proms.length
+  const all = values.length
   callback(cnt, all)
   const thenFunc = (u:unknown) => {
     callback(cnt, all)
     cnt++
     return u
   }
-  proms.map(x => x.then(thenFunc))
-  return Promise.all(proms)
+  values.map(x => x.then(thenFunc))
+  return Promise.all(values)
 }

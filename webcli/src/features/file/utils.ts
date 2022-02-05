@@ -10,7 +10,6 @@ import {
   FileNode,
   FileNodeFile,
   FileNodeFolder,
-  FileNodeDiff,
   FileInfoDiffFile
 } from './file.type'
 
@@ -66,12 +65,12 @@ export const assertNonWritableDraftFileNodeDiff:
  * @param fileNode WritableDraft<FileNodeFolder>
  */
 export const assertWritableDraftFileNodeFolder:
- (fileNode:WritableDraft<FileNode>) => asserts fileNode is WritableDraft<FileNodeFolder> =
- (fileNode) => {
-   if (fileNode.type !== 'folder') {
-     throw new Error('This is not Folder Object!!')
-   }
- }
+  (fileNode:WritableDraft<FileNode>) => asserts fileNode is WritableDraft<FileNodeFolder> =
+  (fileNode) => {
+    if (fileNode.type !== 'folder') {
+      throw new Error('This is not Folder Object!!')
+    }
+  }
 
 /**
  * 生成
@@ -311,7 +310,7 @@ export const integrateDifference = (diffs: string[], fileTable: FileTable, targe
   for (const c of diffs) {
     const nextFile = fileTable[c]
     if (nextFile.name) targetFile.name = nextFile.name
-    if (nextFile.parent) targetFile.parent = nextFile.parent
+    if (nextFile.parentId) targetFile.parentId = nextFile.parentId
 
     if (nextFile.type === 'diff') {
       const { addtag, deltag } = nextFile.diff
@@ -334,18 +333,48 @@ export const integrateDifference = (diffs: string[], fileTable: FileTable, targe
  * 取得したファイル情報からfileTableを構成
  */
 export const buildFileTable = (files: FileCryptoInfo[]) => {
-  const fileTable: FileTable = { root: { type: 'folder', name: 'root', files: [], parent: null, history: [] } }
+  const fileTable: FileTable = {
+    root: {
+      id: 'id',
+      type: 'folder',
+      name: 'root',
+      files: [],
+      parentId: null,
+      history: [],
+      originalFileInfo: {
+        type: 'folder',
+        id: 'root',
+        name: 'root',
+        parentId: null
+      }
+    }
+  }
   const nextTable: {[key: string]: string | undefined} = {}
   for (const { fileInfo } of files) {
     switch (fileInfo.type) {
       case 'folder':
-        fileTable[fileInfo.id] = { type: fileInfo.type, name: fileInfo.name, parent: fileInfo.parentId ?? 'root', history: [], prevId: fileInfo.prevId, files: [] }
+        fileTable[fileInfo.id] = {
+          ...fileInfo,
+          parentId: fileInfo.parentId ?? 'root',
+          history: [],
+          files: [],
+          originalFileInfo: fileInfo
+        }
         break
       case 'file':
-        fileTable[fileInfo.id] = { type: fileInfo.type, name: fileInfo.name, parent: fileInfo.parentId ?? 'root', history: [], prevId: fileInfo.prevId, tag: fileInfo.tag }
+        fileTable[fileInfo.id] = {
+          ...fileInfo,
+          parentId: fileInfo.parentId ?? 'root',
+          history: [],
+          originalFileInfo: fileInfo
+        }
         break
       default:
-        fileTable[fileInfo.id] = { type: fileInfo.type, name: fileInfo.name, parent: fileInfo.parentId ?? 'root', prevId: fileInfo.prevId, diff: fileInfo.diff }
+        fileTable[fileInfo.id] = {
+          ...fileInfo,
+          parentId: fileInfo.parentId ?? 'root',
+          originalFileInfo: fileInfo
+        }
     }
     if (fileInfo.prevId) nextTable[fileInfo.prevId] = fileInfo.id
   }
@@ -417,7 +446,7 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
   // create dir tree
   dirTreeItems.forEach((x) => {
     assertNonFileNodeDiff(fileTable[x])
-    const parentNode = fileTable[fileTable[x].parent ?? 'root']
+    const parentNode = fileTable[fileTable[x].parentId ?? 'root']
     assertFileNodeFolder(parentNode)
     parentNode.files.push(x)
   })
