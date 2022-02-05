@@ -9,7 +9,8 @@ import {
   FileNode,
   FolderObject,
   getfileinfoJSONRow,
-  FileObject
+  FileObject,
+  FileInfoDiffFile
 } from './file.type'
 
 import { allProgress, decryptAESGCM, getAESGCMKey } from '../../util'
@@ -19,9 +20,12 @@ import { db } from '../../indexeddb'
 import { RootState } from '../../app/store'
 
 import { setProgress, deleteProgress, progress } from '../progress/progressSlice'
-import { WritableDraft } from 'immer/dist/internal'
 
 import {
+  assertFolderObject,
+  assertNonDiffObject,
+  assertWritableDraftFolderObject,
+  assertNonWritableDraftDiffObject,
   buildFileTable,
   decryptoFileInfo,
   FileInfo2IndexDBFiles,
@@ -30,6 +34,7 @@ import {
   getFileHash,
   getSafeName,
   IndexDBFiles2FileInfo,
+  integrateDifference,
   submitFileInfoWithEncryption,
   submitFileWithEncryption
 } from './utils'
@@ -153,6 +158,46 @@ export const filedownloadAsync = createAsyncThunk<{url: string, fileInfo: FileIn
 )
 
 /**
+ *  ファイル名を変更するReduxThunk
+ */
+export const renameAsync = createAsyncThunk<{uploaded: FileInfoDiffFile, targetId: string}, {id: string, name: string}, {state: RootState}>(
+  'file/rename',
+  async ({ id, name }, { getState, dispatch }) => {
+    const step = 2
+    dispatch(setProgress(progress(0, step)))
+
+    const state = getState()
+    const fileTable = state.file.fileTable
+    const targetNode = fileTable[id]
+    if (!(targetNode.type === 'file' || targetNode.type === 'folder')) throw new Error('適用要素が実体を持っていません')
+
+    if (!targetNode) throw new Error('存在しないファイルです')
+    if (id === 'root' || targetNode.parent === null) throw new Error('rootの名称は変更できません')
+    if (name === '') throw new Error('空文字は許容されません')
+    const parentNode = fileTable[targetNode.parent]
+    assertFolderObject(parentNode)
+    const [changedName] = getSafeName([name],
+      parentNode.files.flatMap(x => (fileTable[x].type === targetNode.type ? [fileTable[x].name] : []))
+    )
+    if (targetNode.history.length === 0) throw new Error('過去のファイルは変更できません')
+    const prevId = targetNode.history[targetNode.history.length - 1]
+
+    const uploaded: FileInfoDiffFile = {
+      id: genUUID(),
+      name: changedName,
+      type: 'diff',
+      parentId: targetNode.parent === 'root' ? null : targetNode.parent,
+      prevId,
+      diff: {}
+    }
+    const addObject = await submitFileInfoWithEncryption(uploaded)
+    dispatch(setProgress(progress(1, step)))
+    await db.files.put(FileInfo2IndexDBFiles(addObject))
+    dispatch(deleteProgress())
+    return { uploaded, targetId: id }
+  }
+)
+/**
  * ファイル情報を解析してディレクトリツリーを構成するReduxThunk
  */
 export const buildFileTableAsync = createAsyncThunk<{ fileTable: FileTable, tagTree: { [key: string]: string[] } }>(
@@ -198,7 +243,8 @@ export const fileSlice = createSlice({
         // 生成したファイルツリーをstateに反映
         state.fileTable = action.payload.fileTable
         state.tagTree = action.payload.tagTree
-        state.activeFileGroup = { type: 'dir', files: (action.payload.fileTable.root as FolderObject).files, parents: [] }
+        assertFolderObject(action.payload.fileTable.root)
+        state.activeFileGroup = { type: 'dir', files: action.payload.fileTable.root.files, parents: [] }
       })
       .addCase(fileuploadAsync.fulfilled, (state, action) => {
         // アップロードしたファイルをstateに反映
@@ -208,15 +254,28 @@ export const fileSlice = createSlice({
             : action.payload.parents[action.payload.parents.length - 1]
         // add table
         for (const t of action.payload.uploaded) {
-          state.fileTable[t.id] = { type: 'file', name: t.name, history: [] }
+          state.fileTable[t.id] = { type: 'file', name: t.name, history: [], parent, tag: [] }
         }
-        (state.fileTable[parent] as WritableDraft<FolderObject>).files =
+        const parentNode = state.fileTable[parent]
+        assertWritableDraftFolderObject(parentNode)
+        parentNode.files =
           [
-            ...(state.fileTable[parent] as WritableDraft<FolderObject>).files,
+            ...parentNode.files,
             ...action.payload.uploaded.map<string>(x => x.id)
           ]
         // add activeGroup
-        state.activeFileGroup = { type: 'dir', files: (state.fileTable[parent] as WritableDraft<FolderObject>).files, parents: action.payload.parents }
+        state.activeFileGroup = { type: 'dir', files: parentNode.files, parents: action.payload.parents }
+      })
+      .addCase(renameAsync.fulfilled, (state, action) => {
+        const { uploaded, targetId } = action.payload
+        // add table
+        if (!uploaded.prevId) throw new Error('前方が指定されていません')
+        state.fileTable[uploaded.prevId].nextId = uploaded.id
+        state.fileTable[uploaded.id] = { type: 'diff', name: uploaded.name, parent: uploaded.parentId, diff: uploaded.diff, prevId: uploaded.prevId }
+        // 差分反映
+        const targetNode = state.fileTable[targetId]
+        assertNonWritableDraftDiffObject(targetNode)
+        integrateDifference([uploaded.id], state.fileTable, targetNode)
       })
       .addCase(createFolderAsync.fulfilled, (state, action) => {
         // 作成したフォルダをstateに反映
@@ -225,10 +284,12 @@ export const fileSlice = createSlice({
             ? 'root'
             : action.payload.parents[action.payload.parents.length - 1]
         // add table
-        state.fileTable[action.payload.uploaded.id] = { type: 'folder', name: action.payload.uploaded.name, files: [], parent: parent, history: [] };
-        (state.fileTable[parent] as WritableDraft<FolderObject>).files.push(action.payload.uploaded.id)
+        state.fileTable[action.payload.uploaded.id] = { type: 'folder', name: action.payload.uploaded.name, files: [], parent: parent, history: [] }
+        const parentNode = state.fileTable[parent]
+        assertWritableDraftFolderObject(parentNode)
+        parentNode.files.push(action.payload.uploaded.id)
         // add activeGroup
-        state.activeFileGroup = { type: 'dir', files: (state.fileTable[parent] as WritableDraft<FolderObject>).files, parents: action.payload.parents }
+        state.activeFileGroup = { type: 'dir', files: parentNode.files, parents: action.payload.parents }
       })
       .addCase(filedownloadAsync.fulfilled, (state, action) => {
         // 生成したblobリンク等を反映
@@ -241,14 +302,14 @@ export const fileSlice = createSlice({
         // 指定idのディレクトリをactiveディレクトリにする
         const parents: string[] = []
         const firstId = action.payload.id
-        const activeDir = state.fileTable[firstId]
-        if (activeDir.type === 'file') throw new Error('ファイルはactiveDirになれません')
+        const activeDir:FileNode = state.fileTable[firstId]
+        if (activeDir.type !== 'folder') throw new Error('指定オブジェクトはactiveDirになれません')
         let id: string | null = firstId
         while (id) {
           parents.unshift(id)
-          const parent: FileNode = state.fileTable[id]
-          if (parent.type === 'file') throw new Error('ディレクトリ構造が壊れています')
-          id = parent.parent
+          const parentNode: FileNode = state.fileTable[id]
+          assertFolderObject(parentNode)
+          id = parentNode.parent
         }
         state.activeFileGroup = {
           type: 'dir',

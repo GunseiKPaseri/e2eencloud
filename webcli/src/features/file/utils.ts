@@ -10,7 +10,8 @@ import {
   FileNode,
   FileObject,
   FolderObject,
-  DiffObject
+  DiffObject,
+  FileInfoDiffFile
 } from './file.type'
 
 import { decryptByRSA, encryptByRSA } from '../../encrypt'
@@ -22,6 +23,55 @@ import { IndexDBFiles, IndexDBFilesFile } from '../../indexeddb'
 
 import { v4 } from 'uuid'
 import { AES_FILE_KEY_LENGTH } from '../../const'
+import { WritableDraft } from 'immer/dist/internal'
+
+/**
+ * 要素がDiffObjectで無いと確信
+ * @param fileNode FileObject | FolderObject
+ */
+export const assertNonDiffObject:
+  (fileNode:FileNode) => asserts fileNode is FileObject | FolderObject =
+  (fileNode) => {
+    if (fileNode.type === 'diff') {
+      throw new Error('This is Diff Object!!')
+    }
+  }
+
+/**
+ * 要素がFolderObjectであると確信
+ * @param fileNode FolderObject
+ */
+export const assertFolderObject:
+  (fileNode:FileNode) => asserts fileNode is FolderObject =
+  (fileNode) => {
+    if (fileNode.type !== 'folder') {
+      throw new Error('This is not Folder Object!!')
+    }
+  }
+
+/**
+ * 要素がWritableDraft<DiffObject>で無いと確信
+ * @param fileNode WritableDraft<WileObject> | WritableDraft<FolderObject>
+ */
+export const assertNonWritableDraftDiffObject:
+  (fileNode:WritableDraft<FileNode>) => asserts fileNode is WritableDraft<FileObject> | WritableDraft<FolderObject> =
+  (fileNode) => {
+    if (fileNode.type === 'diff') {
+      throw new Error('This is Diff Object!!')
+    }
+  }
+
+/**
+ * 要素がFolderObjectであると確信
+ * @param fileNode WritableDraft<FolderObject>
+ */
+export const assertWritableDraftFolderObject:
+ (fileNode:WritableDraft<FileNode>) => asserts fileNode is WritableDraft<FolderObject> =
+ (fileNode) => {
+   if (fileNode.type !== 'folder') {
+     throw new Error('This is not Folder Object!!')
+   }
+ }
 
 /**
  * 生成
@@ -47,7 +97,7 @@ export const IndexDBFiles2FileInfo = (file: IndexDBFilesFile):FileInfoFile => ({
  */
 export const FileInfo2IndexDBFiles = (
   props: {fileInfo: FileInfoFile, encryptedFileIV: Uint8Array, fileKeyRaw: Uint8Array} |
-  {fileInfo: FileInfoFolder, fileKeyRaw: Uint8Array}
+  {fileInfo: FileInfoFolder | FileInfoDiffFile, fileKeyRaw: Uint8Array}
 ):IndexDBFiles => ('encryptedFileIV' in props
   ? {
       id: props.fileInfo.id,
@@ -99,7 +149,7 @@ export const getSafeName = (hopedName: string[], samelevelfiles: string[]) => {
   const existFiles = new Set(samelevelfiles)
   const result:string[] = []
   for (const name of safeName) {
-    for (let i = 0; true; i++) {
+    for (let i = 1; true; i++) {
       const suggestName = getAddingNumberFileName(name, i)
       if (!existFiles.has(suggestName)) {
         result.push(suggestName)
@@ -134,7 +184,7 @@ export const getFileHash = async (bin: ArrayBuffer) => {
 /**
  * ファイル情報のみをサーバに保存
  */
-export const submitFileInfoWithEncryption = async (fileInfo: FileInfoFolder): Promise<FileCryptoInfoWithoutBin> => {
+export const submitFileInfoWithEncryption = async <T extends FileCryptoInfoWithoutBin['fileInfo']>(fileInfo: T): Promise<FileCryptoInfoWithoutBin> => {
   // genkey
   const fileKeyRaw = crypto.getRandomValues(new Uint8Array(AES_FILE_KEY_LENGTH))
   // readfile,getHash | getKey
@@ -254,6 +304,33 @@ export const getEncryptedFileRaw = async (fileId: string) => {
 }
 
 /**
+ * 差分をオブジェクトに反映
+ */
+export const integrateDifference = (diffs: string[], fileTable: FileTable, targetFile: FileObject | FolderObject) => {
+  const tagset = new Set<string>((targetFile.type === 'file' ? targetFile.tag : []))
+  for (const c of diffs) {
+    const nextFile = fileTable[c]
+    if (nextFile.name) targetFile.name = nextFile.name
+    if (nextFile.parent) targetFile.parent = nextFile.parent
+
+    if (nextFile.type === 'diff') {
+      const { addtag, deltag } = nextFile.diff
+      if (targetFile.type === 'file') {
+        if (addtag) {
+          addtag.forEach(x => tagset.add(x))
+        }
+        if (deltag) {
+          deltag.forEach(x => tagset.delete(x))
+        }
+      }
+    }
+  }
+  if (targetFile.type === 'file') {
+    targetFile.tag = [...tagset]
+  }
+}
+
+/**
  * 取得したファイル情報からfileTableを構成
  */
 export const buildFileTable = (files: FileCryptoInfo[]) => {
@@ -314,6 +391,8 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
   dirTreeItems.forEach((x) => {
     const childTree = descendantsTable[x]?.diffList
     if (!childTree) return
+    const targetNode = fileTable[x]
+    assertNonDiffObject(targetNode)
     let nowWatchId: string | undefined = x
     // new -> old
     const ancestors: string[][] = []
@@ -322,7 +401,7 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
       nowWatchId = descendantsTable[nowWatchId]?.prevId
     }
     // new -> old
-    (fileTable[x] as FileObject | FolderObject).history =
+    targetNode.history =
       ancestors
         .map((x, i) => {
           if (i !== 0) x.pop()
@@ -332,33 +411,15 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
         .flat()
         .reverse()
     // 子供の差分を反映 old -> new
-    const targetFile = (fileTable[x] as FileObject | FolderObject)
-    const tagset = new Set<string>((targetFile.type === 'file' ? targetFile.tag : []))
-    for (const c of childTree.reverse()) {
-      const nextFile = fileTable[c]
-      if (nextFile.name) targetFile.name = nextFile.name
-      if (nextFile.parent) targetFile.parent = nextFile.parent
-
-      if (nextFile.type === 'diff') {
-        const { addtag, deltag } = nextFile.diff
-        if (targetFile.type === 'file') {
-          if (addtag) {
-            addtag.forEach(x => tagset.add(x))
-          }
-          if (deltag) {
-            deltag.forEach(x => tagset.delete(x))
-          }
-        }
-      }
-    }
-    if (targetFile.type === 'file') {
-      targetFile.tag = [...tagset]
-    }
+    integrateDifference(childTree.reverse(), fileTable, targetNode)
   })
 
   // create dir tree
   dirTreeItems.forEach((x) => {
-    (fileTable[(fileTable[x] as FileObject | FolderObject).parent ?? 'root'] as FolderObject).files.push(x)
+    assertNonDiffObject(fileTable[x])
+    const parentNode = fileTable[fileTable[x].parent ?? 'root']
+    assertFolderObject(parentNode)
+    parentNode.files.push(x)
   })
   // sort directory name
   dirTreeItems.push('root')

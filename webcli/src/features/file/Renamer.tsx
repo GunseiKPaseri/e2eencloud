@@ -1,28 +1,26 @@
 import React, { useState } from 'react'
-import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { FileState, createFolderAsync } from './fileSlice'
+import { useAppDispatch } from '../../app/hooks'
+import { renameAsync } from './fileSlice'
 
 import TextField from '@mui/material/TextField'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 
-export const AddFolder = () => {
-  const [name, setName] = useState<string>('')
+export const Renamer = (props: {id: string, name: string}) => {
+  const [name, setName] = useState<string>(props.name)
   const dispatch = useAppDispatch()
-  const filegroup = useAppSelector<FileState['activeFileGroup']>((state) => state.file.activeFileGroup)
-  if (filegroup?.type !== 'dir') return (<></>)
-  const handleAddDir = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleChangeName = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    await dispatch(createFolderAsync({ name }))
+    await dispatch(renameAsync({ id: props.id, name }))
   }
 
   return (
-    <Box component="form" onSubmit={handleAddDir} noValidate sx={{ mt: 1 }}>
+    <Box component="form" onSubmit={handleChangeName} noValidate sx={{ mt: 1 }}>
       <TextField
         margin="normal"
         fullWidth
         name="newname"
-        label="新規ディレクトリ名"
+        label="新規名称"
         type="normal"
         id="token"
         value={name}

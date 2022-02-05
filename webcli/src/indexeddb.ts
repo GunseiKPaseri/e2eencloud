@@ -15,7 +15,7 @@ export interface IndexDBFilesFile {
 }
 
 export interface IndexDBFilesFolder {
-  type: 'folder',
+  type: 'folder' | 'diff',
   id: string,
   name: string,
   parentId: string | null,
