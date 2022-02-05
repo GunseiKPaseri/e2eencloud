@@ -16,13 +16,15 @@ describe('#genUUID', () => {
 describe('#getSafeName', () => {
   test('安全な文字列に変換される', () => {
     expect(getSafeName([
+      'test',
       '\\/:*?<>|',
       'hoge.fuga.piyo',
       'hoge.fuga.piyo'
-    ], ['hoge.fuga.piyo'])).toEqual([
+    ], ['test', 'hoge.fuga.piyo'])).toEqual([
+      'test (2)',
       '＼／：＊？＜＞｜',
-      'hoge.fuga (1).piyo',
-      'hoge.fuga (2).piyo']
+      'hoge.fuga (2).piyo',
+      'hoge.fuga (3).piyo']
     )
   })
 })

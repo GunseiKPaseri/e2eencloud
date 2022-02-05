@@ -76,9 +76,9 @@ export const FileInfo2IndexDBFiles = (
  * ファイル名に指定番号を追加したものを取得(Like Windows)
  */
 export const getAddingNumberFileName = (name: string, idx: number) => {
-  if (idx === 0) return name
+  if (idx === 1) return name
   const t = name.lastIndexOf('.')
-  return `${name.slice(0, t)} (${idx})${name.slice(t)}`
+  return t === -1 ? `${name} (${idx})` : `${name.slice(0, t)} (${idx})${name.slice(t)}`
 }
 
 /**
