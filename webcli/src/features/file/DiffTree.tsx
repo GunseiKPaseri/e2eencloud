@@ -10,6 +10,7 @@ import TimelineItem from '@mui/lab/TimelineItem'
 import TimelineSeparator from '@mui/lab/TimelineSeparator'
 import { FileState } from './fileSlice'
 import { assertNonFileNodeDiff, createDiffExpression } from './utils'
+import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent'
 
 export const DiffTree = () => {
   const { activeFile, fileTable } = useAppSelector<FileState>(state => state.file)
@@ -30,6 +31,9 @@ export const DiffTree = () => {
               flex: 0
             }
           }}>
+            <TimelineOppositeContent color="text.secondary">
+              09:30 am
+            </TimelineOppositeContent>
             <TimelineSeparator>
               <TimelineDot variant={node.type === 'diff' ? 'outlined' : 'filled'} />
               {history.length - 1 !== i ? <TimelineConnector /> : <></>}
@@ -37,7 +41,7 @@ export const DiffTree = () => {
             <TimelineContent>
               {
                 history.length - 1 !== i
-                  ? createDiffExpression(fileTable[history[i + 1]], node)
+                  ? createDiffExpression(fileTable[history[i + 1]].originalFileInfo, node.originalFileInfo)
                   : node.originalFileInfo.name
               }
             </TimelineContent>
