@@ -103,6 +103,7 @@ export const createFolderAsync = createAsyncThunk<{uploaded: FileCryptoInfoWitho
     const fileInfo: FileInfoFolder = {
       id: genUUID(),
       name: changedFolderName,
+      createdAt: Date.now(),
       type: 'folder',
       parentId: parent
     }

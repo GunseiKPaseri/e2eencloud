@@ -26,13 +26,11 @@ export const DiffTree = () => {
       {history.map((x, i) => {
         const node = fileTable[x]
         return (
-          <TimelineItem key={node.id} sx={{
-            '&::before': {
-              flex: 0
-            }
-          }}>
-            <TimelineOppositeContent color="text.secondary">
-              09:30 am
+          <TimelineItem key={node.id}>
+            <TimelineOppositeContent color="text.secondary" style={{
+              flex: 0.2
+            }}>
+              {(new Date(node.createdAt)).toLocaleString()}
             </TimelineOppositeContent>
             <TimelineSeparator>
               <TimelineDot variant={node.type === 'diff' ? 'outlined' : 'filled'} />

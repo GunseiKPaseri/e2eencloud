@@ -19,7 +19,6 @@ import { getAESGCMKey, AESGCM, string2ByteArray, byteArray2base64, base642ByteAr
 import { axiosWithSession, appLocation } from '../componentutils'
 import FormData from 'form-data'
 import { AxiosResponse } from 'axios'
-import { IndexDBFiles, IndexDBFilesFile } from '../../indexeddb'
 
 import { v4 } from 'uuid'
 import { AES_FILE_KEY_LENGTH } from '../../const'
@@ -123,50 +122,6 @@ export const isDiffExt = (a: string, b: string) => {
   const extb = bidx === -1 ? '' : b.slice(bidx)
   return exta !== extb
 }
-
-/**
- * IndexDB情報からサーバDB保存用データを抽出
- */
-export const IndexDBFiles2FileInfo = (file: IndexDBFilesFile):FileInfoFile => ({
-  id: file.id,
-  name: file.name,
-  sha256: file.sha256,
-  type: file.type,
-  mime: file.mime,
-  size: file.size,
-  parentId: file.parentId,
-  prevId: file.prevId,
-  tag: file.tag
-})
-/**
- * サーバDB保存データからIndexDB情報を生成
- */
-export const FileInfo2IndexDBFiles = (
-  props: {fileInfo: FileInfoFile, encryptedFileIV: Uint8Array, fileKeyRaw: Uint8Array} |
-  {fileInfo: FileInfoFolder | FileInfoDiffFile, fileKeyRaw: Uint8Array}
-):IndexDBFiles => ('encryptedFileIV' in props
-  ? {
-      id: props.fileInfo.id,
-      name: props.fileInfo.name,
-      sha256: props.fileInfo.sha256,
-      mime: props.fileInfo.mime,
-      size: props.fileInfo.size,
-      parentId: props.fileInfo.parentId,
-      prevId: props.fileInfo.prevId,
-      tag: props.fileInfo.tag,
-      type: props.fileInfo.type,
-      encryptedFileIV: props.encryptedFileIV,
-      fileKeyRaw: props.fileKeyRaw
-    }
-  : {
-      id: props.fileInfo.id,
-      name: props.fileInfo.name,
-      type: props.fileInfo.type,
-      parentId: props.fileInfo.parentId,
-      prevId: props.fileInfo.prevId,
-      fileKeyRaw: props.fileKeyRaw
-    }
-)
 
 /**
  * ファイル名に指定番号を追加したものを取得(Like Windows)
@@ -275,6 +230,7 @@ export const submitFileWithEncryption = async (x: File, name: string, parentId: 
   const fileInfo:FileInfoFile = {
     id: uuid,
     name: name,
+    createdAt: Date.now(),
     sha256: hashStr,
     mime: x.type,
     type: 'file',
@@ -387,12 +343,14 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
       id: 'root',
       type: 'folder',
       name: 'root',
+      createdAt: 0,
       files: [],
       parentId: null,
       history: [],
       fileKeyBin: [],
       originalFileInfo: {
         type: 'folder',
+        createdAt: 0,
         id: 'root',
         name: 'root',
         parentId: null
@@ -581,6 +539,7 @@ export const createDiff = (props: {newName?: string, targetId: string, newTags?:
   return {
     id: genUUID(),
     name: name,
+    createdAt: Date.now(),
     type: 'diff',
     parentId: targetNode.parentId === 'root' ? null : targetNode.parentId,
     prevId,
@@ -593,6 +552,7 @@ export const createDiff = (props: {newName?: string, targetId: string, newTags?:
  */
 export const createDiffExpression = (before: FileInfo, after: FileInfo) => {
   const result: string[] = []
+  console.log(before, after)
   if (before.name !== after.name) {
     result.push(`ファイル名を"${after.name}"に変更`)
   }

@@ -13,6 +13,7 @@ export interface FileInfoFile {
   type: 'file',
   id: string,
   name: string,
+  createdAt: number,
   sha256: string,
   mime: string,
   size: number,
@@ -27,6 +28,7 @@ export interface FileInfoFolder {
   type: 'folder',
   id: string,
   name: string,
+  createdAt: number,
   parentId: string | null,
   prevId?: string,
 }
@@ -37,6 +39,7 @@ export interface FileInfoDiffFile {
   type: 'diff',
   id: string,
   name: string,
+  createdAt: number,
   parentId: string | null,
   prevId?: string,
   diff: FileDifference
