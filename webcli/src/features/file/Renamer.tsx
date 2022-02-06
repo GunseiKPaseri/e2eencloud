@@ -12,7 +12,7 @@ export const Renamer = (props: {id: string, name: string}) => {
   const [name, setName] = useState<string>(props.name)
   useEffect(() => {
     setName(props.name)
-  }, [props.id])
+  }, [props.name])
   const dispatch = useAppDispatch()
   const handleChangeName = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
