@@ -5,7 +5,7 @@ import { changeActiveDir, filedownloadAsync, fileuploadAsync } from './fileSlice
 import { FileTreeViewer } from './fileTreeViewer'
 import { Viewer } from './Viewer'
 import { AddFolder } from './AddFolder'
-import { DiffTree } from './diffTree'
+import { DiffTree } from './DiffTree'
 
 const style = {
   width: 200,
