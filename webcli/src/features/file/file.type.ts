@@ -51,7 +51,7 @@ export type FileInfo = FileInfoFile | FileInfoFolder | FileInfoDiffFile
  * 手元で管理するファイル情報
  */
 export type FileNodeFile = FileInfoFile & {
-  history: string[],
+  history: string[], // new => old
   nextId?: string,
   blobURL?: string,
   originalFileInfo: FileInfoFile
@@ -61,7 +61,7 @@ export type FileNodeFile = FileInfoFile & {
  * 手元で管理するフォルダ情報
  */
 export type FileNodeFolder = FileInfoFolder & {
-  history: string[],
+  history: string[], // new => old
   nextId?: string,
   files: string[],
   originalFileInfo: FileInfoFolder

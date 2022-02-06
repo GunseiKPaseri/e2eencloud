@@ -1,5 +1,6 @@
 import {
   buildFileTable,
+  createDiff,
   genUUID,
   getSafeName,
   isDiffExt
@@ -11,6 +12,72 @@ import {
   FileInfoFolder,
   FileTable
 } from './file.type'
+
+const fileKey: any = null
+const fileKeyRaw: any = null
+const encryptedFileIV: any = null
+const genFileInfoFile = (props: {
+  id: string,
+  parentId: string | null,
+  prevId?: string,
+  tag: string[],
+}): FileCryptoInfoWithBin => ({
+  fileKey,
+  fileInfo: {
+    type: 'file',
+    id: props.id,
+    name: props.id,
+    sha256: props.id,
+    mime: props.id,
+    size: 0,
+    parentId: props.parentId,
+    prevId: props.prevId,
+    tag: props.tag
+  },
+  fileKeyRaw,
+  encryptedFileIV
+})
+
+const genFileInfoFolder = (props: {
+  id: string,
+  parentId: string | null,
+  prevId?: string,
+}): {
+  fileKey: CryptoKey,
+  fileInfo: FileInfoFolder,
+  fileKeyRaw: Uint8Array
+} => ({
+  fileKey,
+  fileInfo: {
+    type: 'folder',
+    id: props.id,
+    name: props.id,
+    parentId: props.parentId,
+    prevId: props.prevId
+  },
+  fileKeyRaw
+})
+const genFileInfoDiff = (props: {
+  id: string,
+  parentId: string | null,
+  prevId?: string,
+  diff?: FileDifference
+}): {
+  fileKey: CryptoKey,
+  fileInfo: FileInfoDiffFile,
+  fileKeyRaw: Uint8Array
+} => ({
+  fileKey,
+  fileInfo: {
+    type: 'diff',
+    id: props.id,
+    name: props.id,
+    parentId: props.parentId,
+    prevId: props.prevId,
+    diff: props.diff ?? {}
+  },
+  fileKeyRaw
+})
 
 describe('#genUUID', () => {
   test('\'-\'を含まない', () => {
@@ -43,75 +110,82 @@ describe('#isDiffExt', () => {
   })
 })
 
+describe('#createDiff', () => {
+  test('正しく差分を作成できる', () => {
+    const a = genFileInfoFolder({ id: 'a', parentId: null })
+    const b = genFileInfoFile({ id: 'b', parentId: 'a', tag: ['あ'] })
+    const c = genFileInfoFile({ id: 'c', parentId: 'a', tag: [] })
+    const d = genFileInfoDiff({ id: 'j', parentId: null, prevId: 'a', diff: { addtag: ['い'] } })
+    const fileTable: FileTable = {
+      // folder
+      root: {
+        id: 'root',
+        type: 'folder',
+        name: 'root',
+        files: ['a'],
+        parentId: null,
+        history: [],
+        originalFileInfo: {
+          type: 'folder',
+          id: 'root',
+          name: 'root',
+          parentId: null
+        }
+      },
+      a: { ...a.fileInfo, type: 'folder', name: 'a', prevId: undefined, files: ['b', 'c'], parentId: 'root', history: ['a'], originalFileInfo: a.fileInfo },
+      // file
+      b: { ...b.fileInfo, type: 'file', name: 'd', prevId: undefined, parentId: 'a', nextId: 'd', history: ['d', 'b'], tag: ['あ', 'い'], originalFileInfo: b.fileInfo },
+      c: { ...c.fileInfo, type: 'file', name: 'c', prevId: undefined, parentId: 'a', history: ['i'], tag: ['う', 'え'], originalFileInfo: c.fileInfo },
+      // diff
+      d: { ...d.fileInfo, type: 'diff', name: 'd', prevId: 'b', parentId: 'a', diff: { addtag: ['い'] }, originalFileInfo: d.fileInfo }
+    }
+    const testSet:[FileInfoDiffFile, FileInfoDiffFile][] = [
+      [
+        createDiff({ targetId: 'b', newName: 'x' }, fileTable),
+        {
+          type: 'diff',
+          id: 'PRESET',
+          name: 'x',
+          parentId: 'a',
+          prevId: 'd',
+          diff: {}
+        }
+      ],
+      [
+        createDiff({ targetId: 'b', newName: 'c' }, fileTable),
+        {
+          type: 'diff',
+          id: 'PRESET',
+          name: 'c (2)',
+          parentId: 'a',
+          prevId: 'd',
+          diff: {}
+        }
+      ],
+      [
+        createDiff({ targetId: 'b', newTags: ['あ', 'う'] }, fileTable),
+        {
+          type: 'diff',
+          id: 'PRESET',
+          name: 'd',
+          parentId: 'a',
+          prevId: 'd',
+          diff: {
+            addtag: ['う'],
+            deltag: ['い']
+          }
+        }
+      ]
+    ]
+    for (const set of testSet) {
+      set[1].id = set[0].id
+      expect(set[0]).toEqual(set[1])
+    }
+  })
+})
+
 describe('#buildFileTable', () => {
   test('正しく構築できる', () => {
-    const fileKey: any = null
-    const fileKeyRaw: any = null
-    const encryptedFileIV: any = null
-    const genFileInfoFile = (props: {
-      id: string,
-      parentId: string | null,
-      prevId?: string,
-      tag: string[],
-    }): FileCryptoInfoWithBin => ({
-      fileKey,
-      fileInfo: {
-        type: 'file',
-        id: props.id,
-        name: props.id,
-        sha256: props.id,
-        mime: props.id,
-        size: 0,
-        parentId: props.parentId,
-        prevId: props.prevId,
-        tag: props.tag
-      },
-      fileKeyRaw,
-      encryptedFileIV
-    })
-
-    const genFileInfoFolder = (props: {
-      id: string,
-      parentId: string | null,
-      prevId?: string,
-    }): {
-      fileKey: CryptoKey,
-      fileInfo: FileInfoFolder,
-      fileKeyRaw: Uint8Array
-    } => ({
-      fileKey,
-      fileInfo: {
-        type: 'folder',
-        id: props.id,
-        name: props.id,
-        parentId: props.parentId,
-        prevId: props.prevId
-      },
-      fileKeyRaw
-    })
-
-    const genFileInfoDiff = (props: {
-      id: string,
-      parentId: string | null,
-      prevId?: string,
-      diff?: FileDifference
-    }): {
-      fileKey: CryptoKey,
-      fileInfo: FileInfoDiffFile,
-      fileKeyRaw: Uint8Array
-    } => ({
-      fileKey,
-      fileInfo: {
-        type: 'diff',
-        id: props.id,
-        name: props.id,
-        parentId: props.parentId,
-        prevId: props.prevId,
-        diff: props.diff ?? {}
-      },
-      fileKeyRaw
-    })
-
     const a = genFileInfoFolder({ id: 'a', parentId: null })
     const b = genFileInfoFile({ id: 'b', parentId: 'a', tag: [] })
     const c = genFileInfoDiff({ id: 'c', parentId: 'a', prevId: 'b', diff: { addtag: ['あ'] } })
@@ -141,7 +215,7 @@ describe('#buildFileTable', () => {
       },
       a: { ...a.fileInfo, type: 'folder', name: 'j', prevId: undefined, nextId: 'j', files: ['f', 'h', 'i'], parentId: 'root', history: ['j', 'a'], originalFileInfo: a.fileInfo },
       // file(dirobj) 最新の情報が反映される
-      f: { ...f.fileInfo, type: 'file', name: 'g', prevId: 'e', nextId: 'g', parentId: 'a', history: ['k', 'g', 'f', 'e', 'd', 'c', 'b'], tag: ['う', 'え', 'い'], originalFileInfo: f.fileInfo },
+      f: { ...f.fileInfo, type: 'file', name: 'k', prevId: 'e', nextId: 'g', parentId: 'a', history: ['k', 'g', 'f', 'e', 'd', 'c', 'b'], tag: ['う', 'え', 'い'], originalFileInfo: f.fileInfo },
       h: { ...h.fileInfo, type: 'file', name: 'h', prevId: undefined, parentId: 'a', history: ['h'], tag: ['い'], originalFileInfo: h.fileInfo },
       i: { ...i.fileInfo, type: 'file', name: 'i', prevId: undefined, parentId: 'a', history: ['i'], tag: [], originalFileInfo: i.fileInfo },
       // file
@@ -154,7 +228,26 @@ describe('#buildFileTable', () => {
       j: { ...j.fileInfo, type: 'diff', name: 'j', prevId: 'a', parentId: 'root', diff: {}, originalFileInfo: j.fileInfo },
       k: { ...k.fileInfo, type: 'diff', name: 'k', prevId: 'g', parentId: 'a', diff: { addtag: ['う', 'え'], deltag: ['あ'] }, originalFileInfo: k.fileInfo }
     }
-    expect(buildFileTable([a, b, c, d, e, f, g, h, i, j, k]))
+    const result = buildFileTable([a, b, c, d, e, f, g, h, i, j, k])
+    // setな要素はソートしておく
+    for (const node of [...Object.values(result.fileTable), ...Object.values(expectFileTable)]) {
+      // tag
+      if (node.type === 'file') node.tag.sort()
+      // children
+      if (node.type === 'folder') node.files.sort()
+      // addtag deltag
+      if (node.type === 'diff') {
+        if (node.diff.addtag) node.diff.addtag.sort()
+        if (node.diff.deltag) node.diff.deltag.sort()
+      }
+    }
+    // tagtree
+    for (const props in result.tagTree) {
+      result.tagTree[props].sort()
+    }
+
+    // いざ実行
+    expect(result)
       .toEqual({
         tagTree: {
           う: ['f'],

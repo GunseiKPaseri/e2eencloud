@@ -254,6 +254,8 @@ export const fileSlice = createSlice({
         const targetNode = state.fileTable[targetId]
         assertNonWritableDraftFileNodeDiff(targetNode)
         integrateDifference([uploaded.id], state.fileTable, targetNode)
+        // historyの追加
+        targetNode.history.unshift(uploaded.id)
       })
       .addCase(createFolderAsync.fulfilled, (state, action) => {
         const { uploaded, parents } = action.payload

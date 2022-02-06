@@ -10,7 +10,8 @@ import {
   FileNode,
   FileNodeFile,
   FileNodeFolder,
-  FileInfoDiffFile
+  FileInfoDiffFile,
+  FileDifference
 } from './file.type'
 
 import { decryptByRSA, encryptByRSA } from '../../encrypt'
@@ -463,7 +464,7 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
         .flat()
         .reverse()
     // 子供の差分を反映 old -> new
-    integrateDifference(childTree.reverse(), fileTable, targetNode)
+    integrateDifference(childTree, fileTable, targetNode)
   })
 
   // create dir tree
@@ -523,20 +524,30 @@ const checkRename = (newName: string, prevNode: FileNodeFile | FileNodeFolder, f
  * 差分情報を作成
  */
 export const createDiff = (props: {newName?: string, targetId: string, newTags?: string[]}, fileTable: FileTable):FileInfoDiffFile => {
-  const { newName, targetId } = props
+  const { newName, targetId, newTags } = props
   const targetNode = fileTable[targetId]
   if (!targetNode) throw new Error('存在しないファイルです')
   if (!(targetNode.type === 'file' || targetNode.type === 'folder')) throw new Error('適用要素が実体を持っていません')
+
+  const diff: FileDifference = {}
   // rename
   const name = newName ? checkRename(newName, targetNode, fileTable) : targetNode.name
   if (targetNode.history.length === 0) throw new Error('過去のファイルは変更できません')
-  const prevId = targetNode.history[targetNode.history.length - 1]
+  const prevId = targetNode.history[0]
+
+  // tag変更
+  if (targetNode.type === 'file' && newTags) {
+    const oldTags = targetNode.tag
+    diff.deltag = oldTags.filter(x => !newTags.includes(x))
+    diff.addtag = newTags.filter(x => !oldTags.includes(x))
+  }
+
   return {
     id: genUUID(),
     name: name,
     type: 'diff',
     parentId: targetNode.parentId === 'root' ? null : targetNode.parentId,
     prevId,
-    diff: {}
+    diff
   }
 }
