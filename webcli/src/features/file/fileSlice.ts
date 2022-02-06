@@ -246,10 +246,25 @@ export const fileSlice = createSlice({
       })
       .addCase(createDiffAsync.fulfilled, (state, action) => {
         const { uploaded, targetId } = action.payload
-        // add table
+        // fileTableを更新
         if (!uploaded.prevId) throw new Error('前方が指定されていません')
         state.fileTable[uploaded.prevId].nextId = uploaded.id
         state.fileTable[uploaded.id] = { ...uploaded, parentId: uploaded.parentId, originalFileInfo: uploaded }
+        // tagTreeを更新
+        if (uploaded.diff.addtag) {
+          for (const tag of uploaded.diff.addtag) {
+            if (state.tagTree[tag]) {
+              state.tagTree[tag].push(targetId)
+            } else {
+              state.tagTree[tag] = [targetId]
+            }
+          }
+        }
+        if (uploaded.diff.deltag) {
+          for (const tag of uploaded.diff.deltag) {
+            state.tagTree[tag] = state.tagTree[tag].filter(x => x !== targetId)
+          }
+        }
         // 差分反映
         const targetNode = state.fileTable[targetId]
         assertNonWritableDraftFileNodeDiff(targetNode)
