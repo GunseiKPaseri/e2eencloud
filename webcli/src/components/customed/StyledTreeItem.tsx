@@ -7,6 +7,14 @@ import { SvgIconProps } from '@mui/material/SvgIcon'
 
 import TreeItem, { TreeItemProps, treeItemClasses } from '@mui/lab/TreeItem'
 
+declare module 'react' {
+  // eslint-disable-next-line no-unused-vars
+  interface CSSProperties {
+    '--tree-view-color'? : CSSProperties['color'],
+    '--tree-view-bg-color'? : CSSProperties['color']
+  }
+}
+
 const StyledTreeItemRoot = styled(TreeItem)(({ theme }) => ({
   color: theme.palette.text.secondary,
   [`& .${treeItemClasses.iconContainer}`]: {
@@ -29,16 +37,15 @@ const StyledTreeItem = ({
   labelText,
   ...other
 }: TreeItemProps & {
-  bgColor?: string;
-  color?: string;
+  bgColor?: React.CSSProperties['color'];
   labelIcon?: React.ElementType<SvgIconProps>;
   labelInfo?: string;
   labelText: string;
 }) => {
-  const style = {
+  const style: React.CSSProperties = {
     '--tree-view-color': color,
     '--tree-view-bg-color': bgColor
-  } as React.CSSProperties
+  }
 
   return (
     <StyledTreeItemRoot

@@ -107,7 +107,7 @@ describe('#buildFileTable', () => {
         name: props.id,
         parentId: props.parentId,
         prevId: props.prevId,
-        diff: (props.diff as FileDifference)
+        diff: props.diff ?? {}
       },
       fileKeyRaw
     })
