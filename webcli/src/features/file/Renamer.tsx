@@ -30,15 +30,6 @@ export const Renamer = (props: {id: string, name: string}) => {
         value={name}
         onChange={(e) => { setName(e.target.value) }}
       />
-      <Button
-        type="submit"
-        disabled={name === ''}
-        fullWidth
-        variant="contained"
-        sx={{ mt: 3, mb: 2 }}
-      >
-        変更
-      </Button>
       {
         isDiffExt(props.name, name)
           ? <Alert severity='warning'>
@@ -46,5 +37,14 @@ export const Renamer = (props: {id: string, name: string}) => {
             </Alert>
           : <></>
       }
+      <Button
+        type="submit"
+        disabled={name === '' || name === props.name}
+        fullWidth
+        variant="contained"
+        sx={{ mt: 3, mb: 2 }}
+      >
+        変更
+      </Button>
     </Box>)
 }
