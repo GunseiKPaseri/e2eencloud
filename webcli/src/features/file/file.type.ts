@@ -54,7 +54,9 @@ export type FileNodeFile = FileInfoFile & {
   history: string[], // new => old
   nextId?: string,
   blobURL?: string,
-  originalFileInfo: FileInfoFile
+  originalFileInfo: FileInfoFile,
+  fileKeyBin: number[],
+  encryptedFileIVBin: number[]
 }
 
 /**
@@ -64,7 +66,8 @@ export type FileNodeFolder = FileInfoFolder & {
   history: string[], // new => old
   nextId?: string,
   files: string[],
-  originalFileInfo: FileInfoFolder
+  originalFileInfo: FileInfoFolder,
+  fileKeyBin: number[]
 }
 
 /**
@@ -73,7 +76,8 @@ export type FileNodeFolder = FileInfoFolder & {
 export type FileNodeDiff = FileInfoDiffFile & {
   nextId?: string,
   blobURL?: string,
-  originalFileInfo: FileInfoDiffFile
+  originalFileInfo: FileInfoDiffFile,
+  fileKeyBin: number[]
 }
 
 /**
@@ -90,16 +94,14 @@ export type FileTable = { [key: string]: FileNode }
  * サーバDBから取得した情報
  */
 export type FileCryptoInfoWithBin = {
-  encryptedFileIV: Uint8Array,
-  fileKey: CryptoKey,
+  encryptedFileIVBin: number[],
+  fileKeyBin: number[],
   fileInfo: FileInfoFile,
-  fileKeyRaw: Uint8Array
 }
 
 export type FileCryptoInfoWithoutBin = {
-  fileKey: CryptoKey,
+  fileKeyBin: number[],
   fileInfo: FileInfoFolder | FileInfoDiffFile,
-  fileKeyRaw: Uint8Array
 }
 
 export type FileCryptoInfo = FileCryptoInfoWithBin | FileCryptoInfoWithoutBin

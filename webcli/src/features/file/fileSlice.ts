@@ -1,20 +1,19 @@
 import { createAsyncThunk, createAction, createSlice } from '@reduxjs/toolkit'
 
 import {
-  FileInfoFile,
   FileInfoFolder,
   FileTable,
   tagGroup,
   dirGroup,
   FileNode,
   getfileinfoJSONRow,
-  FileInfoDiffFile
+  FileCryptoInfoWithoutBin,
+  FileCryptoInfoWithBin
 } from './file.type'
 
 import { allProgress, decryptAESGCM, getAESGCMKey } from '../../util'
 import { axiosWithSession, appLocation } from '../componentutils'
 import { AxiosResponse } from 'axios'
-import { db } from '../../indexeddb'
 import { RootState } from '../../app/store'
 
 import { setProgress, deleteProgress, progress } from '../progress/progressSlice'
@@ -25,7 +24,6 @@ import {
   assertNonWritableDraftFileNodeDiff,
   buildFileTable,
   decryptoFileInfo,
-  FileInfo2IndexDBFiles,
   genUUID,
   getEncryptedFileRaw,
   getFileHash,
@@ -33,7 +31,9 @@ import {
   integrateDifference,
   submitFileInfoWithEncryption,
   submitFileWithEncryption,
-  createDiff
+  createDiff,
+  assertFileInfoDiffFile,
+  assertFileInfoFolder
 } from './utils'
 
 /**
@@ -61,7 +61,7 @@ const initialState: FileState = {
 /**
  * ファイルをアップロードするReduxThunk
  */
-export const fileuploadAsync = createAsyncThunk<{uploaded: FileInfoFile[], parents: string[]}, {files: File[]}, {state: RootState}>(
+export const fileuploadAsync = createAsyncThunk<{uploaded: FileCryptoInfoWithBin[], parents: string[]}, {files: File[]}, {state: RootState}>(
   'file/fileupload',
   async (fileinput, { getState, dispatch }) => {
     const state = getState()
@@ -79,18 +79,16 @@ export const fileuploadAsync = createAsyncThunk<{uploaded: FileInfoFile[], paren
       (resolved, all) => {
         dispatch(setProgress({ progress: resolved / (all + 1), progressBuffer: all / (all + 1) }))
       })
-
-    await db.files.bulkPut(loadedfile.map(x => FileInfo2IndexDBFiles(x)))
     dispatch(deleteProgress())
 
-    return { uploaded: loadedfile.map(x => x.fileInfo), parents: activeFileGroup.parents }
+    return { uploaded: loadedfile, parents: activeFileGroup.parents }
   }
 )
 
 /**
  * フォルダを作成するReduxThunk
  */
-export const createFolderAsync = createAsyncThunk<{uploaded: FileInfoFolder, parents: string[]}, {name: string}, {state: RootState}>(
+export const createFolderAsync = createAsyncThunk<{uploaded: FileCryptoInfoWithoutBin, parents: string[]}, {name: string}, {state: RootState}>(
   'file/createFolder',
   async ({ name }, { getState, dispatch }) => {
     const state = getState()
@@ -109,9 +107,8 @@ export const createFolderAsync = createAsyncThunk<{uploaded: FileInfoFolder, par
       parentId: parent
     }
     const addFolder = await submitFileInfoWithEncryption(fileInfo)
-    await db.files.put(FileInfo2IndexDBFiles(addFolder))
 
-    return { uploaded: fileInfo, parents: activeFileGroup.parents }
+    return { uploaded: addFolder, parents: activeFileGroup.parents }
   }
 )
 
@@ -131,22 +128,20 @@ export const filedownloadAsync = createAsyncThunk<{url: string, fileId: string},
     if (fileObj.type !== 'file') throw new Error('バイナリファイルが関連付いていない要素です')
 
     let url = fileObj.blobURL
-    const file = await db.files.get(fileId)
-    if (!file || file.type !== 'file') throw new Error('DB上に鍵情報が存在しません')
 
     if (!url) {
-      const { fileKeyRaw, sha256, encryptedFileIV, mime } = file
+      const { fileKeyBin, encryptedFileIVBin } = fileObj
       dispatch(setProgress(progress(1, step)))
-      const fileKey = await getAESGCMKey(fileKeyRaw)
+      const fileKey = await getAESGCMKey(Uint8Array.from(fileKeyBin))
       dispatch(setProgress(progress(2, step)))
 
       const encryptedFile = await getEncryptedFileRaw(fileId)
-      const filebin = await decryptAESGCM(encryptedFile, fileKey, encryptedFileIV)
+      const filebin = await decryptAESGCM(encryptedFile, fileKey, Uint8Array.from(encryptedFileIVBin))
       dispatch(setProgress(progress(3, step)))
       const { hashStr } = await getFileHash(filebin)
 
-      if (hashStr !== sha256) throw new Error('hashが異なります')
-      url = URL.createObjectURL(new Blob([filebin], { type: mime }))
+      if (hashStr !== fileObj.sha256) throw new Error('hashが異なります')
+      url = URL.createObjectURL(new Blob([filebin], { type: fileObj.mime }))
     }
     dispatch(deleteProgress())
     return { url, fileId }
@@ -156,7 +151,7 @@ export const filedownloadAsync = createAsyncThunk<{url: string, fileId: string},
 /**
  *  ファイル名を変更するReduxThunk
  */
-export const createDiffAsync = createAsyncThunk<{uploaded: FileInfoDiffFile, targetId: string}, Parameters<typeof createDiff>[0], {state: RootState}>(
+export const createDiffAsync = createAsyncThunk<{uploaded: FileCryptoInfoWithoutBin, targetId: string}, Parameters<typeof createDiff>[0], {state: RootState}>(
   'file/rename',
   async (params, { getState, dispatch }) => {
     const step = 2
@@ -169,9 +164,8 @@ export const createDiffAsync = createAsyncThunk<{uploaded: FileInfoDiffFile, tar
 
     const addObject = await submitFileInfoWithEncryption(uploaded)
     dispatch(setProgress(progress(1, step)))
-    await db.files.put(FileInfo2IndexDBFiles(addObject))
     dispatch(deleteProgress())
-    return { uploaded, targetId: params.targetId }
+    return { uploaded: addObject, targetId: params.targetId }
   }
 )
 /**
@@ -194,7 +188,6 @@ export const buildFileTableAsync = createAsyncThunk<{ fileTable: FileTable, tagT
     dispatch(setProgress(progress(1, step)))
     const files = await Promise.all(rowfiles.data.map(x => decryptoFileInfo(x)))
     dispatch(setProgress(progress(2, step)))
-    await db.files.bulkPut(files.map(x => FileInfo2IndexDBFiles(x)))
 
     // create filetable
     console.log(files)
@@ -231,28 +224,30 @@ export const fileSlice = createSlice({
             ? 'root'
             : parents[parents.length - 1]
         // add table
-        for (const fileInfo of uploaded) {
-          state.fileTable[fileInfo.id] = { ...fileInfo, history: [fileInfo.id], originalFileInfo: fileInfo }
+        for (const { fileInfo, fileKeyBin, encryptedFileIVBin } of uploaded) {
+          state.fileTable[fileInfo.id] = { ...fileInfo, history: [fileInfo.id], originalFileInfo: fileInfo, fileKeyBin, encryptedFileIVBin }
         }
         const parentNode = state.fileTable[parent]
         assertWritableDraftFileNodeFolder(parentNode)
         parentNode.files =
           [
             ...parentNode.files,
-            ...uploaded.map(x => x.id)
+            ...uploaded.map(x => x.fileInfo.id)
           ]
         // add activeGroup
         state.activeFileGroup = { type: 'dir', files: parentNode.files, parents: action.payload.parents }
       })
       .addCase(createDiffAsync.fulfilled, (state, action) => {
         const { uploaded, targetId } = action.payload
+        const { fileInfo, fileKeyBin } = uploaded
+        assertFileInfoDiffFile(fileInfo)
         // fileTableを更新
-        if (!uploaded.prevId) throw new Error('前方が指定されていません')
-        state.fileTable[uploaded.prevId].nextId = uploaded.id
-        state.fileTable[uploaded.id] = { ...uploaded, parentId: uploaded.parentId, originalFileInfo: uploaded }
+        if (!fileInfo.prevId) throw new Error('前方が指定されていません')
+        state.fileTable[fileInfo.prevId].nextId = fileInfo.id
+        state.fileTable[fileInfo.id] = { ...fileInfo, parentId: fileInfo.parentId, originalFileInfo: fileInfo, fileKeyBin }
         // tagTreeを更新
-        if (uploaded.diff.addtag) {
-          for (const tag of uploaded.diff.addtag) {
+        if (fileInfo.diff.addtag) {
+          for (const tag of fileInfo.diff.addtag) {
             if (state.tagTree[tag]) {
               state.tagTree[tag].push(targetId)
             } else {
@@ -260,30 +255,32 @@ export const fileSlice = createSlice({
             }
           }
         }
-        if (uploaded.diff.deltag) {
-          for (const tag of uploaded.diff.deltag) {
+        if (fileInfo.diff.deltag) {
+          for (const tag of fileInfo.diff.deltag) {
             state.tagTree[tag] = state.tagTree[tag].filter(x => x !== targetId)
           }
         }
         // 差分反映
         const targetNode = state.fileTable[targetId]
         assertNonWritableDraftFileNodeDiff(targetNode)
-        integrateDifference([uploaded.id], state.fileTable, targetNode)
+        integrateDifference([fileInfo.id], state.fileTable, targetNode)
         // historyの追加
-        targetNode.history.unshift(uploaded.id)
+        targetNode.history.unshift(fileInfo.id)
       })
       .addCase(createFolderAsync.fulfilled, (state, action) => {
         const { uploaded, parents } = action.payload
+        const { fileInfo, fileKeyBin } = uploaded
         // 作成したフォルダをstateに反映
         const parent:string =
           parents.length === 0
             ? 'root'
             : parents[parents.length - 1]
         // add table
-        state.fileTable[uploaded.id] = { ...uploaded, files: [], history: [uploaded.id], originalFileInfo: uploaded }
+        assertFileInfoFolder(fileInfo)
+        state.fileTable[fileInfo.id] = { ...fileInfo, files: [], history: [fileInfo.id], originalFileInfo: fileInfo, fileKeyBin }
         const parentNode = state.fileTable[parent]
         assertWritableDraftFileNodeFolder(parentNode)
-        parentNode.files.push(action.payload.uploaded.id)
+        parentNode.files.push(fileInfo.id)
         // add activeGroup
         state.activeFileGroup = { type: 'dir', files: parentNode.files, parents: action.payload.parents }
       })

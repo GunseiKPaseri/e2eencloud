@@ -15,7 +15,7 @@ import {
 } from './file.type'
 
 import { decryptByRSA, encryptByRSA } from '../../encrypt'
-import { getAESGCMKey, AESGCM, string2ByteArray, byteArray2base64, base642ByteArray, decryptAESGCM, byteArray2string } from '../../util'
+import { getAESGCMKey, AESGCM, string2ByteArray, byteArray2base64, base642ByteArray, decryptAESGCM, byteArray2string, assertArrayNumber } from '../../util'
 import { axiosWithSession, appLocation } from '../componentutils'
 import FormData from 'form-data'
 import { AxiosResponse } from 'axios'
@@ -82,6 +82,29 @@ export const assertWritableDraftFileNodeFolder:
   (fileNode) => {
     if (fileNode.type !== 'folder') {
       throw new Error('This is not Folder Object!!')
+    }
+  }
+
+/**
+ * 要素がFileInfoDiffFileであると確信
+ * @param fileInfoDiffFile FileNodeDiffFile
+ */
+export const assertFileInfoDiffFile:
+  (fileInfo:FileInfo) => asserts fileInfo is FileInfoDiffFile =
+  (fileInfo) => {
+    if (fileInfo.type !== 'diff') {
+      throw new Error('This is not Diff Object!!')
+    }
+  }
+/**
+ * 要素がFileInfoDiffFileであると確信
+ * @param fileInfoDiffFile FileNodeDiffFile
+ */
+export const assertFileInfoFolder:
+  (fileInfo:FileInfo) => asserts fileInfo is FileInfoFolder =
+  (fileInfo) => {
+    if (fileInfo.type !== 'folder') {
+      throw new Error('This is not Folder!!')
     }
   }
 
@@ -221,8 +244,6 @@ export const submitFileInfoWithEncryption = async <T extends FileCryptoInfoWitho
     encryptByRSA(fileKeyRaw)
   ])
 
-  console.log(fileKey)
-
   const encryptedFileInfoBase64 = byteArray2base64(new Uint8Array(encryptedFileInfo.encrypt))
   const encryptedFileInfoIVBase64 = byteArray2base64(encryptedFileInfo.iv)
 
@@ -238,7 +259,7 @@ export const submitFileInfoWithEncryption = async <T extends FileCryptoInfoWitho
 
   // memory file to indexedDB
 
-  return { fileKey, fileInfo, fileKeyRaw }
+  return { fileKeyBin: Array.from(fileKeyRaw), fileInfo }
 }
 /**
  * ファイルをenryptoしてサーバに保存
@@ -294,8 +315,10 @@ export const submitFileWithEncryption = async (x: File, name: string, parentId: 
   await axiosWithSession.post(`${appLocation}/api/files`, fileSendData)
 
   // memory file to indexedDB
+  const encryptedFileIVBin = Array.from(encryptedFileIV)
+  const fileKeyBin = Array.from(fileKeyRaw)
 
-  return { encryptedFileIV, fileKey, fileInfo, fileKeyRaw }
+  return { encryptedFileIVBin, fileKeyBin, fileInfo }
 }
 
 /**
@@ -309,13 +332,15 @@ export const decryptoFileInfo = async (fileinforaw: getfileinfoJSONRow): Promise
   const fileKeyRaw = new Uint8Array(await decryptByRSA(encryptedFileKey))
 
   const fileKey = await getAESGCMKey(fileKeyRaw)
+  const fileKeyBin = Array.from(fileKeyRaw)
   const fileInfo:FileInfo = JSON.parse(byteArray2string(await decryptAESGCM(encryptedFileInfo, fileKey, encryptedFileInfoIV)))
   if (fileInfo.type === 'file') {
     if (!fileinforaw.encryptedFileIVBase64) throw new Error('取得情報が矛盾しています。fileにも関わらずencryptedFileIVが含まれていません')
     const encryptedFileIV = base642ByteArray(fileinforaw.encryptedFileIVBase64)
-    return { encryptedFileIV, fileKey, fileInfo, fileKeyRaw }
+    const encryptedFileIVBin = Array.from(encryptedFileIV)
+    return { encryptedFileIVBin, fileKeyBin, fileInfo }
   }
-  return { fileKey, fileInfo, fileKeyRaw }
+  return { fileKeyBin, fileInfo }
 }
 
 /**
@@ -365,6 +390,7 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
       files: [],
       parentId: null,
       history: [],
+      fileKeyBin: [],
       originalFileInfo: {
         type: 'folder',
         id: 'root',
@@ -374,7 +400,8 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
     }
   }
   const nextTable: {[key: string]: string | undefined} = {}
-  for (const { fileInfo } of files) {
+  for (const fileInfoWithEnc of files) {
+    const { fileInfo, fileKeyBin } = fileInfoWithEnc
     switch (fileInfo.type) {
       case 'folder':
         fileTable[fileInfo.id] = {
@@ -382,21 +409,30 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
           parentId: fileInfo.parentId ?? 'root',
           history: [],
           files: [],
+          fileKeyBin,
           originalFileInfo: fileInfo
         }
         break
-      case 'file':
+      case 'file': {
+        const fileInfoWithEncx: {[entry: string]: unknown} = fileInfoWithEnc
+        const fileInfoWithEncMustHaveBin: {encryptedFileIVBin?: unknown} = fileInfoWithEncx
+        const { encryptedFileIVBin } = fileInfoWithEncMustHaveBin
+        assertArrayNumber(encryptedFileIVBin)
         fileTable[fileInfo.id] = {
           ...fileInfo,
           parentId: fileInfo.parentId ?? 'root',
           history: [],
-          originalFileInfo: fileInfo
+          originalFileInfo: fileInfo,
+          fileKeyBin,
+          encryptedFileIVBin
         }
         break
+      }
       default:
         fileTable[fileInfo.id] = {
           ...fileInfo,
           parentId: fileInfo.parentId ?? 'root',
+          fileKeyBin,
           originalFileInfo: fileInfo
         }
     }
