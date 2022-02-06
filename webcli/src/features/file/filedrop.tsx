@@ -45,7 +45,7 @@ export const FileDropZone = () => {
       <Viewer />
       <h2>フォルダ作成</h2>
       <AddFolder />
-      <h2>ファイルツリー</h2>
+      <h2>ファイルヒストリー</h2>
       <DiffTree />
     </article>
   )
