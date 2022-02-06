@@ -5,6 +5,7 @@ import { changeActiveDir, filedownloadAsync, fileuploadAsync } from './fileSlice
 import { FileTreeViewer } from './fileTreeViewer'
 import { Viewer } from './Viewer'
 import { AddFolder } from './AddFolder'
+import { DiffTree } from './diffTree'
 
 const style = {
   width: 200,
@@ -44,6 +45,8 @@ export const FileDropZone = () => {
       <Viewer />
       <h2>フォルダ作成</h2>
       <AddFolder />
+      <h2>ファイルツリー</h2>
+      <DiffTree />
     </article>
   )
 }
