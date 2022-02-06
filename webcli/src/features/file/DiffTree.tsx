@@ -9,7 +9,7 @@ import TimelineDot from '@mui/lab/TimelineDot'
 import TimelineItem from '@mui/lab/TimelineItem'
 import TimelineSeparator from '@mui/lab/TimelineSeparator'
 import { FileState } from './fileSlice'
-import { assertNonFileNodeDiff } from './utils'
+import { assertNonFileNodeDiff, createDiffExpression } from './utils'
 
 export const DiffTree = () => {
   const { activeFile, fileTable } = useAppSelector<FileState>(state => state.file)
@@ -25,12 +25,22 @@ export const DiffTree = () => {
       {history.map((x, i) => {
         const node = fileTable[x]
         return (
-          <TimelineItem key={node.id}>
+          <TimelineItem key={node.id} sx={{
+            '&::before': {
+              flex: 0
+            }
+          }}>
             <TimelineSeparator>
-              <TimelineDot />
+              <TimelineDot variant={node.type === 'diff' ? 'outlined' : 'filled'} />
               {history.length - 1 !== i ? <TimelineConnector /> : <></>}
             </TimelineSeparator>
-            <TimelineContent>{node.originalFileInfo.name}</TimelineContent>
+            <TimelineContent>
+              {
+                history.length - 1 !== i
+                  ? createDiffExpression(fileTable[history[i + 1]], node)
+                  : node.originalFileInfo.name
+              }
+            </TimelineContent>
           </TimelineItem>
         )
       })}

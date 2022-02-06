@@ -551,3 +551,22 @@ export const createDiff = (props: {newName?: string, targetId: string, newTags?:
     diff
   }
 }
+
+/**
+ * 差分情報から差分説明を作成
+ */
+export const createDiffExpression = (before: FileInfo, after: FileInfo) => {
+  const result: string[] = []
+  if (before.name !== after.name) {
+    result.push(`ファイル名を"${after.name}"に変更`)
+  }
+  if (after.type === 'diff') {
+    if (after.diff.addtag && after.diff.addtag.length > 0) {
+      result.push(`["${after.diff.addtag.join('","')}"]タグを追加`)
+    }
+    if (after.diff.deltag && after.diff.deltag.length > 0) {
+      result.push(`["${after.diff.deltag.join('","')}"]タグを削除`)
+    }
+    return result.join('し、') + 'しました'
+  }
+}
