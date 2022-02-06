@@ -3,6 +3,7 @@ import { useAppSelector } from '../../app/hooks'
 import { FileNode, FileNodeFile } from './file.type'
 import { FileState } from './fileSlice'
 import { Renamer } from './Renamer'
+import { TagSetter } from './TagSetter'
 
 /**
  * 要素がFileNodeFile | undefinedであると確信
@@ -29,6 +30,7 @@ export const Viewer = () => {
             {activeNode.name}
           </a>
           <Renamer id={activeNode.id} name={activeNode.name} />
+          <TagSetter />
         </>
       : <></>
   }

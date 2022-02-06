@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useAppDispatch } from '../../app/hooks'
-import { renameAsync } from './fileSlice'
+import { createDiffAsync } from './fileSlice'
 
 import TextField from '@mui/material/TextField'
 import Box from '@mui/material/Box'
@@ -14,9 +14,9 @@ export const Renamer = (props: {id: string, name: string}) => {
     setName(props.name)
   }, [props.id])
   const dispatch = useAppDispatch()
-  const handleChangeName = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleChangeName = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    await dispatch(renameAsync({ id: props.id, name }))
+    dispatch(createDiffAsync({ targetId: props.id, newName: name }))
   }
 
   return (

@@ -32,7 +32,8 @@ import {
   getSafeName,
   integrateDifference,
   submitFileInfoWithEncryption,
-  submitFileWithEncryption
+  submitFileWithEncryption,
+  createDiff
 } from './utils'
 
 /**
@@ -155,42 +156,22 @@ export const filedownloadAsync = createAsyncThunk<{url: string, fileId: string},
 /**
  *  ファイル名を変更するReduxThunk
  */
-export const renameAsync = createAsyncThunk<{uploaded: FileInfoDiffFile, targetId: string}, {id: string, name: string}, {state: RootState}>(
+export const createDiffAsync = createAsyncThunk<{uploaded: FileInfoDiffFile, targetId: string}, Parameters<typeof createDiff>[0], {state: RootState}>(
   'file/rename',
-  async ({ id, name }, { getState, dispatch }) => {
+  async (params, { getState, dispatch }) => {
     const step = 2
     dispatch(setProgress(progress(0, step)))
 
     const state = getState()
     const fileTable = state.file.fileTable
-    const targetNode = fileTable[id]
-    if (!(targetNode.type === 'file' || targetNode.type === 'folder')) throw new Error('適用要素が実体を持っていません')
 
-    if (!targetNode) throw new Error('存在しないファイルです')
-    if (id === 'root' || targetNode.parentId === null) throw new Error('rootの名称は変更できません')
-    if (name === '') throw new Error('空文字は許容されません')
-    const parentNode = fileTable[targetNode.parentId]
-    assertFileNodeFolder(parentNode)
-    const [changedName] = getSafeName([name],
-      parentNode.files.flatMap(x => (fileTable[x].type === targetNode.type ? [fileTable[x].name] : []))
-    )
-    if (targetNode.history.length === 0) throw new Error('過去のファイルは変更できません')
-    console.log(targetNode.history)
-    const prevId = targetNode.history[targetNode.history.length - 1]
+    const uploaded = createDiff(params, fileTable)
 
-    const uploaded: FileInfoDiffFile = {
-      id: genUUID(),
-      name: changedName,
-      type: 'diff',
-      parentId: targetNode.parentId === 'root' ? null : targetNode.parentId,
-      prevId,
-      diff: {}
-    }
     const addObject = await submitFileInfoWithEncryption(uploaded)
     dispatch(setProgress(progress(1, step)))
     await db.files.put(FileInfo2IndexDBFiles(addObject))
     dispatch(deleteProgress())
-    return { uploaded, targetId: id }
+    return { uploaded, targetId: params.targetId }
   }
 )
 /**
@@ -263,7 +244,7 @@ export const fileSlice = createSlice({
         // add activeGroup
         state.activeFileGroup = { type: 'dir', files: parentNode.files, parents: action.payload.parents }
       })
-      .addCase(renameAsync.fulfilled, (state, action) => {
+      .addCase(createDiffAsync.fulfilled, (state, action) => {
         const { uploaded, targetId } = action.payload
         // add table
         if (!uploaded.prevId) throw new Error('前方が指定されていません')

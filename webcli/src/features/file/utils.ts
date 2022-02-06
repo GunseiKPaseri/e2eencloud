@@ -49,6 +49,18 @@ export const assertFileNodeFolder:
   }
 
 /**
+ * 要素がFileNodeFileであると確信
+ * @param fileNode FileNodeFile
+ */
+export const assertFileNodeFile:
+  (fileNode:FileNode) => asserts fileNode is FileNodeFile =
+  (fileNode) => {
+    if (fileNode.type !== 'file') {
+      throw new Error('This is not File Object!!')
+    }
+  }
+
+/**
  * 要素がWritableDraft<FileNodeDiff>で無いと確信
  * @param fileNode WritableDraft<WileObject> | WritableDraft<FileNodeFolder>
  */
@@ -490,4 +502,41 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
     }
   }
   return { fileTable, tagTree }
+}
+
+/**
+ * 新しい名前を検証
+ */
+const checkRename = (newName: string, prevNode: FileNodeFile | FileNodeFolder, fileTable: FileTable) => {
+  if (prevNode.id === 'root' || prevNode.parentId === null) throw new Error('rootの名称は変更できません')
+  if (newName === '') throw new Error('空文字は許容されません')
+  const parentNode = fileTable[prevNode.parentId]
+  assertFileNodeFolder(parentNode)
+  // 同名のフォルダ・同名のファイルを作らないように
+  const [changedName] = getSafeName([newName],
+    parentNode.files.flatMap(x => (fileTable[x].type === prevNode.type ? [fileTable[x].name] : []))
+  )
+  return changedName
+}
+
+/**
+ * 差分情報を作成
+ */
+export const createDiff = (props: {newName?: string, targetId: string, newTags?: string[]}, fileTable: FileTable):FileInfoDiffFile => {
+  const { newName, targetId } = props
+  const targetNode = fileTable[targetId]
+  if (!targetNode) throw new Error('存在しないファイルです')
+  if (!(targetNode.type === 'file' || targetNode.type === 'folder')) throw new Error('適用要素が実体を持っていません')
+  // rename
+  const name = newName ? checkRename(newName, targetNode, fileTable) : targetNode.name
+  if (targetNode.history.length === 0) throw new Error('過去のファイルは変更できません')
+  const prevId = targetNode.history[targetNode.history.length - 1]
+  return {
+    id: genUUID(),
+    name: name,
+    type: 'diff',
+    parentId: targetNode.parentId === 'root' ? null : targetNode.parentId,
+    prevId,
+    diff: {}
+  }
 }
