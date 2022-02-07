@@ -10,12 +10,15 @@ import FolderIcon from '@mui/icons-material/Folder'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile'
 import { useDropzone } from 'react-dropzone'
-import { FileNodeFolder, FileTable } from './file.type'
+import { FileNodeFile, FileNodeFolder, FileTable } from './file.type'
 
-const FileTreeItemFile = (props: {key: string, nodeId: string, labelText: string, onDoubleClick: React.MouseEventHandler<HTMLLIElement>}) => {
+const FileTreeItemFile = ({ target, onDoubleClick }: {target: FileNodeFile, onDoubleClick: React.MouseEventHandler<HTMLLIElement>}) => {
   return (
     <StyledTreeItem
-      {...props}
+      key={target.id}
+      nodeId={target.id}
+      labelText={target.name}
+      onDoubleClick={onDoubleClick}
       endIcon={<InsertDriveFileIcon />}
     >
     </StyledTreeItem>
@@ -95,14 +98,12 @@ function FileTreeItem ({
   onSelectFolder: (id: string) => void
 }) {
   const target = fileTable[targetId]
-  if (!target) return <></>
+  if (!target || target.type === 'diff') return <></>
 
   return target.type === 'folder'
     ? <FileTreeItemFolder target={target} fileTable={fileTable} onSelectFile={onSelectFile} onSelectFolder={onSelectFolder} />
     : <FileTreeItemFile
-        key={targetId}
-        nodeId={targetId}
-        labelText={target.name}
+        target={target}
         onDoubleClick={(e) => { onSelectFile(targetId) }}
       />
 }
