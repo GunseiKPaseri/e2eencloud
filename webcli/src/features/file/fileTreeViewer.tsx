@@ -10,27 +10,35 @@ import FolderIcon from '@mui/icons-material/Folder'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile'
 import { useDropzone } from 'react-dropzone'
+import { FileNodeFolder, FileTable } from './file.type'
 
-const FileTreeItem = ({
-  fileTable,
+const FileTreeItemFile = (props: {key: string, nodeId: string, labelText: string, onDoubleClick: React.MouseEventHandler<HTMLLIElement>}) => {
+  return (
+    <StyledTreeItem
+      {...props}
+      endIcon={<InsertDriveFileIcon />}
+    >
+    </StyledTreeItem>
+  )
+}
+
+const FileTreeItemFolder = ({
   target,
+  fileTable,
   onSelectFile,
   onSelectFolder
 }: {
-  fileTable: FileState['fileTable'],
-  target: string,
-  onSelectFile: (id :string) => void
+  target: FileNodeFolder,
+  fileTable: FileTable,
+  onSelectFile: (id :string) => void,
   onSelectFolder: (id: string) => void
 }) => {
-  const t = fileTable[target]
-  if (!t) return null
-
   const dispatch = useAppDispatch()
   // drop zone option
   const onDrop = useCallback(acceptedFiles => {
-    dispatch(fileuploadAsync({ files: acceptedFiles, parentId: t.id }))
-    console.log(acceptedFiles, t.id)
-  }, [t.id])
+    dispatch(fileuploadAsync({ files: acceptedFiles, parentId: target.id }))
+    console.log(acceptedFiles, target.id)
+  }, [target.id])
   const {
     getRootProps,
     isFocused,
@@ -48,37 +56,55 @@ const FileTreeItem = ({
     ...(isDragReject ? { background: '#ffeeee' } : {})
   }), [isFocused, isDragAccept, isDragReject])
 
-  return t.type === 'folder'
-    ? <div
-        {...rootProps}
-        style={customStyle}
+  return (
+    <div
+      {...rootProps}
+      style={customStyle}
+    >
+      <StyledTreeItem
+        nodeId={target.id}
+        labelText={target.name}
+        endIcon={<FolderIcon />}
+        onClick={(e) => { onSelectFolder(target.id) }}
       >
-        <StyledTreeItem
-          nodeId={target}
-          labelText={t.name}
-          endIcon={<FolderIcon />}
-          onClick={(e) => { onSelectFolder(target) }}
-        >
-          {
-            t.files.map(c =>
-              <FileTreeItem
-                key={c}
-                fileTable={fileTable}
-                target={c}
-                onSelectFile={onSelectFile}
-                onSelectFolder={onSelectFolder}
-              />)
-          }
-        </StyledTreeItem>
-    </div>
-    : <StyledTreeItem
-        key={target}
-        nodeId={target}
-        labelText={t.name}
-        endIcon={<InsertDriveFileIcon />}
-        onDoubleClick={(e) => { onSelectFile(target) }}
-      >
+        {
+          target.files.map(c =>
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            <FileTreeItem
+              key={c}
+              fileTable={fileTable}
+              targetId={c}
+              onSelectFile={onSelectFile}
+              onSelectFolder={onSelectFolder}
+            />)
+        }
       </StyledTreeItem>
+    </div>
+  )
+}
+
+function FileTreeItem ({
+  fileTable,
+  targetId,
+  onSelectFile,
+  onSelectFolder
+}: {
+  fileTable: FileState['fileTable'],
+  targetId: string,
+  onSelectFile: (id :string) => void
+  onSelectFolder: (id: string) => void
+}) {
+  const target = fileTable[targetId]
+  if (!target) return <></>
+
+  return target.type === 'folder'
+    ? <FileTreeItemFolder target={target} fileTable={fileTable} onSelectFile={onSelectFile} onSelectFolder={onSelectFolder} />
+    : <FileTreeItemFile
+        key={targetId}
+        nodeId={targetId}
+        labelText={target.name}
+        onDoubleClick={(e) => { onSelectFile(targetId) }}
+      />
 }
 
 export const FileTreeViewer = ({ onSelectFile, onSelectFolder }: {onSelectFile: (id :string)=>void, onSelectFolder: (id :string)=>void}) => {
@@ -92,7 +118,7 @@ export const FileTreeViewer = ({ onSelectFile, onSelectFolder }: {onSelectFile: 
     >
       <FileTreeItem
         fileTable={fileTable}
-        target='root'
+        targetId='root'
         onSelectFile= {onSelectFile}
         onSelectFolder= {onSelectFolder}
       />
