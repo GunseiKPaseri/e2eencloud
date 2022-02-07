@@ -35,6 +35,7 @@ const StyledTreeItem = ({
   labelIcon,
   labelInfo,
   labelText,
+  style,
   ...other
 }: TreeItemProps & {
   bgColor?: React.CSSProperties['color'];
@@ -42,9 +43,10 @@ const StyledTreeItem = ({
   labelInfo?: string;
   labelText: string;
 }) => {
-  const style: React.CSSProperties = {
+  const trueStyle: React.CSSProperties = {
     '--tree-view-color': color,
-    '--tree-view-bg-color': bgColor
+    '--tree-view-bg-color': bgColor,
+    ...style
   }
 
   return (
@@ -60,7 +62,7 @@ const StyledTreeItem = ({
           </Typography>
         </Box>
       }
-      style={style}
+      style={trueStyle}
       {...other}
     />
   )

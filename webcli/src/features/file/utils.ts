@@ -552,7 +552,6 @@ export const createDiff = (props: {newName?: string, targetId: string, newTags?:
  */
 export const createDiffExpression = (before: FileInfo, after: FileInfo) => {
   const result: string[] = []
-  console.log(before, after)
   if (before.name !== after.name) {
     result.push(`ファイル名を"${after.name}"に変更`)
   }

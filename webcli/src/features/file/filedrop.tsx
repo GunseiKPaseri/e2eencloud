@@ -20,7 +20,7 @@ export const FileDropZone = () => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (acceptedFiles) => {
       // Do something with the files
-      dispatch(fileuploadAsync({ files: acceptedFiles }))
+      dispatch(fileuploadAsync({ files: acceptedFiles, parentId: 'root' }))
       console.log('acceptedFiles:', acceptedFiles)
     }
   })

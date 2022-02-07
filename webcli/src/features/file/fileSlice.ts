@@ -61,27 +61,28 @@ const initialState: FileState = {
 /**
  * ファイルをアップロードするReduxThunk
  */
-export const fileuploadAsync = createAsyncThunk<{uploaded: FileCryptoInfoWithBin[], parents: string[]}, {files: File[]}, {state: RootState}>(
+export const fileuploadAsync = createAsyncThunk<{uploaded: FileCryptoInfoWithBin[], parentId: string}, {files: File[], parentId: string}, {state: RootState}>(
   'file/fileupload',
-  async (fileinput, { getState, dispatch }) => {
+  async ({ files, parentId }, { getState, dispatch }) => {
     const state = getState()
-    const activeFileGroup = state.file.activeFileGroup
-    if (activeFileGroup?.type !== 'dir') throw new Error('ここにアップロードできません')
+
+    const fileTable = state.file.fileTable
+
+    const parent = fileTable[parentId]
+    if (!parent || parent.type !== 'folder') throw new Error('ここにアップロードできません')
     const changedNameFile = getSafeName(
-      fileinput.files.map(x => x.name),
-      activeFileGroup.files.flatMap(x => (state.file.fileTable[x].type === 'file' ? [state.file.fileTable[x].name] : []))
+      files.map(x => x.name),
+      parent.files.flatMap(x => (fileTable[x].type === 'file' ? [fileTable[x].name] : []))
     )
 
-    const parent = activeFileGroup.parents.length === 0 ? null : activeFileGroup.parents[activeFileGroup.parents.length - 1]
-
     const loadedfile = await allProgress(
-      fileinput.files.map((x, i) => submitFileWithEncryption(x, changedNameFile[i], parent)),
+      files.map((x, i) => submitFileWithEncryption(x, changedNameFile[i], parentId)),
       (resolved, all) => {
         dispatch(setProgress({ progress: resolved / (all + 1), progressBuffer: all / (all + 1) }))
       })
     dispatch(deleteProgress())
 
-    return { uploaded: loadedfile, parents: activeFileGroup.parents }
+    return { uploaded: loadedfile, parentId }
   }
 )
 
@@ -219,24 +220,22 @@ export const fileSlice = createSlice({
       })
       .addCase(fileuploadAsync.fulfilled, (state, action) => {
         // アップロードしたファイルをstateに反映
-        const { uploaded, parents } = action.payload
-        const parent:string =
-          parents.length === 0
-            ? 'root'
-            : parents[parents.length - 1]
+        const { uploaded, parentId } = action.payload
         // add table
         for (const { fileInfo, fileKeyBin, encryptedFileIVBin } of uploaded) {
           state.fileTable[fileInfo.id] = { ...fileInfo, history: [fileInfo.id], originalFileInfo: fileInfo, fileKeyBin, encryptedFileIVBin }
         }
-        const parentNode = state.fileTable[parent]
+        const parentNode = state.fileTable[parentId]
         assertWritableDraftFileNodeFolder(parentNode)
         parentNode.files =
           [
             ...parentNode.files,
             ...uploaded.map(x => x.fileInfo.id)
           ]
-        // add activeGroup
-        state.activeFileGroup = { type: 'dir', files: parentNode.files, parents: action.payload.parents }
+        // renew activeGroup
+        if (state.activeFileGroup && state.activeFileGroup.type === 'dir' && state.activeFileGroup.files[state.activeFileGroup.files.length - 1]) {
+          state.activeFileGroup = { ...state.activeFileGroup, files: [...state.activeFileGroup.files, ...uploaded.map(x => x.fileInfo.id)] }
+        }
       })
       .addCase(createDiffAsync.fulfilled, (state, action) => {
         const { uploaded, targetId } = action.payload
