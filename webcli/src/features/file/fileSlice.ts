@@ -223,7 +223,7 @@ export const fileSlice = createSlice({
         state.fileTable = action.payload.fileTable
         state.tagTree = action.payload.tagTree
         assertFileNodeFolder(action.payload.fileTable.root)
-        state.activeFileGroup = { type: 'dir', files: action.payload.fileTable.root.files, parents: [] }
+        state.activeFileGroup = { type: 'dir', folderId: 'root', files: action.payload.fileTable.root.files, parents: [] }
       })
       .addCase(fileuploadAsync.fulfilled, (state, action) => {
         // アップロードしたファイルをstateに反映
@@ -303,7 +303,7 @@ export const fileSlice = createSlice({
         // set fileTable
         state.fileTable = { ...newFileTable }
         // add activeGroup
-        state.activeFileGroup = { type: 'dir', files: sortedNewFiles, parents }
+        state.activeFileGroup = { type: 'dir', folderId: parent, files: sortedNewFiles, parents }
       })
       .addCase(filedownloadAsync.fulfilled, (state, action) => {
         // 生成したblobリンク等を反映
@@ -331,6 +331,7 @@ export const fileSlice = createSlice({
         }
         state.activeFileGroup = {
           type: 'dir',
+          folderId: firstId,
           files: activeDir.files,
           parents: parents.reverse()
         }

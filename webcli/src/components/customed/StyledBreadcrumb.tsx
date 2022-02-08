@@ -1,5 +1,10 @@
-import Chip from '@mui/material/Chip'
+import React, { useCallback, useState } from 'react'
+import Chip, { ChipTypeMap } from '@mui/material/Chip'
 import { emphasize, styled } from '@mui/material/styles'
+import { OverridableComponent } from '@mui/material/OverridableComponent'
+import Menu from '@mui/material/Menu'
+
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 export const StyledBreadcrumb = styled(Chip)(({ theme }) => {
   const backgroundColor =
@@ -20,3 +25,41 @@ export const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     }
   }
 })
+
+export const StyledBreadcrumbWithMenu = (props: OverridableComponent<ChipTypeMap> & {menuItems: JSX.Element[]}) => {
+  const { menuItems, ...chipprops } = props
+  const [anchorMenuEl, setAnchorMenuEl] = useState<HTMLButtonElement|undefined>(undefined)
+
+  const handleMenu: React.MouseEventHandler<HTMLButtonElement> = useCallback((event) => {
+    setAnchorMenuEl(event.currentTarget)
+  }, [])
+
+  const handleClose: React.MouseEventHandler<HTMLElement> = useCallback((event) => {
+    setAnchorMenuEl(undefined)
+  }, [])
+
+  return (<>
+    <StyledBreadcrumb {...chipprops} deleteIcon={menuItems.length > 0 ? <ExpandMoreIcon /> : <></>} onDelete={handleMenu}/>
+    { anchorMenuEl
+      ? <Menu
+          id="menu-appbar"
+          anchorEl={anchorMenuEl}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right'
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right'
+          }}
+          keepMounted
+          open={Boolean(anchorMenuEl)}
+          onClose={handleClose}
+          onClick={handleClose}
+        >
+          {menuItems}
+        </Menu>
+      : <></>
+    }
+  </>)
+}

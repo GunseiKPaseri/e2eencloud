@@ -110,7 +110,7 @@ export type FileCryptoInfoWithoutBin = {
 export type FileCryptoInfo = FileCryptoInfoWithBin | FileCryptoInfoWithoutBin
 
 export type tagGroup = {type: 'tag', files: string[], tagName: string}
-export type dirGroup = {type: 'dir', files: string[], parents: string[]}
+export type dirGroup = {type: 'dir', folderId: string, files: string[], parents: string[]}
 
 export interface getfileinfoJSONRow {
   id: string,

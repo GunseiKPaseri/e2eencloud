@@ -17,12 +17,14 @@ import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline'
 
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { changeActiveDir, filedownloadAsync, FileState } from './fileSlice'
-import { assertNonFileNodeDiff } from './utils'
+import { assertFileNodeFolder, assertNonFileNodeDiff } from './utils'
 import { FileNodeFile, FileNodeFolder } from './file.type'
 import { TagButton } from './TagButton'
 import Breadcrumbs from '@mui/material/Breadcrumbs'
 import Typography from '@mui/material/Typography'
-import { StyledBreadcrumb } from '../../components/customed/StyledBreadcrumb'
+import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '../../components/customed/StyledBreadcrumb'
+import MenuItem from '@mui/material/MenuItem'
+import ListItemIcon from '@mui/material/ListItemIcon'
 
 const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder: (id: string)=>void}) => {
   const { targetFolder, onSelectFolder } = props
@@ -85,10 +87,24 @@ export const FileList = () => {
                     <StyledBreadcrumb key='dir' icon={<FolderIcon fontSize='small' />} label='ディレクトリ' />,
                     ...activeFileGroup.parents.map(x => {
                       const target = fileTable[x]
+                      assertFileNodeFolder(target)
                       return (
-                      <StyledBreadcrumb key={x} label={target.name} onClick={(e) => {
+                      <StyledBreadcrumbWithMenu key={x} label={target.name} onClick={(e) => {
                         dispatch(changeActiveDir({ id: x }))
-                      }} />
+                      }} menuItems={target.files.filter(x => fileTable[x].type === 'folder').map(x => {
+                        const subdir = fileTable[x]
+                        assertFileNodeFolder(subdir)
+                        return (
+                          <MenuItem key={x} onClick={(e) => dispatch(changeActiveDir({ id: x }))}>
+                            <ListItemIcon>
+                              <FolderIcon />
+                            </ListItemIcon>
+                            <ListItemText>
+                              {subdir.name}
+                            </ListItemText>
+                          </MenuItem>
+                        )
+                      })}/>
                       )
                     })]
                   : [
