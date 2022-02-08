@@ -22,7 +22,7 @@ import { FileNodeFile, FileNodeFolder } from './file.type'
 const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder: (id: string)=>void}) => {
   const { targetFolder, onSelectFolder } = props
   return (
-    <ListItem onDoubleClick={() => onSelectFolder(props.targetFolder.id)} style={{ cursor: 'pointer' }}>
+    <ListItem button onDoubleClick={() => onSelectFolder(props.targetFolder.id)}>
       <ListItemAvatar>
         <Avatar>
           <FolderIcon />
@@ -38,7 +38,7 @@ const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder
 const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: string)=>void}) => {
   const { targetFile, onSelectFile } = props
   return (
-    <ListItem onDoubleClick={() => onSelectFile(targetFile.id)} style={{ cursor: 'pointer' }}>
+    <ListItem button onDoubleClick={() => onSelectFile(targetFile.id)}>
       <ListItemAvatar>
         <Avatar>
           <InsertDriveFileIcon />
