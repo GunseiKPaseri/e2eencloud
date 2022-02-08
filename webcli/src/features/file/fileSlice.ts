@@ -34,7 +34,8 @@ import {
   createDiff,
   assertFileInfoDiffFile,
   assertFileInfoFolder,
-  assertFileNodeFile
+  assertFileNodeFile,
+  fileSort
 } from './utils'
 
 /**
@@ -246,7 +247,7 @@ export const fileSlice = createSlice({
           ]
         // renew activeGroup
         if (state.activeFileGroup && state.activeFileGroup.type === 'dir' && state.activeFileGroup.files[state.activeFileGroup.files.length - 1]) {
-          state.activeFileGroup = { ...state.activeFileGroup, files: [...state.activeFileGroup.files, ...uploaded.map(x => x.fileInfo.id)] }
+          state.activeFileGroup = { ...state.activeFileGroup, files: fileSort([...state.activeFileGroup.files, ...uploaded.map(x => x.fileInfo.id)], state.fileTable) }
         }
       })
       .addCase(createDiffAsync.fulfilled, (state, action) => {
@@ -289,15 +290,20 @@ export const fileSlice = createSlice({
             : parents[parents.length - 1]
         // add table
         assertFileInfoFolder(fileInfo)
-        state.fileTable = {
+        const newFileTable:FileTable = {
           [fileInfo.id]: { ...fileInfo, files: [], history: [fileInfo.id], originalFileInfo: fileInfo, fileKeyBin },
           ...state.fileTable
         }
+        // add parent
         const parentNode = state.fileTable[parent]
         assertWritableDraftFileNodeFolder(parentNode)
-        state.fileTable[parent] = { ...parentNode, files: [...parentNode.files, fileInfo.id] }
+        const newFiles = [...parentNode.files, fileInfo.id]
+        const sortedNewFiles = fileSort(newFiles, newFileTable)
+        newFileTable[parent] = { ...parentNode, files: sortedNewFiles }
+        // set fileTable
+        state.fileTable = { ...newFileTable }
         // add activeGroup
-        state.activeFileGroup = { type: 'dir', files: parentNode.files, parents: action.payload.parents }
+        state.activeFileGroup = { type: 'dir', files: sortedNewFiles, parents }
       })
       .addCase(filedownloadAsync.fulfilled, (state, action) => {
         // 生成したblobリンク等を反映

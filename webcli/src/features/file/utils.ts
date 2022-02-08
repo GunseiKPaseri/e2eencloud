@@ -335,6 +335,19 @@ export const integrateDifference = (diffs: string[], fileTable: FileTable, targe
 }
 
 /**
+ * 与えられたファイルをソート
+ */
+export const fileSort = (filelist: string[], fileTable: FileTable) => {
+  return filelist.sort((a, b) => {
+    const ta = fileTable[a]
+    const tb = fileTable[b]
+    if (ta.type === 'folder' && tb.type === 'file') return -1
+    if (ta.type === 'file' && tb.type === 'folder') return 1
+    return fileTable[a].name.localeCompare(fileTable[b].name, 'ja')
+  })
+}
+
+/**
  * 取得したファイル情報からfileTableを構成
  */
 export const buildFileTable = (files: FileCryptoInfo[]) => {
@@ -473,13 +486,7 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
   dirTreeItems.forEach((x) => {
     const t = fileTable[x]
     if (t.type === 'folder') {
-      t.files = t.files.sort((a, b) => {
-        const ta = fileTable[a]
-        const tb = fileTable[b]
-        if (ta.type === 'folder' && tb.type === 'file') return 1
-        if (ta.type === 'file' && tb.type === 'folder') return -1
-        return fileTable[a].name.localeCompare(fileTable[b].name, 'ja')
-      })
+      t.files = fileSort(t.files, fileTable)
     }
   })
 
