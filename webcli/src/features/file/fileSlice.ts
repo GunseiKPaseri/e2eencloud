@@ -204,7 +204,12 @@ export const buildFileTableAsync = createAsyncThunk<{ fileTable: FileTable, tagT
 /**
  * activeFileGroupを変更(ディレクトリ)
  * */
-export const changeActiveDir = createAction<{id: string}>('file/changeActiveFileGroup')
+export const changeActiveDir = createAction<{id: string}>('file/changeActiveFileGroupDirr')
+
+/**
+ * activeFileGroupを変更(タグ)
+ * */
+export const changeActiveTag = createAction<{tag: string}>('file/changeActiveFileGroupTag')
 
 export const fileSlice = createSlice({
   name: 'file',
@@ -322,6 +327,14 @@ export const fileSlice = createSlice({
           type: 'dir',
           files: activeDir.files,
           parents: parents.reverse()
+        }
+      })
+      .addCase(changeActiveTag, (state, action) => {
+      // 指定タグのディレクトリをactiveにする
+        state.activeFileGroup = {
+          type: 'tag',
+          files: state.tagTree[action.payload.tag] ?? [],
+          tagName: action.payload.tag
         }
       })
   }

@@ -9,8 +9,29 @@ import TimelineDot from '@mui/lab/TimelineDot'
 import TimelineItem from '@mui/lab/TimelineItem'
 import TimelineSeparator from '@mui/lab/TimelineSeparator'
 import { FileState } from './fileSlice'
-import { assertNonFileNodeDiff, createDiffExpression } from './utils'
+import { assertNonFileNodeDiff } from './utils'
 import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent'
+import { FileInfo } from './file.type'
+import { TagButton } from './TagButton'
+
+/**
+ * 差分情報から差分説明を作成
+ */
+export const createDiffExpression = (before: FileInfo, after: FileInfo):JSX.Element => {
+  const result: JSX.Element[] = []
+  if (before.name !== after.name) {
+    result.push(<>{`ファイル名を"${after.name}"に変更`}</>)
+  }
+  if (after.type === 'diff') {
+    if (after.diff.addtag && after.diff.addtag.length > 0) {
+      result.push(<>{[...after.diff.addtag.map(x => <TagButton key={x} tag={x}/>), <>タグを追加</>]}</>)
+    }
+    if (after.diff.deltag && after.diff.deltag.length > 0) {
+      result.push(<>{[...after.diff.deltag.map(x => <TagButton key={x} tag={x}/>), <>タグを削除</>]}</>)
+    }
+  }
+  return <>{[...result, <>しました</>]}</>
+}
 
 export const DiffTree = () => {
   const { activeFile, fileTable } = useAppSelector<FileState>(state => state.file)

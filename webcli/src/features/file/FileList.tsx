@@ -7,7 +7,7 @@ import ListItemText from '@mui/material/ListItemText'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import ToggleButton from '@mui/material/ToggleButton'
 
-import { DataGrid, GridRowsProp } from '@mui/x-data-grid'
+import { DataGrid, GridRenderCellParams, GridRowsProp, jaJP } from '@mui/x-data-grid'
 
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile'
 import FolderIcon from '@mui/icons-material/Folder'
@@ -18,6 +18,7 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { changeActiveDir, filedownloadAsync, FileState } from './fileSlice'
 import { assertNonFileNodeDiff } from './utils'
 import { FileNodeFile, FileNodeFolder } from './file.type'
+import { TagButton } from './TagButton'
 
 const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder: (id: string)=>void}) => {
   const { targetFolder, onSelectFolder } = props
@@ -91,21 +92,31 @@ export const FileList = () => {
               )
             : <div style={{ height: 300, width: '100%' }}>
                 <DataGrid
+                  localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
+                  editMode="row"
                   rows={
                     activeFileGroup.files.map<GridRowsProp[number]>(x => {
                       const target = fileTable[x]
                       assertNonFileNodeDiff(target)
                       return target.type === 'folder'
-                        ? { id: target.id, name: target.name, mime: '', size: '', tags: '' }
-                        : { id: target.id, name: target.name, mime: target.mime, size: target.size, tags: target.tag.join(',') }
+                        ? { id: target.id, name: target.name, mime: '', size: -1, tags: null }
+                        : { id: target.id, name: target.name, mime: target.mime, size: target.size, tags: target.tag.join('|||') }
                     })
                   }
                   columns={[
                     { field: 'id', hide: true },
                     { field: 'name', headerName: '名前', width: 200 },
                     { field: 'mime', headerName: 'MIMEタイプ', width: 200 },
-                    { field: 'size', headerName: 'ファイルサイズ', width: 200 },
-                    { field: 'tags', headerName: 'タグ', width: 200 }
+                    { field: 'size', headerName: 'ファイルサイズ', type: 'number', width: 200 },
+                    {
+                      field: 'tags',
+                      headerName: 'タグ',
+                      width: 600,
+                      renderCell: (params: GridRenderCellParams<string>) =>
+                        (params.value
+                          ? params.value.split('|||').map(x => (<TagButton key={x} tag={x} />))
+                          : <></>)
+                    }
                   ]} />
               </div>
           : <></>
