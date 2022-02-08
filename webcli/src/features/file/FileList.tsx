@@ -11,6 +11,7 @@ import { DataGrid, GridRenderCellParams, GridRowsProp, jaJP } from '@mui/x-data-
 
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile'
 import FolderIcon from '@mui/icons-material/Folder'
+import LocalOfferIcon from '@mui/icons-material/LocalOffer'
 import ViewListIcon from '@mui/icons-material/ViewList'
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline'
 
@@ -19,6 +20,9 @@ import { changeActiveDir, filedownloadAsync, FileState } from './fileSlice'
 import { assertNonFileNodeDiff } from './utils'
 import { FileNodeFile, FileNodeFolder } from './file.type'
 import { TagButton } from './TagButton'
+import Breadcrumbs from '@mui/material/Breadcrumbs'
+import Typography from '@mui/material/Typography'
+import { StyledBreadcrumb } from '../../components/customed/StyledBreadcrumb'
 
 const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder: (id: string)=>void}) => {
   const { targetFolder, onSelectFolder } = props
@@ -72,6 +76,29 @@ export const FileList = () => {
         <ToggleButton value='list'><ViewListIcon /></ToggleButton>
         <ToggleButton value='detaillist'><ViewHeadlineIcon /></ToggleButton>
       </ToggleButtonGroup>
+      {
+        activeFileGroup
+          ? <Breadcrumbs maxItems={3} aria-label="パンくずリスト">
+              {
+                activeFileGroup.type === 'dir'
+                  ? [
+                    <StyledBreadcrumb key='dir' icon={<FolderIcon fontSize='small' />} label='ディレクトリ' />,
+                    ...activeFileGroup.parents.map(x => {
+                      const target = fileTable[x]
+                      return (
+                      <StyledBreadcrumb key={x} label={target.name} onClick={(e) => {
+                        dispatch(changeActiveDir({ id: x }))
+                      }} />
+                      )
+                    })]
+                  : [
+                      <StyledBreadcrumb key='tag' icon={<LocalOfferIcon fontSize='small' />} label='タグ' />,
+                      <TagButton key='tag_' tag={activeFileGroup.tagName} />
+                    ]
+              }
+          </Breadcrumbs>
+          : <></>
+      }
       {
         activeFileGroup
           ? viewStyle === 'list'
