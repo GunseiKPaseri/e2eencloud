@@ -230,7 +230,7 @@ export const fileSlice = createSlice({
         // アップロードしたファイルをstateに反映
         const { uploaded, parentId } = action.payload
         // add table
-        state.fileTable = {
+        const newFileTable = {
           ...state.fileTable,
           ...Object.fromEntries(
             uploaded.map(({ fileInfo, fileKeyBin, encryptedFileIVBin }) => ([
@@ -239,7 +239,7 @@ export const fileSlice = createSlice({
             ]))
           )
         }
-        const parentNode = state.fileTable[parentId]
+        const parentNode = newFileTable[parentId]
         assertWritableDraftFileNodeFolder(parentNode)
         parentNode.files =
           [
@@ -247,9 +247,10 @@ export const fileSlice = createSlice({
             ...uploaded.map(x => x.fileInfo.id)
           ]
         // renew activeGroup
-        if (state.activeFileGroup && state.activeFileGroup.type === 'dir' && state.activeFileGroup.files[state.activeFileGroup.files.length - 1]) {
-          state.activeFileGroup = { ...state.activeFileGroup, files: fileSort([...state.activeFileGroup.files, ...uploaded.map(x => x.fileInfo.id)], state.fileTable) }
+        if (state.activeFileGroup && state.activeFileGroup.type === 'dir' && state.activeFileGroup.parents[state.activeFileGroup.parents.length - 1] === parentId) {
+          state.activeFileGroup = { ...state.activeFileGroup, files: fileSort([...state.activeFileGroup.files, ...uploaded.map(x => x.fileInfo.id)], newFileTable) }
         }
+        state.fileTable = newFileTable
       })
       .addCase(createDiffAsync.fulfilled, (state, action) => {
         const { uploaded, targetId } = action.payload
