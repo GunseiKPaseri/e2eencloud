@@ -149,3 +149,14 @@ export const assertArrayNumber:
       throw new Error('This is not number[]')
     }
   }
+
+/**
+ * 要素がnullでもundefinedでもないと確信
+ */
+ export const assertNotNull:
+ <T>(x: T | null | undefined) => asserts x is T =
+ (x) => {
+   if (x === undefined || x === null) {
+     throw new Error(`This(${x}) is bad!!`)
+   }
+ }

@@ -27,6 +27,8 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import { useDropzone } from 'react-dropzone'
 import { Theme } from '@mui/material/styles'
 import { SystemStyleObject } from '@mui/system/styleFunctionSx'
+import { assertNotNull } from '../../util'
+import Context from '@mui/base/TabsUnstyled/TabsContext'
 
 const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder: (id: string)=>void}) => {
   const { targetFolder, onSelectFolder } = props
@@ -46,15 +48,21 @@ const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder
 
 const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: string)=>void}) => {
   const { targetFile, onSelectFile } = props
-  const handleDrag: React.DragEventHandler<HTMLDivElement> = (e) => {
+  const handleDragStart: React.DragEventHandler<HTMLDivElement> = (e) => {
     if (!props.targetFile.blobURL) return
+    const {mime, name, blobURL} = props.targetFile
     e.dataTransfer.setData(
       'DownloadURL',
-      `${props.targetFile.mime}:${props.targetFile.name}:${props.targetFile.blobURL}`
+      `${mime}:${name}:${blobURL}`
     )
+    if(props.targetFile.mime.indexOf('image/') === 0){
+      const img = new Image()
+      img.src = blobURL
+      e.dataTransfer.setDragImage(img, 30, 30)
+    }
   }
   return (
-    <ListItem button onDoubleClick={() => onSelectFile(targetFile.id)} onClick={(e) => e.preventDefault()} onDragStart={handleDrag} draggable>
+    <ListItem button onDoubleClick={() => onSelectFile(targetFile.id)} onClick={(e) => e.preventDefault()} onDragStart={handleDragStart} draggable>
       <ListItemAvatar>
         <Avatar>
           <InsertDriveFileIcon />
