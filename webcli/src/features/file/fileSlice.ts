@@ -223,7 +223,7 @@ export const fileSlice = createSlice({
         state.fileTable = action.payload.fileTable
         state.tagTree = action.payload.tagTree
         assertFileNodeFolder(action.payload.fileTable.root)
-        state.activeFileGroup = { type: 'dir', folderId: 'root', files: action.payload.fileTable.root.files, parents: [] }
+        state.activeFileGroup = { type: 'dir', folderId: 'root', files: action.payload.fileTable.root.files, parents: ['root'] }
       })
       .addCase(fileuploadAsync.fulfilled, (state, action) => {
         // アップロードしたファイルをstateに反映
