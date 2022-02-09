@@ -24,11 +24,11 @@ import Breadcrumbs from '@mui/material/Breadcrumbs'
 import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '../../components/customed/StyledBreadcrumb'
 import MenuItem from '@mui/material/MenuItem'
 import ListItemIcon from '@mui/material/ListItemIcon'
-import { useDropzone } from 'react-dropzone'
 import { Theme } from '@mui/material/styles'
 import { SystemStyleObject } from '@mui/system/styleFunctionSx'
-import { assertNotNull } from '../../util'
-import Context from '@mui/base/TabsUnstyled/TabsContext'
+
+import { NativeTypes } from 'react-dnd-html5-backend'
+import { useDrop, DropTargetMonitor } from 'react-dnd'
 
 const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder: (id: string)=>void}) => {
   const { targetFolder, onSelectFolder } = props
@@ -55,6 +55,11 @@ const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: s
       'DownloadURL',
       `${mime}:${name}:${blobURL}`
     )
+    e.dataTransfer.setData(
+      'application/e2ee',
+      `${mime}:${name}:${blobURL}`
+    )
+
     if(props.targetFile.mime.indexOf('image/') === 0){
       const img = new Image()
       img.src = blobURL
@@ -89,28 +94,35 @@ export const FileList = () => {
     dispatch(filedownloadAsync({ fileId }))
   }, [dispatch])
 
-  const {
-    getRootProps,
-    isFocused,
-    isDragAccept,
-    isDragReject
-  } = useDropzone({
-    onDrop: (acceptedFiles) => {
-      // Do something with the files
-      dispatch(fileuploadAsync({ files: acceptedFiles, parentId: 'root' }))
-      console.log('acceptedFiles:', acceptedFiles)
+  const onDrop = (acceptedFiles: File[]) => {
+    // Do something with the files
+    console.log('acceptedFiles:', acceptedFiles)
+    dispatch(fileuploadAsync({ files: acceptedFiles, parentId: 'root' }))
+  }
+
+  const [{ canDrop, isOver }, drop] = useDrop(() => ({
+    accept: [NativeTypes.FILE],
+    drop: (props: {files: File[], items: DataTransferItemList, dataTransfer: DataTransfer}) => {
+      // avoid folder
+      if (props.files.length > 0 && props.files.every(x => x.type !== '')) {
+        onDrop(props.files)
+      }
+    },
+    collect: (monitor: DropTargetMonitor) => {
+      return {
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop()
+      }
     }
-  })
+  }), [])
 
   const customSX = useCallback<((theme: Theme) => SystemStyleObject<Theme>)>((theme) => ({
     boxSizing: 'border-box',
     border: 3,
     borderStyle: 'dashed',
     transitionDuration: '0.2s',
-    ...(isFocused ? { bgcolor: theme.palette.grey[200] } : {}),
-    ...(isDragAccept ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' }),
-    ...(isDragReject ? { background: theme.palette.error.light } : {})
-  }), [isFocused, isDragAccept, isDragReject])
+    ...(isOver && canDrop ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' }),
+  }), [isOver, canDrop])
 
   return (
     <>
@@ -159,7 +171,7 @@ export const FileList = () => {
         activeFileGroup
           ? viewStyle === 'list'
             ? (
-              <List sx={customSX} {...getRootProps()}>
+              <List sx={customSX} ref={drop}>
                 {
                   activeFileGroup.files.map((x) => {
                     const target = fileTable[x]
@@ -173,8 +185,8 @@ export const FileList = () => {
                 }
               </List>
               )
-            : <div style={{ height: 300, width: '100%' }} {...getRootProps()}>
-                <DataGrid sx={customSX} {...getRootProps()}
+            : <div style={{ height: 300, width: '100%' }} ref={drop}>
+                <DataGrid sx={customSX}
                   localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
                   editMode="row"
                   rows={

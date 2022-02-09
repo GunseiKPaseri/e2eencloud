@@ -9,11 +9,13 @@ import TreeView from '@mui/lab/TreeView'
 import FolderIcon from '@mui/icons-material/Folder'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile'
-import { useDropzone } from 'react-dropzone'
 import { FileNodeFile, FileNodeFolder, FileTable } from './file.type'
 import { Theme } from '@mui/material/styles'
 import Box from '@mui/material/Box'
 import { SystemStyleObject } from '@mui/system/styleFunctionSx'
+
+import { NativeTypes } from 'react-dnd-html5-backend'
+import { useDrop, DropTargetMonitor } from 'react-dnd'
 
 const FileTreeItemFile = ({ target, onDoubleClick }: {target: FileNodeFile, onDoubleClick: React.MouseEventHandler<HTMLLIElement>}) => {
   return (
@@ -41,34 +43,44 @@ const FileTreeItemFolder = ({
 }) => {
   const dispatch = useAppDispatch()
   // drop zone option
-  const onDrop = useCallback(acceptedFiles => {
+  const onDrop = (acceptedFiles: File[]) => {
     dispatch(fileuploadAsync({ files: acceptedFiles, parentId: target.id }))
     console.log(acceptedFiles, target.id)
-  }, [target.id])
-  const {
-    getRootProps,
-    isFocused,
-    isDragAccept,
-    isDragReject
-  } = useDropzone({
-    noDragEventsBubbling: true,
-    noClick: true,
-    onDrop
-  })
-  const rootProps = getRootProps()
+  }
+
+  const [{ canDrop, isOver }, drop] = useDrop(() => ({
+    accept: [NativeTypes.FILE],
+    drop: (props: {files: File[], items: DataTransferItemList, dataTransfer: DataTransfer}, monitor) => {
+      // avoid deep
+      if(!monitor.isOver({shallow: true})) return
+      // avoid folder
+      if (props.files.length > 0 && props.files.every(x => x.type !== '')) {
+        onDrop(props.files)
+      }
+    },
+    canDrop: (props, monitor) => {
+      // console.log(monitor.getItem())
+      return true
+    },
+    collect: (monitor: DropTargetMonitor) => {
+      return {
+        isOver: monitor.isOver({ shallow: true }),
+        canDrop: monitor.canDrop()
+      }
+    }
+  }), [])
+
   const customStyle = useCallback<((theme: Theme) => SystemStyleObject<Theme>)>((theme) => ({
     boxSizing: 'border-box',
     border: 3,
     borderStyle: 'dashed',
     transitionDuration: '0.2s',
-    ...(isFocused ? { background: theme.palette.grey[200] } : {}),
-    ...(isDragAccept ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' }),
-    ...(isDragReject ? { background: theme.palette.error.light } : {})
-  }), [isFocused, isDragAccept, isDragReject])
+    ...(isOver && canDrop ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' }),
+  }), [isOver, canDrop])
 
   return (
     <Box
-      {...rootProps}
+      ref={drop}
       sx={customStyle}
     >
       <StyledTreeItem
