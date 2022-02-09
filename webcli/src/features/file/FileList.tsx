@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import Avatar from '@mui/material/Avatar'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
@@ -16,7 +16,7 @@ import ViewListIcon from '@mui/icons-material/ViewList'
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline'
 
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { changeActiveDir, filedownloadAsync, FileState } from './fileSlice'
+import { changeActiveDir, filedownloadAsync, FileState, fileuploadAsync } from './fileSlice'
 import { assertFileNodeFolder, assertNonFileNodeDiff } from './utils'
 import { FileNodeFile, FileNodeFolder } from './file.type'
 import { TagButton } from './TagButton'
@@ -25,6 +25,9 @@ import Typography from '@mui/material/Typography'
 import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '../../components/customed/StyledBreadcrumb'
 import MenuItem from '@mui/material/MenuItem'
 import ListItemIcon from '@mui/material/ListItemIcon'
+import { useDropzone } from 'react-dropzone'
+import { SxProps, Theme, useTheme } from '@mui/material/styles'
+import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 
 const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder: (id: string)=>void}) => {
   const { targetFolder, onSelectFolder } = props
@@ -71,6 +74,29 @@ export const FileList = () => {
   const onSelectFile = useCallback((fileId: string) => {
     dispatch(filedownloadAsync({ fileId }))
   }, [dispatch])
+
+  const {
+    getRootProps,
+    isFocused,
+    isDragAccept,
+    isDragReject
+  } = useDropzone({
+    onDrop: (acceptedFiles) => {
+      // Do something with the files
+      dispatch(fileuploadAsync({ files: acceptedFiles, parentId: 'root' }))
+      console.log('acceptedFiles:', acceptedFiles)
+    }
+  })
+
+  const customSX = useCallback<((theme: Theme) => SystemStyleObject<Theme>)>((theme) => ({
+    boxSizing: 'border-box',
+    border: 3,
+    borderStyle: 'dashed',
+    transitionDelay: '0.1s',
+    ...(isFocused ? { bgcolor: theme.palette.grey[200] } : {}),
+    ...(isDragAccept ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' }),
+    ...(isDragReject ? { background: theme.palette.error.light } : {})
+  }), [isFocused, isDragAccept, isDragReject])
 
   return (
     <>
@@ -119,7 +145,7 @@ export const FileList = () => {
         activeFileGroup
           ? viewStyle === 'list'
             ? (
-              <List>
+              <List sx={customSX} {...getRootProps()}>
                 {
                   activeFileGroup.files.map((x) => {
                     const target = fileTable[x]
@@ -133,8 +159,8 @@ export const FileList = () => {
                 }
               </List>
               )
-            : <div style={{ height: 300, width: '100%' }}>
-                <DataGrid
+            : <div style={{ height: 300, width: '100%' }} {...getRootProps()}>
+                <DataGrid sx={customSX} {...getRootProps()}
                   localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
                   editMode="row"
                   rows={
