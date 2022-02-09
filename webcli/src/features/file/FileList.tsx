@@ -47,8 +47,15 @@ const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder
 
 const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: string)=>void}) => {
   const { targetFile, onSelectFile } = props
+  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!props.targetFile.blobURL) return
+    e.dataTransfer.setData(
+      'DownloadURL',
+      `${props.targetFile.mime}:${props.targetFile.name}:${props.targetFile.blobURL}`
+    )
+  }
   return (
-    <ListItem button onDoubleClick={() => onSelectFile(targetFile.id)}>
+    <ListItem button onDoubleClick={() => onSelectFile(targetFile.id)} onClick={(e) => e.preventDefault()} onDragStart={handleDrag} draggable>
       <ListItemAvatar>
         <Avatar>
           <InsertDriveFileIcon />
