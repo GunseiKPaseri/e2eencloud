@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { AxiosResponse } from 'axios'
 import { appLocation, axiosWithSession } from '../componentutils'
+import { logoutAsync } from '../auth/authSlice'
 
 export interface SessionsState {
   sessions: SessionInfo[],
@@ -61,6 +62,12 @@ export const sessionSlice = createSlice({
       .addCase(changeClientNameAsync.fulfilled, (state, action) => {
         const target = state.sessions.find((x) => x.id === action.meta.arg.id)
         if (target) target.clientName = action.meta.arg.newClientName
+      })
+      .addCase(logoutAsync.pending, (state, action) =>{
+        // ログアウト時削除
+        // initialState
+        state.sessions = [],
+        state.loading = false
       })
   }
 })

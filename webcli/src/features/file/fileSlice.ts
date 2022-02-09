@@ -37,6 +37,7 @@ import {
   assertFileNodeFile,
   fileSort
 } from './utils'
+import { logoutAsync } from '../auth/authSlice'
 
 /**
  * ファイル関連のReduxState
@@ -343,6 +344,20 @@ export const fileSlice = createSlice({
           files: state.tagTree[action.payload.tag] ?? [],
           tagName: action.payload.tag
         }
+      })
+      .addCase(logoutAsync.pending, (state, action) =>{
+        // ログアウト時削除
+        Object.values(state.fileTable).map((row) =>{
+          if(row.type === 'file' && row.blobURL){
+            URL.revokeObjectURL(row.blobURL)
+          }
+        })
+        // initialState
+        state.loading = 0
+        state.fileTable = {}
+        state.tagTree = {}
+        state.activeFile = null
+        state.activeFileGroup = null
       })
   }
 })
