@@ -11,6 +11,9 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile'
 import { useDropzone } from 'react-dropzone'
 import { FileNodeFile, FileNodeFolder, FileTable } from './file.type'
+import { Theme } from '@mui/material/styles'
+import Box from '@mui/material/Box'
+import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 
 const FileTreeItemFile = ({ target, onDoubleClick }: {target: FileNodeFile, onDoubleClick: React.MouseEventHandler<HTMLLIElement>}) => {
   return (
@@ -53,16 +56,20 @@ const FileTreeItemFolder = ({
     onDrop
   })
   const rootProps = getRootProps()
-  const customStyle = useMemo<Partial<React.CSSProperties>>(() => ({
-    ...(isFocused ? { background: '#eeeeee' } : {}),
-    ...(isDragAccept ? { background: '#eeffee' } : {}),
-    ...(isDragReject ? { background: '#ffeeee' } : {})
+  const customStyle = useCallback<((theme: Theme) => SystemStyleObject<Theme>)>((theme) => ({
+    boxSizing: 'border-box',
+    border: 3,
+    borderStyle: 'dashed',
+    transitionDuration: '0.2s',
+    ...(isFocused ? { background: theme.palette.grey[200] } : {}),
+    ...(isDragAccept ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' }),
+    ...(isDragReject ? { background: theme.palette.error.light } : {})
   }), [isFocused, isDragAccept, isDragReject])
 
   return (
-    <div
+    <Box
       {...rootProps}
-      style={customStyle}
+      sx={customStyle}
     >
       <StyledTreeItem
         nodeId={target.id}
@@ -82,7 +89,7 @@ const FileTreeItemFolder = ({
             />)
         }
       </StyledTreeItem>
-    </div>
+    </Box>
   )
 }
 

@@ -92,7 +92,7 @@ export const FileList = () => {
     boxSizing: 'border-box',
     border: 3,
     borderStyle: 'dashed',
-    transitionDelay: '0.1s',
+    transitionDuration: '0.2s',
     ...(isFocused ? { bgcolor: theme.palette.grey[200] } : {}),
     ...(isDragAccept ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' }),
     ...(isDragReject ? { background: theme.palette.error.light } : {})
