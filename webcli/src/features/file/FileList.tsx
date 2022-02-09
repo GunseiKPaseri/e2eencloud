@@ -28,12 +28,44 @@ import { Theme } from '@mui/material/styles'
 import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 
 import { NativeTypes } from 'react-dnd-html5-backend'
-import { useDrop, DropTargetMonitor } from 'react-dnd'
+import { useDrop, useDrag, DropTargetMonitor } from 'react-dnd'
 
 const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder: (id: string)=>void}) => {
   const { targetFolder, onSelectFolder } = props
+
+  const dispatch = useAppDispatch()
+
+  const onDrop = (acceptedFiles: File[]) => {
+    dispatch(fileuploadAsync({ files: acceptedFiles, parentId: targetFolder.id }))
+  }
+
+  const [{ canDrop, isOver }, drop] = useDrop(() => ({
+    accept: [NativeTypes.FILE],
+    drop: (props: {files: File[], items: DataTransferItemList, dataTransfer: DataTransfer}) => {
+      // avoid folder
+      if (props.files.length > 0 && props.files.every(x => x.type !== '')) {
+        onDrop(props.files)
+      }
+    },
+    collect: (monitor: DropTargetMonitor) => {
+      return {
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop()
+      }
+    }
+  }), [targetFolder])
+
+
+  const customSX = useCallback<((theme: Theme) => SystemStyleObject<Theme>)>((theme) => ({
+    boxSizing: 'border-box',
+    border: 3,
+    borderStyle: 'dashed',
+    transitionDuration: '0.2s',
+    ...(isOver && canDrop ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' }),
+  }), [isOver, canDrop])
+
   return (
-    <ListItem button onDoubleClick={() => onSelectFolder(props.targetFolder.id)}>
+    <ListItem ref={drop} button onDoubleClick={() => onSelectFolder(targetFolder.id)} sx={customSX}>
       <ListItemAvatar>
         <Avatar>
           <FolderIcon />
@@ -48,7 +80,14 @@ const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder
 
 const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: string)=>void}) => {
   const { targetFile, onSelectFile } = props
-  const handleDragStart: React.DragEventHandler<HTMLDivElement> = (e) => {
+  const [{isDragging}, drag, dragPreview] = useDrag(() => ({
+    type: 'DownloadURL',
+    collect: monitor => ({
+      isDragging: !!monitor.isDragging()
+    })
+  }))
+
+  /*  const handleDragStart: React.DragEventHandler<HTMLDivElement> = (e) => {
     if (!props.targetFile.blobURL) return
     const {mime, name, blobURL} = props.targetFile
     e.dataTransfer.setData(
@@ -66,17 +105,22 @@ const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: s
       e.dataTransfer.setDragImage(img, 30, 30)
     }
   }
+  */
+
   return (
-    <ListItem button onDoubleClick={() => onSelectFile(targetFile.id)} onClick={(e) => e.preventDefault()} onDragStart={handleDragStart} draggable>
-      <ListItemAvatar>
-        <Avatar>
-          <InsertDriveFileIcon />
-        </Avatar>
-      </ListItemAvatar>
-      <ListItemText
-        primary={targetFile.name}
-      />
-    </ListItem>
+    <div
+      ref={drag}>
+      <ListItem button onDoubleClick={() => onSelectFile(targetFile.id)}>
+        <ListItemAvatar>
+          <Avatar>
+            <InsertDriveFileIcon />
+          </Avatar>
+        </ListItemAvatar>
+        <ListItemText
+          primary={targetFile.name}
+        />
+      </ListItem>
+    </div>
   )
 }
 
@@ -96,13 +140,18 @@ export const FileList = () => {
 
   const onDrop = (acceptedFiles: File[]) => {
     // Do something with the files
-    console.log('acceptedFiles:', acceptedFiles)
-    dispatch(fileuploadAsync({ files: acceptedFiles, parentId: 'root' }))
+    console.log('acceptedFiles:', acceptedFiles, activeFileGroup)
+    if(activeFileGroup?.type === 'dir'){
+      console.log(activeFileGroup.parents[activeFileGroup.parents.length - 1])
+      dispatch(fileuploadAsync({ files: acceptedFiles, parentId: activeFileGroup.parents[activeFileGroup.parents.length - 1] }))
+    }
   }
 
   const [{ canDrop, isOver }, drop] = useDrop(() => ({
     accept: [NativeTypes.FILE],
-    drop: (props: {files: File[], items: DataTransferItemList, dataTransfer: DataTransfer}) => {
+    drop: (props: {files: File[], items: DataTransferItemList, dataTransfer: DataTransfer}, monitor) => {
+      // avoid deep
+      if(!monitor.isOver({shallow: true})) return
       // avoid folder
       if (props.files.length > 0 && props.files.every(x => x.type !== '')) {
         onDrop(props.files)
@@ -110,11 +159,11 @@ export const FileList = () => {
     },
     collect: (monitor: DropTargetMonitor) => {
       return {
-        isOver: monitor.isOver(),
+        isOver: monitor.isOver({shallow: true}),
         canDrop: monitor.canDrop()
       }
     }
-  }), [])
+  }), [activeFileGroup])
 
   const customSX = useCallback<((theme: Theme) => SystemStyleObject<Theme>)>((theme) => ({
     boxSizing: 'border-box',
