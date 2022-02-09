@@ -1,5 +1,3 @@
-import React from 'react'
-
 const resultobject = [
   <span key={0} style={{ color: 'red' }}>駄目です</span>,
   <span key={0} style={{ color: 'red' }}>弱すぎます</span>,

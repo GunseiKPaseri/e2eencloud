@@ -1,7 +1,5 @@
-import React from 'react'
-import { useDropzone } from 'react-dropzone'
 import { useAppDispatch } from '../../app/hooks'
-import { changeActiveDir, filedownloadAsync, fileuploadAsync } from './fileSlice'
+import { changeActiveDir, filedownloadAsync } from './fileSlice'
 import { FileTreeViewer } from './fileTreeViewer'
 import { FileList } from './FileList'
 import { Viewer } from './Viewer'

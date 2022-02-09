@@ -1,4 +1,4 @@
-import React, { useState, ReactElement } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { AuthState, loginAsync, logoutAsync } from './authSlice'
@@ -15,7 +15,7 @@ import Grid from '@mui/material/Grid'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import Alert from '@mui/lab/Alert'
 
-export const Login: React.FC = ():ReactElement => {
+export const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [token, setToken] = useState('')

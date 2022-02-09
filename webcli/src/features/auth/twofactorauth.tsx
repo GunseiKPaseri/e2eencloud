@@ -1,4 +1,4 @@
-import React, { useState, ReactElement, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import * as OTPAuth from 'otpauth'
 import QRcode from 'qrcode'
 
@@ -23,7 +23,7 @@ const genTOTP = (email: string) => {
   })
 }
 
-const GenTwoFactorAuth: React.FC<{email: string}> = (props):ReactElement => {
+const GenTwoFactorAuth = (props: {email: string}) => {
   const [secretkey, setSecretKey] = useState(genTOTP(props.email))
   const [qrlink, setQRLink] = useState('')
   const [token, setToken] = useState('')
@@ -62,7 +62,7 @@ const GenTwoFactorAuth: React.FC<{email: string}> = (props):ReactElement => {
   </>)
 }
 
-export const TowFactorAuth:React.FC = ():ReactElement => {
+export const TowFactorAuth = () => {
   const selector = useAppSelector<AuthState>((state) => state.auth)
   const dispatch = useAppDispatch()
   const deleteKey = () => {

@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from 'react'
-import Chip, { ChipTypeMap } from '@mui/material/Chip'
+import Chip from '@mui/material/Chip'
 import { emphasize, styled } from '@mui/material/styles'
-import { OverridableComponent } from '@mui/material/OverridableComponent'
 import Menu from '@mui/material/Menu'
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -26,7 +25,7 @@ export const StyledBreadcrumb = styled(Chip)(({ theme }) => {
   }
 })
 
-export const StyledBreadcrumbWithMenu = (props: OverridableComponent<ChipTypeMap> & {menuItems: JSX.Element[]}) => {
+export const StyledBreadcrumbWithMenu = (props: React.ComponentProps<typeof Chip> & {menuItems: JSX.Element[]}) => {
   const { menuItems, ...chipprops } = props
   const [anchorMenuEl, setAnchorMenuEl] = useState<HTMLButtonElement|undefined>(undefined)
 

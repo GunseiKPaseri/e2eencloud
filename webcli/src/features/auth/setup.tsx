@@ -1,8 +1,8 @@
-import React, { useState, ReactElement } from 'react'
+import { useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../../../src/app/hooks'
 import { AuthState, confirmEmailAsync } from './authSlice'
 
-export const Setup: React.FC = ():ReactElement => {
+export const Setup = () => {
   const [token, setToken] = useState('')
   const [email, setEmail] = useState('')
   const dispatch = useAppDispatch()

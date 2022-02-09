@@ -14,7 +14,7 @@ export const Renamer = (props: {id: string, name: string}) => {
     setName(props.name)
   }, [props.name])
   const dispatch = useAppDispatch()
-  const handleChangeName = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleChangeName: React.FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault()
     dispatch(createDiffAsync({ targetId: props.id, newName: name }))
   }

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { useAppSelector } from '../../app/hooks'
 
 import Timeline from '@mui/lab/Timeline'

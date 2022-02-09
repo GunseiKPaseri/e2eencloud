@@ -1,4 +1,4 @@
-import React, { useState, ReactElement } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAppDispatch } from '../../app/hooks'
 import { signupAsync } from './authSlice'
 import { PasswordField } from './PasswordField'
@@ -22,7 +22,7 @@ const steps = [
   'メールアドレス受信確認'
 ]
 
-export const Signup:React.FC = ():ReactElement => {
+export const Signup = () => {
   const [stepState, setStepState] = useState<0|1|2>(0)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -39,7 +39,7 @@ export const Signup:React.FC = ():ReactElement => {
     if (timer > 0) setTimer(timer - 1)
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timerId = setInterval(() => tick(), 1000)
     return () => clearInterval(timerId)
   })

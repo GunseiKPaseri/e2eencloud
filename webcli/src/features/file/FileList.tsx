@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import Avatar from '@mui/material/Avatar'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
@@ -21,12 +21,11 @@ import { assertFileNodeFolder, assertNonFileNodeDiff } from './utils'
 import { FileNodeFile, FileNodeFolder } from './file.type'
 import { TagButton } from './TagButton'
 import Breadcrumbs from '@mui/material/Breadcrumbs'
-import Typography from '@mui/material/Typography'
 import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '../../components/customed/StyledBreadcrumb'
 import MenuItem from '@mui/material/MenuItem'
 import ListItemIcon from '@mui/material/ListItemIcon'
 import { useDropzone } from 'react-dropzone'
-import { SxProps, Theme, useTheme } from '@mui/material/styles'
+import { Theme } from '@mui/material/styles'
 import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 
 const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder: (id: string)=>void}) => {
@@ -47,7 +46,7 @@ const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder
 
 const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: string)=>void}) => {
   const { targetFile, onSelectFile } = props
-  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrag: React.DragEventHandler<HTMLDivElement> = (e) => {
     if (!props.targetFile.blobURL) return
     e.dataTransfer.setData(
       'DownloadURL',

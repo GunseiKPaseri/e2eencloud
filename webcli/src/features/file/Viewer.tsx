@@ -1,4 +1,3 @@
-import React from 'react'
 import { useAppSelector } from '../../app/hooks'
 import { FileNode, FileNodeFile } from './file.type'
 import { FileState } from './fileSlice'

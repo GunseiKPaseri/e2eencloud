@@ -15,6 +15,9 @@ plugins:
   - react
   - '@typescript-eslint'
   - jest
+globals:
+  - JSX: true
+  - React: true
 rules:
   import/no-default-export: "off"
   no-use-before-define: "off"
