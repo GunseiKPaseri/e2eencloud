@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { FileState, fileuploadAsync } from './fileSlice'
+import { FileState } from './fileSlice'
 
 import StyledTreeItem from '../../components/customed/StyledTreeItem'
 
@@ -14,8 +14,9 @@ import { Theme } from '@mui/material/styles'
 import Box from '@mui/material/Box'
 import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 
-import { NativeTypes } from 'react-dnd-html5-backend'
-import { useDrop, DropTargetMonitor } from 'react-dnd'
+import { useDrop } from 'react-dnd'
+
+import { genUseDropReturn } from './drop'
 
 const FileTreeItemFile = ({ target, onDoubleClick }: {target: FileNodeFile, onDoubleClick: React.MouseEventHandler<HTMLLIElement>}) => {
   return (
@@ -42,33 +43,8 @@ const FileTreeItemFolder = ({
   onSelectFolder: (id: string) => void
 }) => {
   const dispatch = useAppDispatch()
-  // drop zone option
-  const onDrop = (acceptedFiles: File[]) => {
-    dispatch(fileuploadAsync({ files: acceptedFiles, parentId: target.id }))
-    console.log(acceptedFiles, target.id)
-  }
 
-  const [{ canDrop, isOver }, drop] = useDrop(() => ({
-    accept: [NativeTypes.FILE],
-    drop: (props: {files: File[], items: DataTransferItemList, dataTransfer: DataTransfer}, monitor) => {
-      // avoid deep
-      if(!monitor.isOver({shallow: true})) return
-      // avoid folder
-      if (props.files.length > 0 && props.files.every(x => x.type !== '')) {
-        onDrop(props.files)
-      }
-    },
-    canDrop: (props, monitor) => {
-      // console.log(monitor.getItem())
-      return true
-    },
-    collect: (monitor: DropTargetMonitor) => {
-      return {
-        isOver: monitor.isOver({ shallow: true }),
-        canDrop: monitor.canDrop()
-      }
-    }
-  }), [])
+  const [{ canDrop, isOver }, drop] = useDrop(() => genUseDropReturn(target.id , dispatch), [target.id])
 
   const customStyle = useCallback<((theme: Theme) => SystemStyleObject<Theme>)>((theme) => ({
     boxSizing: 'border-box',

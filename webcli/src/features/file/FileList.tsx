@@ -27,34 +27,15 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import { Theme } from '@mui/material/styles'
 import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 
-import { NativeTypes } from 'react-dnd-html5-backend'
-import { useDrop, useDrag, DropTargetMonitor } from 'react-dnd'
+import { useDrop, useDrag } from 'react-dnd'
+import { genUseDropReturn } from './drop'
 
 const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder: (id: string)=>void}) => {
   const { targetFolder, onSelectFolder } = props
 
   const dispatch = useAppDispatch()
 
-  const onDrop = (acceptedFiles: File[]) => {
-    dispatch(fileuploadAsync({ files: acceptedFiles, parentId: targetFolder.id }))
-  }
-
-  const [{ canDrop, isOver }, drop] = useDrop(() => ({
-    accept: [NativeTypes.FILE],
-    drop: (props: {files: File[], items: DataTransferItemList, dataTransfer: DataTransfer}) => {
-      // avoid folder
-      if (props.files.length > 0 && props.files.every(x => x.type !== '')) {
-        onDrop(props.files)
-      }
-    },
-    collect: (monitor: DropTargetMonitor) => {
-      return {
-        isOver: monitor.isOver(),
-        canDrop: monitor.canDrop()
-      }
-    }
-  }), [targetFolder])
-
+  const [{ canDrop, isOver }, drop] = useDrop(() => genUseDropReturn(targetFolder.id, dispatch), [targetFolder.id])
 
   const customSX = useCallback<((theme: Theme) => SystemStyleObject<Theme>)>((theme) => ({
     boxSizing: 'border-box',
@@ -87,26 +68,6 @@ const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: s
     })
   }))
 
-  /*  const handleDragStart: React.DragEventHandler<HTMLDivElement> = (e) => {
-    if (!props.targetFile.blobURL) return
-    const {mime, name, blobURL} = props.targetFile
-    e.dataTransfer.setData(
-      'DownloadURL',
-      `${mime}:${name}:${blobURL}`
-    )
-    e.dataTransfer.setData(
-      'application/e2ee',
-      `${mime}:${name}:${blobURL}`
-    )
-
-    if(props.targetFile.mime.indexOf('image/') === 0){
-      const img = new Image()
-      img.src = blobURL
-      e.dataTransfer.setDragImage(img, 30, 30)
-    }
-  }
-  */
-
   return (
     <div
       ref={drag}>
@@ -127,43 +88,26 @@ const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: s
 export const FileList = () => {
   const [viewStyle, setViewStyle] = useState<'list' | 'detaillist'>('list')
 
-  const dispatch = useAppDispatch()
   const { fileTable, activeFileGroup } = useAppSelector<FileState>(state => state.file)
+  const dispatch = useAppDispatch()
 
   const onSelectFolder = useCallback((id: string) => {
     dispatch(changeActiveDir({ id }))
-  }, [dispatch])
+  }, [])
 
   const onSelectFile = useCallback((fileId: string) => {
     dispatch(filedownloadAsync({ fileId }))
-  }, [dispatch])
+  }, [])
 
-  const onDrop = (acceptedFiles: File[]) => {
-    // Do something with the files
-    console.log('acceptedFiles:', acceptedFiles, activeFileGroup)
-    if(activeFileGroup?.type === 'dir'){
-      console.log(activeFileGroup.parents[activeFileGroup.parents.length - 1])
-      dispatch(fileuploadAsync({ files: acceptedFiles, parentId: activeFileGroup.parents[activeFileGroup.parents.length - 1] }))
-    }
-  }
-
-  const [{ canDrop, isOver }, drop] = useDrop(() => ({
-    accept: [NativeTypes.FILE],
-    drop: (props: {files: File[], items: DataTransferItemList, dataTransfer: DataTransfer}, monitor) => {
-      // avoid deep
-      if(!monitor.isOver({shallow: true})) return
-      // avoid folder
-      if (props.files.length > 0 && props.files.every(x => x.type !== '')) {
-        onDrop(props.files)
-      }
-    },
-    collect: (monitor: DropTargetMonitor) => {
-      return {
-        isOver: monitor.isOver({shallow: true}),
-        canDrop: monitor.canDrop()
-      }
-    }
-  }), [activeFileGroup])
+  const [{ canDrop, isOver }, drop] = useDrop(
+    () =>
+      genUseDropReturn(
+        activeFileGroup?.type === 'dir'
+          ? activeFileGroup.parents[activeFileGroup.parents.length - 1]
+          : null,
+        dispatch),
+    [activeFileGroup]
+  )
 
   const customSX = useCallback<((theme: Theme) => SystemStyleObject<Theme>)>((theme) => ({
     boxSizing: 'border-box',
@@ -196,7 +140,9 @@ export const FileList = () => {
                         const subdir = fileTable[x]
                         assertFileNodeFolder(subdir)
                         return (
-                          <MenuItem key={x} onClick={(e) => dispatch(changeActiveDir({ id: x }))}>
+                          <MenuItem key={x} onClick={(e) => {
+                            dispatch(changeActiveDir({ id: x }))
+                          }}>
                             <ListItemIcon>
                               <FolderIcon />
                             </ListItemIcon>
