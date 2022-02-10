@@ -87,6 +87,49 @@ const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: s
   )
 }
 
+const DIRBreadcrumb = (props: {target: FileNodeFolder}) => {
+  const { target } = props
+  const dispatch = useAppDispatch()
+  const fileTable = useAppSelector((state) => state.file.fileTable)
+  
+  const [{ canDrop, isOver }, drop] = useDrop(
+    () =>
+      genUseDropReturn(
+        target.id,
+        dispatch),
+    [target.id]
+  )
+
+  const customSX = useCallback<((theme: Theme) => SystemStyleObject<Theme>)>((theme) => ({
+    boxSizing: 'border-box',
+    border: 3,
+    borderStyle: 'dashed',
+    transitionDuration: '0.2s',
+    ...(isOver && canDrop ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' }),
+  }), [isOver, canDrop])
+
+  return (
+    <StyledBreadcrumbWithMenu innerRef={drop} sx={customSX} label={target.name} onClick={(e) => {
+      dispatch(changeActiveDir({ id: target.id }))
+    }} menuItems={target.files.filter(x => fileTable[x].type === 'folder').map(x => {
+      const subdir = fileTable[x]
+      assertFileNodeFolder(subdir)
+      return (
+        <MenuItem key={x} onClick={(e) => {
+          dispatch(changeActiveDir({ id: x }))
+        }}>
+          <ListItemIcon>
+            <FolderIcon />
+          </ListItemIcon>
+          <ListItemText>
+            {subdir.name}
+          </ListItemText>
+        </MenuItem>
+      )
+    })}/>
+  )
+}
+
 export const FileList = () => {
   const [viewStyle, setViewStyle] = useState<'list' | 'detaillist'>('list')
 
@@ -135,26 +178,7 @@ export const FileList = () => {
                     ...activeFileGroup.parents.map(x => {
                       const target = fileTable[x]
                       assertFileNodeFolder(target)
-                      return (
-                      <StyledBreadcrumbWithMenu key={x} label={target.name} onClick={(e) => {
-                        dispatch(changeActiveDir({ id: x }))
-                      }} menuItems={target.files.filter(x => fileTable[x].type === 'folder').map(x => {
-                        const subdir = fileTable[x]
-                        assertFileNodeFolder(subdir)
-                        return (
-                          <MenuItem key={x} onClick={(e) => {
-                            dispatch(changeActiveDir({ id: x }))
-                          }}>
-                            <ListItemIcon>
-                              <FolderIcon />
-                            </ListItemIcon>
-                            <ListItemText>
-                              {subdir.name}
-                            </ListItemText>
-                          </MenuItem>
-                        )
-                      })}/>
-                      )
+                      return <DIRBreadcrumb key={target.id} target={target} />
                     })]
                   : [
                       <StyledBreadcrumb key='tag' icon={<LocalOfferIcon fontSize='small' />} label='タグ' />,

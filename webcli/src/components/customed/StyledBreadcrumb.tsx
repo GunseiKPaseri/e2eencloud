@@ -25,8 +25,8 @@ export const StyledBreadcrumb = styled(Chip)(({ theme }) => {
   }
 })
 
-export const StyledBreadcrumbWithMenu = (props: React.ComponentProps<typeof Chip> & {menuItems: JSX.Element[]}) => {
-  const { menuItems, ...chipprops } = props
+export const StyledBreadcrumbWithMenu = (props: React.ComponentProps<typeof Chip> & {menuItems: JSX.Element[], innerRef?: ((instance: HTMLDivElement | null) => void) | React.RefObject<HTMLDivElement>}) => {
+  const { menuItems, innerRef, ...chipprops } = props
   const [anchorMenuEl, setAnchorMenuEl] = useState<HTMLButtonElement|undefined>(undefined)
 
   const handleMenu: React.MouseEventHandler<HTMLButtonElement> = useCallback((event) => {
@@ -38,7 +38,7 @@ export const StyledBreadcrumbWithMenu = (props: React.ComponentProps<typeof Chip
   }, [])
 
   return (<>
-    <StyledBreadcrumb {...chipprops} deleteIcon={menuItems.length > 0 ? <ExpandMoreIcon /> : <></>} onDelete={handleMenu}/>
+    <StyledBreadcrumb ref={innerRef} {...chipprops} deleteIcon={menuItems.length > 0 ? <ExpandMoreIcon /> : <></>} onDelete={handleMenu}/>
     { anchorMenuEl
       ? <Menu
           id="menu-appbar"
