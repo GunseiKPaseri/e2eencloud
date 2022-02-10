@@ -7,17 +7,19 @@ import {
   createDiff,
   assertFileInfoDiffFile, 
   assertNonWritableDraftFileNodeDiff,
-  integrateDifference
+  assertWritableDraftFileNodeFolder,
+  integrateDifference,
+  fileSort
 } from '../utils'
 import { FileState } from '../fileSlice'
 
 type createDiffAsyncResult = {uploaded: FileCryptoInfoWithoutBin, targetId: string}
 
 /**
- *  ファイル名を変更するReduxThunk
+ *  差分を作成するThunk
  */
 export const createDiffAsync = createAsyncThunk<createDiffAsyncResult, Parameters<typeof createDiff>[0], {state: RootState}>(
-  'file/rename',
+  'file/creatediff',
   async (params, { getState, dispatch }) => {
     const step = 2
     dispatch(setProgress(progress(0, step)))
@@ -38,12 +40,12 @@ export const afterCreateDiffAsyncFullfilled:
   CaseReducer<FileState, PayloadAction<createDiffAsyncResult>> = (state, action) => {
     const { uploaded, targetId } = action.payload
     const { fileInfo, fileKeyBin } = uploaded
+    const fileTable = {...state.fileTable}
     assertFileInfoDiffFile(fileInfo)
     // fileTableを更新
     if (!fileInfo.prevId) throw new Error('前方が指定されていません')
-    state.fileTable[fileInfo.prevId].nextId = fileInfo.id
-    state.fileTable[fileInfo.id] = { ...fileInfo, parentId: fileInfo.parentId, originalFileInfo: fileInfo, fileKeyBin }
-    state.fileTable = { ...state.fileTable }
+    fileTable[fileInfo.prevId].nextId = fileInfo.id
+    fileTable[fileInfo.id] = { ...fileInfo, parentId: fileInfo.parentId, originalFileInfo: fileInfo, fileKeyBin }
     // tagTreeを更新
     if (fileInfo.diff.addtag || fileInfo.diff.deltag) {
       for (const tag of fileInfo.diff.addtag ?? []) {
@@ -58,10 +60,35 @@ export const afterCreateDiffAsyncFullfilled:
       }
       state.tagTree = { ...state.tagTree }
     }
-    // 差分反映
-    const targetNode = state.fileTable[targetId]
+
+    // 差分をnodeに反映
+    const targetNode = fileTable[targetId]
     assertNonWritableDraftFileNodeDiff(targetNode)
-    integrateDifference([fileInfo.id], state.fileTable, targetNode)
+    const copied = integrateDifference([fileInfo.id], fileTable, targetNode)
+
+    // 親が変更された場合これを更新
+    const beforeParentId = targetNode.parentId ?? 'root'
+    const afterParentId = copied.parentId ?? 'root'
+    if (beforeParentId !== afterParentId) {
+      const beforeParent = fileTable[beforeParentId]
+      assertWritableDraftFileNodeFolder(beforeParent)
+      const beforeParentChildren = beforeParent.files.filter(child => child !== targetId)
+      fileTable[beforeParentId] = {...beforeParent, files: beforeParentChildren}
+      
+      const afterParent = fileTable[afterParentId]
+      assertWritableDraftFileNodeFolder(afterParent)
+      const afterParentChildren = fileSort([...afterParent.files, targetId], fileTable)
+      fileTable[afterParentId] = {...afterParent, files: afterParentChildren}
+      if(state.activeFileGroup?.type === 'dir'){
+        if (state.activeFileGroup.folderId === afterParentId){
+          state.activeFileGroup = {...state.activeFileGroup, files: [...afterParentChildren]}
+        }else if(state.activeFileGroup.folderId === beforeParentId) {
+          state.activeFileGroup = {...state.activeFileGroup, files: [...beforeParentChildren]}
+        }
+      }
+    }
     // historyの追加
-    state.fileTable[targetId] = { ...targetNode, history: [fileInfo.id, ...targetNode.history] }
+    fileTable[targetId] = { ...copied, history: [fileInfo.id, ...copied.history] }
+    // テーブルの更新
+    state.fileTable = fileTable
   }

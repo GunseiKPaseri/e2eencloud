@@ -20,6 +20,9 @@ export const createDiffExpression = (before: FileInfo, after: FileInfo):JSX.Elem
   if (before.name !== after.name) {
     result.push(<>{`ファイル名を"${after.name}"に変更`}</>)
   }
+  if (before.parentId !== after.parentId) {
+    result.push(<>{`ディレクトリを移動`}</>)
+  }
   if (after.type === 'diff') {
     if (after.diff.addtag && after.diff.addtag.length > 0) {
       result.push(<>{[...after.diff.addtag.map(x => <TagButton key={x} tag={x}/>), <>タグを追加</>]}</>)

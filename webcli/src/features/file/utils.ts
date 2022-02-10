@@ -308,18 +308,19 @@ export const getEncryptedFileRaw = async (fileId: string) => {
 }
 
 /**
- * 差分をオブジェクトに反映
+ * 差分をオブジェクトに反映したものを返す
  */
-export const integrateDifference = (diffs: string[], fileTable: FileTable, targetFile: FileNodeFile | FileNodeFolder) => {
-  const tagset = new Set<string>((targetFile.type === 'file' ? targetFile.tag : []))
+export const integrateDifference = <T extends FileNodeFile | FileNodeFolder>(diffs: string[], fileTable: FileTable, targetFile: T):T => {
+  const copiedTargetFile = {...targetFile}
+  const tagset = new Set<string>((copiedTargetFile.type === 'file' ? copiedTargetFile.tag : []))
   for (const c of diffs) {
     const nextFile = fileTable[c]
-    if (nextFile.name) targetFile.name = nextFile.name
-    if (nextFile.parentId) targetFile.parentId = nextFile.parentId
+    copiedTargetFile.name = nextFile.name
+    copiedTargetFile.parentId = nextFile.parentId
 
     if (nextFile.type === 'diff') {
       const { addtag, deltag } = nextFile.diff
-      if (targetFile.type === 'file') {
+      if (copiedTargetFile.type === 'file') {
         if (addtag) {
           addtag.forEach(x => tagset.add(x))
         }
@@ -329,13 +330,29 @@ export const integrateDifference = (diffs: string[], fileTable: FileTable, targe
       }
     }
   }
-  if (targetFile.type === 'file') {
-    targetFile.tag = [...tagset]
+  if (copiedTargetFile.type === 'file') {
+    copiedTargetFile.tag = [...tagset]
   }
+  return copiedTargetFile
 }
 
 /**
- * 与えられたファイルをソート
+ * ファイルの親を取得
+ */
+export const getFileParentsList = (firstId: string, fileTable: FileTable) => {
+  const parents: string[] = []
+  let id: string | null = firstId
+  while (id) {
+    parents.push(id)
+    const parentNode: FileNode = fileTable[id]
+    assertFileNodeFolder(parentNode)
+    id = parentNode.parentId
+  }
+  return parents.reverse()
+}
+
+/**
+ * 与えられたファイルIdをファイル名でソート
  */
 export const fileSort = (filelist: string[], fileTable: FileTable) => {
   return filelist.sort((a, b) => {
@@ -470,8 +487,8 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
         .reverse()
         .flat()
         .reverse()
-    // 子供の差分を反映 old -> new
-    integrateDifference(childTree, fileTable, targetNode)
+    // 子供の差分をfileTableに反映 old -> new
+    fileTable[targetNode.id] = integrateDifference(childTree, fileTable, targetNode)
   })
 
   // create dir tree
@@ -509,10 +526,10 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
 /**
  * 新しい名前を検証
  */
-const checkRename = (newName: string, prevNode: FileNodeFile | FileNodeFolder, fileTable: FileTable) => {
+const checkRename = (newName: string, prevNode: FileNodeFile | FileNodeFolder, fileTable: FileTable, parent?: string) => {
   if (prevNode.id === 'root' || prevNode.parentId === null) throw new Error('rootの名称は変更できません')
   if (newName === '') throw new Error('空文字は許容されません')
-  const parentNode = fileTable[prevNode.parentId]
+  const parentNode = fileTable[parent ?? prevNode.parentId]
   assertFileNodeFolder(parentNode)
   // 同名のフォルダ・同名のファイルを作らないように
   const [changedName] = getSafeName([newName],
@@ -524,15 +541,30 @@ const checkRename = (newName: string, prevNode: FileNodeFile | FileNodeFolder, f
 /**
  * 差分情報を作成
  */
-export const createDiff = (props: {newName?: string, targetId: string, newTags?: string[]}, fileTable: FileTable):FileInfoDiffFile => {
-  const { newName, targetId, newTags } = props
+export const createDiff = (props: {targetId: string, newName?: string, newTags?: string[], newParentId?:string}, fileTable: FileTable):FileInfoDiffFile => {
+  const { targetId, newName, newTags, newParentId } = props
   const targetNode = fileTable[targetId]
   if (!targetNode) throw new Error('存在しないファイルです')
   if (!(targetNode.type === 'file' || targetNode.type === 'folder')) throw new Error('適用要素が実体を持っていません')
 
   const diff: FileDifference = {}
+
+  // 親の変更
+  if(newParentId){
+    if(newParentId === targetNode.parentId) throw new Error('親が同じです')
+    const newParent = fileTable[newParentId]
+    if(!newParent) throw new Error('存在しない親です')
+    if(newParent.type !== 'folder') throw new Error('親に出来ない要素です')
+    if(targetNode.type === 'folder'){
+      const parents = getFileParentsList(newParentId ?? 'root', fileTable)
+      // 新しく追加する場所が今の要素の子要素であってはならない（フォルダの場合）
+      if(parents.includes(targetNode.id)) throw new Error('子要素に移動することは出来ません')
+    }
+  }
+  const parent = newParentId ?? targetNode.parentId ?? 'root'
+
   // rename
-  const name = newName ? checkRename(newName, targetNode, fileTable) : targetNode.name
+  const name = newName && newName !== targetNode.name ? checkRename(newName, targetNode, fileTable, parent) : targetNode.name
   if (targetNode.history.length === 0) throw new Error('過去のファイルは変更できません')
   const prevId = targetNode.history[0]
 
@@ -548,7 +580,7 @@ export const createDiff = (props: {newName?: string, targetId: string, newTags?:
     name: name,
     createdAt: Date.now(),
     type: 'diff',
-    parentId: targetNode.parentId === 'root' ? null : targetNode.parentId,
+    parentId: parent === 'root' ? null : parent,
     prevId,
     diff
   }

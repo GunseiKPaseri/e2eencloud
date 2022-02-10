@@ -7,7 +7,7 @@ import {
   FileNode,
 } from './file.type'
 
-import { assertFileNodeFolder } from './utils'
+import { assertFileNodeFolder, getFileParentsList } from './utils'
 import { logoutAsync } from '../auth/authSlice'
 
 import {
@@ -81,22 +81,15 @@ export const fileSlice = createSlice({
       .addCase(filedownloadAsync.fulfilled, afterFiledownloadAsyncFullfilled)
       .addCase(changeActiveDir, (state, action) => {
         // 指定idのディレクトリをactiveディレクトリにする
-        const parents: string[] = []
         const firstId = action.payload.id
         const activeDir:FileNode = state.fileTable[firstId]
         if (activeDir.type !== 'folder') throw new Error('指定オブジェクトはactiveDirになれません')
-        let id: string | null = firstId
-        while (id) {
-          parents.push(id)
-          const parentNode: FileNode = state.fileTable[id]
-          assertFileNodeFolder(parentNode)
-          id = parentNode.parentId
-        }
+        const parents = getFileParentsList(firstId, state.fileTable)
         state.activeFileGroup = {
           type: 'dir',
           folderId: firstId,
           files: activeDir.files,
-          parents: parents.reverse()
+          parents
         }
       })
       .addCase(changeActiveTag, (state, action) => {

@@ -4,6 +4,7 @@ import { useDrop, DropTargetMonitor, DragSourceHookSpec, DropTargetHookSpec, Fac
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { FileState, fileuploadAsync } from './fileSlice'
 import { FileNodeFile, FileNodeFolder, FileTable } from './file.type'
+import { createDiffAsync } from './fileSlice'
 
 // https://github.com/react-dnd/react-dnd/blob/9b002d24d51ecb671d049fc44679372b818f9630/packages/backend-html5/src/NativeDragSources/nativeTypesConfig.ts#L19
 type DnDFileObject = {type: undefined; files: File[]; items: DataTransferItemList; dataTransfer: DataTransfer; }
@@ -26,7 +27,8 @@ export const genUseDropReturn =
           console.log(props)
           switch(props.type){
             case __APP_FILE_NODE__:
-              // オブジェクト
+              // オブジェクトなら親を移動する
+              dispatch(createDiffAsync({ targetId: props.id, newParentId: dirId }))
               break;
             default:
               // ローカルからD&Dしたファイルオブジェクト
