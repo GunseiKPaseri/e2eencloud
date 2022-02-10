@@ -19,6 +19,7 @@ const genFileInfoFile = (props: {
   id: string,
   parentId: string | null,
   prevId?: string,
+  createdAt?: number
   tag: string[],
 }): FileCryptoInfoWithBin => ({
   fileKeyBin,
@@ -26,6 +27,7 @@ const genFileInfoFile = (props: {
     type: 'file',
     id: props.id,
     name: props.id,
+    createdAt: props.createdAt ?? 0,
     sha256: props.id,
     mime: props.id,
     size: 0,
@@ -39,6 +41,7 @@ const genFileInfoFile = (props: {
 const genFileInfoFolder = (props: {
   id: string,
   parentId: string | null,
+  createdAt?: number,
   prevId?: string,
 }): {
   fileInfo: FileInfoFolder,
@@ -49,6 +52,7 @@ const genFileInfoFolder = (props: {
     type: 'folder',
     id: props.id,
     name: props.id,
+    createdAt: props.createdAt ?? 0,
     parentId: props.parentId,
     prevId: props.prevId
   }
@@ -56,6 +60,7 @@ const genFileInfoFolder = (props: {
 const genFileInfoDiff = (props: {
   id: string,
   parentId: string | null,
+  createdAt?: number,
   prevId?: string,
   diff?: FileDifference
 }): {
@@ -67,6 +72,7 @@ const genFileInfoDiff = (props: {
     type: 'diff',
     id: props.id,
     name: props.id,
+    createdAt: props.createdAt ?? 0,
     parentId: props.parentId,
     prevId: props.prevId,
     diff: props.diff ?? {}
@@ -116,6 +122,7 @@ describe('#createDiff', () => {
         id: 'root',
         type: 'folder',
         name: 'root',
+        createdAt: 0,
         files: ['a'],
         parentId: null,
         history: [],
@@ -123,7 +130,8 @@ describe('#createDiff', () => {
           type: 'folder',
           id: 'root',
           name: 'root',
-          parentId: null
+          parentId: null,
+          createdAt: 0
         },
         fileKeyBin: []
       },
@@ -141,6 +149,7 @@ describe('#createDiff', () => {
           type: 'diff',
           id: 'PRESET',
           name: 'x',
+          createdAt: 0,
           parentId: 'a',
           prevId: 'd',
           diff: {}
@@ -152,6 +161,7 @@ describe('#createDiff', () => {
           type: 'diff',
           id: 'PRESET',
           name: 'c (2)',
+          createdAt: 0,
           parentId: 'a',
           prevId: 'd',
           diff: {}
@@ -163,6 +173,7 @@ describe('#createDiff', () => {
           type: 'diff',
           id: 'PRESET',
           name: 'd',
+          createdAt: 0,
           parentId: 'a',
           prevId: 'd',
           diff: {
@@ -174,6 +185,7 @@ describe('#createDiff', () => {
     ]
     for (const set of testSet) {
       set[1].id = set[0].id
+      set[1].createdAt = set[0].createdAt
       expect(set[0]).toEqual(set[1])
     }
   })
@@ -198,6 +210,7 @@ describe('#buildFileTable', () => {
         id: 'root',
         type: 'folder',
         name: 'root',
+        createdAt: 0,
         files: ['a'],
         parentId: null,
         history: [],
@@ -206,6 +219,7 @@ describe('#buildFileTable', () => {
           type: 'folder',
           id: 'root',
           name: 'root',
+          createdAt: 0,
           parentId: null
         }
       },
