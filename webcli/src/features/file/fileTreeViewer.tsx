@@ -16,7 +16,7 @@ import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 
 import { useDrop } from 'react-dnd'
 
-import { genUseDropReturn } from './drop'
+import { genUseDropReturn } from './dnd'
 
 const FileTreeItemFile = ({ target, onDoubleClick }: {target: FileNodeFile, onDoubleClick: React.MouseEventHandler<HTMLLIElement>}) => {
   return (

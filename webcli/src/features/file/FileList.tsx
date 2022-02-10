@@ -28,14 +28,21 @@ import { Theme } from '@mui/material/styles'
 import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 
 import { useDrop, useDrag } from 'react-dnd'
-import { genUseDropReturn } from './drop'
+import { genUseDropReturn, genUseDragReturn } from './dnd'
 
 const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder: (id: string)=>void}) => {
   const { targetFolder, onSelectFolder } = props
 
   const dispatch = useAppDispatch()
+  
+  const [{isDragging}, drag, dragPreview] = useDrag(() => genUseDragReturn(targetFolder.id))
 
   const [{ canDrop, isOver }, drop] = useDrop(() => genUseDropReturn(targetFolder.id, dispatch), [targetFolder.id])
+
+  const attachRef: ((instance: HTMLDivElement | null) => void) = (el) => {
+    drag(el)
+    drop(el)
+  }
 
   const customSX = useCallback<((theme: Theme) => SystemStyleObject<Theme>)>((theme) => ({
     boxSizing: 'border-box',
@@ -46,7 +53,7 @@ const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder
   }), [isOver, canDrop])
 
   return (
-    <ListItem ref={drop} button onDoubleClick={() => onSelectFolder(targetFolder.id)} sx={customSX}>
+    <ListItem ref={attachRef} button onDoubleClick={() => onSelectFolder(targetFolder.id)} sx={customSX}>
       <ListItemAvatar>
         <Avatar>
           <FolderIcon />
@@ -61,12 +68,7 @@ const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder
 
 const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: string)=>void}) => {
   const { targetFile, onSelectFile } = props
-  const [{isDragging}, drag, dragPreview] = useDrag(() => ({
-    type: 'DownloadURL',
-    collect: monitor => ({
-      isDragging: !!monitor.isDragging()
-    })
-  }))
+  const [{isDragging}, drag, dragPreview] = useDrag(() => genUseDragReturn(targetFile.id))
 
   return (
     <div
