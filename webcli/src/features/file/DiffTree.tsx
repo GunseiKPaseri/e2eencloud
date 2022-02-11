@@ -1,3 +1,5 @@
+import React from 'react'
+
 import { useAppSelector } from '../../app/hooks'
 
 import Timeline from '@mui/lab/Timeline'
@@ -18,20 +20,20 @@ import { TagButton } from './TagButton'
 export const createDiffExpression = (before: FileInfo, after: FileInfo):JSX.Element => {
   const result: JSX.Element[] = []
   if (before.name !== after.name) {
-    result.push(<>{`ファイル名を"${after.name}"に変更`}</>)
+    result.push(<React.Fragment key='0'>{`ファイル名を"${after.name}"に変更`}</React.Fragment>)
   }
   if (before.parentId !== after.parentId) {
-    result.push(<>{`ディレクトリを移動`}</>)
+    result.push(<React.Fragment key='1'>{`ディレクトリを移動`}</React.Fragment>)
   }
   if (after.type === 'diff') {
     if (after.diff.addtag && after.diff.addtag.length > 0) {
-      result.push(<>{[...after.diff.addtag.map(x => <TagButton key={x} tag={x}/>), <>タグを追加</>]}</>)
+      result.push(<React.Fragment key='2'>{[...after.diff.addtag.map(x => <TagButton key={x} tag={x}/>), <>タグを追加</>]}</React.Fragment>)
     }
     if (after.diff.deltag && after.diff.deltag.length > 0) {
-      result.push(<>{[...after.diff.deltag.map(x => <TagButton key={x} tag={x}/>), <>タグを削除</>]}</>)
+      result.push(<React.Fragment key='3'>{[...after.diff.deltag.map(x => <TagButton key={x} tag={x}/>), <>タグを削除</>]}</React.Fragment>)
     }
   }
-  return <>{[...result, <>しました</>]}</>
+  return <>{[...result, <React.Fragment key='4'>しました</React.Fragment>]}</>
 }
 
 export const DiffTree = () => {
