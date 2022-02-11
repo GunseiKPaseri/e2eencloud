@@ -14,6 +14,7 @@ import {
   assertWritableDraftFileNodeFolder
 } from '../utils'
 import { FileState } from '../fileSlice'
+import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
 
 type createFolderAsyncResult = {uploaded: FileCryptoInfoWithoutBin, parents: string[]}
 
@@ -41,6 +42,7 @@ export const createFolderAsync = createAsyncThunk<createFolderAsyncResult, {name
     }
     const addFolder = await submitFileInfoWithEncryption(fileInfo)
 
+    dispatch(enqueueSnackbar({message: `${changedFolderName}ディレクトリを作成しました`, options: {variant: 'success'}}))
     return { uploaded: addFolder, parents: activeFileGroup.parents }
   }
 )

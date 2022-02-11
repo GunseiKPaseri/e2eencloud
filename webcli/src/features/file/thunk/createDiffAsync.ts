@@ -12,6 +12,7 @@ import {
   fileSort
 } from '../utils'
 import { FileState } from '../fileSlice'
+import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
 
 type createDiffAsyncResult = {uploaded: FileCryptoInfoWithoutBin, targetId: string}
 
@@ -27,11 +28,23 @@ export const createDiffAsync = createAsyncThunk<createDiffAsyncResult, Parameter
     const state = getState()
     const fileTable = state.file.fileTable
 
-    const uploaded = createDiff(params, fileTable)
+    let uploaded
+    try{
+      uploaded = createDiff(params, fileTable)
+    } catch (e) {
+      dispatch(deleteProgress())
+      if(e instanceof Error) {
+        dispatch(enqueueSnackbar({message: e.message, options: {variant: 'error'}}))
+      } else {
+        dispatch(enqueueSnackbar({message: '不明な内部エラー', options: {variant: 'error'}}))
+      }
+      throw e
+    }
 
     const addObject = await submitFileInfoWithEncryption(uploaded)
     dispatch(setProgress(progress(1, step)))
     dispatch(deleteProgress())
+    dispatch(enqueueSnackbar({message: '変更を反映しました', options: {variant: 'success'}}))
     return { uploaded: addObject, targetId: params.targetId }
   }
 )

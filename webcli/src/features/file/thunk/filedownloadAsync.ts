@@ -4,6 +4,7 @@ import { decryptAESGCM, getAESGCMKey } from '../../../util'
 import { RootState } from '../../../app/store'
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice'
 import { getEncryptedFileRaw, getFileHash, assertFileNodeFile } from '../utils'
+import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
 
 import { FileState } from '../fileSlice'
 
@@ -41,6 +42,7 @@ export const filedownloadAsync = createAsyncThunk<filedownloadAsyncResult, {file
       url = URL.createObjectURL(new Blob([filebin], { type: fileObj.mime }))
     }
     dispatch(deleteProgress())
+    dispatch(enqueueSnackbar({message: `${fileObj.name}をローカルに保持しました`, options: {variant: 'success'}}))
     return { url, fileId }
   }
 )

@@ -188,6 +188,7 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
       console.log(result.data)
     } catch (e) {
       dispatch(deleteProgress())
+      dispatch(enqueueSnackbar({message: 'ログインに失敗しました', options: {variant: 'error'}}))
       throw e
     }
     const EncryptedMasterKey = base642ByteArray(result.data.encryptedMasterKeyBase64)
@@ -231,7 +232,8 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
         })
         setRSAKey({ rsaPublicKey: importKey.publicKey, rsaPrivateKey: importKey.privateKey })
       } catch (e) {
-        console.log(e)
+        dispatch(deleteProgress())
+        dispatch(enqueueSnackbar({message: '暗号鍵の復元に失敗しました', options: {variant: 'error'}}))
         throw e
       }
     }

@@ -10,6 +10,7 @@ import { allProgress } from '../../../util'
 import { setProgress, deleteProgress } from '../../progress/progressSlice'
 import { RootState } from '../../../app/store'
 import { FileState } from '../fileSlice'
+import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
 
 type fileuploadAsyncResult = {uploaded: FileCryptoInfoWithBin[], parentId: string}
 
@@ -24,7 +25,10 @@ type fileuploadAsyncResult = {uploaded: FileCryptoInfoWithBin[], parentId: strin
       const fileTable = state.file.fileTable
   
       const parent = fileTable[parentId]
-      if (!parent || parent.type !== 'folder') throw new Error('ここにアップロードできません')
+      if (!parent || parent.type !== 'folder'){
+        dispatch(enqueueSnackbar({message: 'ここにアップロードできません', options: {variant: 'error'}}))
+        throw new Error('ここにアップロードできません')
+      }
       const changedNameFile = getSafeName(
         files.map(x => x.name),
         parent.files.flatMap(x => (fileTable[x].type === 'file' ? [fileTable[x].name] : []))
@@ -36,6 +40,7 @@ type fileuploadAsyncResult = {uploaded: FileCryptoInfoWithBin[], parentId: strin
           dispatch(setProgress({ progress: resolved / (all + 1), progressBuffer: all / (all + 1) }))
         })
       dispatch(deleteProgress())
+      dispatch(enqueueSnackbar({message: `${files.length}件のファイルをアップロードしました`, options: {variant: 'success'}}))
   
       return { uploaded: loadedfile, parentId }
     }
