@@ -8,6 +8,7 @@ import { buildFileTableAsync } from '../file/fileSlice'
 import { AES_AUTH_KEY_LENGTH } from '../../const'
 
 import { setProgress, deleteProgress, progress } from '../progress/progressSlice'
+import { enqueueSnackbar } from '../snackbar/snackbarSlice'
 
 interface UserForm {
   email: string;
@@ -238,6 +239,8 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
     dispatch(buildFileTableAsync())
 
     dispatch(deleteProgress())
+
+    dispatch(enqueueSnackbar({message: 'ログインに成功しました', options: {variant: 'success'}}))
     return { email: userinfo.email, MasterKey: Array.from(MasterKeyRaw), useTowFactorAuth: result.data.useTwoFactorAuth }
   }
 )

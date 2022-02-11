@@ -4,13 +4,15 @@ import authReducer from '../features/auth/authSlice'
 import fileReducer from '../features/file/fileSlice'
 import sessionReducer from '../features/session/sessionSlice'
 import progressReducer from '../features/progress/progressSlice'
+import snackbarReducer from '../features/snackbar/snackbarSlice'
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     file: fileReducer,
     session: sessionReducer,
-    progress: progressReducer
+    progress: progressReducer,
+    snackbar: snackbarReducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
   devTools: true
