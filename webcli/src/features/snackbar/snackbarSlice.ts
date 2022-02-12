@@ -2,7 +2,7 @@ import { SnackbarMessage, VariantType, SnackbarKey } from 'notistack'
 import { createAction, createSlice } from '@reduxjs/toolkit';
 import { Message } from '@mui/icons-material';
 
-type NotificationOption = {key?: SnackbarKey, variant?: VariantType}
+type NotificationOption = {key?: SnackbarKey, variant?: VariantType, dismissed?: boolean }
 type NotificationOptionWithKey = Omit<NotificationOption, 'key'> & {key: SnackbarKey}
 type Notification = {message: SnackbarMessage, options?: NotificationOption}
 type NotificationWithKey = {message: SnackbarMessage, options: NotificationOptionWithKey}
@@ -32,7 +32,7 @@ const snackbarSlice = createSlice({
       .addCase(closeSnackbar, (state, { payload }) => {
         state.notifications = state.notifications.map(notification => {
           const shouldDismiss = notification.options.key === payload.key;
-          return shouldDismiss ? { ...notification, dismissed: true } : { ...notification }
+          return shouldDismiss ? { message: notification.message, options: {...notification.options, dismissed: true } } : { ...notification }
         })
       })
       .addCase(removeSnackbar, (state, { payload }) => {

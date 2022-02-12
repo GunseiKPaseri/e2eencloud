@@ -28,7 +28,7 @@ const ComposedProvider = composeComponents(
   React.StrictMode,
   (props) => <Provider {...props} store={store} />,
   (props) => <ThemeProvider {...props} theme={mdTheme} />,
-  (props) => <SnackbarProvider {...props} maxSnack={3} />,
+  (props) => <SnackbarProvider {...props} maxSnack={3} anchorOrigin={{vertical: 'bottom', horizontal: 'right'}} />,
   (props) => <DndProvider {...props} backend={HTML5Backend} />
 )
 

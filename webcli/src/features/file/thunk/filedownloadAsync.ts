@@ -42,7 +42,7 @@ export const filedownloadAsync = createAsyncThunk<filedownloadAsyncResult, {file
       url = URL.createObjectURL(new Blob([filebin], { type: fileObj.mime }))
     }
     dispatch(deleteProgress())
-    dispatch(enqueueSnackbar({message: `${fileObj.name}をローカルに保持しました`, options: {variant: 'success'}}))
+    dispatch(enqueueSnackbar({message: `${fileObj.name}を複号しました`, options: {variant: 'success'}}))
     return { url, fileId }
   }
 )

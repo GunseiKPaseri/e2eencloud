@@ -1,37 +1,43 @@
-import React, { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { useSnackbar, SnackbarKey } from 'notistack'
 import { removeSnackbar } from './snackbarSlice'
 
+let displayed: SnackbarKey[] = []
+
 export const Notifier = () => {
-  const [displayed, setDisplayed] = useState<SnackbarKey[]>([])
   const dispatch = useAppDispatch()
-  const snackbar = useAppSelector(store => store.snackbar)
+  const notifications = useAppSelector(store => store.snackbar.notifications)
 
   const { enqueueSnackbar, closeSnackbar } = useSnackbar()
 
   const storeDisplayed = (id: SnackbarKey) => {
-    setDisplayed([...displayed, id])
+    displayed = [...displayed, id]
   }
 
   const removeDisplayed = (id: SnackbarKey) => {
-    setDisplayed([...displayed.filter(key => id !== key)])
+    displayed = [...displayed.filter(key => id !== key)]
   }
 
   useEffect(() => {
-    snackbar.notifications.forEach(({ message, options }) => {
+    notifications.forEach(({ message, options }) => {
+      if(options.dismissed){
+        closeSnackbar(options.key)
+        return;
+      }
+      if (displayed.includes(options.key)) return;
       enqueueSnackbar(message, {
         ...options,
         onExited: (e, myKey) => {
-          dispatch(removeSnackbar(myKey))
           removeDisplayed(myKey)
+          dispatch(removeSnackbar(myKey))
         }
       })
       storeDisplayed(options.key)
     })
 
-  }, [snackbar, closeSnackbar, enqueueSnackbar, dispatch])
+  }, [notifications, closeSnackbar, enqueueSnackbar, dispatch, displayed])
   return null
 }
 
