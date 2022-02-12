@@ -27,7 +27,7 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import { Theme } from '@mui/material/styles'
 import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 
-import { useDrop, useDrag } from 'react-dnd'
+import { useDrop, useDrag, DragPreviewImage } from 'react-dnd'
 import { genUseDropReturn, genUseDragReturn } from './dnd'
 
 const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder: (id: string)=>void}) => {
@@ -71,19 +71,22 @@ const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: s
   const [{isDragging}, drag, dragPreview] = useDrag(() => genUseDragReturn(targetFile.id))
 
   return (
-    <div
-      ref={drag}>
-      <ListItem button onDoubleClick={() => onSelectFile(targetFile.id)}>
-        <ListItemAvatar>
-          <Avatar>
-            <InsertDriveFileIcon />
-          </Avatar>
-        </ListItemAvatar>
-        <ListItemText
-          primary={targetFile.name}
-        />
-      </ListItem>
-    </div>
+    <>
+      { targetFile.previewURL ? <DragPreviewImage connect={dragPreview} src={targetFile.previewURL} /> : <></> }
+      <div
+          ref={drag}>
+          <ListItem button onDoubleClick={() => onSelectFile(targetFile.id)} style={{opacity: isDragging ? 0.5 : 1}}>
+            <ListItemAvatar>
+              <Avatar>
+                <InsertDriveFileIcon />
+              </Avatar>
+            </ListItemAvatar>
+            <ListItemText
+              primary={targetFile.name}
+            />
+          </ListItem>
+        </div>
+    </>
   )
 }
 

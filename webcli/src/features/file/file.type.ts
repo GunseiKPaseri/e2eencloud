@@ -57,6 +57,7 @@ export type FileNodeFile = FileInfoFile & {
   history: string[], // new => old
   nextId?: string,
   blobURL?: string,
+  previewURL?: string,
   originalFileInfo: FileInfoFile,
   fileKeyBin: number[],
   encryptedFileIVBin: number[]
