@@ -316,7 +316,7 @@ export const integrateDifference = <T extends FileNodeFile | FileNodeFolder>(dif
   for (const c of diffs) {
     const nextFile = fileTable[c]
     copiedTargetFile.name = nextFile.name
-    copiedTargetFile.parentId = nextFile.parentId
+    copiedTargetFile.parentId = nextFile.parentId ?? 'root'
 
     if (nextFile.type === 'diff') {
       const { addtag, deltag } = nextFile.diff
@@ -556,7 +556,8 @@ export const createDiff = (props: {targetId: string, newName?: string, newTags?:
     if(!newParent) throw new Error('存在しない親です')
     if(newParent.type !== 'folder') throw new Error('親に出来ない要素です')
     if(targetNode.type === 'folder'){
-      const parents = getFileParentsList(newParentId ?? 'root', fileTable)
+      const parents = getFileParentsList(newParentId, fileTable)
+      console.log(targetNode, newParentId, parents)
       // 新しく追加する場所が今の要素の子要素であってはならない（フォルダの場合）
       if(parents.includes(targetNode.id)) throw new Error('子要素に移動することは出来ません')
     }
