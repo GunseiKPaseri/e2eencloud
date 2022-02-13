@@ -22,18 +22,16 @@ export const FileExplorer = () => {
       gridGap: theme.spacing(1),
       height: `calc(100vh - ${theme.spacing(8)})`
     }}>
-      <Paper sx={{ overflow: 'scroll', gridRow: '1/3' }}>
+      <Paper sx={{ overflow: 'scroll', gridRow: '1/3', padding: 1 }}>
         <FileTreeViewer />
         <Login />
       </Paper>
-      <Paper sx={{ overflowY: 'scroll'}}>
+      <Paper sx={{ overflowY: 'scroll', padding: 1}}>
         <AddFolder />
         <FileList />
       </Paper>
-      <Paper sx={{ overflowY: 'scroll'}}>
-        <h2>ファイルビュー</h2>
+      <Paper sx={{ overflowY: 'scroll', padding: 1}}>
         <Viewer />
-        <h2>ファイルヒストリー</h2>
         <DiffTree />
       </Paper>
     </div>

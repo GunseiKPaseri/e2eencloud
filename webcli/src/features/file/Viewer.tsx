@@ -1,8 +1,13 @@
+import Box from '@mui/material/Box'
 import { useAppSelector } from '../../app/hooks'
 import { FileNode, FileNodeFile } from './file.type'
 import { FileState } from './fileSlice'
 import { Renamer } from './Renamer'
 import { TagSetter } from './TagSetter'
+import DownloadIcon from '@mui/icons-material/Download';
+import IconButton from '@mui/material/IconButton'
+import Link from '@mui/material/Link'
+import Tooltip from '@mui/material/Tooltip'
 
 /**
  * 要素がFileNodeFile | undefinedであると確信
@@ -24,12 +29,16 @@ export const Viewer = () => {
   return (<>{
     activeNode && activeFile
       ? <>
-          {activeNode.mime.indexOf('image/') === 0 ? <img width='100%' src={activeFile.link} /> : <></>}
-          <a href={activeFile.link} download={activeNode.name}>
-            {activeNode.name}
-          </a>
-          <Renamer id={activeNode.id} name={activeNode.name} />
           <TagSetter />
+          <Renamer id={activeNode.id} name={activeNode.name} />
+          <Box>
+            <Tooltip title="ダウンロード">
+              <Link href={activeFile.link} download={activeNode.name}>
+                <IconButton><DownloadIcon/></IconButton>
+              </Link>
+            </Tooltip>
+          </Box>
+          {activeNode.mime.indexOf('image/') === 0 ? <img width='100%' src={activeFile.link} /> : <></>}
         </>
       : <></>
   }
