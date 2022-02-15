@@ -89,6 +89,34 @@ export class User {
       return false;
     }
   }
+
+  async patchPassword(params: {
+    client_random_value: string;
+    encrypted_master_key: string;
+    encrypted_master_key_iv: string;
+    hashed_authentication_key: string;
+  }) {
+    try {
+      await client.execute(
+        `UPDATE users SET
+        client_random_value = ?,
+        encrypted_master_key = ?,
+        encrypted_master_key_iv = ?,
+        hashed_authentication_key = ?
+        WHERE id = ?`,
+        [
+          params.client_random_value,
+          params.encrypted_master_key,
+          params.encrypted_master_key_iv,
+          params.hashed_authentication_key,
+          this.id,
+        ],
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 }
 
 export const addUser = async (params: {

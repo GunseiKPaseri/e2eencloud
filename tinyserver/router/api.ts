@@ -257,6 +257,44 @@ router.delete('/user/totp', async (ctx) => {
   return ctx.response.status = Status.NoContent;
 });
 
+interface PATCHPasswordJSON {
+  clientRandomValueBase64: string;
+  encryptedMasterKeyBase64: string;
+  encryptedMasterKeyIVBase64: string;
+  hashedAuthenticationKeyBase64: string;
+}
+
+router.patch('/user/password', async (ctx) => {
+  // auth
+  const uid: number | null = await ctx.state.session.get('uid');
+  const user = await getUserById(uid);
+  if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
+
+  if (!ctx.request.hasBody) return ctx.throw(Status.BadRequest, 'Bad Request');
+  const body = ctx.request.body();
+  if (body.type !== 'json') return ctx.throw(Status.BadRequest, 'Bad Request');
+
+  const data: Partial<PATCHPasswordJSON> = await body.value;
+  if (
+    !data ||
+    typeof data.clientRandomValueBase64 !== 'string' ||
+    typeof data.encryptedMasterKeyBase64 !== 'string' ||
+    typeof data.encryptedMasterKeyIVBase64 !== 'string' ||
+    typeof data.hashedAuthenticationKeyBase64 !== 'string'
+  ) {
+    return ctx.throw(Status.BadRequest, 'Bad Request');
+  }
+
+  await user.patchPassword({
+    client_random_value: data.clientRandomValueBase64,
+    encrypted_master_key: data.encryptedMasterKeyBase64,
+    encrypted_master_key_iv: data.encryptedMasterKeyIVBase64,
+    hashed_authentication_key: data.hashedAuthenticationKeyBase64,
+  });
+
+  return ctx.response.status = Status.NoContent;
+});
+
 // ADD public key
 
 interface PUTpubkeyJSON {

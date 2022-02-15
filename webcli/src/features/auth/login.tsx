@@ -14,6 +14,7 @@ import TextField from '@mui/material/TextField'
 import Grid from '@mui/material/Grid'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import Alert from '@mui/lab/Alert'
+import { PasswordChanger } from './PasswordChanger'
 
 export const Login = () => {
   const [email, setEmail] = useState('')
@@ -49,6 +50,7 @@ export const Login = () => {
           ? <>
             <Typography component="p">既に{selector.user.email}としてログイン済みです</Typography>
             <TowFactorAuth />
+            <PasswordChanger />
             <Button type="button"
               variant="outlined"
               onClick={logout}>
