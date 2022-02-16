@@ -29,6 +29,8 @@ import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 
 import { useDrop, useDrag, DragPreviewImage } from 'react-dnd'
 import { genUseDropReturn, genUseDragReturn } from './dnd'
+import Menu from '@mui/material/Menu'
+import Link from '@mui/material/Link'
 
 const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder: (id: string)=>void}) => {
   const { targetFolder, onSelectFolder } = props
@@ -69,13 +71,24 @@ const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder
 const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: string)=>void}) => {
   const { targetFile, onSelectFile } = props
   const [{isDragging}, drag, dragPreview] = useDrag(() => genUseDragReturn(targetFile.id))
+  const [anchorMenuXY, setAnchorMenuXY] = useState<{left: number, top: number}|undefined>(undefined)
+
+  const handleContextMenu: React.MouseEventHandler<HTMLDivElement> = (event) => {
+    event.preventDefault()
+    setAnchorMenuXY(anchorMenuXY === undefined ? {left: event.clientX, top: event.clientY} : undefined)
+  }
+  const handleMenuDecrypto = () => {
+    onSelectFile(targetFile.id)
+    setAnchorMenuXY(undefined)
+  }
+  const handleClose = () => setAnchorMenuXY(undefined)
 
   return (
     <>
       { targetFile.previewURL ? <DragPreviewImage connect={dragPreview} src={targetFile.previewURL} /> : <></> }
       <div
           ref={drag}>
-          <ListItem button onDoubleClick={() => onSelectFile(targetFile.id)} style={{opacity: isDragging ? 0.5 : 1}}>
+          <ListItem button onContextMenu={handleContextMenu} onDoubleClick={() => onSelectFile(targetFile.id)} style={{opacity: isDragging ? 0.5 : 1}}>
             <ListItemAvatar>
               <Avatar>
                 <InsertDriveFileIcon />
@@ -85,6 +98,18 @@ const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: s
               primary={targetFile.name}
             />
           </ListItem>
+          <Menu
+            open={anchorMenuXY !== undefined}
+            onClose={handleClose}
+            anchorReference="anchorPosition"
+            anchorPosition={anchorMenuXY}
+          >
+            {
+              targetFile.blobURL
+                ? <MenuItem component={Link} download={targetFile.name} href={targetFile.blobURL}>ダウンロード</MenuItem>
+                : <MenuItem onClick={handleMenuDecrypto}>ファイルを復号して表示</MenuItem>
+            }
+          </Menu>
         </div>
     </>
   )
