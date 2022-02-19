@@ -5,6 +5,7 @@ import {
   tagGroup,
   dirGroup,
   FileNode,
+  FileInfo,
 } from './file.type'
 
 import { assertFileNodeFolder, getFileParentsList } from './utils'
@@ -89,7 +90,7 @@ export const fileSlice = createSlice({
       .addCase(changeActiveDir, (state, action) => {
         // 指定idのディレクトリをactiveディレクトリにする
         const firstId = action.payload.id
-        const activeDir:FileNode = state.fileTable[firstId]
+        const activeDir:FileNode<FileInfo> = state.fileTable[firstId]
         if (activeDir.type !== 'folder') throw new Error('指定オブジェクトはactiveDirになれません')
         const parents = getFileParentsList(firstId, state.fileTable)
         state.activeFileGroup = {

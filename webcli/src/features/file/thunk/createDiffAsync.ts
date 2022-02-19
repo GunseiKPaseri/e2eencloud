@@ -1,5 +1,5 @@
 import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit'
-import { FileCryptoInfoWithoutBin } from '../file.type'
+import { FileCryptoInfo, FileInfoDiffFile } from '../file.type'
 import { RootState } from '../../../app/store'
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice'
 import {
@@ -14,7 +14,7 @@ import {
 import { FileState } from '../fileSlice'
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
 
-type createDiffAsyncResult = {uploaded: FileCryptoInfoWithoutBin, targetId: string}
+type createDiffAsyncResult = {uploaded: FileCryptoInfo<FileInfoDiffFile>, targetId: string}
 
 /**
  *  差分を作成するThunk
@@ -44,7 +44,20 @@ export const createDiffAsync = createAsyncThunk<createDiffAsyncResult, Parameter
     const addObject = await submitFileInfoWithEncryption(uploaded)
     dispatch(setProgress(progress(1, step)))
     dispatch(deleteProgress())
-    dispatch(enqueueSnackbar({message: '変更を反映しました', options: {variant: 'success'}}))
+    // 変更を表示
+    if(addObject.fileInfo.diff.addtag && addObject.fileInfo.diff.addtag.length > 0){
+      dispatch(enqueueSnackbar({message: '『'+addObject.fileInfo.diff.addtag.join('』,『')+'』タグを追加しました', options: {variant: 'success'}}))
+    }
+    if(addObject.fileInfo.diff.deltag && addObject.fileInfo.diff.deltag.length > 0){
+      dispatch(enqueueSnackbar({message: '『'+addObject.fileInfo.diff.deltag.join('』,『')+'』タグを削除しました', options: {variant: 'success'}}))
+    }
+    if(params.newName){
+      dispatch(enqueueSnackbar({message: "名称を"+params.newName+'に変更しました', options: {variant: 'success'}}))
+    }
+    if(params.newParentId){
+      dispatch(enqueueSnackbar({message: "ファイルを移動しました", options: {variant: 'success'}}))
+    }
+
     return { uploaded: addObject, targetId: params.targetId }
   }
 )

@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box'
 import { useAppSelector } from '../../app/hooks'
-import { FileNode, FileNodeFile } from './file.type'
+import { FileInfo, FileInfoFile, FileNode } from './file.type'
 import { FileState } from './fileSlice'
 import { Renamer } from './Renamer'
 import { TagSetter } from './TagSetter'
@@ -14,7 +14,7 @@ import Tooltip from '@mui/material/Tooltip'
  * @param fileNode FileNodeFile | undefined
  */
 export const assertFileNodeFileORUndefined:
-  (fileNode:FileNode | undefined) => asserts fileNode is FileNodeFile | undefined =
+  (fileNode:FileNode<FileInfo> | undefined) => asserts fileNode is FileNode<FileInfoFile> | undefined =
   (fileNode) => {
     if ((fileNode !== undefined) && (!fileNode || fileNode.type !== 'file')) {
       throw new Error(`${fileNode} is not File Object and undefined!!`)

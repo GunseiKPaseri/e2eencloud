@@ -8,11 +8,10 @@ import {
   getfileinfoJSONRow,
   FileTable,
   FileNode,
-  FileNodeFile,
-  FileNodeFolder,
   FileInfoDiffFile,
   FileDifference,
-  buildFileTableAsyncResult
+  buildFileTableAsyncResult,
+  FileInfoNotFile
 } from './file.type'
 
 import { decryptByRSA, encryptByRSA } from '../../encrypt'
@@ -30,7 +29,7 @@ import { WritableDraft } from 'immer/dist/internal'
  * @param fileNode FileNodeFile | FileNodeFolder
  */
 export const assertNonFileNodeDiff:
-  (fileNode:FileNode) => asserts fileNode is FileNodeFile | FileNodeFolder =
+  (fileNode:FileNode<FileInfo>) => asserts fileNode is FileNode<FileInfoFile | FileInfoFolder> =
   (fileNode) => {
     if (fileNode.type === 'diff') {
       throw new Error('This is Diff Object!!')
@@ -42,7 +41,7 @@ export const assertNonFileNodeDiff:
  * @param fileNode FileNodeFolder
  */
 export const assertFileNodeFolder:
-  (fileNode:FileNode) => asserts fileNode is FileNodeFolder =
+  (fileNode:FileNode<FileInfo>) => asserts fileNode is FileNode<FileInfoFolder> =
   (fileNode) => {
     if (fileNode.type !== 'folder') {
       throw new Error('This is not Folder Object!!')
@@ -54,7 +53,7 @@ export const assertFileNodeFolder:
  * @param fileNode FileNodeFile
  */
 export const assertFileNodeFile:
-  (fileNode:FileNode) => asserts fileNode is FileNodeFile =
+  (fileNode:FileNode<FileInfo>) => asserts fileNode is FileNode<FileInfoFile> =
   (fileNode) => {
     if (fileNode.type !== 'file') {
       throw new Error('This is not File Object!!')
@@ -66,7 +65,7 @@ export const assertFileNodeFile:
  * @param fileNode WritableDraft<WileObject> | WritableDraft<FileNodeFolder>
  */
 export const assertNonWritableDraftFileNodeDiff:
-  (fileNode:WritableDraft<FileNode>) => asserts fileNode is WritableDraft<FileNodeFile> | WritableDraft<FileNodeFolder> =
+  (fileNode:WritableDraft<FileNode<FileInfo>>) => asserts fileNode is WritableDraft<FileNode<FileInfoFile>> | WritableDraft<FileNode<FileInfoFolder>> =
   (fileNode) => {
     if (fileNode.type === 'diff') {
       throw new Error('This is Diff Object!!')
@@ -78,7 +77,7 @@ export const assertNonWritableDraftFileNodeDiff:
  * @param fileNode WritableDraft<FileNodeFolder>
  */
 export const assertWritableDraftFileNodeFolder:
-  (fileNode:WritableDraft<FileNode>) => asserts fileNode is WritableDraft<FileNodeFolder> =
+  (fileNode:WritableDraft<FileNode<FileInfo>>) => asserts fileNode is WritableDraft<FileNode<FileInfoFolder>> =
   (fileNode) => {
     if (fileNode.type !== 'folder') {
       throw new Error('This is not Folder Object!!')
@@ -186,7 +185,7 @@ export const getFileHash = async (bin: ArrayBuffer) => {
 /**
  * ファイル情報のみをサーバに保存
  */
-export const submitFileInfoWithEncryption = async <T extends FileCryptoInfoWithoutBin['fileInfo']>(fileInfo: T): Promise<FileCryptoInfoWithoutBin> => {
+export const submitFileInfoWithEncryption = async <T extends FileInfoNotFile>(fileInfo: T): Promise<FileCryptoInfoWithoutBin<T>> => {
   // genkey
   const fileKeyRaw = crypto.getRandomValues(new Uint8Array(AES_FILE_KEY_LENGTH))
   // readfile,getHash | getKey
@@ -213,9 +212,7 @@ export const submitFileInfoWithEncryption = async <T extends FileCryptoInfoWitho
   fileSendData.append('encryptedFileKeyBase64', encryptedFileKeyBase64)
   await axiosWithSession.post(`${appLocation}/api/files`, fileSendData)
 
-  // memory file to indexedDB
-
-  return (fileInfo.type === 'diff' ? { fileKeyBin: Array.from(fileKeyRaw), fileInfo } : { fileKeyBin: Array.from(fileKeyRaw), fileInfo })
+  return { fileKeyBin: Array.from(fileKeyRaw), fileInfo }
 }
 /**
  * ファイルをenryptoしてサーバに保存
@@ -281,7 +278,7 @@ export const submitFileWithEncryption = async (x: File, name: string, parentId: 
 /**
  * 取得したファイル情報を複合
  */
-export const decryptoFileInfo = async (fileinforaw: getfileinfoJSONRow): Promise<FileCryptoInfo> => {
+export const decryptoFileInfo = async (fileinforaw: getfileinfoJSONRow): Promise<FileCryptoInfo<FileInfo>> => {
   const encryptedFileKey = base642ByteArray(fileinforaw.encryptedFileKeyBase64)
   const encryptedFileInfo = base642ByteArray(fileinforaw.encryptedFileInfoBase64)
   const encryptedFileInfoIV = base642ByteArray(fileinforaw.encryptedFileInfoIVBase64)
@@ -312,7 +309,7 @@ export const getEncryptedFileRaw = async (fileId: string) => {
 /**
  * 差分をオブジェクトに反映したものを返す
  */
-export const integrateDifference = <T extends FileNodeFile | FileNodeFolder>(diffs: string[], fileTable: FileTable, targetFile: T):T => {
+export const integrateDifference = <T extends FileNode<FileInfoFile | FileInfoFolder>>(diffs: string[], fileTable: FileTable, targetFile: T):T => {
   const copiedTargetFile = {...targetFile}
   const tagset = new Set<string>((copiedTargetFile.type === 'file' ? copiedTargetFile.tag : []))
   for (const c of diffs) {
@@ -346,7 +343,7 @@ export const getFileParentsList = (firstId: string, fileTable: FileTable) => {
   let id: string | null = firstId
   while (id) {
     parents.push(id)
-    const parentNode: FileNode = fileTable[id]
+    const parentNode: FileNode<FileInfo> = fileTable[id]
     assertFileNodeFolder(parentNode)
     id = parentNode.parentId
   }
@@ -369,7 +366,7 @@ export const fileSort = (filelist: string[], fileTable: FileTable) => {
 /**
  * 取得したファイル情報からfileTableを構成
  */
-export const buildFileTable = (files: FileCryptoInfo[]):buildFileTableAsyncResult => {
+export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):buildFileTableAsyncResult => {
   const fileTable: FileTable = {
     root: {
       id: 'root',
@@ -439,7 +436,7 @@ export const buildFileTable = (files: FileCryptoInfo[]):buildFileTableAsyncResul
       const diffList: string[] = [x]
       let prevWatchId: string = x
       let nowWatchId: string | undefined = nextTable[x]
-      let nowWatchObject: FileNode | undefined
+      let nowWatchObject: FileNode<FileInfo> | undefined
       while (nowWatchId) {
         fileTable[prevWatchId].nextId = nowWatchId
         diffList.push(nowWatchId)
@@ -526,7 +523,7 @@ export const buildFileTable = (files: FileCryptoInfo[]):buildFileTableAsyncResul
 /**
  * 新しい名前を検証
  */
-const checkRename = (newName: string, prevNode: FileNodeFile | FileNodeFolder, fileTable: FileTable, parent?: string) => {
+const checkRename = (newName: string, prevNode: FileNode<FileInfoFile | FileInfoFolder>, fileTable: FileTable, parent?: string) => {
   if (prevNode.id === 'root' || prevNode.parentId === null) throw new Error('rootの名称は変更できません')
   if (newName === '') throw new Error('空文字は許容されません')
   const parentNode = fileTable[parent ?? prevNode.parentId]
@@ -590,7 +587,7 @@ export const createDiff = (props: {targetId: string, newName?: string, newTags?:
 /**
  * 対象を削除した時同時に削除するノードの一覧を取得
  */
-export const getAllDependentFile = (target: FileNode, fileTable: FileTable) => {
+export const getAllDependentFile = (target: FileNode<FileInfo>, fileTable: FileTable) => {
   let result = [target.id]
   if(target.type === 'folder'){
     // 以下に存在する全てのファイル

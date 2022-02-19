@@ -1,5 +1,5 @@
 import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit'
-import { FileNode } from '../file.type'
+import { FileInfo, FileNode } from '../file.type'
 import { decryptAESGCM, getAESGCMKey, getPreview, loadImage } from '../../../util'
 import { RootState } from '../../../app/store'
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice'
@@ -20,7 +20,7 @@ export const filedownloadAsync = createAsyncThunk<filedownloadAsyncResult, {file
     dispatch(setProgress(progress(0, step)))
 
     const state = getState()
-    const fileObj:FileNode | undefined = state.file.fileTable[fileId]
+    const fileObj:FileNode<FileInfo> | undefined = state.file.fileTable[fileId]
 
     if (!fileObj) throw new Error(`${fileId}は存在しません`)
     if (fileObj.type !== 'file') throw new Error('バイナリファイルが関連付いていない要素です')

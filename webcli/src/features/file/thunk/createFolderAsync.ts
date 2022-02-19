@@ -2,7 +2,8 @@ import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit'
 import { 
   FileTable,
   FileInfoFolder,
-  FileCryptoInfoWithoutBin
+  FileCryptoInfoWithoutBin,
+  FileCryptoInfo
 } from '../file.type'
 import { RootState } from '../../../app/store'
 import {
@@ -16,7 +17,7 @@ import {
 import { FileState } from '../fileSlice'
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
 
-type createFolderAsyncResult = {uploaded: FileCryptoInfoWithoutBin, parents: string[]}
+type createFolderAsyncResult = {uploaded: FileCryptoInfo<FileInfoFolder>, parents: string[]}
 
 /**
  * フォルダを作成するReduxThunk

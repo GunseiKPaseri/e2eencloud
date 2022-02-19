@@ -17,9 +17,9 @@ import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline'
 import DeleteIcon from '@mui/icons-material/Delete';
 
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { changeActiveDir, fileDeleteAsync, filedownloadAsync, FileState, fileuploadAsync } from './fileSlice'
+import { changeActiveDir, createDiffAsync, fileDeleteAsync, filedownloadAsync, FileState, fileuploadAsync } from './fileSlice'
 import { assertFileNodeFolder, assertNonFileNodeDiff } from './utils'
-import { FileNodeFile, FileNodeFolder } from './file.type'
+import { FileNode, FileInfoFile, FileInfoFolder } from './file.type'
 import { TagButton } from './TagButton'
 import Breadcrumbs from '@mui/material/Breadcrumbs'
 import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '../../components/customed/StyledBreadcrumb'
@@ -35,7 +35,7 @@ import { genUseDropReturn, genUseDragReturn } from './dnd'
 import Menu from '@mui/material/Menu'
 import Link from '@mui/material/Link'
 
-const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder: (id: string)=>void}) => {
+const FileListListFolder = (props: {targetFolder: FileNode<FileInfoFolder>, onSelectFolder: (id: string)=>void}) => {
   const { targetFolder, onSelectFolder } = props
 
   const dispatch = useAppDispatch()
@@ -71,10 +71,11 @@ const FileListListFolder = (props: {targetFolder: FileNodeFolder, onSelectFolder
   )
 }
 
-const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: string)=>void}) => {
+const FileListListFile = (props: {targetFile: FileNode<FileInfoFile>, onSelectFile: (id: string)=>void}) => {
   const { targetFile, onSelectFile } = props
   const [{isDragging}, drag, dragPreview] = useDrag(() => genUseDragReturn(targetFile.id))
   const [anchorMenuXY, setAnchorMenuXY] = useState<{left: number, top: number}|undefined>(undefined)
+  const dispatch = useAppDispatch()
 
   const handleContextMenu: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.preventDefault()
@@ -85,6 +86,13 @@ const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: s
     setAnchorMenuXY(undefined)
   }
   const handleClose = () => setAnchorMenuXY(undefined)
+
+  const handleMenuAddBin = () => {
+    dispatch(createDiffAsync({ targetId: targetFile.id, newTags: [...targetFile.tag, 'bin'] }))
+  }
+  const handleMenuFromBin = () => {
+    dispatch(createDiffAsync({ targetId: targetFile.id, newTags: targetFile.tag.filter(x => x!=='bin') }))
+  }
 
   return (
     <>
@@ -112,13 +120,18 @@ const FileListListFile = (props: {targetFile: FileNodeFile, onSelectFile: (id: s
                 ? <MenuItem component={Link} download={targetFile.name} href={targetFile.blobURL}>ダウンロード</MenuItem>
                 : <MenuItem onClick={handleMenuDecrypto}>ファイルを復号して表示</MenuItem>
             }
+            {
+              targetFile.tag.includes('bin')
+                ? <MenuItem onClick={handleMenuFromBin}>ゴミ箱から復元</MenuItem>
+                : <MenuItem onClick={handleMenuAddBin}>ゴミ箱に追加</MenuItem>
+            }
           </Menu>
         </div>
     </>
   )
 }
 
-const DIRBreadcrumb = (props: {target: FileNodeFolder}) => {
+const DIRBreadcrumb = (props: {target: FileNode<FileInfoFolder>}) => {
   const { target } = props
   const dispatch = useAppDispatch()
   const fileTable = useAppSelector((state) => state.file.fileTable)

@@ -9,7 +9,7 @@ import TreeView from '@mui/lab/TreeView'
 import FolderIcon from '@mui/icons-material/Folder'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile'
-import { FileNodeFile, FileNodeFolder, FileTable } from './file.type'
+import { FileNode, FileInfoFile, FileInfoFolder } from './file.type'
 import { Theme } from '@mui/material/styles'
 import Box from '@mui/material/Box'
 import { SystemStyleObject } from '@mui/system/styleFunctionSx'
@@ -19,7 +19,7 @@ import { useDrop } from 'react-dnd'
 import { genUseDropReturn } from './dnd'
 import { changeActiveDir, filedownloadAsync } from './fileSlice'
 
-const FileTreeItemFile = ({ target, onDoubleClick }: {target: FileNodeFile, onDoubleClick: React.MouseEventHandler<HTMLLIElement>}) => {
+const FileTreeItemFile = ({ target, onDoubleClick }: {target: FileNode<FileInfoFile>, onDoubleClick: React.MouseEventHandler<HTMLLIElement>}) => {
   return (
     <StyledTreeItem
       key={target.id}
@@ -37,7 +37,7 @@ const FileTreeItemFolder = ({
   onSelectFile,
   onSelectFolder
 }: {
-  target: FileNodeFolder,
+  target: FileNode<FileInfoFolder>,
   onSelectFile: (id :string) => void,
   onSelectFolder: (id: string) => void
 }) => {
