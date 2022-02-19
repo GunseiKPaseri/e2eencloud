@@ -61,17 +61,18 @@ export const afterCreateDiffAsyncFullfilled:
     fileTable[fileInfo.id] = { ...fileInfo, parentId: fileInfo.parentId, origin: {fileInfo, fileKeyBin} }
     // tagTreeを更新
     if (fileInfo.diff.addtag || fileInfo.diff.deltag) {
+      const tagTree = {...state.tagTree}
       for (const tag of fileInfo.diff.addtag ?? []) {
-        if (state.tagTree[tag]) {
-          state.tagTree[tag].push(targetId)
-        } else {
-          state.tagTree[tag] = [targetId]
-        }
+        tagTree[tag] = [...(tagTree[tag] ?? []), targetId]
       }
       for (const tag of fileInfo.diff.deltag ?? []) {
-        state.tagTree[tag] = state.tagTree[tag].filter(x => x !== targetId)
+        tagTree[tag] = tagTree[tag].filter(x => x !== targetId)
       }
-      state.tagTree = { ...state.tagTree }
+      state.tagTree = tagTree
+
+      if(state.activeFileGroup && state.activeFileGroup.type === 'tag'){
+        state.activeFileGroup.files = tagTree[state.activeFileGroup.tagName] ?? []
+      }
     }
 
     // 差分をnodeに反映
