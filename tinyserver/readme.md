@@ -12,14 +12,14 @@ server has started on http://localhost:3001 🚀
 
 ```bash
 $ deno lint --config ./deno.jsonc
-Checked 10 files
+Checked 11 files
 ```
 
 ## format
 
 ```bash
 $ deno fmt --config ./deno.jsonc
-Checked 13 files
+Checked 14 files
 ```
 
 ## test

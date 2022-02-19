@@ -11,7 +11,8 @@ import {
   FileNodeFile,
   FileNodeFolder,
   FileInfoDiffFile,
-  FileDifference
+  FileDifference,
+  buildFileTableAsyncResult
 } from './file.type'
 
 import { decryptByRSA, encryptByRSA } from '../../encrypt'
@@ -214,7 +215,7 @@ export const submitFileInfoWithEncryption = async <T extends FileCryptoInfoWitho
 
   // memory file to indexedDB
 
-  return { fileKeyBin: Array.from(fileKeyRaw), fileInfo }
+  return (fileInfo.type === 'diff' ? { fileKeyBin: Array.from(fileKeyRaw), fileInfo } : { fileKeyBin: Array.from(fileKeyRaw), fileInfo })
 }
 /**
  * ファイルをenryptoしてサーバに保存
@@ -296,6 +297,7 @@ export const decryptoFileInfo = async (fileinforaw: getfileinfoJSONRow): Promise
     const encryptedFileIVBin = Array.from(encryptedFileIV)
     return { encryptedFileIVBin, fileKeyBin, fileInfo }
   }
+  if (fileInfo.type === 'folder') return { fileKeyBin, fileInfo }
   return { fileKeyBin, fileInfo }
 }
 
@@ -367,7 +369,7 @@ export const fileSort = (filelist: string[], fileTable: FileTable) => {
 /**
  * 取得したファイル情報からfileTableを構成
  */
-export const buildFileTable = (files: FileCryptoInfo[]) => {
+export const buildFileTable = (files: FileCryptoInfo[]):buildFileTableAsyncResult => {
   const fileTable: FileTable = {
     root: {
       id: 'root',
@@ -377,13 +379,15 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
       files: [],
       parentId: null,
       history: [],
-      fileKeyBin: [],
-      originalFileInfo: {
-        type: 'folder',
-        createdAt: 0,
-        id: 'root',
-        name: 'root',
-        parentId: null
+      origin:{
+        fileInfo: {
+          type: 'folder',
+          createdAt: 0,
+          id: 'root',
+          name: 'root',
+          parentId: null
+        },
+        fileKeyBin: []
       }
     }
   }
@@ -397,8 +401,7 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
           parentId: fileInfo.parentId ?? 'root',
           history: [],
           files: [],
-          fileKeyBin,
-          originalFileInfo: fileInfo
+          origin: {fileInfo, fileKeyBin}
         }
         break
       case 'file': {
@@ -410,9 +413,7 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
           ...fileInfo,
           parentId: fileInfo.parentId ?? 'root',
           history: [],
-          originalFileInfo: fileInfo,
-          fileKeyBin,
-          encryptedFileIVBin
+          origin: {fileInfo, fileKeyBin, encryptedFileIVBin}
         }
         break
       }
@@ -420,8 +421,7 @@ export const buildFileTable = (files: FileCryptoInfo[]) => {
         fileTable[fileInfo.id] = {
           ...fileInfo,
           parentId: fileInfo.parentId ?? 'root',
-          fileKeyBin,
-          originalFileInfo: fileInfo
+          origin: {fileInfo, fileKeyBin},
         }
     }
     if (fileInfo.prevId) nextTable[fileInfo.prevId] = fileInfo.id
@@ -585,4 +585,25 @@ export const createDiff = (props: {targetId: string, newName?: string, newTags?:
     prevId,
     diff
   }
+}
+
+/**
+ * 対象を削除した時同時に削除するノードの一覧を取得
+ */
+export const getAllDependentFile = (target: FileNode, fileTable: FileTable) => {
+  let result = [target.id]
+  if(target.type === 'folder'){
+    // 以下に存在する全てのファイル
+    target.files.map((x) => {
+      return getAllDependentFile(fileTable[x], fileTable)
+    }).flat()
+  }
+  // 変更履歴全て
+  for(let t=target.prevId; t; t=fileTable[t].prevId){
+    result.push(t)
+  }
+  for(let t=target.nextId; t; t=fileTable[t].nextId){
+    result.push(t)
+  }
+  return result
 }

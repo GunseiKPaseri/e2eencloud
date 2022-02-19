@@ -28,7 +28,7 @@ export const filedownloadAsync = createAsyncThunk<filedownloadAsyncResult, {file
     let url = fileObj.blobURL
 
     if (!url) {
-      const { fileKeyBin, encryptedFileIVBin } = fileObj
+      const { fileKeyBin, encryptedFileIVBin } = fileObj.origin
       dispatch(setProgress(progress(1, step)))
       const fileKey = await getAESGCMKey(Uint8Array.from(fileKeyBin))
       dispatch(setProgress(progress(2, step)))

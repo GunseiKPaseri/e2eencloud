@@ -51,6 +51,28 @@ export interface FileInfoDiffFile {
 export type FileInfo = FileInfoFile | FileInfoFolder | FileInfoDiffFile
 
 /**
+ * サーバDBから取得した情報
+ */
+ export type FileCryptoInfoWithBin = {
+  encryptedFileIVBin: number[],
+  fileKeyBin: number[],
+  fileInfo: FileInfoFile,
+}
+
+export type FileCryptoInfoDiff = {
+  fileKeyBin: number[],
+  fileInfo: FileInfoDiffFile,
+}
+export type FileCryptoInfoFolder = {
+  fileKeyBin: number[],
+  fileInfo: FileInfoFolder,
+}
+
+export type FileCryptoInfoWithoutBin = FileCryptoInfoDiff | FileCryptoInfoFolder
+
+export type FileCryptoInfo = FileCryptoInfoWithBin | FileCryptoInfoWithoutBin
+
+/**
  * 手元で管理するファイル情報
  */
 export type FileNodeFile = FileInfoFile & {
@@ -58,9 +80,7 @@ export type FileNodeFile = FileInfoFile & {
   nextId?: string,
   blobURL?: string,
   previewURL?: string,
-  originalFileInfo: FileInfoFile,
-  fileKeyBin: number[],
-  encryptedFileIVBin: number[]
+  origin: FileCryptoInfoWithBin
 }
 
 /**
@@ -70,8 +90,7 @@ export type FileNodeFolder = FileInfoFolder & {
   history: string[], // new => old
   nextId?: string,
   files: string[],
-  originalFileInfo: FileInfoFolder,
-  fileKeyBin: number[]
+  origin: FileCryptoInfoFolder
 }
 
 /**
@@ -80,8 +99,7 @@ export type FileNodeFolder = FileInfoFolder & {
 export type FileNodeDiff = FileInfoDiffFile & {
   nextId?: string,
   blobURL?: string,
-  originalFileInfo: FileInfoDiffFile,
-  fileKeyBin: number[]
+  origin: FileCryptoInfoDiff
 }
 
 /**
@@ -94,22 +112,6 @@ export type FileNode = FileNodeFile | FileNodeFolder | FileNodeDiff
   */
 export type FileTable = { [key: string]: FileNode }
 
-/**
- * サーバDBから取得した情報
- */
-export type FileCryptoInfoWithBin = {
-  encryptedFileIVBin: number[],
-  fileKeyBin: number[],
-  fileInfo: FileInfoFile,
-}
-
-export type FileCryptoInfoWithoutBin = {
-  fileKeyBin: number[],
-  fileInfo: FileInfoFolder | FileInfoDiffFile,
-}
-
-export type FileCryptoInfo = FileCryptoInfoWithBin | FileCryptoInfoWithoutBin
-
 export type tagGroup = {type: 'tag', files: string[], tagName: string}
 export type dirGroup = {type: 'dir', folderId: string, files: string[], parents: string[]}
 
@@ -121,3 +123,5 @@ export interface getfileinfoJSONRow {
   encryptedFileInfoIVBase64: string,
   encryptedSize: string;
 }
+
+export type buildFileTableAsyncResult = { fileTable: FileTable, tagTree: { [key: string]: string[] } }

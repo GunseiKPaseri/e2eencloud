@@ -26,3 +26,5 @@ export * as OTPAuth from 'https://deno.land/x/otpauth@v7.0.10/dist/otpauth.esm.j
 // @deno-types="https://cdn.skypack.dev/@types/ua-parser-js?dts"
 import uaparser from 'https://cdn.skypack.dev/ua-parser-js@1.0.2?dts';
 export { uaparser };
+
+export { Query, Where } from 'https://deno.land/x/sql_builder@v1.9.1/mod.ts';

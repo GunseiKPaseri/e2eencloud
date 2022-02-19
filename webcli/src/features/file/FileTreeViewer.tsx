@@ -34,12 +34,10 @@ const FileTreeItemFile = ({ target, onDoubleClick }: {target: FileNodeFile, onDo
 
 const FileTreeItemFolder = ({
   target,
-  fileTable,
   onSelectFile,
   onSelectFolder
 }: {
   target: FileNodeFolder,
-  fileTable: FileTable,
   onSelectFile: (id :string) => void,
   onSelectFolder: (id: string) => void
 }) => {
@@ -71,7 +69,6 @@ const FileTreeItemFolder = ({
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
             <FileTreeItem
               key={c}
-              fileTable={fileTable}
               targetId={c}
               onSelectFile={onSelectFile}
               onSelectFolder={onSelectFolder}
@@ -83,21 +80,20 @@ const FileTreeItemFolder = ({
 }
 
 function FileTreeItem ({
-  fileTable,
   targetId,
   onSelectFile,
   onSelectFolder
 }: {
-  fileTable: FileState['fileTable'],
   targetId: string,
   onSelectFile: (id :string) => void
   onSelectFolder: (id: string) => void
 }) {
+  const fileTable = useAppSelector<FileState['fileTable']>((store) => store.file.fileTable)
   const target = fileTable[targetId]
   if (!target || target.type === 'diff') return <></>
 
   return target.type === 'folder'
-    ? <FileTreeItemFolder target={target} fileTable={fileTable} onSelectFile={onSelectFile} onSelectFolder={onSelectFolder} />
+    ? <FileTreeItemFolder target={target} onSelectFile={onSelectFile} onSelectFolder={onSelectFolder} />
     : <FileTreeItemFile
         target={target}
         onDoubleClick={(e) => { onSelectFile(targetId) }}
@@ -106,7 +102,6 @@ function FileTreeItem ({
 
 export const FileTreeViewer = () => {
   const dispatch = useAppDispatch()
-  const fileTable = useAppSelector<FileState['fileTable']>((store) => store.file.fileTable)
 
   const onSelectFile = (fileId: string) => dispatch(filedownloadAsync({ fileId }))
   const onSelectFolder = (id: string) => dispatch(changeActiveDir({ id }))
@@ -118,7 +113,6 @@ export const FileTreeViewer = () => {
       defaultEndIcon={<InsertDriveFileIcon />}
     >
       <FileTreeItem
-        fileTable={fileTable}
         targetId='root'
         onSelectFile= {onSelectFile}
         onSelectFolder= {onSelectFolder}

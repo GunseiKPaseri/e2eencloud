@@ -6,6 +6,7 @@ import { OTPAuth } from '../deps.ts';
 import { addFile, getFileById, getFileInfo } from '../model/Files.ts';
 import { uaparser } from '../deps.ts';
 import SessionsStore from '../model/Sessions.ts';
+import { deleteFiles } from '../model/Files.ts';
 
 const router = new Router({ prefix: '/api' });
 
@@ -475,6 +476,33 @@ router.post('/files', async (ctx) => {
   console.log('save ', x?.id);
 
   return ctx.response.status = Status.NoContent;
+});
+
+interface POSTdeletefilesJSON {
+  files: string[];
+}
+
+router.post('/files/delete', async (ctx) => {
+  // auth
+  const uid: number | null = await ctx.state.session.get('uid');
+  const user = await getUserById(uid);
+  if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
+
+  // verify body
+  if (!ctx.request.hasBody) return ctx.throw(Status.BadRequest, 'Bad Request');
+  const body = ctx.request.body();
+  if (body.type !== 'json') return ctx.throw(Status.BadRequest, 'Bad Request');
+  const data: Partial<POSTdeletefilesJSON> = await body.value;
+
+  console.log(data);
+  if (!(data.files instanceof Array)) return ctx.throw(Status.BadRequest, 'Bad Request');
+
+  const deletedTarget = data.files.filter((x) => typeof x === 'string');
+  const deleted = await deleteFiles(user.id, deletedTarget);
+
+  ctx.response.status = Status.OK;
+  ctx.response.body = { deleted };
+  ctx.response.type = 'json';
 });
 
 // GET FILEINFO

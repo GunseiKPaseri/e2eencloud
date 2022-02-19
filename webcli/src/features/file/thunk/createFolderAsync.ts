@@ -59,7 +59,7 @@ export const afterCreateFolderAsyncFullfilled:
     // add table
     assertFileInfoFolder(fileInfo)
     const newFileTable:FileTable = {
-      [fileInfo.id]: { ...fileInfo, files: [], history: [fileInfo.id], originalFileInfo: fileInfo, fileKeyBin },
+      [fileInfo.id]: { ...fileInfo, files: [], history: [fileInfo.id], origin: {fileInfo, fileKeyBin} },
       ...state.fileTable
     }
     // add parent

@@ -1,5 +1,4 @@
 
-import Grid from '@mui/material/Grid'
 import Paper from '@mui/material/Paper'
 import { useTheme } from '@mui/material/styles'
 import { Login } from '../../features/auth/login'
@@ -8,6 +7,7 @@ import { FileList } from '../../features/file/FileList'
 import { Viewer } from '../../features/file/Viewer'
 import { AddFolder } from '../../features/file/AddFolder'
 import { DiffTree } from '../../features/file/DiffTree'
+import { TagButton } from '../../features/file/TagButton'
 
 export const FileExplorer = () => {
   const theme = useTheme()
@@ -24,6 +24,7 @@ export const FileExplorer = () => {
     }}>
       <Paper sx={{ overflow: 'scroll', gridRow: '1/3', padding: 1 }}>
         <FileTreeViewer />
+        <TagButton tag='bin' />
         <Login />
       </Paper>
       <Paper sx={{ overflowY: 'scroll', padding: 1}}>

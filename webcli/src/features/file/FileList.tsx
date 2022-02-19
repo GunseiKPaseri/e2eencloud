@@ -14,9 +14,10 @@ import FolderIcon from '@mui/icons-material/Folder'
 import LocalOfferIcon from '@mui/icons-material/LocalOffer'
 import ViewListIcon from '@mui/icons-material/ViewList'
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline'
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { changeActiveDir, filedownloadAsync, FileState, fileuploadAsync } from './fileSlice'
+import { changeActiveDir, fileDeleteAsync, filedownloadAsync, FileState, fileuploadAsync } from './fileSlice'
 import { assertFileNodeFolder, assertNonFileNodeDiff } from './utils'
 import { FileNodeFile, FileNodeFolder } from './file.type'
 import { TagButton } from './TagButton'
@@ -24,6 +25,8 @@ import Breadcrumbs from '@mui/material/Breadcrumbs'
 import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '../../components/customed/StyledBreadcrumb'
 import MenuItem from '@mui/material/MenuItem'
 import ListItemIcon from '@mui/material/ListItemIcon'
+import IconButton from '@mui/material/IconButton'
+import Tooltip from '@mui/material/Tooltip'
 import { Theme } from '@mui/material/styles'
 import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 
@@ -190,12 +193,21 @@ export const FileList = () => {
     ...(isOver && canDrop ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' }),
   }), [isOver, canDrop])
 
+  const handleDeleteClick = () => {
+    if(!activeFileGroup) return
+    dispatch(fileDeleteAsync({targetIds: activeFileGroup.files}))
+  }
+
   return (
     <>
       <ToggleButtonGroup value={viewStyle} exclusive onChange={(e, nextView) => setViewStyle(nextView)}>
         <ToggleButton value='list'><ViewListIcon /></ToggleButton>
         <ToggleButton value='detaillist'><ViewHeadlineIcon /></ToggleButton>
       </ToggleButtonGroup>
+      {
+        activeFileGroup && activeFileGroup.type === 'tag' && activeFileGroup.tagName === 'bin'
+        ? <Tooltip title='完全削除'><IconButton onClick={handleDeleteClick}><DeleteIcon /></IconButton></Tooltip> : <></>
+      }
       {
         activeFileGroup
           ? <Breadcrumbs maxItems={3} aria-label="パンくずリスト">

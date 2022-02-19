@@ -58,7 +58,7 @@ export const afterCreateDiffAsyncFullfilled:
     // fileTableを更新
     if (!fileInfo.prevId) throw new Error('前方が指定されていません')
     fileTable[fileInfo.prevId].nextId = fileInfo.id
-    fileTable[fileInfo.id] = { ...fileInfo, parentId: fileInfo.parentId, originalFileInfo: fileInfo, fileKeyBin }
+    fileTable[fileInfo.id] = { ...fileInfo, parentId: fileInfo.parentId, origin: {fileInfo, fileKeyBin} }
     // tagTreeを更新
     if (fileInfo.diff.addtag || fileInfo.diff.deltag) {
       for (const tag of fileInfo.diff.addtag ?? []) {

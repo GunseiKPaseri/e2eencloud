@@ -17,7 +17,7 @@ type fileuploadAsyncResult = {uploaded: FileCryptoInfoWithBin[], parentId: strin
 /**
  * ファイルをアップロードするReduxThunk
  */
- export const fileuploadAsync = createAsyncThunk<fileuploadAsyncResult, {files: File[], parentId: string}, {state: RootState}>(
+export const fileuploadAsync = createAsyncThunk<fileuploadAsyncResult, {files: File[], parentId: string}, {state: RootState}>(
     'file/fileupload',
     async ({ files, parentId }, { getState, dispatch }) => {
       const state = getState()
@@ -56,7 +56,7 @@ export const afterFileuploadAsyncFullfilled:
       ...Object.fromEntries(
         uploaded.map(({ fileInfo, fileKeyBin, encryptedFileIVBin }) => ([
           fileInfo.id,
-          { ...fileInfo, history: [fileInfo.id], originalFileInfo: fileInfo, fileKeyBin, encryptedFileIVBin }
+          { ...fileInfo, history: [fileInfo.id], origin: {fileInfo, fileKeyBin, encryptedFileIVBin} }
         ]))
       )
     }

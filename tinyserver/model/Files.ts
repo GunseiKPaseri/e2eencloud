@@ -1,5 +1,5 @@
 import client from '../dbclient.ts';
-import { v4 } from '../deps.ts';
+import { Query, v4, Where } from '../deps.ts';
 import { User } from './Users.ts';
 
 const validateFileId = (x: string) => x.indexOf('-') === -1 && v4.validate(x.replace(/_/g, '-'));
@@ -96,4 +96,40 @@ export const getFileById = async (id: string) => {
 export const getFileInfo = async (uid: number) => {
   const files: any[] = await client.query(`SELECT * FROM files WHERE created_by = ?`, [uid]);
   return files.map((x) => new File(x));
+};
+
+export const deleteFiles = async (uid: number, fileIDs: string[]) => {
+  const builder = new Query();
+
+  const targetFileIDs = fileIDs.filter((id) => v4.validate(id.replaceAll('_', '-')));
+
+  const selectQuery = builder
+    .table('files')
+    .where(Where.field('id').in(targetFileIDs))
+    .where(Where.field('created_by').eq(uid))
+    .select('id')
+    .build();
+  const result: { id: string }[] = await client.query(selectQuery.trim());
+
+  const files = result.map((x) => x.id);
+  console.log(files);
+
+  const sql = builder
+    .table('files')
+    .where(Where.field('id').in(files))
+    .delete()
+    .build();
+  await client.execute(sql.trim());
+
+  // DeleteFile
+  // 存在しないファイルは無視
+  await Promise.all(
+    files
+      .map((id) =>
+        Deno.remove(`${Deno.cwd()}/../webcli/dist/bin/${id}`)
+          .catch(() => Promise.resolve())
+      ),
+  );
+
+  return files;
 };

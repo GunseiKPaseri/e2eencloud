@@ -36,6 +36,12 @@ import {
 } from './thunk/filedownloadAsync'
 export { filedownloadAsync }
 
+import {
+  fileDeleteAsync,
+  afterFileDeleteAsyncFullfilled
+} from './thunk/fileDeleteAsync'
+export { fileDeleteAsync }
+
 /**
  * ファイル関連のReduxState
  */
@@ -79,6 +85,7 @@ export const fileSlice = createSlice({
       .addCase(createDiffAsync.fulfilled, afterCreateDiffAsyncFullfilled)
       .addCase(createFolderAsync.fulfilled, afterCreateFolderAsyncFullfilled)
       .addCase(filedownloadAsync.fulfilled, afterFiledownloadAsyncFullfilled)
+      .addCase(fileDeleteAsync.fulfilled, afterFileDeleteAsyncFullfilled)
       .addCase(changeActiveDir, (state, action) => {
         // 指定idのディレクトリをactiveディレクトリにする
         const firstId = action.payload.id

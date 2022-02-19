@@ -63,8 +63,8 @@ export const DiffTree = () => {
             <TimelineContent>
               {
                 history.length - 1 !== i
-                  ? createDiffExpression(fileTable[history[i + 1]].originalFileInfo, node.originalFileInfo)
-                  : `${node.originalFileInfo.name}をアップロードしました`
+                  ? createDiffExpression(fileTable[history[i + 1]].origin.fileInfo, node.origin.fileInfo)
+                  : `${node.origin.fileInfo.name}をアップロードしました`
               }
             </TimelineContent>
           </TimelineItem>

@@ -63,7 +63,7 @@ export const PasswordChanger = () => {
         fullWidth
         name="password"
         label={stepState === 1 ? 'パスワード（確認のため再入力）' : 'パスワード'}
-        id="password"
+        id="newpassword"
         autoComplete="current-password"
         value={stepState === 1 ? confirmPassword : password}
         onChange={(e) => stepState === 1 ? setConfirmPassword(e.target.value) : setPassword(e.target.value)}

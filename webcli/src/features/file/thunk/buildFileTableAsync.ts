@@ -1,12 +1,10 @@
 import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit'
-import { FileTable, getfileinfoJSONRow } from '../file.type'
+import { buildFileTableAsyncResult, getfileinfoJSONRow } from '../file.type'
 import { axiosWithSession, appLocation } from '../../componentutils'
 import { AxiosResponse } from 'axios'
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice'
 import { buildFileTable, decryptoFileInfo, assertFileNodeFolder } from '../utils'
 import { FileState } from '../fileSlice'
-
-type buildFileTableAsyncResult = { fileTable: FileTable, tagTree: { [key: string]: string[] } }
 
 /**
  * ファイル情報を解析してディレクトリツリーを構成するReduxThunk
