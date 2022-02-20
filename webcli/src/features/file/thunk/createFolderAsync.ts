@@ -10,10 +10,12 @@ import {
   genUUID,
   getSafeName,
   submitFileInfoWithEncryption,
-  fileSort,
+  fileSort
+} from '../utils'
+import {
   assertFileInfoFolder,
   assertWritableDraftFileNodeFolder
-} from '../utils'
+} from '../filetypeAssert'
 import { FileState } from '../fileSlice'
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
 

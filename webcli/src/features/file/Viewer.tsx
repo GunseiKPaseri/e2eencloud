@@ -9,17 +9,7 @@ import IconButton from '@mui/material/IconButton'
 import Link from '@mui/material/Link'
 import Tooltip from '@mui/material/Tooltip'
 
-/**
- * 要素がFileNodeFile | undefinedであると確信
- * @param fileNode FileNodeFile | undefined
- */
-export const assertFileNodeFileORUndefined:
-  (fileNode:FileNode<FileInfo> | undefined) => asserts fileNode is FileNode<FileInfoFile> | undefined =
-  (fileNode) => {
-    if ((fileNode !== undefined) && (!fileNode || fileNode.type !== 'file')) {
-      throw new Error(`${fileNode} is not File Object and undefined!!`)
-    }
-  }
+import { assertFileNodeFileORUndefined } from './filetypeAssert'
 
 export const Viewer = () => {
   const fileState = useAppSelector<FileState>((store) => store.file)

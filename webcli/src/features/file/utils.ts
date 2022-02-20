@@ -13,99 +13,21 @@ import {
   buildFileTableAsyncResult,
   FileInfoNotFile
 } from './file.type'
+import {
+  assertFileNodeFolder,
+  assertNonFileNodeDiff
+} from './filetypeAssert'
 
 import { decryptByRSA, encryptByRSA } from '../../encrypt'
-import { getAESGCMKey, AESGCM, string2ByteArray, byteArray2base64, base642ByteArray, decryptAESGCM, byteArray2string, assertArrayNumber } from '../../util'
+import { assertArrayNumber } from '../../utils/assert'
+import { string2ByteArray, byteArray2base64, base642ByteArray, byteArray2string } from '../../utils/uint8'
+import { getAESGCMKey, AESGCM,  decryptAESGCM } from '../../utils/crypto'
 import { axiosWithSession, appLocation } from '../componentutils'
 import FormData from 'form-data'
 import { AxiosResponse } from 'axios'
 
 import { v4 } from 'uuid'
 import { AES_FILE_KEY_LENGTH } from '../../const'
-import { WritableDraft } from 'immer/dist/internal'
-
-/**
- * 要素がFileNodeDiffで無いと確信
- * @param fileNode FileNodeFile | FileNodeFolder
- */
-export const assertNonFileNodeDiff:
-  (fileNode:FileNode<FileInfo>) => asserts fileNode is FileNode<FileInfoFile | FileInfoFolder> =
-  (fileNode) => {
-    if (fileNode.type === 'diff') {
-      throw new Error('This is Diff Object!!')
-    }
-  }
-
-/**
- * 要素がFileNodeFolderであると確信
- * @param fileNode FileNodeFolder
- */
-export const assertFileNodeFolder:
-  (fileNode:FileNode<FileInfo>) => asserts fileNode is FileNode<FileInfoFolder> =
-  (fileNode) => {
-    if (fileNode.type !== 'folder') {
-      throw new Error('This is not Folder Object!!')
-    }
-  }
-
-/**
- * 要素がFileNodeFileであると確信
- * @param fileNode FileNodeFile
- */
-export const assertFileNodeFile:
-  (fileNode:FileNode<FileInfo>) => asserts fileNode is FileNode<FileInfoFile> =
-  (fileNode) => {
-    if (fileNode.type !== 'file') {
-      throw new Error('This is not File Object!!')
-    }
-  }
-
-/**
- * 要素がWritableDraft<FileNodeDiff>で無いと確信
- * @param fileNode WritableDraft<WileObject> | WritableDraft<FileNodeFolder>
- */
-export const assertNonWritableDraftFileNodeDiff:
-  (fileNode:WritableDraft<FileNode<FileInfo>>) => asserts fileNode is WritableDraft<FileNode<FileInfoFile>> | WritableDraft<FileNode<FileInfoFolder>> =
-  (fileNode) => {
-    if (fileNode.type === 'diff') {
-      throw new Error('This is Diff Object!!')
-    }
-  }
-
-/**
- * 要素がFileNodeFolderであると確信
- * @param fileNode WritableDraft<FileNodeFolder>
- */
-export const assertWritableDraftFileNodeFolder:
-  (fileNode:WritableDraft<FileNode<FileInfo>>) => asserts fileNode is WritableDraft<FileNode<FileInfoFolder>> =
-  (fileNode) => {
-    if (fileNode.type !== 'folder') {
-      throw new Error('This is not Folder Object!!')
-    }
-  }
-
-/**
- * 要素がFileInfoDiffFileであると確信
- * @param fileInfoDiffFile FileNodeDiffFile
- */
-export const assertFileInfoDiffFile:
-  (fileInfo:FileInfo) => asserts fileInfo is FileInfoDiffFile =
-  (fileInfo) => {
-    if (fileInfo.type !== 'diff') {
-      throw new Error('This is not Diff Object!!')
-    }
-  }
-/**
- * 要素がFileInfoDiffFileであると確信
- * @param fileInfoDiffFile FileNodeDiffFile
- */
-export const assertFileInfoFolder:
-  (fileInfo:FileInfo) => asserts fileInfo is FileInfoFolder =
-  (fileInfo) => {
-    if (fileInfo.type !== 'folder') {
-      throw new Error('This is not Folder!!')
-    }
-  }
 
 /**
  * 生成
@@ -189,20 +111,17 @@ export const submitFileInfoWithEncryption = async <T extends FileInfoNotFile>(fi
   // genkey
   const fileKeyRaw = crypto.getRandomValues(new Uint8Array(AES_FILE_KEY_LENGTH))
   // readfile,getHash | getKey
-  const fileKey = await getAESGCMKey(fileKeyRaw)
+  const encryptedFileKeyAsync = encryptByRSA(fileKeyRaw)
+  const fileKey = getAESGCMKey(fileKeyRaw)
+
+  const fileInfoArray = string2ByteArray(JSON.stringify(fileInfo))
   // encrypt
-  const [
-    encryptedFileInfo,
-    encryptedFileKey
-  ] = await Promise.all([
-    AESGCM(string2ByteArray(JSON.stringify(fileInfo)), fileKey),
-    encryptByRSA(fileKeyRaw)
-  ])
+  const encryptedFileInfo = await AESGCM(fileInfoArray, await fileKey)
 
   const encryptedFileInfoBase64 = byteArray2base64(new Uint8Array(encryptedFileInfo.encrypt))
   const encryptedFileInfoIVBase64 = byteArray2base64(encryptedFileInfo.iv)
 
-  const encryptedFileKeyBase64 = byteArray2base64(new Uint8Array(encryptedFileKey))
+  const encryptedFileKeyBase64 = byteArray2base64(new Uint8Array(await encryptedFileKeyAsync))
 
   // send encryptedfile, send encryptedfileinfo, encryptedfilekey iv,iv
   const fileSendData = new FormData()
@@ -223,7 +142,8 @@ export const submitFileWithEncryption = async (x: File, name: string, parentId: 
 
   const fileKeyRaw = crypto.getRandomValues(new Uint8Array(AES_FILE_KEY_LENGTH))
   // readfile,getHash | getKey
-  const [{ bin, hashStr }, fileKey] = await Promise.all([readfile(x).then((bin) => getFileHash(bin)), getAESGCMKey(fileKeyRaw)])
+  const fileKeyAsync = getAESGCMKey(fileKeyRaw)
+  const { bin, hashStr } = await readfile(x).then((bin) => getFileHash(bin))
 
   const fileInfo:FileInfoFile = {
     id: uuid,
@@ -237,6 +157,7 @@ export const submitFileWithEncryption = async (x: File, name: string, parentId: 
     tag: []
   }
 
+  const fileKey = await fileKeyAsync
   // encrypt
   const [
     encryptedFile,

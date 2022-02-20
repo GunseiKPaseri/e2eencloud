@@ -1,4 +1,4 @@
-import { hex2bytearray } from './util'
+import { hex2bytearray } from './uint8'
 
 describe('#hex2bytearray', () => {
   test('16進法文字列をArrayBuffer化', () => {

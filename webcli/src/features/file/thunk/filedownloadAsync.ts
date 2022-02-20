@@ -1,9 +1,11 @@
 import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit'
 import { FileInfo, FileNode } from '../file.type'
-import { decryptAESGCM, getAESGCMKey, getPreview, loadImage } from '../../../util'
+import { decryptAESGCM, getAESGCMKey } from '../../../utils/crypto'
+import { getPreview } from '../../../utils/img'
 import { RootState } from '../../../app/store'
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice'
-import { getEncryptedFileRaw, getFileHash, assertFileNodeFile } from '../utils'
+import { getEncryptedFileRaw, getFileHash } from '../utils'
+import { assertFileNodeFile } from '../filetypeAssert'
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
 
 import { FileState } from '../fileSlice'

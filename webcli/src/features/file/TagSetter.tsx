@@ -2,7 +2,7 @@ import { useAppSelector, useAppDispatch } from '../../app/hooks'
 
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete'
 import { FileState, createDiffAsync } from './fileSlice'
-import { assertFileNodeFile } from './utils'
+import { assertFileNodeFile } from './filetypeAssert'
 import TextField from '@mui/material/TextField'
 import { FilterOptionsState } from '@mui/material/useAutocomplete'
 

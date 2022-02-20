@@ -3,7 +3,8 @@ import { buildFileTableAsyncResult, getfileinfoJSONRow } from '../file.type'
 import { axiosWithSession, appLocation } from '../../componentutils'
 import { AxiosResponse } from 'axios'
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice'
-import { buildFileTable, decryptoFileInfo, assertFileNodeFolder } from '../utils'
+import { buildFileTable, decryptoFileInfo } from '../utils'
+import { assertFileNodeFolder } from '../filetypeAssert'
 import { FileState } from '../fileSlice'
 
 /**

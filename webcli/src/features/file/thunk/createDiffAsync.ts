@@ -5,12 +5,14 @@ import { setProgress, deleteProgress, progress } from '../../progress/progressSl
 import {
   submitFileInfoWithEncryption,
   createDiff,
-  assertFileInfoDiffFile, 
-  assertNonWritableDraftFileNodeDiff,
-  assertWritableDraftFileNodeFolder,
   integrateDifference,
   fileSort
 } from '../utils'
+import {
+  assertFileInfoDiffFile, 
+  assertNonWritableDraftFileNodeDiff,
+  assertWritableDraftFileNodeFolder
+} from '../filetypeAssert'
 import { FileState } from '../fileSlice'
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
 

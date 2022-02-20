@@ -1,9 +1,7 @@
-import { ThunkDispatch } from '@reduxjs/toolkit'
 import { NativeTypes } from 'react-dnd-html5-backend'
-import { useDrop, DropTargetMonitor, DragSourceHookSpec, DropTargetHookSpec, FactoryOrInstance, DragSourceMonitor } from 'react-dnd'
-import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { FileState, fileuploadAsync } from './fileSlice'
-import { FileNodeFile, FileNodeFolder, FileTable } from './file.type'
+import { DragSourceHookSpec, DropTargetHookSpec } from 'react-dnd'
+import { useAppDispatch } from '../../app/hooks'
+import { fileuploadAsync } from './fileSlice'
 import { createDiffAsync } from './fileSlice'
 
 // https://github.com/react-dnd/react-dnd/blob/9b002d24d51ecb671d049fc44679372b818f9630/packages/backend-html5/src/NativeDragSources/nativeTypesConfig.ts#L19

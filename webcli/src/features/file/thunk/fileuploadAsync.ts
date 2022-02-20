@@ -3,10 +3,12 @@ import { FileCryptoInfoWithBin } from '../file.type'
 import {
   getSafeName,
   submitFileWithEncryption,
-  assertWritableDraftFileNodeFolder,
   fileSort
 } from '../utils'
-import { allProgress } from '../../../util'
+import {
+  assertWritableDraftFileNodeFolder
+} from '../filetypeAssert'
+import { allProgress } from '../../../utils/progressPromise'
 import { setProgress, deleteProgress } from '../../progress/progressSlice'
 import { RootState } from '../../../app/store'
 import { FileState } from '../fileSlice'

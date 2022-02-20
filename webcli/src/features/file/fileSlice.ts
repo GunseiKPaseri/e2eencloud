@@ -8,7 +8,7 @@ import {
   FileInfo,
 } from './file.type'
 
-import { assertFileNodeFolder, getFileParentsList } from './utils'
+import { getFileParentsList } from './utils'
 import { logoutAsync } from '../auth/authSlice'
 
 import {

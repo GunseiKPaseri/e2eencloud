@@ -1,15 +1,12 @@
 import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit'
-import { buildFileTableAsyncResult, FileCryptoInfoWithBin } from '../file.type'
+import { buildFileTableAsyncResult } from '../file.type'
 import {
-  getSafeName,
-  submitFileWithEncryption,
-  assertWritableDraftFileNodeFolder,
-  fileSort,
   getAllDependentFile,
-  buildFileTable,
-  assertFileNodeFolder
+  buildFileTable
 } from '../utils'
-import { allProgress } from '../../../util'
+import {
+  assertFileNodeFolder
+} from '../filetypeAssert'
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice'
 import { RootState } from '../../../app/store'
 import { FileState } from '../fileSlice'

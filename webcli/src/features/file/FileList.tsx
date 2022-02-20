@@ -18,7 +18,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { changeActiveDir, createDiffAsync, fileDeleteAsync, filedownloadAsync, FileState, fileuploadAsync } from './fileSlice'
-import { assertFileNodeFolder, assertNonFileNodeDiff } from './utils'
+import { assertFileNodeFolder, assertNonFileNodeDiff } from './filetypeAssert'
 import { FileNode, FileInfoFile, FileInfoFolder } from './file.type'
 import { TagButton } from './TagButton'
 import Breadcrumbs from '@mui/material/Breadcrumbs'

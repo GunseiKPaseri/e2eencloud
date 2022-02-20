@@ -1,7 +1,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { AxiosResponse } from 'axios'
 import { axiosWithSession, appLocation } from '../componentutils'
-import { createSalt, SHA256, argon2encrypt, byteArray2base64, base642ByteArray, generateRSAKey, importRSAKey, AESCTR, getAESCTRKey, decryptAESCTR } from '../../util'
+import { createSalt, SHA256, argon2encrypt, generateRSAKey, importRSAKey, AESCTR, getAESCTRKey, decryptAESCTR } from '../../utils/crypto'
+import { byteArray2base64, base642ByteArray } from '../../utils/uint8'
 import { setRSAKey } from '../../encrypt'
 import { buildFileTableAsync } from '../file/fileSlice'
 
