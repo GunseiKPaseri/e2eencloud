@@ -42,6 +42,7 @@ export const filedownloadAsync = createAsyncThunk<filedownloadAsyncResult, {file
 
       if (hashStr !== fileObj.sha256) throw new Error('hashが異なります')
       url = URL.createObjectURL(new Blob([filebin], { type: fileObj.mime }))
+      dispatch(enqueueSnackbar({message: `${fileObj.name}を複号しました`, options: {variant: 'success'}}))
     }
 
     let imageData: string|undefined
@@ -54,7 +55,6 @@ export const filedownloadAsync = createAsyncThunk<filedownloadAsyncResult, {file
     }
 
     dispatch(deleteProgress())
-    dispatch(enqueueSnackbar({message: `${fileObj.name}を複号しました`, options: {variant: 'success'}}))
     return { url, fileId, imageData }
   }
 )

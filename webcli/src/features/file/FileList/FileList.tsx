@@ -19,6 +19,7 @@ import Breadcrumbs from '@mui/material/Breadcrumbs'
 import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '../../../components/customed/StyledBreadcrumb'
 import MenuItem from '@mui/material/MenuItem'
 import ListItemIcon from '@mui/material/ListItemIcon'
+import ViewComfyIcon from '@mui/icons-material/ViewComfy';
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
 import { Theme } from '@mui/material/styles'
@@ -28,6 +29,7 @@ import { useDrop, useDrag, DragPreviewImage } from 'react-dnd'
 import { genUseDropReturn, genUseDragReturn } from '../dnd'
 import { FileSimpleList } from './FileSimpleList'
 import { FileGrid } from './FileGrid'
+import { FileImgList } from './FileImgList'
 
 const DIRBreadcrumb = (props: {target: FileNode<FileInfoFolder>}) => {
   const { target } = props
@@ -73,7 +75,7 @@ const DIRBreadcrumb = (props: {target: FileNode<FileInfoFolder>}) => {
 }
 
 export const FileList = () => {
-  const [viewStyle, setViewStyle] = useState<'list' | 'detaillist'>('list')
+  const [viewStyle, setViewStyle] = useState<'list' | 'detaillist' | 'pic'>('list')
 
   const { fileTable, activeFileGroup } = useAppSelector<FileState>(state => state.file)
   const dispatch = useAppDispatch()
@@ -114,6 +116,7 @@ export const FileList = () => {
       <ToggleButtonGroup value={viewStyle} exclusive onChange={(e, nextView) => setViewStyle(nextView)}>
         <ToggleButton value='list'><ViewListIcon /></ToggleButton>
         <ToggleButton value='detaillist'><ViewHeadlineIcon /></ToggleButton>
+        <ToggleButton value='pic'><ViewComfyIcon /></ToggleButton>
       </ToggleButtonGroup>
       {
         activeFileGroup && activeFileGroup.type === 'tag' && activeFileGroup.tagName === 'bin'
@@ -142,7 +145,9 @@ export const FileList = () => {
       {
         viewStyle === 'list'
           ? <FileSimpleList sx={customSX} nodeRef={drop} onSelectFile={onSelectFile} onSelectFolder={onSelectFolder} />
-          : <FileGrid sx={customSX} nodeRef={drop} onSelectFile={onSelectFile} onSelectFolder={onSelectFolder} />
+          : viewStyle === 'detaillist'
+            ? <FileGrid sx={customSX} nodeRef={drop} onSelectFile={onSelectFile} onSelectFolder={onSelectFolder} />
+            : <FileImgList sx={customSX} onSelectFile={onSelectFile} onSelectFolder={onSelectFolder}/>
       }
     </>
   )
