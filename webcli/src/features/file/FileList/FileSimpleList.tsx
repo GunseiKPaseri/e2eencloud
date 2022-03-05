@@ -21,7 +21,7 @@ import { PngIcon } from '../../../components/PngIcon'
 
 import { useAppSelector, useAppDispatch } from "../../../app/hooks"
 import { FileNode, FileInfoFile, FileInfoFolder } from '../file.type'
-import { createDiffAsync, FileState } from '../fileSlice'
+import { changeActiveDir, createDiffAsync, FileState } from '../fileSlice'
 import { assertNonFileNodeDiff } from "../filetypeAssert"
 
 
@@ -65,6 +65,7 @@ const FileListListFile = (props: {targetFile: FileNode<FileInfoFile>, onSelectFi
   const { targetFile, onSelectFile } = props
   const [{isDragging}, drag, dragPreview] = useDrag(() => genUseDragReturn(targetFile.id))
   const [anchorMenuXY, setAnchorMenuXY] = useState<{left: number, top: number}|undefined>(undefined)
+  const activeFileGroupType = useAppSelector((state) => state.file.activeFileGroup?.type)
   const dispatch = useAppDispatch()
 
   const handleContextMenu: React.MouseEventHandler<HTMLDivElement> = (event) => {
@@ -77,6 +78,9 @@ const FileListListFile = (props: {targetFile: FileNode<FileInfoFile>, onSelectFi
   }
   const handleClose = () => setAnchorMenuXY(undefined)
 
+  const handleMenuShowDir = () => {
+    if(targetFile.parentId) dispatch(changeActiveDir({ id: targetFile.parentId }))
+  }
   const handleMenuAddBin = () => {
     dispatch(createDiffAsync({ targetId: targetFile.id, newTags: [...targetFile.tag, 'bin'] }))
   }
@@ -105,6 +109,9 @@ const FileListListFile = (props: {targetFile: FileNode<FileInfoFile>, onSelectFi
             anchorReference="anchorPosition"
             anchorPosition={anchorMenuXY}
           >
+            {
+              activeFileGroupType && activeFileGroupType !== 'dir' && <MenuItem onClick={handleMenuShowDir}>ファイルの場所を表示</MenuItem>
+            }
             {
               targetFile.blobURL
                 ? <MenuItem component={Link} download={targetFile.name} href={targetFile.blobURL}>ダウンロード</MenuItem>
