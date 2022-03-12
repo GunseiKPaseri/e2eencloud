@@ -13,72 +13,11 @@ import {
   FileInfoFolder,
   FileTable
 } from './file.type'
-
-const fileKeyBin: number[] = []
-const encryptedFileIVBin: number[] = []
-const genFileInfoFile = (props: {
-  id: string,
-  parentId: string | null,
-  prevId?: string,
-  createdAt?: number
-  tag: string[],
-}): FileCryptoInfoWithBin => ({
-  fileKeyBin,
-  fileInfo: {
-    type: 'file',
-    id: props.id,
-    name: props.id,
-    createdAt: props.createdAt ?? 0,
-    sha256: props.id,
-    mime: props.id,
-    size: 0,
-    parentId: props.parentId,
-    prevId: props.prevId,
-    tag: props.tag
-  },
-  encryptedFileIVBin
-})
-
-const genFileInfoFolder = (props: {
-  id: string,
-  parentId: string | null,
-  createdAt?: number,
-  prevId?: string,
-}): {
-  fileInfo: FileInfoFolder,
-  fileKeyBin: number[]
-} => ({
-  fileKeyBin,
-  fileInfo: {
-    type: 'folder',
-    id: props.id,
-    name: props.id,
-    createdAt: props.createdAt ?? 0,
-    parentId: props.parentId,
-    prevId: props.prevId
-  }
-})
-const genFileInfoDiff = (props: {
-  id: string,
-  parentId: string | null,
-  createdAt?: number,
-  prevId?: string,
-  diff?: FileDifference
-}): {
-  fileKeyBin: number[],
-  fileInfo: FileInfoDiffFile,
-} => ({
-  fileKeyBin,
-  fileInfo: {
-    type: 'diff',
-    id: props.id,
-    name: props.id,
-    createdAt: props.createdAt ?? 0,
-    parentId: props.parentId,
-    prevId: props.prevId,
-    diff: props.diff ?? {}
-  }
-})
+import {
+  genFileInfoFolder,
+  genFileInfoFile,
+  genFileInfoDiff
+} from './util/testutil'
 
 describe('#genUUID', () => {
   test('\'-\'を含まない', () => {
@@ -128,7 +67,7 @@ describe('#createDiff', () => {
         parentId: null,
         history: [],
         origin: {
-          fileKeyBin,
+          fileKeyBin: [],
           fileInfo: {
             type: 'folder',
             id: 'root',
@@ -230,12 +169,12 @@ describe('#buildFileTable', () => {
       },
       a: { ...a.fileInfo, type: 'folder', name: 'j', prevId: undefined, nextId: 'j', files: ['f', 'h', 'i'], parentId: 'root', history: ['j', 'a'], origin: {fileInfo: a.fileInfo, fileKeyBin: []} },
       // file(dirobj) 最新の情報が反映される
-      f: { ...f.fileInfo, type: 'file', name: 'k', prevId: 'e', nextId: 'g', parentId: 'a', history: ['k', 'g', 'f', 'e', 'd', 'c', 'b'], tag: ['う', 'え', 'い'], origin: {fileInfo: f.fileInfo, fileKeyBin: [], encryptedFileIVBin} },
-      h: { ...h.fileInfo, type: 'file', name: 'h', prevId: undefined, parentId: 'a', history: ['h'], tag: ['い'], origin: {fileInfo: h.fileInfo, fileKeyBin: [], encryptedFileIVBin} },
-      i: { ...i.fileInfo, type: 'file', name: 'i', prevId: undefined, parentId: 'a', history: ['i'], tag: [], origin: {fileInfo: i.fileInfo, fileKeyBin: [], encryptedFileIVBin} },
+      f: { ...f.fileInfo, type: 'file', name: 'k', prevId: 'e', nextId: 'g', parentId: 'a', history: ['k', 'g', 'f', 'e', 'd', 'c', 'b'], tag: ['う', 'え', 'い'], origin: {fileInfo: f.fileInfo, fileKeyBin: [], encryptedFileIVBin: []} },
+      h: { ...h.fileInfo, type: 'file', name: 'h', prevId: undefined, parentId: 'a', history: ['h'], tag: ['い'], origin: {fileInfo: h.fileInfo, fileKeyBin: [], encryptedFileIVBin: []} },
+      i: { ...i.fileInfo, type: 'file', name: 'i', prevId: undefined, parentId: 'a', history: ['i'], tag: [], origin: {fileInfo: i.fileInfo, fileKeyBin: [], encryptedFileIVBin: []} },
       // file
-      b: { ...b.fileInfo, type: 'file', name: 'b', prevId: undefined, nextId: 'c', parentId: 'a', history: [], tag: [], origin: {fileInfo: b.fileInfo, fileKeyBin: [], encryptedFileIVBin} },
-      e: { ...e.fileInfo, type: 'file', name: 'e', prevId: 'd', nextId: 'f', parentId: 'a', history: [], tag: ['あ', 'い'], origin: {fileInfo: e.fileInfo, fileKeyBin: [], encryptedFileIVBin} },
+      b: { ...b.fileInfo, type: 'file', name: 'b', prevId: undefined, nextId: 'c', parentId: 'a', history: [], tag: [], origin: {fileInfo: b.fileInfo, fileKeyBin: [], encryptedFileIVBin: []} },
+      e: { ...e.fileInfo, type: 'file', name: 'e', prevId: 'd', nextId: 'f', parentId: 'a', history: [], tag: ['あ', 'い'], origin: {fileInfo: e.fileInfo, fileKeyBin: [], encryptedFileIVBin: []} },
       // diff
       c: { ...c.fileInfo, type: 'diff', name: 'c', prevId: 'b', nextId: 'd', parentId: 'a', diff: { addtag: ['あ'] }, origin: {fileInfo: c.fileInfo, fileKeyBin: []} },
       d: { ...d.fileInfo, type: 'diff', name: 'd', prevId: 'c', nextId: 'e', parentId: 'a', diff: { addtag: ['い'] }, origin: {fileInfo: d.fileInfo, fileKeyBin: []} },
