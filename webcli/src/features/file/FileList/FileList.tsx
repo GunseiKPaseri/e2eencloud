@@ -11,7 +11,7 @@ import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline'
 import DeleteIcon from '@mui/icons-material/Delete';
 
 import { useAppDispatch, useAppSelector } from '../../../app/hooks'
-import { changeActiveDir, createDiffAsync, fileDeleteAsync, filedownloadAsync, FileState, fileuploadAsync } from '../fileSlice'
+import { changeActiveFileGroupDir, createDiffAsync, fileDeleteAsync, filedownloadAsync, FileState, fileuploadAsync } from '../fileSlice'
 import { assertFileNodeFolder, assertNonFileNodeDiff } from '../filetypeAssert'
 import { FileNode, FileInfoFile, FileInfoFolder } from '../file.type'
 import { TagButton } from '../TagButton'
@@ -30,6 +30,7 @@ import { genUseDropReturn, genUseDragReturn } from '../dnd'
 import { FileSimpleList } from './FileSimpleList'
 import { FileGrid } from './FileGrid'
 import { FileImgList } from './FileImgList'
+import { SearchInput } from '../SearchInput'
 
 const DIRBreadcrumb = (props: {target: FileNode<FileInfoFolder>}) => {
   const { target } = props
@@ -54,13 +55,13 @@ const DIRBreadcrumb = (props: {target: FileNode<FileInfoFolder>}) => {
 
   return (
     <StyledBreadcrumbWithMenu innerRef={drop} sx={customSX} label={target.name} onClick={(e) => {
-      dispatch(changeActiveDir({ id: target.id }))
+      dispatch(changeActiveFileGroupDir({ id: target.id }))
     }} menuItems={target.files.filter(x => fileTable[x].type === 'folder').map(x => {
       const subdir = fileTable[x]
       assertFileNodeFolder(subdir)
       return (
         <MenuItem key={x} onClick={(e) => {
-          dispatch(changeActiveDir({ id: x }))
+          dispatch(changeActiveFileGroupDir({ id: x }))
         }}>
           <ListItemIcon>
             <FolderIcon />
@@ -81,7 +82,7 @@ export const FileList = () => {
   const dispatch = useAppDispatch()
 
   const onSelectFolder = useCallback((id: string) => {
-    dispatch(changeActiveDir({ id }))
+    dispatch(changeActiveFileGroupDir({ id }))
   }, [])
 
   const onSelectFile = useCallback((fileId: string) => {
@@ -118,6 +119,7 @@ export const FileList = () => {
         <ToggleButton value='detaillist'><ViewHeadlineIcon /></ToggleButton>
         <ToggleButton value='pic'><ViewComfyIcon /></ToggleButton>
       </ToggleButtonGroup>
+      <SearchInput />
       {
         activeFileGroup && activeFileGroup.type === 'tag' && activeFileGroup.tagName === 'bin'
         ? <Tooltip title='完全削除'><IconButton onClick={handleDeleteClick}><DeleteIcon /></IconButton></Tooltip> : <></>
@@ -134,10 +136,12 @@ export const FileList = () => {
                       assertFileNodeFolder(target)
                       return <DIRBreadcrumb key={target.id} target={target} />
                     })]
-                  : [
-                      <StyledBreadcrumb key='tag' icon={<LocalOfferIcon fontSize='small' />} label='タグ' />,
-                      <TagButton key='tag_' tag={activeFileGroup.tagName} />
-                    ]
+                  : activeFileGroup.type === 'tag'
+                    ? [
+                        <StyledBreadcrumb key='tag' icon={<LocalOfferIcon fontSize='small' />} label='タグ' />,
+                        <TagButton key='tag_' tag={activeFileGroup.tagName} />
+                      ]
+                    : []
               }
           </Breadcrumbs>
           : <></>

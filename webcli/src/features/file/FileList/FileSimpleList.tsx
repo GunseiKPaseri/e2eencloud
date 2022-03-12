@@ -21,7 +21,7 @@ import { PngIcon } from '../../../components/PngIcon'
 
 import { useAppSelector, useAppDispatch } from "../../../app/hooks"
 import { FileNode, FileInfoFile, FileInfoFolder } from '../file.type'
-import { changeActiveDir, createDiffAsync, FileState } from '../fileSlice'
+import { changeActiveFileGroupDir, createDiffAsync, FileState } from '../fileSlice'
 import { assertNonFileNodeDiff } from "../filetypeAssert"
 
 
@@ -79,7 +79,7 @@ const FileListListFile = (props: {targetFile: FileNode<FileInfoFile>, onSelectFi
   const handleClose = () => setAnchorMenuXY(undefined)
 
   const handleMenuShowDir = () => {
-    if(targetFile.parentId) dispatch(changeActiveDir({ id: targetFile.parentId }))
+    if(targetFile.parentId) dispatch(changeActiveFileGroupDir({ id: targetFile.parentId }))
   }
   const handleMenuAddBin = () => {
     dispatch(createDiffAsync({ targetId: targetFile.id, newTags: [...targetFile.tag, 'bin'] }))

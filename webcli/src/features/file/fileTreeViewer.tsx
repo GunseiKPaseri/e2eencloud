@@ -17,7 +17,7 @@ import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 import { useDrop } from 'react-dnd'
 
 import { genUseDropReturn } from './dnd'
-import { changeActiveDir, filedownloadAsync } from './fileSlice'
+import { changeActiveFileGroupDir, filedownloadAsync } from './fileSlice'
 
 const FileTreeItemFile = ({ target, onDoubleClick }: {target: FileNode<FileInfoFile>, onDoubleClick: React.MouseEventHandler<HTMLLIElement>}) => {
   return (
@@ -104,7 +104,7 @@ export const FileTreeViewer = () => {
   const dispatch = useAppDispatch()
 
   const onSelectFile = (fileId: string) => dispatch(filedownloadAsync({ fileId }))
-  const onSelectFolder = (id: string) => dispatch(changeActiveDir({ id }))
+  const onSelectFolder = (id: string) => dispatch(changeActiveFileGroupDir({ id }))
 
   return (
     <TreeView

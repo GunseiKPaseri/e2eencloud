@@ -1,7 +1,7 @@
 import React from 'react'
 import Chip from '@mui/material/Chip'
 import { useAppDispatch } from '../../app/hooks'
-import { changeActiveTag } from './fileSlice'
+import { changeActiveFileGroupTag } from './fileSlice'
 
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -12,7 +12,7 @@ const TAGICON: Record<string, {icon: JSX.Element, text: string}| undefined> = {
 export const TagButton = (props: {tag: string}) => {
   const dispatch = useAppDispatch()
   const handleSelectTag: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    dispatch(changeActiveTag({ tag: props.tag }))
+    dispatch(changeActiveFileGroupTag({ tag: props.tag }))
   }
   const extag = TAGICON[props.tag]
   if(extag){

@@ -1,3 +1,5 @@
+import { SearchQuery } from "./util/search"
+
 /**
  * 差分情報
  */
@@ -145,6 +147,7 @@ export type FileTable = { [key: string]: FileNode<FileInfo> }
 
 export type tagGroup = {type: 'tag', files: string[], tagName: string}
 export type dirGroup = {type: 'dir', folderId: string, files: string[], parents: string[]}
+export type searchGroup = {type: 'search', files: string[], queryString: string, query: SearchQuery}
 
 export interface getfileinfoJSONRow {
   id: string,

@@ -6,6 +6,7 @@ import {
   dirGroup,
   FileNode,
   FileInfo,
+  searchGroup,
 } from './file.type'
 
 import { getFileParentsList } from './utils'
@@ -43,6 +44,20 @@ import {
 } from './thunk/fileDeleteAsync'
 export { fileDeleteAsync }
 
+import {
+  changeActiveFileGroupDir,
+  changeActiveFileGroupTag,
+  afterChangeActiveFileGroupDir,
+  afterChangeActiveFileGroupTag,
+  afterChangeActiveFileGroupSearch,
+  changeActiveFileGroupSearch
+} from './thunk/changeActiveFileGroup'
+export {
+  changeActiveFileGroupDir,
+  changeActiveFileGroupTag, 
+  changeActiveFileGroupSearch
+}
+
 /**
  * ファイル関連のReduxState
  */
@@ -54,7 +69,7 @@ export interface FileState {
     link: string,
     fileId: string,
   } | null,
-  activeFileGroup: null | tagGroup | dirGroup
+  activeFileGroup: null | tagGroup | dirGroup | searchGroup
 };
 
 const initialState: FileState = {
@@ -64,16 +79,6 @@ const initialState: FileState = {
   activeFile: null,
   activeFileGroup: null
 }
-
-/**
- * activeFileGroupを変更(ディレクトリ)
- * */
-export const changeActiveDir = createAction<{id: string}>('file/changeActiveFileGroupDirr')
-
-/**
- * activeFileGroupを変更(タグ)
- * */
-export const changeActiveTag = createAction<{tag: string}>('file/changeActiveFileGroupTag')
 
 export const fileSlice = createSlice({
   name: 'file',
@@ -87,27 +92,9 @@ export const fileSlice = createSlice({
       .addCase(createFolderAsync.fulfilled, afterCreateFolderAsyncFullfilled)
       .addCase(filedownloadAsync.fulfilled, afterFiledownloadAsyncFullfilled)
       .addCase(fileDeleteAsync.fulfilled, afterFileDeleteAsyncFullfilled)
-      .addCase(changeActiveDir, (state, action) => {
-        // 指定idのディレクトリをactiveディレクトリにする
-        const firstId = action.payload.id
-        const activeDir:FileNode<FileInfo> = state.fileTable[firstId]
-        if (activeDir.type !== 'folder') throw new Error('指定オブジェクトはactiveDirになれません')
-        const parents = getFileParentsList(firstId, state.fileTable)
-        state.activeFileGroup = {
-          type: 'dir',
-          folderId: firstId,
-          files: activeDir.files,
-          parents
-        }
-      })
-      .addCase(changeActiveTag, (state, action) => {
-      // 指定タグのディレクトリをactiveにする
-        state.activeFileGroup = {
-          type: 'tag',
-          files: state.tagTree[action.payload.tag] ?? [],
-          tagName: action.payload.tag
-        }
-      })
+      .addCase(changeActiveFileGroupDir, afterChangeActiveFileGroupDir)
+      .addCase(changeActiveFileGroupTag, afterChangeActiveFileGroupTag)
+      .addCase(changeActiveFileGroupSearch, afterChangeActiveFileGroupSearch)
       .addCase(logoutAsync.pending, (state, action) =>{
         // ログアウト時削除
         Object.values(state.fileTable).map((row) =>{
