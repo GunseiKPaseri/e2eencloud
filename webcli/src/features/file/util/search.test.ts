@@ -5,7 +5,7 @@ import {
 } from './testutil'
 
 import {
-  searchFromTable
+  searchFromTable, SearchQuery, SearchQueryParser
 } from './search'
 import { buildFileTable } from '../utils'
 
@@ -31,5 +31,22 @@ describe('#searchFromTable', () => {
     expect(result3).toEqual(['f', 'h'])
     const result4 = searchFromTable(fileTable, [[{type: 'name', word: new RegExp('.hoge$')}], [{type: 'tag', value: 'い'}]]).sort()
     expect(result4).toEqual(['f', 'h', 'i'])
+  })
+})
+
+const SearchQueryTestCase: [string, SearchQuery][] = [
+  ['Hogehoge', [[{type: 'name', word:'Hogehoge'}]]],
+  ['tag:', [[{type: 'tag', value:''}]]],
+  ['Hogehoge mime: image/png　OR Fugafuga tag:😃', [[{type: 'name', word:'Hogehoge'}, {type: 'mime', word:'image/png'}], [{type: 'name', word:'Fugafuga'}, {type: 'tag', value: '😃'}]]],
+  ['Hogehoge size: <= 128', [[{type: 'name', word:'Hogehoge'}, {type: 'size', value: 128, operator: '<='}]]],
+  ['Hogehoge size:   128', [[{type: 'name', word:'Hogehoge'}, {type: 'size', value: 128, operator: '=='}]]],
+  ['Hogehoge size: = 128', [[{type: 'name', word:'Hogehoge'}, {type: 'size', value: 128, operator: '=='}]]],
+  ['Hogehoge size: > 128 OR OR', [[{type: 'name', word:'Hogehoge'}, {type: 'size', value: 128, operator: '>'}]]],
+]
+
+describe('#SearchQueryParser', () => {
+  test.each(SearchQueryTestCase)('\'%s\'', (strquery, expected) =>{
+    const parser = new SearchQueryParser(strquery)
+    expect(parser.query).toEqual(expected)
   })
 })

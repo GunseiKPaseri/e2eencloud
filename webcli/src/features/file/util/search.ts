@@ -101,3 +101,130 @@ export const searchFromTable = (filetable: FileTable, query: SearchQuery) => {
   }
   return result
 }
+
+type SearchQueryToken = SearchQuerySet | {'type': 'OR'} | null
+export class SearchQueryParser{
+  #queryString: string
+  #querySize: number
+  #currentPoint :number
+  #token: SearchQueryToken
+  #result: SearchQuery | null
+  constructor(queryString: string){
+    this.#queryString = queryString
+    this.#querySize = queryString.length
+    this.#currentPoint = 0
+    this.#result = null
+    this.#token = null
+  }
+
+  get query():SearchQuery {
+    if(this.#result) return this.#result
+    
+    const result = this.#statement()
+    this.#result = result
+    return result
+  }
+  #statement(): SearchQuery{
+    let token: SearchQueryToken
+    let orterms: SearchQuerySet[][] = []
+    let andterms: SearchQuerySet[] = []
+    while(token = this.#nextToken()){
+      if(token.type === 'OR'){
+        if(andterms.length > 0) orterms.push(andterms)
+        andterms = []
+      } else {
+        andterms.push(token)
+      }
+    }
+    if(andterms.length > 0) orterms.push(andterms)
+    return orterms
+  }
+  /**
+   * 空白文字でない文字まで移動する
+   */
+  #skipSpace():void {
+    while(this.#currentPoint < this.#querySize && /\s/.test(this.#queryString[this.#currentPoint])){
+      this.#currentPoint++
+    }
+  }
+
+  /**
+   * 指定位置から始まる文字列を切り出す
+   *  */
+  #word(): {value: string, exact: boolean}{
+    let t=''
+    while(this.#currentPoint < this.#querySize && /[^\s]/.test(this.#queryString[this.#currentPoint])){
+      t+=this.#queryString[this.#currentPoint]
+      this.#currentPoint++
+    }
+    return {value: t, exact: false}
+  }
+  /**
+   * 指定位置から始まる数字を切り出す
+   *  */
+  #number(): number{
+    let n=0
+    while(this.#currentPoint < this.#querySize && /\d/.test(this.#queryString[this.#currentPoint])){
+      n = n*10 + parseInt(this.#queryString[this.#currentPoint])
+      this.#currentPoint++
+    }
+    return n
+  }
+  /**
+   * 指定位置から始まる演算子の取得
+   */
+  #operator():Parameters<typeof numtest>[2]|null {
+    const next2 = this.#queryString.slice( this.#currentPoint, this.#currentPoint + 2 )
+    if(next2 === '<=' || next2 === '>=' || next2 === '=='){
+      this.#currentPoint += 2
+      return next2
+    }
+    const next = this.#queryString.slice( this.#currentPoint, this.#currentPoint + 1 )
+    if(next === '='){
+      this.#currentPoint += 1
+      return '=='
+    }
+    if(next === '<' || next === '>'){
+      this.#currentPoint += 1
+      return next
+    }
+    return null
+  }
+
+  #nextToken(): SearchQueryToken{
+    this.#skipSpace()
+    if(this.#currentPoint >= this.#querySize) return null
+
+    // super query
+    const next4 = this.#queryString.slice( this.#currentPoint, this.#currentPoint + 4 ).toLowerCase()
+    if( next4 === 'tag:'){
+      // tag
+      this.#currentPoint += 4
+      this.#skipSpace()
+      const value = this.#word().value
+      return {type: 'tag', value}
+    }
+    const next5 = this.#queryString.slice( this.#currentPoint, this.#currentPoint + 5 ).toLowerCase()
+    if( (next4 === 'mime' || next4 === 'name') && next5[4] === ':'){
+      // mime
+      this.#currentPoint += 5
+      this.#skipSpace()
+      const word = this.#word().value
+      return {type: next4, word}
+    } else if(next5 === 'size:'){
+      // size
+      this.#currentPoint += 5
+      this.#skipSpace()
+      const operator = this.#operator() ?? '=='
+      this.#skipSpace()
+      const value = this.#number()
+      return {type: 'size', value, operator}
+    }
+    const value = this.#word()
+    if(value.exact === false && value.value.toLowerCase() === 'or'){
+      return {type: 'OR'}
+    }
+
+    return {type: 'name', word: value.value}
+  }
+}
