@@ -1,16 +1,15 @@
 import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit'
 import { FileInfo, FileNode } from '../file.type'
 import { decryptAESGCM, getAESGCMKey } from '../../../utils/crypto'
-import { getPreview } from '../../../utils/img'
 import { RootState } from '../../../app/store'
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice'
-import { getEncryptedFileRaw, getFileHash } from '../utils'
+import { expandServerData, ExpandServerDataResult, getEncryptedFileRaw, getFileHash, listUpSimilarFile } from '../utils'
 import { assertFileNodeFile } from '../filetypeAssert'
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
 
 import { FileState } from '../fileSlice'
 
-type filedownloadAsyncResult = {url: string, fileId: string, imageData: string|undefined}
+type filedownloadAsyncResult = {fileId: string, local: ExpandServerDataResult}
 
 /**
  * ファイルをダウンロードするThunk
@@ -45,31 +44,29 @@ export const filedownloadAsync = createAsyncThunk<filedownloadAsyncResult, {file
       dispatch(enqueueSnackbar({message: `${fileObj.name}を複号しました`, options: {variant: 'success'}}))
     }
 
-    let imageData: string|undefined
-    if (!fileObj.previewURL){
-      // make preview
-      const MAX_SIZE = 150
-      if (fileObj.mime.indexOf('image/') === 0) {
-        imageData = await getPreview(url, MAX_SIZE, 'image/png')
-      }
-    }
+    const local = await expandServerData(fileObj, url)
 
     dispatch(deleteProgress())
-    return { url, fileId, imageData }
+    return { fileId, local }
   }
 )
 
 export const afterFiledownloadAsyncFullfilled:
   CaseReducer<FileState, PayloadAction<filedownloadAsyncResult>> = (state, action) => {
     // 生成したblobリンク等を反映
-    const { url, fileId, imageData } = action.payload
-    state.activeFile = {
-      link: url,
-      fileId: fileId
-    }
+    const { fileId, local } = action.payload
     const target = state.fileTable[fileId]
     assertFileNodeFile(target)
-    const nextFileNode = {...target, blobURL: url}
-    if(imageData) nextFileNode.previewURL = imageData
-    state.fileTable = { ...state.fileTable, [fileId]: nextFileNode }
+    const nextFileNode = {...target,expansion: local.expansion, blobURL: local.blobURL}
+    if(local.previewURL) nextFileNode.previewURL = local.previewURL
+
+    const newFileTable = { ...state.fileTable, [fileId]: nextFileNode }
+
+    state.fileTable = newFileTable
+
+    state.activeFile = {
+      link: local.blobURL,
+      fileId: fileId,
+      similarFiles: listUpSimilarFile(target, newFileTable)
+    }
   }

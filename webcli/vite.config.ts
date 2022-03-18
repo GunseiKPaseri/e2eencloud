@@ -10,6 +10,7 @@ export default defineConfig({
   root: './src',
   plugins: [react()],
   define: {
+    'process.browser': true,
     'process.env': {}
   }
 })

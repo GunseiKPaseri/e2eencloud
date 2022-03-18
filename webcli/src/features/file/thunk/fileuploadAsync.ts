@@ -3,9 +3,12 @@ import { FileCryptoInfoWithBin } from '../file.type'
 import {
   getSafeName,
   submitFileWithEncryption,
-  fileSort
+  fileSort,
+  ExpandServerDataResult,
+  listUpSimilarFile
 } from '../utils'
 import {
+  assertFileNodeFile,
   assertWritableDraftFileNodeFolder
 } from '../filetypeAssert'
 import { allProgress } from '../../../utils/progressPromise'
@@ -14,7 +17,7 @@ import { RootState } from '../../../app/store'
 import { FileState } from '../fileSlice'
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
 
-type fileuploadAsyncResult = {uploaded: FileCryptoInfoWithBin[], parentId: string}
+type fileuploadAsyncResult = {uploaded: {server: FileCryptoInfoWithBin, local: ExpandServerDataResult}[], parentId: string}
 
 /**
  * ファイルをアップロードするReduxThunk
@@ -25,7 +28,7 @@ export const fileuploadAsync = createAsyncThunk<fileuploadAsyncResult, {files: F
       const state = getState()
   
       const fileTable = state.file.fileTable
-  
+
       const parent = fileTable[parentId]
       if (!parent || parent.type !== 'folder'){
         dispatch(enqueueSnackbar({message: 'ここにアップロードできません', options: {variant: 'error'}}))
@@ -41,6 +44,7 @@ export const fileuploadAsync = createAsyncThunk<fileuploadAsyncResult, {files: F
         (resolved, all) => {
           dispatch(setProgress({ progress: resolved / (all + 1), progressBuffer: all / (all + 1) }))
         })
+      console.log(loadedfile)
       dispatch(deleteProgress())
       dispatch(enqueueSnackbar({message: `${files.length}件のファイルをアップロードしました`, options: {variant: 'success'}}))
   
@@ -56,10 +60,12 @@ export const afterFileuploadAsyncFullfilled:
     const newFileTable = {
       ...state.fileTable,
       ...Object.fromEntries(
-        uploaded.map(({ fileInfo, fileKeyBin, encryptedFileIVBin }) => ([
-          fileInfo.id,
-          { ...fileInfo, history: [fileInfo.id], origin: {fileInfo, fileKeyBin, encryptedFileIVBin} }
-        ]))
+        uploaded.map((item) => {
+          const { fileInfo, fileKeyBin, encryptedFileIVBin } = item.server
+          const { blobURL, previewURL, expansion } = item.local
+          const fileObj = { ...fileInfo, expansion, history: [fileInfo.id], origin: {fileInfo, fileKeyBin, encryptedFileIVBin}, blobURL, previewURL }
+          return [fileInfo.id, fileObj]
+        })
       )
     }
     const parentNode = newFileTable[parentId]
@@ -67,11 +73,16 @@ export const afterFileuploadAsyncFullfilled:
     parentNode.files =
       [
         ...parentNode.files,
-        ...uploaded.map(x => x.fileInfo.id)
+        ...uploaded.map(x => x.server.fileInfo.id)
       ]
     // renew activeGroup
     if (state.activeFileGroup && state.activeFileGroup.type === 'dir' && state.activeFileGroup.parents[state.activeFileGroup.parents.length - 1] === parentId) {
-      state.activeFileGroup = { ...state.activeFileGroup, files: fileSort([...state.activeFileGroup.files, ...uploaded.map(x => x.fileInfo.id)], newFileTable) }
+      state.activeFileGroup = { ...state.activeFileGroup, files: fileSort([...state.activeFileGroup.files, ...uploaded.map(x => x.server.fileInfo.id)], newFileTable) }
     }
     state.fileTable = newFileTable
+    if(state.activeFile){
+      const target = newFileTable[state.activeFile.fileId]
+      assertFileNodeFile(target)
+      state.activeFile = { ...state.activeFile, similarFiles: listUpSimilarFile(target, newFileTable)}
+    }
   }

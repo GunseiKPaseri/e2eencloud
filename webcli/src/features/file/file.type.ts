@@ -9,6 +9,18 @@ export interface FileDifference{
 }
 
 /**
+ * サーバに保存するファイルに関する拡張情報
+ */
+export interface ExpansionInfoImage{
+  type: 'img',
+  width: number,
+  height: number,
+  ahash: string,
+  dhash: string,
+  phash: string,
+}
+
+/**
  *  サーバDBに保存するファイルに関する情報
  */
 export interface FileInfoFile {
@@ -21,7 +33,8 @@ export interface FileInfoFile {
   size: number,
   parentId: string | null,
   prevId?: string,
-  tag: string[]
+  tag: string[],
+  expansion?: ExpansionInfoImage
 }
 /**
  *  サーバDBに保存するフォルダに関する情報
@@ -68,56 +81,15 @@ export type FileCryptoInfoWithoutBin<T extends FileInfoNotFile> = {
   fileKeyBin: number[],
   fileInfo: T
 }
-/*
-export type FileCryptoInfoDiff = {
-  fileKeyBin: number[],
-  fileInfo: FileInfoDiffFile,
-}
-export type FileCryptoInfoFolder = {
-  fileKeyBin: number[],
-  fileInfo: FileInfoFolder,
-}*/
-
-//export type FileCryptoInfoWithoutBin = FileCryptoInfoDiff | FileCryptoInfoFolder
-
-//export type FileCryptoInfo = FileCryptoInfoWithBin | FileCryptoInfoWithoutBin
 
 export type FileCryptoInfo<T extends FileInfo> = T extends FileInfoNotFile ? FileCryptoInfoWithoutBin<T> : FileCryptoInfoWithBin
 
-/**
- * 手元で管理するファイル情報
- */
-// export type FileNodeFile = FileInfoFile & {
-//   history: string[], // new => old
-//   nextId?: string,
-//   blobURL?: string,
-//   previewURL?: string,
-//   origin: FileCryptoInfoWithBin
-// }
-
-// /**
-//  * 手元で管理するフォルダ情報
-//  */
-// export type FileNodeFolder = FileInfoFolder & {
-//   history: string[], // new => old
-//   nextId?: string,
-//   files: string[],
-//   origin: FileCryptoInfoFolder
-// }
-
-// /**
-//  * 手元で管理する差分情報
-//  */
-// export type FileNodeDiff = FileInfoDiffFile & {
-//   nextId?: string,
-//   blobURL?: string,
-//   origin: FileCryptoInfoDiff
-// }
-
-/**
-  * 手元で管理する情報
-  */
-// export type FileNode = FileNodeFile | FileNodeFolder | FileNodeDiff
+export interface ExpansionInfoImageLocal{
+  type: 'img',
+  ahashObj: number[],
+  dhashObj: number[],
+  phashObj: number[],
+}
 
 export type FileNode<T extends FileInfo> = T extends FileInfoFolder
   ? FileInfoFolder & {
@@ -133,6 +105,7 @@ export type FileNode<T extends FileInfo> = T extends FileInfoFolder
         origin: FileCryptoInfo<FileInfoDiffFile>
       }
     : FileInfoFile & {
+      expansion?: ExpansionInfoImageLocal,
       history: string[], // new => old
       nextId?: string,
       blobURL?: string,

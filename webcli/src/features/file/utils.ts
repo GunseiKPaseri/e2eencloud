@@ -11,9 +11,11 @@ import {
   FileInfoDiffFile,
   FileDifference,
   buildFileTableAsyncResult,
-  FileInfoNotFile
+  FileInfoNotFile,
+  ExpansionInfoImage
 } from './file.type'
 import {
+  assertFileNodeFile,
   assertFileNodeFolder,
   assertNonFileNodeDiff
 } from './filetypeAssert'
@@ -28,6 +30,10 @@ import { AxiosResponse } from 'axios'
 
 import { v4 } from 'uuid'
 import { AES_FILE_KEY_LENGTH } from '../../const'
+import Jimp from 'jimp/browser/lib/jimp'
+import { getPreview } from '../../utils/img'
+import { ahash, dhash, phash } from 'imghash-js'
+import { ImgHash } from 'imghash-js'
 
 /**
  * 生成
@@ -105,6 +111,65 @@ export const getFileHash = async (bin: ArrayBuffer) => {
 }
 
 /**
+ * ファイル拡張情報の生成
+ */
+export const genExpansion = async (fileInfo: FileInfoFile, blobURL: string): Promise<{expansion: FileInfoFile['expansion'], expansionLocal: FileNode<FileInfoFile>['expansion']} | undefined> => {
+  if(fileInfo.mime.indexOf("image/") === 0 ){
+    // image
+    const img = await Jimp.read(blobURL)
+    const imghashs = {ahashObj: ahash(img.clone()), dhashObj: dhash(img.clone()), phashObj: phash(img.clone())}
+    const expansion: FileInfoFile['expansion'] = {
+      type: 'img',
+      width: img.bitmap.width,
+      height: img.bitmap.height,
+      ahash: imghashs.ahashObj.hex,
+      dhash: imghashs.dhashObj.hex,
+      phash: imghashs.phashObj.hex
+    }
+    return {
+      expansion: expansion,
+      expansionLocal: {
+        ...expansion,
+        ahashObj: imghashs.ahashObj.byte,
+        dhashObj: imghashs.dhashObj.byte,
+        phashObj: imghashs.phashObj.byte
+      }
+    }
+  }
+  return undefined
+}
+
+
+/**
+ * ローカル用に取得する情報
+ */
+export type ExpandServerDataResult = {blobURL: string, previewURL: string | undefined, expansion: FileNode<FileInfoFile>['expansion']}
+
+/**
+ * サーバ情報をローカル用に展開
+ */
+export const expandServerData = async (fileObj: FileNode<FileInfoFile>, blobURL: string, exists?: {expansion: FileNode<FileInfoFile>['expansion']}):Promise<ExpandServerDataResult> => {
+  let previewURL:string | undefined
+  let expansion:FileNode<FileInfoFile>['expansion'] = exists?.expansion
+  if (fileObj.mime.indexOf('image/') === 0) {
+    // make preview
+    const MAX_SIZE = 150
+    previewURL = await getPreview(blobURL, MAX_SIZE, 'image/png')
+    const expansionOrigin = fileObj.origin.fileInfo.expansion
+    if(!expansion && expansionOrigin && expansionOrigin.type === 'img'){
+      expansion = {
+        ...expansionOrigin,
+        ahashObj: (new ImgHash('ahash', expansionOrigin.ahash, 'hex')).byte,
+        dhashObj: (new ImgHash('dhash', expansionOrigin.dhash, 'hex')).byte,
+        phashObj: (new ImgHash('phash', expansionOrigin.phash, 'hex')).byte,
+      }
+    }
+  }
+
+  return {blobURL, previewURL, expansion}
+}
+
+/**
  * ファイル情報のみをサーバに保存
  */
 export const submitFileInfoWithEncryption = async <T extends FileInfoNotFile>(fileInfo: T): Promise<FileCryptoInfoWithoutBin<T>> => {
@@ -136,9 +201,14 @@ export const submitFileInfoWithEncryption = async <T extends FileInfoNotFile>(fi
 /**
  * ファイルをenryptoしてサーバに保存
  */
-export const submitFileWithEncryption = async (x: File, name: string, parentId: string | null): Promise<FileCryptoInfoWithBin> => {
+export const submitFileWithEncryption
+  = async (x: File, name: string, parentId: string | null):
+    Promise<{server: FileCryptoInfoWithBin, local: ExpandServerDataResult}> => {
   // gen unique name
   const uuid = genUUID()
+
+  // blob
+  const blobURL = URL.createObjectURL(x)
 
   const fileKeyRaw = crypto.getRandomValues(new Uint8Array(AES_FILE_KEY_LENGTH))
   // readfile,getHash | getKey
@@ -156,6 +226,9 @@ export const submitFileWithEncryption = async (x: File, name: string, parentId: 
     parentId: parentId ?? 'root',
     tag: []
   }
+  const expansion = await genExpansion(fileInfo, blobURL)
+  console.log(fileInfo, expansion)
+  if(expansion) fileInfo.expansion = expansion.expansion
 
   const fileKey = await fileKeyAsync
   // encrypt
@@ -193,7 +266,10 @@ export const submitFileWithEncryption = async (x: File, name: string, parentId: 
   const encryptedFileIVBin = Array.from(encryptedFileIV)
   const fileKeyBin = Array.from(fileKeyRaw)
 
-  return { encryptedFileIVBin, fileKeyBin, fileInfo }
+  const fileObj: FileNode<FileInfoFile> = { ...fileInfo, expansion: undefined, history: [fileInfo.id], origin: {fileInfo, fileKeyBin, encryptedFileIVBin}, blobURL }
+  const local = await expandServerData(fileObj, blobURL, {expansion: expansion?.expansionLocal})
+
+  return {server: { encryptedFileIVBin, fileKeyBin, fileInfo }, local}
 }
 
 /**
@@ -329,6 +405,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):buildFileTable
         assertArrayNumber(encryptedFileIVBin)
         fileTable[fileInfo.id] = {
           ...fileInfo,
+          expansion: undefined,
           parentId: fileInfo.parentId ?? 'root',
           history: [],
           origin: {fileInfo, fileKeyBin, encryptedFileIVBin}
@@ -524,4 +601,30 @@ export const getAllDependentFile = (target: FileNode<FileInfo>, fileTable: FileT
     result.push(t)
   }
   return result
+}
+
+/**
+ * 類似ファイルを取得
+ */
+export const listUpSimilarFile = (target: FileNode<FileInfoFile>, fileTable: FileTable, num: number = 15) => {
+  const similarFiles: [number, string][] = []
+  const imgHashMode = target.expansion && target.expansion.type === 'img' ? new ImgHash('phash', target.expansion.phashObj) : undefined
+  for(const x of Object.values(fileTable)){
+    // 探索対象は相異なる最新のファイル実体のみ
+    if(x.type !== 'file' || x.history.length === 0 || x.id === target.id) continue;
+    if(imgHashMode){
+      if(x.expansion && x.expansion.type === 'img'){
+        // imghash
+        const score = imgHashMode.degreeOfSimilarity(new ImgHash('phash', x.expansion.phashObj))
+        if( score > 0.6){
+          similarFiles.push([score, x.id])
+        }
+      }
+    }else{
+      // hash
+      if(target.sha256 === x.sha256) similarFiles.push([0, x.id])
+    }
+  }
+  similarFiles.sort((a,b) => b[0] - a[0])
+  return similarFiles.slice(0, num).map(x => x[1])
 }

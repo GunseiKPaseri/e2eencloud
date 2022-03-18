@@ -68,6 +68,7 @@ export interface FileState {
   activeFile: {
     link: string,
     fileId: string,
+    similarFiles: string[]
   } | null,
   activeFileGroup: null | tagGroup | dirGroup | searchGroup
 };
@@ -77,7 +78,7 @@ const initialState: FileState = {
   fileTable: {},
   tagTree: {},
   activeFile: null,
-  activeFileGroup: null
+  activeFileGroup: null,
 }
 
 export const fileSlice = createSlice({
