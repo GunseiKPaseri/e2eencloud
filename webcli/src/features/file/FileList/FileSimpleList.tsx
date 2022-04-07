@@ -5,7 +5,6 @@ import List, { ListProps } from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
 import ListItemAvatar from '@mui/material/ListItemAvatar'
 import ListItemText from '@mui/material/ListItemText'
-import Link from '@mui/material/Link'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import { Theme } from '@mui/material/styles'
@@ -23,6 +22,7 @@ import { useAppSelector, useAppDispatch } from "../../../app/hooks"
 import { FileNode, FileInfoFile, FileInfoFolder } from '../file.type'
 import { changeActiveFileGroupDir, createDiffAsync, FileState } from '../fileSlice'
 import { assertNonFileNodeDiff } from "../filetypeAssert"
+import { openContextmenu } from '../../contextmenu/contextmenuSlice'
 
 
 const FileListListFolder = (props: {targetFolder: FileNode<FileInfoFolder>, onSelectFolder: (id: string)=>void}) => {
@@ -64,66 +64,28 @@ const FileListListFolder = (props: {targetFolder: FileNode<FileInfoFolder>, onSe
 const FileListListFile = (props: {targetFile: FileNode<FileInfoFile>, onSelectFile: (id: string)=>void}) => {
   const { targetFile, onSelectFile } = props
   const [{isDragging}, drag, dragPreview] = useDrag(() => genUseDragReturn(targetFile.id))
-  const [anchorMenuXY, setAnchorMenuXY] = useState<{left: number, top: number}|undefined>(undefined)
-  const activeFileGroupType = useAppSelector((state) => state.file.activeFileGroup?.type)
   const dispatch = useAppDispatch()
 
   const handleContextMenu: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.preventDefault()
-    setAnchorMenuXY(anchorMenuXY === undefined ? {left: event.clientX, top: event.clientY} : undefined)
-  }
-  const handleMenuDecrypto = () => {
-    onSelectFile(targetFile.id)
-    setAnchorMenuXY(undefined)
-  }
-  const handleClose = () => setAnchorMenuXY(undefined)
-
-  const handleMenuShowDir = () => {
-    if(targetFile.parentId) dispatch(changeActiveFileGroupDir({ id: targetFile.parentId }))
-  }
-  const handleMenuAddBin = () => {
-    dispatch(createDiffAsync({ targetId: targetFile.id, newTags: [...targetFile.tag, 'bin'] }))
-  }
-  const handleMenuFromBin = () => {
-    dispatch(createDiffAsync({ targetId: targetFile.id, newTags: targetFile.tag.filter(x => x!=='bin') }))
+    dispatch(openContextmenu({anchor: {left: event.clientX, top: event.clientY}, menu: {type: 'filelistitemfile', targetFile}}))
   }
 
   return (
     <>
       { targetFile.previewURL ? <DragPreviewImage connect={dragPreview} src={targetFile.previewURL} /> : <></> }
-      <div
-          ref={drag}>
-          <ListItem button onContextMenu={handleContextMenu} onDoubleClick={() => onSelectFile(targetFile.id)} style={{opacity: isDragging ? 0.5 : 1}}>
-            <ListItemAvatar>
-              <Avatar>
-                {targetFile.previewURL ? <PngIcon src={targetFile.previewURL} /> : <InsertDriveFileIcon />}
-              </Avatar>
-            </ListItemAvatar>
-            <ListItemText
-              primary={targetFile.name}
-            />
-          </ListItem>
-          <Menu
-            open={anchorMenuXY !== undefined}
-            onClose={handleClose}
-            anchorReference="anchorPosition"
-            anchorPosition={anchorMenuXY}
-          >
-            {
-              activeFileGroupType && activeFileGroupType !== 'dir' && <MenuItem onClick={handleMenuShowDir}>ファイルの場所を表示</MenuItem>
-            }
-            {
-              targetFile.blobURL
-                ? <MenuItem component={Link} download={targetFile.name} href={targetFile.blobURL}>ダウンロード</MenuItem>
-                : <MenuItem onClick={handleMenuDecrypto}>ファイルを復号して表示</MenuItem>
-            }
-            {
-              targetFile.tag.includes('bin')
-                ? <MenuItem onClick={handleMenuFromBin}>ゴミ箱から復元</MenuItem>
-                : <MenuItem onClick={handleMenuAddBin}>ゴミ箱に追加</MenuItem>
-            }
-          </Menu>
-        </div>
+      <div ref={drag}>
+        <ListItem button onContextMenu={handleContextMenu} onDoubleClick={() => onSelectFile(targetFile.id)} style={{opacity: isDragging ? 0.5 : 1}}>
+          <ListItemAvatar>
+            <Avatar>
+              {targetFile.previewURL ? <PngIcon src={targetFile.previewURL} /> : <InsertDriveFileIcon />}
+            </Avatar>
+          </ListItemAvatar>
+          <ListItemText
+            primary={targetFile.name}
+          />
+        </ListItem>
+      </div>
     </>
   )
 }

@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box'
-import { useAppSelector } from '../../app/hooks'
+import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { FileInfo, FileInfoFile, FileNode } from './file.type'
-import { FileState } from './fileSlice'
+import { changeActiveFileGroupDir, filedownloadAsync, FileState } from './fileSlice'
 import { Renamer } from './Renamer'
 import { TagSetter } from './TagSetter'
 import DownloadIcon from '@mui/icons-material/Download';
@@ -13,9 +13,11 @@ import { assertFileNodeFile, assertFileNodeFileORUndefined } from './filetypeAss
 import ImageList from '@mui/material/ImageList'
 import ImageListItem from '@mui/material/ImageListItem'
 import ImageListItemBar from '@mui/material/ImageListItemBar'
+import { openContextmenu } from '../contextmenu/contextmenuSlice'
 
 export const Viewer = () => {
   const fileState = useAppSelector<FileState>((store) => store.file)
+  const dispatch = useAppDispatch()
   const activeFile = fileState.activeFile
   const activeNode = activeFile ? fileState.fileTable[activeFile.fileId] : undefined
   assertFileNodeFileORUndefined(activeNode)
@@ -43,7 +45,15 @@ export const Viewer = () => {
               assertFileNodeFile(target)
               
               return (
-                <ImageListItem key={x}>
+                <ImageListItem
+                  key={x}
+                  onDoubleClick={(e) => dispatch(filedownloadAsync({ fileId: target.id }))}
+                  onContextMenu={(event) => {
+                    event.preventDefault()
+                    if(target.type !== 'file') return
+                    dispatch(openContextmenu({anchor: {left: event.clientX, top: event.clientY}, menu: {type: 'filelistitemfile', targetFile: target, isDir: false}}))
+                  }}
+                >
                 {/*<ImageListItem key={x} onDoubleClick={target.type === 'file' ? (e) => props.onSelectFile(target.id) : (e) => props.onSelectFolder(target.id)}>*/}
                   {
                     target.type === 'file' && target.mime.indexOf('image/') === 0 && target.blobURL

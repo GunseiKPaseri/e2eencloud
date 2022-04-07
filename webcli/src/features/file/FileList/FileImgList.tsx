@@ -3,12 +3,14 @@ import ImageList from "@mui/material/ImageList"
 import ImageListItem from "@mui/material/ImageListItem"
 import Skeleton from "@mui/material/Skeleton"
 import { SxProps, Theme } from '@mui/material/styles';
-import { useAppSelector } from "../../../app/hooks"
+import { openContextmenu } from "../../contextmenu/contextmenuSlice";
+import { useAppDispatch, useAppSelector } from "../../../app/hooks"
 import { FileState } from "../fileSlice"
 import { assertNonFileNodeDiff } from "../filetypeAssert"
 
 export const FileImgList = (props: {sx: SxProps<Theme>, onSelectFolder: (id:string) => void, onSelectFile: (id: string) => void}) => {
   const { fileTable, activeFileGroup } = useAppSelector<FileState>(state => state.file)
+  const dispatch = useAppDispatch()
 
   return ( activeFileGroup
     ? <ImageList sx={props.sx} cols={3} rowHeight={164} variant="masonry">
@@ -17,7 +19,15 @@ export const FileImgList = (props: {sx: SxProps<Theme>, onSelectFolder: (id:stri
           assertNonFileNodeDiff(target)
           
           return (
-            <ImageListItem key={x} onDoubleClick={target.type === 'file' ? (e) => props.onSelectFile(target.id) : (e) => props.onSelectFolder(target.id)}>
+            <ImageListItem
+              key={x}
+              onDoubleClick={target.type === 'file' ? (e) => props.onSelectFile(target.id) : (e) => props.onSelectFolder(target.id)}
+              onContextMenu={(event) => {
+                event.preventDefault()
+                if(target.type !== 'file') return
+                dispatch(openContextmenu({anchor: {left: event.clientX, top: event.clientY}, menu: {type: 'filelistitemfile', targetFile: target}}))
+              }}
+            >
               {
                 target.type === 'file' && target.mime.indexOf('image/') === 0 && target.blobURL
                   ? <img

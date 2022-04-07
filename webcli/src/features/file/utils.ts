@@ -626,5 +626,6 @@ export const listUpSimilarFile = (target: FileNode<FileInfoFile>, fileTable: Fil
     }
   }
   similarFiles.sort((a,b) => b[0] - a[0])
+  console.log(similarFiles)
   return similarFiles.slice(0, num).map(x => x[1])
 }

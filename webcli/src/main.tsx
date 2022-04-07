@@ -22,6 +22,8 @@ import { createTheme, ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { Notifier } from './features/snackbar/Notifier'
 
+import { ContextMenuProvider } from './features/contextmenu/ContextMenu'
+
 const mdTheme = createTheme()
 
 const ComposedProvider = composeComponents(
@@ -29,22 +31,24 @@ const ComposedProvider = composeComponents(
   (props) => <Provider {...props} store={store} />,
   (props) => <ThemeProvider {...props} theme={mdTheme} />,
   (props) => <SnackbarProvider {...props} maxSnack={3} anchorOrigin={{vertical: 'bottom', horizontal: 'right'}} />,
-  (props) => <DndProvider {...props} backend={HTML5Backend} />
+  (props) => <DndProvider {...props} backend={HTML5Backend} />,
 )
 
 ReactDOM.render(
   <ComposedProvider>
     <CssBaseline />
     <Notifier />
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/signup" element={<Signup />}/>
-        <Route path="/setup" element={<Setup />}/>
-        <Route path="/login" element={<Login />}/>
-        <Route path="/session" element={<SessionConfig />}/>
-      </Routes>
-    </BrowserRouter>
+    <ContextMenuProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<App />} />
+          <Route path="/signup" element={<Signup />}/>
+          <Route path="/setup" element={<Setup />}/>
+          <Route path="/login" element={<Login />}/>
+          <Route path="/session" element={<SessionConfig />}/>
+        </Routes>
+      </BrowserRouter>
+    </ContextMenuProvider>
   </ComposedProvider>,
   document.getElementById('root')
 )

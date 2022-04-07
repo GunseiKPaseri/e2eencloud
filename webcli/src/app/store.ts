@@ -1,17 +1,19 @@
 import { configureStore } from '@reduxjs/toolkit'
 import logger from 'redux-logger'
 import authReducer from '../features/auth/authSlice'
+import contextmenuReducer from '../features/contextmenu/contextmenuSlice'
 import fileReducer from '../features/file/fileSlice'
-import sessionReducer from '../features/session/sessionSlice'
 import progressReducer from '../features/progress/progressSlice'
+import sessionReducer from '../features/session/sessionSlice'
 import snackbarReducer from '../features/snackbar/snackbarSlice'
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
+    contextmenu: contextmenuReducer,
     file: fileReducer,
-    session: sessionReducer,
     progress: progressReducer,
+    session: sessionReducer,
     snackbar: snackbarReducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
