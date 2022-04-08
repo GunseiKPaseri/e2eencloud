@@ -1,5 +1,5 @@
 import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit'
-import { FileCryptoInfoWithBin } from '../file.type'
+import { FileCryptoInfoWithBin, FileInfo, FileNode } from '../file.type'
 import {
   getSafeName,
   submitFileWithEncryption,
@@ -61,9 +61,16 @@ export const afterFileuploadAsyncFullfilled:
       ...state.fileTable,
       ...Object.fromEntries(
         uploaded.map((item) => {
-          const { fileInfo, fileKeyBin, encryptedFileIVBin } = item.server
+          const { fileInfo, fileKeyBin, encryptedFileIVBin, originalVersion } = item.server
           const { blobURL, previewURL, expansion } = item.local
-          const fileObj = { ...fileInfo, expansion, history: [fileInfo.id], origin: {fileInfo, fileKeyBin, encryptedFileIVBin}, blobURL, previewURL }
+          const fileObj:FileNode<FileInfo> = {
+            ...fileInfo,
+            expansion,
+            history: [fileInfo.id],
+            origin: {fileInfo, fileKeyBin, encryptedFileIVBin, originalVersion},
+            blobURL,
+            previewURL
+          }
           return [fileInfo.id, fileObj]
         })
       )
@@ -76,7 +83,9 @@ export const afterFileuploadAsyncFullfilled:
         ...uploaded.map(x => x.server.fileInfo.id)
       ]
     // renew activeGroup
-    if (state.activeFileGroup && state.activeFileGroup.type === 'dir' && state.activeFileGroup.parents[state.activeFileGroup.parents.length - 1] === parentId) {
+    if (state.activeFileGroup
+        && state.activeFileGroup.type === 'dir'
+        && state.activeFileGroup.parents[state.activeFileGroup.parents.length - 1] === parentId) {
       state.activeFileGroup = { ...state.activeFileGroup, files: fileSort([...state.activeFileGroup.files, ...uploaded.map(x => x.server.fileInfo.id)], newFileTable) }
     }
     state.fileTable = newFileTable

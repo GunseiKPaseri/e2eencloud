@@ -67,6 +67,6 @@ export const afterFiledownloadAsyncFullfilled:
     state.activeFile = {
       link: local.blobURL,
       fileId: fileId,
-      similarFiles: listUpSimilarFile(target, newFileTable)
+      similarFiles: listUpSimilarFile(nextFileNode, newFileTable)
     }
   }

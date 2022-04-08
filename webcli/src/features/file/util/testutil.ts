@@ -1,9 +1,11 @@
 import {
   FileCryptoInfoWithBin,
+  FileCryptoInfoWithoutBin,
   FileDifference,
   FileInfoDiffFile,
   FileInfoFolder
 } from '../file.type'
+import { latestVersion } from '../fileinfoMigration/fileinfo'
 
 export const genFileInfoFile = (props: {
   id: string,
@@ -20,6 +22,7 @@ export const genFileInfoFile = (props: {
     type: 'file',
     id: props.id,
     name: props.name ?? props.id,
+    version: latestVersion,
     createdAt: props.createdAt ?? 0,
     sha256: props.id,
     mime: props.id,
@@ -28,6 +31,7 @@ export const genFileInfoFile = (props: {
     prevId: props.prevId,
     tag: props.tag
   },
+  originalVersion: latestVersion,
   encryptedFileIVBin: props.encryptedFileIVBin ?? []
 })
 
@@ -37,19 +41,18 @@ export const genFileInfoFolder = (props: {
   createdAt?: number,
   prevId?: string,
   fileKeyBin?: number[]
-}): {
-  fileInfo: FileInfoFolder,
-  fileKeyBin: number[]
-} => ({
+}):FileCryptoInfoWithoutBin<FileInfoFolder> => ({
   fileKeyBin: props.fileKeyBin ?? [],
   fileInfo: {
     type: 'folder',
     id: props.id,
     name: props.id,
+    version: latestVersion,
     createdAt: props.createdAt ?? 0,
     parentId: props.parentId,
     prevId: props.prevId
-  }
+  },
+  originalVersion: latestVersion
 })
 
 export const genFileInfoDiff = (props: {
@@ -60,18 +63,17 @@ export const genFileInfoDiff = (props: {
   prevId?: string,
   diff?: FileDifference,
   fileKeyBin?: number[]
-}): {
-  fileKeyBin: number[],
-  fileInfo: FileInfoDiffFile,
-} => ({
+}):FileCryptoInfoWithoutBin<FileInfoDiffFile> => ({
   fileKeyBin: props.fileKeyBin ?? [],
   fileInfo: {
     type: 'diff',
     id: props.id,
     name: props.name ?? props.id,
+    version: latestVersion,
     createdAt: props.createdAt ?? 0,
     parentId: props.parentId,
     prevId: props.prevId,
     diff: props.diff ?? {}
-  }
+  },
+  originalVersion: latestVersion
 })

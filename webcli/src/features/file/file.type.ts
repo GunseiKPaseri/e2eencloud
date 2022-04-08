@@ -1,71 +1,25 @@
 import { SearchQuery } from "./util/search"
 
-/**
- * 差分情報
- */
-export interface FileDifference{
-  addtag?: string[],
-  deltag?: string[]
-}
+import {
+  FileDifference,
+  ExpansionInfoImage,
+  FileInfoFile,
+  FileInfoFolder,
+  FileInfoDiffFile,
+  FileInfoNotFile,
+  FileInfo,
+  FileInfoVersions
+} from './fileinfoMigration/fileinfo'
 
-/**
- * サーバに保存するファイルに関する拡張情報
- */
-export interface ExpansionInfoImage{
-  type: 'img',
-  width: number,
-  height: number,
-  ahash: string,
-  dhash: string,
-  phash: string,
+export type{
+  FileDifference,
+  ExpansionInfoImage,
+  FileInfoFile,
+  FileInfoFolder,
+  FileInfoDiffFile,
+  FileInfoNotFile,
+  FileInfo
 }
-
-/**
- *  サーバDBに保存するファイルに関する情報
- */
-export interface FileInfoFile {
-  type: 'file',
-  id: string,
-  name: string,
-  createdAt: number,
-  sha256: string,
-  mime: string,
-  size: number,
-  parentId: string | null,
-  prevId?: string,
-  tag: string[],
-  expansion?: ExpansionInfoImage
-}
-/**
- *  サーバDBに保存するフォルダに関する情報
- */
-export interface FileInfoFolder {
-  type: 'folder',
-  id: string,
-  name: string,
-  createdAt: number,
-  parentId: string | null,
-  prevId?: string,
-}
-/**
- *  サーバDBに保存する差分に関する情報
- */
-export interface FileInfoDiffFile {
-  type: 'diff',
-  id: string,
-  name: string,
-  createdAt: number,
-  parentId: string | null,
-  prevId?: string,
-  diff: FileDifference
-}
-
-export type FileInfoNotFile = FileInfoFolder | FileInfoDiffFile
-
-/**
- * サーバに保存する情報
- */
-export type FileInfo = FileInfoFile | FileInfoNotFile
 
 /**
  * サーバDBから取得した情報
@@ -75,14 +29,19 @@ export type FileCryptoInfoWithBin = {
   encryptedFileIVBin: number[],
   fileKeyBin: number[],
   fileInfo: FileInfoFile,
+  originalVersion: FileInfoVersions
 }
 
 export type FileCryptoInfoWithoutBin<T extends FileInfoNotFile> = {
   fileKeyBin: number[],
-  fileInfo: T
+  fileInfo: T,
+  originalVersion: FileInfoVersions
 }
 
-export type FileCryptoInfo<T extends FileInfo> = T extends FileInfoNotFile ? FileCryptoInfoWithoutBin<T> : FileCryptoInfoWithBin
+export type FileCryptoInfo<T extends FileInfo> =
+  T extends FileInfoNotFile
+    ? FileCryptoInfoWithoutBin<T>
+    : FileCryptoInfoWithBin
 
 export interface ExpansionInfoImageLocal{
   type: 'img',

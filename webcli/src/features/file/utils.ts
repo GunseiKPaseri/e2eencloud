@@ -30,8 +30,10 @@ import { AxiosResponse } from 'axios'
 
 import { v4 } from 'uuid'
 import { AES_FILE_KEY_LENGTH } from '../../const'
-import Jimp from 'jimp/browser/lib/jimp'
 import { getPreview } from '../../utils/img'
+import { fileInfoMigrate, latestVersion } from './fileinfoMigration/fileinfo'
+
+import Jimp from 'jimp/browser/lib/jimp'
 import { ahash, dhash, phash } from 'imghash-js'
 import { ImgHash } from 'imghash-js'
 
@@ -196,7 +198,7 @@ export const submitFileInfoWithEncryption = async <T extends FileInfoNotFile>(fi
   fileSendData.append('encryptedFileKeyBase64', encryptedFileKeyBase64)
   await axiosWithSession.post(`${appLocation}/api/files`, fileSendData)
 
-  return { fileKeyBin: Array.from(fileKeyRaw), fileInfo }
+  return { fileKeyBin: Array.from(fileKeyRaw), fileInfo, originalVersion: fileInfo.version }
 }
 /**
  * ファイルをenryptoしてサーバに保存
@@ -219,6 +221,7 @@ export const submitFileWithEncryption
     id: uuid,
     name: name,
     createdAt: Date.now(),
+    version: latestVersion,
     sha256: hashStr,
     mime: x.type,
     type: 'file',
@@ -266,10 +269,22 @@ export const submitFileWithEncryption
   const encryptedFileIVBin = Array.from(encryptedFileIV)
   const fileKeyBin = Array.from(fileKeyRaw)
 
-  const fileObj: FileNode<FileInfoFile> = { ...fileInfo, expansion: undefined, history: [fileInfo.id], origin: {fileInfo, fileKeyBin, encryptedFileIVBin}, blobURL }
+  const fileObj: FileNode<FileInfoFile> = {
+    ...fileInfo,
+    expansion: undefined,
+    history: [fileInfo.id],
+    origin: {
+      fileInfo,
+      fileKeyBin,
+      encryptedFileIVBin,
+      originalVersion: fileInfo.version
+    },
+    blobURL
+  }
+
   const local = await expandServerData(fileObj, blobURL, {expansion: expansion?.expansionLocal})
 
-  return {server: { encryptedFileIVBin, fileKeyBin, fileInfo }, local}
+  return {server: { encryptedFileIVBin, fileKeyBin, fileInfo, originalVersion: fileInfo.version }, local}
 }
 
 /**
@@ -284,15 +299,15 @@ export const decryptoFileInfo = async (fileinforaw: getfileinfoJSONRow): Promise
 
   const fileKey = await getAESGCMKey(fileKeyRaw)
   const fileKeyBin = Array.from(fileKeyRaw)
-  const fileInfo:FileInfo = JSON.parse(byteArray2string(await decryptAESGCM(encryptedFileInfo, fileKey, encryptedFileInfoIV)))
+  const {fileInfo, originalVersion} = fileInfoMigrate(byteArray2string(await decryptAESGCM(encryptedFileInfo, fileKey, encryptedFileInfoIV)))
   if (fileInfo.type === 'file') {
     if (!fileinforaw.encryptedFileIVBase64) throw new Error('取得情報が矛盾しています。fileにも関わらずencryptedFileIVが含まれていません')
     const encryptedFileIV = base642ByteArray(fileinforaw.encryptedFileIVBase64)
     const encryptedFileIVBin = Array.from(encryptedFileIV)
-    return { encryptedFileIVBin, fileKeyBin, fileInfo }
+    return { encryptedFileIVBin, fileKeyBin, fileInfo, originalVersion }
   }
-  if (fileInfo.type === 'folder') return { fileKeyBin, fileInfo }
-  return { fileKeyBin, fileInfo }
+  if (fileInfo.type === 'folder') return { fileKeyBin, fileInfo, originalVersion }
+  return { fileKeyBin, fileInfo, originalVersion }
 }
 
 /**
@@ -370,6 +385,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):buildFileTable
       type: 'folder',
       name: 'root',
       createdAt: 0,
+      version: latestVersion,
       files: [],
       parentId: null,
       history: [],
@@ -377,17 +393,19 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):buildFileTable
         fileInfo: {
           type: 'folder',
           createdAt: 0,
+          version: latestVersion,
           id: 'root',
           name: 'root',
           parentId: null
         },
-        fileKeyBin: []
+        fileKeyBin: [],
+        originalVersion: latestVersion,
       }
     }
   }
   const nextTable: {[key: string]: string | undefined} = {}
   for (const fileInfoWithEnc of files) {
-    const { fileInfo, fileKeyBin } = fileInfoWithEnc
+    const { fileInfo, fileKeyBin, originalVersion } = fileInfoWithEnc
     switch (fileInfo.type) {
       case 'folder':
         fileTable[fileInfo.id] = {
@@ -395,7 +413,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):buildFileTable
           parentId: fileInfo.parentId ?? 'root',
           history: [],
           files: [],
-          origin: {fileInfo, fileKeyBin}
+          origin: {fileInfo, fileKeyBin, originalVersion}
         }
         break
       case 'file': {
@@ -408,7 +426,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):buildFileTable
           expansion: undefined,
           parentId: fileInfo.parentId ?? 'root',
           history: [],
-          origin: {fileInfo, fileKeyBin, encryptedFileIVBin}
+          origin: {fileInfo, fileKeyBin, encryptedFileIVBin, originalVersion}
         }
         break
       }
@@ -416,7 +434,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):buildFileTable
         fileTable[fileInfo.id] = {
           ...fileInfo,
           parentId: fileInfo.parentId ?? 'root',
-          origin: {fileInfo, fileKeyBin},
+          origin: {fileInfo, fileKeyBin, originalVersion},
         }
     }
     if (fileInfo.prevId) nextTable[fileInfo.prevId] = fileInfo.id
@@ -575,6 +593,7 @@ export const createDiff = (props: {targetId: string, newName?: string, newTags?:
     id: genUUID(),
     name: name,
     createdAt: Date.now(),
+    version: latestVersion,
     type: 'diff',
     parentId: parent === 'root' ? null : parent,
     prevId,
@@ -608,21 +627,25 @@ export const getAllDependentFile = (target: FileNode<FileInfo>, fileTable: FileT
  */
 export const listUpSimilarFile = (target: FileNode<FileInfoFile>, fileTable: FileTable, num: number = 15) => {
   const similarFiles: [number, string][] = []
-  const imgHashMode = target.expansion && target.expansion.type === 'img' ? new ImgHash('phash', target.expansion.phashObj) : undefined
+  console.log(target.expansion)
+  const imgHashMode = target.expansion && target.expansion.type === 'img' ? new ImgHash('phash', target.expansion.phashObj) : null
   for(const x of Object.values(fileTable)){
     // 探索対象は相異なる最新のファイル実体のみ
+    console.log(x)
     if(x.type !== 'file' || x.history.length === 0 || x.id === target.id) continue;
+    console.log(x.id, imgHashMode)
     if(imgHashMode){
       if(x.expansion && x.expansion.type === 'img'){
         // imghash
         const score = imgHashMode.degreeOfSimilarity(new ImgHash('phash', x.expansion.phashObj))
+        console.log(score)
         if( score > 0.6){
           similarFiles.push([score, x.id])
         }
       }
     }else{
       // hash
-      if(target.sha256 === x.sha256) similarFiles.push([0, x.id])
+      if(target.sha256 === x.sha256) similarFiles.push([1, x.id])
     }
   }
   similarFiles.sort((a,b) => b[0] - a[0])
