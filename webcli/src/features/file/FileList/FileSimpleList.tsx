@@ -23,6 +23,8 @@ import { FileNode, FileInfoFile, FileInfoFolder } from '../file.type'
 import { changeActiveFileGroupDir, createDiffAsync, FileState } from '../fileSlice'
 import { assertNonFileNodeDiff } from "../filetypeAssert"
 import { openContextmenu } from '../../contextmenu/contextmenuSlice'
+import { SearchHighLight } from './SearchHighLight'
+import { Highlight, SearchQuery } from '../util/search'
 
 
 const FileListListFolder = (props: {targetFolder: FileNode<FileInfoFolder>, onSelectFolder: (id: string)=>void}) => {
@@ -61,8 +63,8 @@ const FileListListFolder = (props: {targetFolder: FileNode<FileInfoFolder>, onSe
   )
 }
 
-const FileListListFile = (props: {targetFile: FileNode<FileInfoFile>, onSelectFile: (id: string)=>void}) => {
-  const { targetFile, onSelectFile } = props
+const FileListListFile = (props: {targetFile: FileNode<FileInfoFile>, onSelectFile: (id: string)=>void, mark?: Highlight[]}) => {
+  const { targetFile, onSelectFile, mark } = props
   const [{isDragging}, drag, dragPreview] = useDrag(() => genUseDragReturn(targetFile.id))
   const dispatch = useAppDispatch()
 
@@ -82,7 +84,7 @@ const FileListListFile = (props: {targetFile: FileNode<FileInfoFile>, onSelectFi
             </Avatar>
           </ListItemAvatar>
           <ListItemText
-            primary={targetFile.name}
+            primary={<SearchHighLight value={targetFile.name} search={mark ? {target: 'name', mark} : undefined} />}
           />
         </ListItem>
       </div>
@@ -98,15 +100,25 @@ export const FileSimpleList = (props: ListProps & {nodeRef: ListProps['ref'],onS
       activeFileGroup
       ? <List ref={nodeRef} {...listprops}>
           {
-            activeFileGroup.files.map((x) => {
-              const target = fileTable[x]
-              assertNonFileNodeDiff(target)
-              if (target.type === 'folder') {
-                return (<FileListListFolder key={target.id} targetFolder={target} onSelectFolder={onSelectFolder} />)
-              } else {
-                return (<FileListListFile key={target.id} targetFile={target} onSelectFile={onSelectFile} />)
-              }
-            })
+            activeFileGroup.type === 'search'
+              ? activeFileGroup.exfiles.map((x) => {
+                  const target = fileTable[x[0]]
+                  assertNonFileNodeDiff(target)
+                  if (target.type === 'folder') {
+                    return (<FileListListFolder key={target.id} targetFolder={target} onSelectFolder={onSelectFolder} />)
+                  } else {
+                    return (<FileListListFile key={target.id} targetFile={target} onSelectFile={onSelectFile} mark={x[1]} />)
+                  }
+                })
+              : activeFileGroup.files.map((x) => {
+                  const target = fileTable[x]
+                  assertNonFileNodeDiff(target)
+                  if (target.type === 'folder') {
+                    return (<FileListListFolder key={target.id} targetFolder={target} onSelectFolder={onSelectFolder} />)
+                  } else {
+                    return (<FileListListFile key={target.id} targetFile={target} onSelectFile={onSelectFile} />)
+                  }
+                })
           }
         </List>
       : <></>

@@ -1,4 +1,4 @@
-import { SearchQuery } from "./util/search"
+import { Highlight, SearchQuery } from "./util/search"
 
 import {
   FileDifference,
@@ -79,7 +79,7 @@ export type FileTable = { [key: string]: FileNode<FileInfo> }
 
 export type tagGroup = {type: 'tag', files: string[], tagName: string}
 export type dirGroup = {type: 'dir', folderId: string, files: string[], parents: string[]}
-export type searchGroup = {type: 'search', files: string[], queryString: string, query: SearchQuery}
+export type searchGroup = {type: 'search', files: string[], exfiles: [string, Highlight[]][], queryString: string, query: SearchQuery}
 
 export interface getfileinfoJSONRow {
   id: string,

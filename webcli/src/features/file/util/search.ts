@@ -1,15 +1,17 @@
 import { FileInfo, FileInfoFile, FileInfoFolder, FileNode, FileTable } from "../file.type"
 
-const strtest = (target: string, word: string | RegExp, searchType?: 'eq' | 'in'):boolean => {
+const strtest = (target: string, word: string | RegExp, searchType?: 'eq' | 'in'):[number, number] | null => {
   if(typeof word === 'string'){
     switch(searchType){
       case 'eq':
-        return target === word
+        return target === word ? [0, word.length] : null
       default:
-        return target.indexOf(word) !== -1
+        const p = target.indexOf(word)
+        return p !== -1 ? [p, p + word.length] : null
     }  
   }
-  return word.test(target)
+  const found = word.exec(target)
+  return found ? [found.index, found.index + found[0].length] : null 
 }
 
 const numtest = (target: number, value: number, operator: '>' | '<' | '>=' | '<=' | '=='):boolean => {
@@ -52,8 +54,11 @@ export type SearchQuerySet =
 
 export type SearchQuery = SearchQuerySet[][]
 
-export const searchTest = (target: FileNode<FileInfoFile>, query: SearchQuery, filetable: FileTable):boolean => {
+export type Highlight = ['name' | 'mime', number, number]
+
+export const searchTest = (target: FileNode<FileInfoFile>, query: SearchQuery, filetable: FileTable): Highlight[] | null => {
   for(const orterm of query){
+    const marker: Highlight[] = []
     let isOK:boolean = true
     for(const andterm of orterm){
       if(!isOK) break;
@@ -80,24 +85,53 @@ export const searchTest = (target: FileNode<FileInfoFile>, query: SearchQuery, f
           break;
         case 'name':
         case 'mime':
-          isOK = strtest(target[andterm.type], andterm.word, andterm.seachType)
+          const mk = strtest(target[andterm.type], andterm.word, andterm.seachType)
+          if(mk){
+            marker.push([andterm.type, ...mk])
+          }
+          isOK = !!mk
           break;
         case 'size':
           isOK = numtest(target[andterm.type], andterm.value, andterm.operator)
           break;
       }
     }
-    if(isOK) return true
+    if(isOK) return marker.sort((a, b) => a[1] - b[1] === 0 ? a[2] - b[2] : a[1] - b[1])
   }
-  return false
+  return null
+}
+
+const addMark = (value: string, start: number, end: number) => {
+  return `${value.slice(0, start)}<mark>${value.slice(start, end)}</mark>${value.slice(end)}`
+}
+
+export const highlightMark = (value: string, target: Highlight[0], marker:Highlight[]) => {
+  // marker is sorted by maker[1]
+  let preStart = -1, preEnd = -1, expansion = 0, variablevalue = value
+  for(const x of marker){
+    if(target !== x[0]) continue
+    if(x[1] + expansion < preEnd) {
+      preEnd = x[2] + expansion
+    } else {
+      if(preEnd >= 0){
+        variablevalue = addMark(variablevalue, preStart, preEnd)
+        expansion += 13
+      }
+      preStart = x[1] + expansion
+      preEnd = x[2] + expansion
+    }
+  }
+  if(preEnd >= 0) variablevalue = addMark(variablevalue, preStart, preEnd)
+  return variablevalue
 }
 
 export const searchFromTable = (filetable: FileTable, query: SearchQuery) => {
-  let result: string[] = []
+  let result: [string, Highlight[]][] = []
   for(const x of Object.values(filetable)){
     // 探索対象は最新のファイル実体のみ
     if(x.type !== 'file' || x.history.length === 0) continue;
-    if(searchTest(x, query, filetable)) result.push(x.id)
+    const mk = searchTest(x, query, filetable)
+    if(mk) result.push([x.id, mk])
   }
   return result
 }

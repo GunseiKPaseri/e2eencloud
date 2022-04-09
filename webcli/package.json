@@ -23,6 +23,7 @@
     "dexie": "^3.2.1",
     "form-data": "^4.0.0",
     "hash-wasm": "^4.9.0",
+    "html-react-parser": "^1.4.10",
     "imghash-js": "github:GunseiKPaseri/imghash-js#v0.0.3-alpha.0",
     "jimp": "^0.16.1",
     "notistack": "^2.0.3",

@@ -5,9 +5,19 @@ import {
 } from './testutil'
 
 import {
+  highlightMark,
   searchFromTable, SearchQuery, SearchQueryParser
 } from './search'
 import { buildFileTable } from '../utils'
+
+describe('#highlightMark', () => {
+  test('正しくハイライトできる', () => {
+    expect(highlightMark('abcdefghijklmnopqrstu', 'name', [['name', 3, 8], ['mime', 10, 15]])).toBe('abc<mark>defgh</mark>ijklmnopqrstu')
+    expect(highlightMark('abcdefghijklmnopqrstu', 'name', [['name', 3, 8], ['name', 6, 10]])).toBe('abc<mark>defghij</mark>klmnopqrstu')
+    expect(highlightMark('abcdefghijklmnopqrstu', 'name', [['name', 3, 8], ['name', 8, 10]])).toBe('abc<mark>defgh</mark><mark>ij</mark>klmnopqrstu')
+    expect(highlightMark('abcdefghijklmnopqrstu', 'name', [['name', 3, 8], ['name', 10, 15]])).toBe('abc<mark>defgh</mark>ij<mark>klmno</mark>pqrstu')
+  })
+})
 
 describe('#searchFromTable', () => {
   test('正しく取得できる', () => {
@@ -24,13 +34,13 @@ describe('#searchFromTable', () => {
     const k = genFileInfoDiff({ id: 'k', parentId: 'a', prevId: 'g', diff: { deltag: ['あ'], addtag: ['う', 'え'] }, name: 'g.hoge'})
     const {fileTable} = buildFileTable([a, b, c, d, e, f, g, h, i, j, k])
     const result1 = searchFromTable(fileTable, [[{type: 'name', word: 'g.hoge'}]]).sort()
-    expect(result1).toEqual(['f'])
+    expect(result1).toEqual([['f', [['name', 0, 6]]]])
     const result2 = searchFromTable(fileTable, [[{type: 'name', word: new RegExp('.hoge$')}]]).sort()
-    expect(result2).toEqual(['f', 'h', 'i'])
+    expect(result2).toEqual([['f', [['name', 1, 6]]], ['h', [['name', 1, 6]]], ['i', [['name', 1, 6]]]])
     const result3 = searchFromTable(fileTable, [[{type: 'name', word: new RegExp('.hoge$')}, {type: 'tag', value: 'い'}]]).sort()
-    expect(result3).toEqual(['f', 'h'])
+    expect(result3).toEqual([['f', [['name', 1, 6]]], ['h', [['name', 1, 6]]]])
     const result4 = searchFromTable(fileTable, [[{type: 'name', word: new RegExp('.hoge$')}], [{type: 'tag', value: 'い'}]]).sort()
-    expect(result4).toEqual(['f', 'h', 'i'])
+    expect(result4).toEqual([['f', [['name', 1, 6]]], ['h', [['name', 1, 6]]], ['i', [['name', 1, 6]]]])
   })
 })
 

@@ -51,7 +51,8 @@ export const afterChangeActiveFileGroupSearch:
    const result = searchFromTable(state.fileTable, query)
    state.activeFileGroup = {
      type: 'search',
-     files: result,
+     files: result.map(x => x[0]),
+     exfiles: result,
      query,
      queryString: action.payload.queryString
    }
