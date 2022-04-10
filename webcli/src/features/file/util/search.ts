@@ -1,13 +1,36 @@
 import { FileInfo, FileInfoFile, FileInfoFolder, FileNode, FileTable } from "../file.type"
 
-const strtest = (target: string, word: string | RegExp, searchType?: 'eq' | 'in'):[number, number] | null => {
+/**
+ * 検索用の正規化
+ * @param before 正規化対象
+ * @returns 正規化結果
+ */
+const searchNormalize = (before: string) => {
+  // 大文字→小文字
+  // カタカナ→ひらがな
+  return before
+    .normalize('NFKC')  // Unicode normalize
+    .toLowerCase()      // UpperCase → LowerCase
+    .replace(/[\u30a1-\u30f6]/g, (match) => { // KATAKANA(ア) → HIRAGANA(あ)
+      var chr = match.charCodeAt(0) - 0x60;
+      return String.fromCharCode(chr);
+  });
+}
+
+const strtest = (target: string, word: string | RegExp, searchType?: 'eq' | 'in' | 'inlike'):[number, number] | null => {
   if(typeof word === 'string'){
     switch(searchType){
       case 'eq':
-        return target === word ? [0, word.length] : null
-      default:
-        const p = target.indexOf(word)
+        // same value
+        return target.normalize('NFC') === word.normalize('NFC') ? [0, word.length] : null
+      case 'in':
+        // include
+        const p = target.normalize('NFC').indexOf(word.normalize('NFC'))
         return p !== -1 ? [p, p + word.length] : null
+      default:
+        // include like
+        const q = searchNormalize(target).indexOf(searchNormalize(word))
+        return q !== -1 ? [q, q + word.length] : null
     }  
   }
   const found = word.exec(target)
@@ -43,7 +66,7 @@ export type SearchQuerySet =
 {
   type: 'name' | 'mime',
   word: string | RegExp,
-  seachType?: Parameters<typeof strtest>[2]
+  searchType?: Parameters<typeof strtest>[2]
 } |
 // num
 {
@@ -57,6 +80,8 @@ export type SearchQuery = SearchQuerySet[][]
 export type Highlight = ['name' | 'mime', number, number]
 
 export const searchTest = (target: FileNode<FileInfoFile>, query: SearchQuery, filetable: FileTable): Highlight[] | null => {
+  let allMarker :Highlight[] = []
+  let isAllOK: boolean = false
   for(const orterm of query){
     const marker: Highlight[] = []
     let isOK:boolean = true
@@ -85,7 +110,7 @@ export const searchTest = (target: FileNode<FileInfoFile>, query: SearchQuery, f
           break;
         case 'name':
         case 'mime':
-          const mk = strtest(target[andterm.type], andterm.word, andterm.seachType)
+          const mk = strtest(target[andterm.type], andterm.word, andterm.searchType)
           if(mk){
             marker.push([andterm.type, ...mk])
           }
@@ -96,15 +121,38 @@ export const searchTest = (target: FileNode<FileInfoFile>, query: SearchQuery, f
           break;
       }
     }
-    if(isOK) return marker.sort((a, b) => a[1] - b[1] === 0 ? a[2] - b[2] : a[1] - b[1])
+    if(isOK) allMarker = [...allMarker, ... marker]
+    isAllOK = isAllOK || isOK
   }
-  return null
+  return isAllOK ? allMarker.sort((a, b) => a[1] - b[1] === 0 ? a[2] - b[2] : a[1] - b[1]) : null
 }
 
+const genStrToken = (plainStr: string, type: Highlight[0]): SearchQueryToken => {
+  if(plainStr[0] === '"' && plainStr[plainStr.length - 1] === '"' && plainStr.length > 2){
+    return {type, word: plainStr.slice(1, -1), searchType: 'in'}
+  } else {
+    return {type, word: plainStr}
+  }
+}
+
+/**
+ * 指定位置にmarkタグを追加
+ * @param value 対象文字列
+ * @param start 開始位置
+ * @param end 終了位置
+ * @returns 
+ */
 const addMark = (value: string, start: number, end: number) => {
   return `${value.slice(0, start)}<mark>${value.slice(start, end)}</mark>${value.slice(end)}`
 }
 
+/**
+ * markタグを追加したHTMLを返す
+ * @param value 対象文字列
+ * @param target 変換対象
+ * @param marker ハイライト位置
+ * @returns html
+ */
 export const highlightMark = (value: string, target: Highlight[0], marker:Highlight[]) => {
   // marker is sorted by maker[1]
   let preStart = -1, preEnd = -1, expansion = 0, variablevalue = value
@@ -125,6 +173,12 @@ export const highlightMark = (value: string, target: Highlight[0], marker:Highli
   return variablevalue
 }
 
+/**
+ * テーブルから対象のファイルをリストアップ
+ * @param filetable 
+ * @param query 
+ * @returns 
+ */
 export const searchFromTable = (filetable: FileTable, query: SearchQuery) => {
   let result: [string, Highlight[]][] = []
   for(const x of Object.values(filetable)){
@@ -162,6 +216,10 @@ export class SearchQueryParser{
     let token: SearchQueryToken
     let orterms: SearchQuerySet[][] = []
     let andterms: SearchQuerySet[] = []
+
+    /**
+     * トークンからクエリ配列生成
+     */
     while(token = this.#nextToken()){
       if(token.type === 'OR'){
         if(andterms.length > 0) orterms.push(andterms)
@@ -185,13 +243,35 @@ export class SearchQueryParser{
   /**
    * 指定位置から始まる文字列を切り出す
    *  */
-  #word(): {value: string, exact: boolean}{
-    let t=''
-    while(this.#currentPoint < this.#querySize && /[^\s]/.test(this.#queryString[this.#currentPoint])){
-      t+=this.#queryString[this.#currentPoint]
+  #word(){
+    let t = ''
+    const firstChar = this.#queryString[this.#currentPoint]
+    if (firstChar === '"') {
+      // "x y"
+      t += firstChar
       this.#currentPoint++
+      while(
+        this.#currentPoint < this.#querySize
+        && this.#queryString[this.#currentPoint] !== firstChar
+      ){
+        t += this.#queryString[this.#currentPoint]
+        this.#currentPoint++
+      }
+      if(this.#currentPoint < this.#querySize && this.#queryString[this.#currentPoint] === firstChar){
+        t += firstChar
+        this.#currentPoint++
+      }
+    } else {
+      // normal
+      while(
+        this.#currentPoint < this.#querySize
+        && /[^\s]/.test(this.#queryString[this.#currentPoint])
+      ){
+        t += this.#queryString[this.#currentPoint]
+        this.#currentPoint++
+      }
     }
-    return {value: t, exact: false}
+    return t
   }
   /**
    * 指定位置から始まる数字を切り出す
@@ -235,7 +315,7 @@ export class SearchQueryParser{
       // tag
       this.#currentPoint += 4
       this.#skipSpace()
-      const value = this.#word().value
+      const value = this.#word()
       return {type: 'tag', value}
     }
     const next5 = this.#queryString.slice( this.#currentPoint, this.#currentPoint + 5 ).toLowerCase()
@@ -243,8 +323,7 @@ export class SearchQueryParser{
       // mime
       this.#currentPoint += 5
       this.#skipSpace()
-      const word = this.#word().value
-      return {type: next4, word}
+      return genStrToken(this.#word(), next4)
     } else if(next5 === 'size:'){
       // size
       this.#currentPoint += 5
@@ -255,10 +334,10 @@ export class SearchQueryParser{
       return {type: 'size', value, operator}
     }
     const value = this.#word()
-    if(value.exact === false && value.value.toLowerCase() === 'or'){
+    if(searchNormalize(value) === 'or'){
       return {type: 'OR'}
     }
 
-    return {type: 'name', word: value.value}
+    return genStrToken(value, 'name')
   }
 }
