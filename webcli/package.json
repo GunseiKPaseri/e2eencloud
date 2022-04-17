@@ -2,10 +2,10 @@
   "name": "webcli",
   "version": "0.0.0",
   "scripts": {
-    "dev": "npm-run-all -p watch:*",
+    "dev": "run-p watch:*",
     "watch:ts": "vite",
     "watch:test": "vitest watch",
-    "build": "tsc && vite build --emptyOutDir",
+    "build": "tsc && vitest && vite build --emptyOutDir",
     "preview": "vite preview",
     "test": "vitest",
     "coverage": "vitest run --coverage"
