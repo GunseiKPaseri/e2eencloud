@@ -33,9 +33,11 @@ import { AES_FILE_KEY_LENGTH } from '../../const'
 import { getPreview } from '../../utils/img'
 import { fileInfoMigrate, latestVersion } from './fileinfoMigration/fileinfo'
 
-import Jimp from 'jimp/browser/lib/jimp'
-import { ahash, dhash, phash } from 'imghash-js'
-import { ImgHash } from 'imghash-js'
+import BrowserJimpImgClass from 'imghash-js/dist/esm/ImgClass/BrowserJimpImgClass'
+import ImgHash from 'imghash-js/dist/esm/ImgHash'
+import ahash from 'imghash-js/dist/esm/ahash'
+import dhash from 'imghash-js/dist/esm/dhash'
+import phash from 'imghash-js/dist/esm/phash'
 
 /**
  * 生成
@@ -118,12 +120,13 @@ export const getFileHash = async (bin: ArrayBuffer) => {
 export const genExpansion = async (fileInfo: FileInfoFile, blobURL: string): Promise<{expansion: FileInfoFile['expansion'], expansionLocal: FileNode<FileInfoFile>['expansion']} | undefined> => {
   if(fileInfo.mime.indexOf("image/") === 0 ){
     // image
-    const img = await Jimp.read(blobURL)
+    const img = await (new BrowserJimpImgClass()).init(blobURL)
+    console.log(img)
     const imghashs = {ahashObj: ahash(img.clone()), dhashObj: dhash(img.clone()), phashObj: phash(img.clone())}
     const expansion: FileInfoFile['expansion'] = {
       type: 'img',
-      width: img.bitmap.width,
-      height: img.bitmap.height,
+      width: img.raw().bitmap.width,
+      height: img.raw().bitmap.height,
       ahash: imghashs.ahashObj.hex,
       dhash: imghashs.dhashObj.hex,
       phash: imghashs.phashObj.hex

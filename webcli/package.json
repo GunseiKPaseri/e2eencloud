@@ -2,11 +2,13 @@
   "name": "webcli",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
+    "dev": "npm-run-all -p watch:*",
+    "watch:ts": "vite",
+    "watch:test": "vitest watch",
     "build": "tsc && vite build --emptyOutDir",
     "preview": "vite preview",
-    "test": "jest -o",
-    "testall": "jest"
+    "test": "vitest",
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@emotion/react": "^11.9.0",
@@ -24,7 +26,7 @@
     "form-data": "^4.0.0",
     "hash-wasm": "^4.9.0",
     "html-react-parser": "^1.4.10",
-    "imghash-js": "github:GunseiKPaseri/imghash-js#v0.0.3-alpha.0",
+    "imghash-js": "github:GunseiKPaseri/imghash-js#v0.0.3-alpha.7",
     "jimp": "^0.16.1",
     "notistack": "^2.0.3",
     "otpauth": "^7.1.1",
@@ -62,9 +64,13 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.2.0",
     "eslint-plugin-react": "^7.29.4",
+    "happy-dom": "^2.55.0",
     "jest": "^27.5.1",
+    "npm-run-all": "^4.1.5",
     "typescript": "^4.6.3",
     "util": "^0.12.4",
-    "vite": "^2.9.1"
+    "vite": "^2.9.1",
+    "vite-react-jsx": "^1.1.2",
+    "vitest": "^0.9.3"
   }
 }
