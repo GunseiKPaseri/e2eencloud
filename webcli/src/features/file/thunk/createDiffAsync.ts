@@ -67,13 +67,13 @@ export const createDiffAsync = createAsyncThunk<createDiffAsyncResult, Parameter
 export const afterCreateDiffAsyncFullfilled:
   CaseReducer<FileState, PayloadAction<createDiffAsyncResult>> = (state, action) => {
     const { uploaded, targetId } = action.payload
-    const { fileInfo, fileKeyBin } = uploaded
+    const { fileInfo } = uploaded
     const fileTable = {...state.fileTable}
     assertFileInfoDiffFile(fileInfo)
     // fileTableを更新
     if (!fileInfo.prevId) throw new Error('前方が指定されていません')
     fileTable[fileInfo.prevId].nextId = fileInfo.id
-    fileTable[fileInfo.id] = { ...fileInfo, parentId: fileInfo.parentId, origin: {fileInfo, fileKeyBin} }
+    fileTable[fileInfo.id] = { ...fileInfo, parentId: fileInfo.parentId, origin: uploaded }
     // tagTreeを更新
     if (fileInfo.diff.addtag || fileInfo.diff.deltag) {
       const tagTree = {...state.tagTree}

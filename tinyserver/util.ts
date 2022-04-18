@@ -1,5 +1,8 @@
 import { base642ByteArray, byteArray2base64 } from './deps.ts';
 const textencoder = new TextEncoder();
+
+export const distDir = `${Deno.cwd()}/../webcli/dist`;
+
 export const string2ByteArray = (str: string) => textencoder.encode(str);
 
 const concatByteArray = (a: Uint8Array, b: Uint8Array): Uint8Array => {
@@ -39,5 +42,14 @@ export const createSalt = (email: string, ClientRandomValue: string | null) => {
       'SHA-256',
       concatByteArray(saltArray, severRandomValueArray),
     );
+  }
+};
+
+export const isDir = async (folderPath: string): Promise<boolean> => {
+  try {
+    const file = await Deno.stat(folderPath);
+    return file.isDirectory;
+  } catch (_) {
+    return false;
   }
 };

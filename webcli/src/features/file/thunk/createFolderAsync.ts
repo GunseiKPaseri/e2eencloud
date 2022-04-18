@@ -18,6 +18,7 @@ import {
 } from '../filetypeAssert'
 import { FileState } from '../fileSlice'
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
+import { latestVersion } from '../fileinfoMigration/fileinfo'
 
 type createFolderAsyncResult = {uploaded: FileCryptoInfo<FileInfoFolder>, parents: string[]}
 
@@ -39,6 +40,7 @@ export const createFolderAsync = createAsyncThunk<createFolderAsyncResult, {name
     const fileInfo: FileInfoFolder = {
       id: genUUID(),
       name: changedFolderName,
+      version: latestVersion,
       createdAt: Date.now(),
       type: 'folder',
       parentId: parent
@@ -53,7 +55,7 @@ export const createFolderAsync = createAsyncThunk<createFolderAsyncResult, {name
 export const afterCreateFolderAsyncFullfilled:
   CaseReducer<FileState, PayloadAction<createFolderAsyncResult>> = (state, action) => {
     const { uploaded, parents } = action.payload
-    const { fileInfo, fileKeyBin } = uploaded
+    const { fileInfo } = uploaded
     // 作成したフォルダをstateに反映
     const parent:string =
       parents.length === 0
@@ -62,7 +64,7 @@ export const afterCreateFolderAsyncFullfilled:
     // add table
     assertFileInfoFolder(fileInfo)
     const newFileTable:FileTable = {
-      [fileInfo.id]: { ...fileInfo, files: [], history: [fileInfo.id], origin: {fileInfo, fileKeyBin} },
+      [fileInfo.id]: { ...fileInfo, files: [], history: [fileInfo.id], origin: uploaded },
       ...state.fileTable
     }
     // add parent

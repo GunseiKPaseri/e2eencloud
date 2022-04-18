@@ -1,9 +1,11 @@
 import client from '../dbclient.ts';
 import { Query, v4, Where } from '../deps.ts';
+import { distDir, isDir } from '../util.ts';
 import { User } from './Users.ts';
 
 const validateFileId = (x: string) => x.indexOf('-') === -1 && v4.validate(x.replace(/_/g, '-'));
 
+const binDir = `${distDir}/bin`;
 export class File {
   readonly id: string;
   readonly encrypted_file_iv?: string;
@@ -31,7 +33,11 @@ export class File {
   }
 
   async saveFile(file: Uint8Array) {
-    await Deno.writeFile(`${Deno.cwd()}/../webcli/dist/bin/${this.id}`, file, {
+    if (!(await isDir(`${binDir}`))) {
+      await Deno.mkdir(`${binDir}`);
+    }
+
+    await Deno.writeFile(`${binDir}/${this.id}`, file, {
       append: true,
     });
   }
@@ -126,7 +132,7 @@ export const deleteFiles = async (uid: number, fileIDs: string[]) => {
   await Promise.all(
     files
       .map((id) =>
-        Deno.remove(`${Deno.cwd()}/../webcli/dist/bin/${id}`)
+        Deno.remove(`${binDir}/${id}`)
           .catch(() => Promise.resolve())
       ),
   );

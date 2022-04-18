@@ -5,6 +5,7 @@ import { oakCors } from './deps.ts';
 import apiRouter from './router/api.ts';
 
 import { bold, yellow } from './deps.ts';
+import { distDir } from './util.ts';
 
 const PORT = 3001;
 
@@ -30,7 +31,7 @@ app.use(apiRouter.allowedMethods());
 app.use(async (ctx, next) => {
   try {
     await ctx.send({
-      root: `${Deno.cwd()}/../webcli/dist`,
+      root: distDir,
       index: 'index.html',
     });
   } catch (_) {
