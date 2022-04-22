@@ -2,7 +2,7 @@
 import Paper from '@mui/material/Paper'
 import { useTheme } from '@mui/material/styles'
 import { Login } from '../../features/auth/login'
-import { FileTreeViewer } from '../../features/file/FileTreeViewer'
+import { FileTreeViewer } from '../../features/file/fileTreeViewer'
 import { FileList } from '../../features/file/FileList/FileList'
 import { Viewer } from '../../features/file/Viewer'
 import { AddFolder } from '../../features/file/AddFolder'
