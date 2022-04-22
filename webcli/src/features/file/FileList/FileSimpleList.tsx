@@ -12,6 +12,7 @@ import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile'
 import FolderIcon from '@mui/icons-material/Folder'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 import { useDrop, useDrag, DragPreviewImage } from 'react-dnd'
 import { genUseDropReturn, genUseDragReturn } from '../dnd'
@@ -25,6 +26,7 @@ import { assertNonFileNodeDiff } from "../filetypeAssert"
 import { openContextmenu } from '../../contextmenu/contextmenuSlice'
 import { SearchHighLight } from './SearchHighLight'
 import { Highlight, SearchQuery } from '../util/search'
+import { Badge } from '@mui/material'
 
 
 const FileListListFolder = (props: {targetFolder: FileNode<FileInfoFolder>, onSelectFolder: (id: string)=>void}) => {
@@ -79,9 +81,18 @@ const FileListListFile = (props: {targetFile: FileNode<FileInfoFile>, onSelectFi
       <div ref={drag}>
         <ListItem button onContextMenu={handleContextMenu} onDoubleClick={() => onSelectFile(targetFile.id)} style={{opacity: isDragging ? 0.5 : 1}}>
           <ListItemAvatar>
-            <Avatar>
-              {targetFile.previewURL ? <PngIcon src={targetFile.previewURL} /> : <InsertDriveFileIcon />}
-            </Avatar>
+            <Badge
+              overlap="circular"
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right'}}
+              invisible={!targetFile.tag.includes('bin')}
+              badgeContent={
+                <DeleteIcon />
+              }
+            >
+              <Avatar>
+                {targetFile.previewURL ? <PngIcon src={targetFile.previewURL} /> : <InsertDriveFileIcon />}
+              </Avatar>
+            </Badge>
           </ListItemAvatar>
           <ListItemText
             primary={<SearchHighLight value={targetFile.name} search={mark ? {target: 'name', mark} : undefined} />}
