@@ -5,7 +5,7 @@
     "dev": "run-p watch:*",
     "watch:ts": "vite",
     "watch:test": "vitest watch",
-    "build": "tsc && vitest && vite build --emptyOutDir",
+    "build": "tsc && vitest run && vite build --emptyOutDir",
     "preview": "vite preview",
     "test": "vitest",
     "coverage": "vitest run --coverage"

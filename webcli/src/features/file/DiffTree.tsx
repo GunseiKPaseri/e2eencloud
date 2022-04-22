@@ -27,10 +27,11 @@ export const createDiffExpression = (before: FileInfo, after: FileInfo):JSX.Elem
   }
   if (after.type === 'diff') {
     if (after.diff.addtag && after.diff.addtag.length > 0) {
-      result.push(<React.Fragment key='2'>{[...after.diff.addtag.map(x => <TagButton key={x} tag={x}/>), <>タグを追加</>]}</React.Fragment>)
+      console.log(after.diff.addtag)
+      result.push(<React.Fragment key='2'>{[...after.diff.addtag.map(x => <TagButton key={x} tag={x}/>), <React.Fragment key='_'>タグを追加</React.Fragment>]}</React.Fragment>)
     }
     if (after.diff.deltag && after.diff.deltag.length > 0) {
-      result.push(<React.Fragment key='3'>{[...after.diff.deltag.map(x => <TagButton key={x} tag={x}/>), <>タグを削除</>]}</React.Fragment>)
+      result.push(<React.Fragment key='3'>{[...after.diff.deltag.map(x => <TagButton key={x} tag={x}/>), <React.Fragment key='_'>タグを追加</React.Fragment>]}</React.Fragment>)
     }
   }
   return <>{[...result, <React.Fragment key='4'>しました</React.Fragment>]}</>
