@@ -44,7 +44,7 @@ export const fileDeleteAsync = createAsyncThunk<buildFileTableAsyncResult, {targ
       const result = buildFileTable(
         Object
           .values(fileTable)
-          .filter(x => !deleteItemsSet.has(x.id))
+          .filter(x => !deleteItemsSet.has(x.id) && x.id !== 'root')
           .map(x => ({...x.origin}))
       )
       dispatch(deleteProgress())
