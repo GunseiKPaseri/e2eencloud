@@ -91,3 +91,9 @@ export interface getfileinfoJSONRow {
 }
 
 export type buildFileTableAsyncResult = { fileTable: FileTable, tagTree: { [key: string]: string[] } }
+
+/* 容量情報 */
+export interface StorageInfo {
+  usage: number;
+  capacity: number;
+}

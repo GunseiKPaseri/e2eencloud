@@ -7,6 +7,7 @@ import {
   FileNode,
   FileInfo,
   searchGroup,
+  StorageInfo,
 } from './file.type'
 
 import { getFileParentsList } from './utils'
@@ -52,6 +53,7 @@ import {
   afterChangeActiveFileGroupSearch,
   changeActiveFileGroupSearch
 } from './thunk/changeActiveFileGroup'
+import { afterUpdateUsageAsyncFullfilled, updateUsageAsync } from './thunk/updateUsageAsync'
 export {
   changeActiveFileGroupDir,
   changeActiveFileGroupTag, 
@@ -70,7 +72,8 @@ export interface FileState {
     fileId: string,
     similarFiles: string[]
   } | null,
-  activeFileGroup: null | tagGroup | dirGroup | searchGroup
+  activeFileGroup: null | tagGroup | dirGroup | searchGroup,
+  storage: StorageInfo
 };
 
 const initialState: FileState = {
@@ -79,6 +82,10 @@ const initialState: FileState = {
   tagTree: {},
   activeFile: null,
   activeFileGroup: null,
+  storage: {
+    usage: 0,
+    capacity: 0,
+  }
 }
 
 export const fileSlice = createSlice({
@@ -93,6 +100,7 @@ export const fileSlice = createSlice({
       .addCase(createFolderAsync.fulfilled, afterCreateFolderAsyncFullfilled)
       .addCase(filedownloadAsync.fulfilled, afterFiledownloadAsyncFullfilled)
       .addCase(fileDeleteAsync.fulfilled, afterFileDeleteAsyncFullfilled)
+      .addCase(updateUsageAsync.fulfilled, afterUpdateUsageAsyncFullfilled)
       .addCase(changeActiveFileGroupDir, afterChangeActiveFileGroupDir)
       .addCase(changeActiveFileGroupTag, afterChangeActiveFileGroupTag)
       .addCase(changeActiveFileGroupSearch, afterChangeActiveFileGroupSearch)
@@ -109,6 +117,7 @@ export const fileSlice = createSlice({
         state.tagTree = {}
         state.activeFile = null
         state.activeFileGroup = null
+        state.storage = {usage: 0, capacity: 0}
       })
   }
 })

@@ -11,6 +11,7 @@ import { AES_AUTH_KEY_LENGTH } from '../../const'
 import { setProgress, deleteProgress, progress } from '../progress/progressSlice'
 import { enqueueSnackbar } from '../snackbar/snackbarSlice'
 import { RootState } from '../../app/store'
+import { updateUsageAsync } from '../file/thunk/updateUsageAsync'
 
 interface UserForm {
   email: string;
@@ -241,6 +242,9 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
     }
     // file tree
     dispatch(buildFileTableAsync())
+
+    // storage
+    dispatch(updateUsageAsync())
 
     dispatch(deleteProgress())
 

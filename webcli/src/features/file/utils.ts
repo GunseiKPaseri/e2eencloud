@@ -115,6 +115,21 @@ export const getFileHash = async (bin: ArrayBuffer) => {
 }
 
 /**
+ * 容量値を分かりやすい値に落としこむ
+ * @param byte 数値(byte)
+ * @returns 
+ */
+export const explainByte = (byte: number)=>{
+  if(byte < 1000) return `${byte}B`
+  const kb = Math.ceil(byte/100)/10
+  if(kb < 1000) return `${kb}KB`
+  const mb = Math.ceil(kb/100)/10
+  if(mb < 1000) return `${mb}MB`
+  const gb = Math.ceil(mb/100)/10
+  return `${gb}GB`
+}
+
+/**
  * ファイル拡張情報の生成
  */
 export const genExpansion = async (fileInfo: FileInfoFile, blobURL: string): Promise<{expansion: FileInfoFile['expansion'], expansionLocal: FileNode<FileInfoFile>['expansion']} | undefined> => {

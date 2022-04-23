@@ -13,6 +13,7 @@ import { FileState } from '../fileSlice'
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
 import { appLocation, axiosWithSession } from '../../../features/componentutils'
 import { AxiosResponse } from 'axios'
+import { updateUsageAsync } from './updateUsageAsync'
 
 /**
  * ファイルを完全削除するReduxThunk
@@ -51,6 +52,9 @@ export const fileDeleteAsync = createAsyncThunk<buildFileTableAsyncResult, {targ
       const itemsize = targetIds.filter(id => deleteItemsSet.has(id)).length
       dispatch(enqueueSnackbar({message: `${itemsize}件のファイルを完全に削除しました`, options: {variant: 'success'}}))
 
+      // storage更新
+      dispatch(updateUsageAsync())
+  
       return result
     }
   )

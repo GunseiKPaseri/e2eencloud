@@ -19,6 +19,7 @@ import {
 import { FileState } from '../fileSlice'
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
 import { latestVersion } from '../fileinfoMigration/fileinfo'
+import { updateUsageAsync } from './updateUsageAsync'
 
 type createFolderAsyncResult = {uploaded: FileCryptoInfo<FileInfoFolder>, parents: string[]}
 
@@ -48,6 +49,9 @@ export const createFolderAsync = createAsyncThunk<createFolderAsyncResult, {name
     const addFolder = await submitFileInfoWithEncryption(fileInfo)
 
     dispatch(enqueueSnackbar({message: `${changedFolderName}ディレクトリを作成しました`, options: {variant: 'success'}}))
+    // storage更新
+    dispatch(updateUsageAsync())
+
     return { uploaded: addFolder, parents: activeFileGroup.parents }
   }
 )

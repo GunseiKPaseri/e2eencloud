@@ -15,6 +15,7 @@ import {
 } from '../filetypeAssert'
 import { FileState } from '../fileSlice'
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
+import { updateUsageAsync } from './updateUsageAsync'
 
 type createDiffAsyncResult = {uploaded: FileCryptoInfo<FileInfoDiffFile>, targetId: string}
 
@@ -59,6 +60,8 @@ export const createDiffAsync = createAsyncThunk<createDiffAsyncResult, Parameter
     if(params.newParentId){
       dispatch(enqueueSnackbar({message: "ファイルを移動しました", options: {variant: 'success'}}))
     }
+    // storage更新
+    dispatch(updateUsageAsync())
 
     return { uploaded: addObject, targetId: params.targetId }
   }

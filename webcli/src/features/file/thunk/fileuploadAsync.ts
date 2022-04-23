@@ -16,6 +16,7 @@ import { setProgress, deleteProgress } from '../../progress/progressSlice'
 import { RootState } from '../../../app/store'
 import { FileState } from '../fileSlice'
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice'
+import { updateUsageAsync } from './updateUsageAsync'
 
 type fileuploadAsyncResult = {uploaded: {server: FileCryptoInfoWithBin, local: ExpandServerDataResult}[], parentId: string}
 
@@ -55,6 +56,9 @@ export const fileuploadAsync = createAsyncThunk<fileuploadAsyncResult, {files: F
       if(rejectedCnt !== 0) {
         dispatch(enqueueSnackbar({message: `${rejectedCnt}件のファイルのアップロードに失敗しました`, options: {variant: 'error'}}))
       }
+      // storage更新
+      dispatch(updateUsageAsync())
+
       return { uploaded: loadedfile.flatMap(x => x!==null ? [x] : []), parentId }  
     }
   )

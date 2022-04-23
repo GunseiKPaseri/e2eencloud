@@ -8,6 +8,7 @@ import { Viewer } from '../../features/file/Viewer'
 import { AddFolder } from '../../features/file/AddFolder'
 import { DiffTree } from '../../features/file/DiffTree'
 import { TagButton } from '../../features/file/TagButton'
+import { StorageInfo } from '../../features/file/StorageInfo'
 
 export const FileExplorer = () => {
   const theme = useTheme()
@@ -23,6 +24,7 @@ export const FileExplorer = () => {
       height: `calc(100vh - ${theme.spacing(8)})`
     }}>
       <Paper sx={{ overflow: 'scroll', gridRow: '1/3', padding: 1 }}>
+      <StorageInfo />
         <FileTreeViewer />
         <TagButton tag='bin' />
         <Login />
