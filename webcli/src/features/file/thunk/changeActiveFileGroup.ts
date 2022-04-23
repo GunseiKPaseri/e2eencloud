@@ -20,6 +20,7 @@ export const afterChangeActiveFileGroupDir:
     type: 'dir',
     folderId: firstId,
     files: activeDir.files,
+    selecting: [],
     parents
   }
 }
@@ -35,6 +36,7 @@ export const afterChangeActiveFileGroupTag:
   state.activeFileGroup = {
     type: 'tag',
     files: state.tagTree[action.payload.tag] ?? [],
+    selecting: [],
     tagName: action.payload.tag
   }
 }
@@ -52,9 +54,21 @@ export const afterChangeActiveFileGroupSearch:
    state.activeFileGroup = {
      type: 'search',
      files: result.map(x => x[0]),
+     selecting: state.activeFileGroup?.selecting ?? [],
      exfiles: result,
      query,
      queryString: action.payload.queryString
    }
- }
- 
+}
+
+/**
+ * 選択しているファイル・フォルダを更新
+ */
+export const changeSelection = createAction<{selection: string[]}>('file/changeSelection')
+
+export const afterChangeSelection:
+  CaseReducer<FileState, PayloadAction<{selection: string[]}>> = (state, action) => {
+  if(state.activeFileGroup){
+    state.activeFileGroup = {...state.activeFileGroup, selecting: action.payload.selection}
+  }
+}

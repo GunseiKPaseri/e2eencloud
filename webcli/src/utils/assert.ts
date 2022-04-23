@@ -1,3 +1,19 @@
+
+/**
+ * 要素がstring[]であると確信
+ * @param x 
+ */
+export const assertArrayString:
+(x: unknown) => asserts x is string[] =
+(x) => {
+  if (!Array.isArray(x)) {
+   throw new Error('This is not Array!!')
+  }
+  if (!x.every(x => typeof x === 'string')) {
+   throw new Error('This is not string[]')
+  }
+}
+
 /**
  * 要素がnumber[]であると確信
  */

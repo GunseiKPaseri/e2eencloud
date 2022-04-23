@@ -43,5 +43,5 @@ export const afterBuildFileTableAsyncFullfilled:
   state.fileTable = action.payload.fileTable
   state.tagTree = action.payload.tagTree
   assertFileNodeFolder(action.payload.fileTable.root)
-  state.activeFileGroup = { type: 'dir', folderId: 'root', files: action.payload.fileTable.root.files, parents: ['root'] }
+  state.activeFileGroup = { type: 'dir', folderId: 'root', files: action.payload.fileTable.root.files, selecting: [], parents: ['root'] }
 }

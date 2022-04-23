@@ -77,9 +77,9 @@ export type FileNode<T extends FileInfo> = T extends FileInfoFolder
   */
 export type FileTable = { [key: string]: FileNode<FileInfo> }
 
-export type tagGroup = {type: 'tag', files: string[], tagName: string}
-export type dirGroup = {type: 'dir', folderId: string, files: string[], parents: string[]}
-export type searchGroup = {type: 'search', files: string[], exfiles: [string, Highlight[]][], queryString: string, query: SearchQuery}
+export type tagGroup = {type: 'tag', files: string[], selecting: string[], tagName: string}
+export type dirGroup = {type: 'dir', folderId: string, files: string[], selecting: string[], parents: string[]}
+export type searchGroup = {type: 'search', files: string[], selecting: string[], exfiles: [string, Highlight[]][], queryString: string, query: SearchQuery}
 
 export interface getfileinfoJSONRow {
   id: string,

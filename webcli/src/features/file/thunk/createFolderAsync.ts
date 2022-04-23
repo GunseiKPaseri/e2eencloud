@@ -80,5 +80,5 @@ export const afterCreateFolderAsyncFullfilled:
     // set fileTable
     state.fileTable = { ...newFileTable }
     // add activeGroup
-    state.activeFileGroup = { type: 'dir', folderId: parent, files: sortedNewFiles, parents }
+    state.activeFileGroup = { type: 'dir', folderId: parent, files: sortedNewFiles, selecting: [], parents }
   }

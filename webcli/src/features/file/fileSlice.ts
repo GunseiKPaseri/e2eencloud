@@ -48,16 +48,19 @@ export { fileDeleteAsync }
 import {
   changeActiveFileGroupDir,
   changeActiveFileGroupTag,
+  changeActiveFileGroupSearch,
+  changeSelection,
   afterChangeActiveFileGroupDir,
   afterChangeActiveFileGroupTag,
   afterChangeActiveFileGroupSearch,
-  changeActiveFileGroupSearch
+  afterChangeSelection
 } from './thunk/changeActiveFileGroup'
 import { afterUpdateUsageAsyncFullfilled, updateUsageAsync } from './thunk/updateUsageAsync'
 export {
   changeActiveFileGroupDir,
   changeActiveFileGroupTag, 
-  changeActiveFileGroupSearch
+  changeActiveFileGroupSearch,
+  changeSelection
 }
 
 /**
@@ -104,6 +107,7 @@ export const fileSlice = createSlice({
       .addCase(changeActiveFileGroupDir, afterChangeActiveFileGroupDir)
       .addCase(changeActiveFileGroupTag, afterChangeActiveFileGroupTag)
       .addCase(changeActiveFileGroupSearch, afterChangeActiveFileGroupSearch)
+      .addCase(changeSelection, afterChangeSelection)
       .addCase(logoutAsync.pending, (state, action) =>{
         // ログアウト時削除
         Object.values(state.fileTable).map((row) =>{

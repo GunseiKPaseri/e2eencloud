@@ -1,24 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { SxProps, Theme } from '@mui/material/styles';
 
-import { DataGrid, GridRenderCellParams, GridRowsProp, jaJP } from '@mui/x-data-grid'
+import { DataGrid, GridRenderCellParams, GridRowsProp, GridSelectionModel, jaJP } from '@mui/x-data-grid'
 
-import { useAppSelector } from '../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { FileState } from '../fileSlice';
 import { assertNonFileNodeDiff } from '../filetypeAssert';
 import { TagButton } from '../TagButton';
+import { changeSelection } from '../fileSlice';
+import { assertArrayString } from '../../../utils/assert';
 
 
 export const FileGrid = (props: {sx?: SxProps<Theme>, nodeRef?: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>['ref'], onSelectFolder: (id:string) => void, onSelectFile: (id: string) => void}) => {
   const {sx, nodeRef, onSelectFile, onSelectFolder} = props
   const { fileTable, activeFileGroup } = useAppSelector<FileState>(state => state.file)
+  const dispatch = useAppDispatch()
+  const selectionModel: GridSelectionModel = activeFileGroup?.selecting ?? []
+  console.log(selectionModel)
 
   return (activeFileGroup
     ? <div style={{ height: 300, width: '100%' }} ref={nodeRef}>
         <DataGrid sx={sx}
           localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
           editMode="row"
+          checkboxSelection
+          selectionModel={selectionModel}
+          onSelectionModelChange={(newSelectionModel) => {
+            assertArrayString(newSelectionModel)
+            dispatch(changeSelection({selection: newSelectionModel}))
+          }}
           rows={
             activeFileGroup.files.map<GridRowsProp[number]>(x => {
               const target = fileTable[x]
