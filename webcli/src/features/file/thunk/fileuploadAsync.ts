@@ -44,7 +44,7 @@ export const fileuploadAsync = createAsyncThunk<fileuploadAsyncResult, {files: F
       const loadedfile = await allProgress(
         files.map((x, i) => submitFileWithEncryption(x, changedNameFile[i], parentId)),
         (resolved, rejected, all) => {
-          console.log(resolved, rejected, all)
+          console.log(new Date(), resolved, rejected, all)
           rejectedCnt = rejected
           dispatch(setProgress({ progress: (resolved + rejected) / (all + 1), progressBuffer: all / (all + 1) }))
         })

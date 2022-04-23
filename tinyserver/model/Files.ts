@@ -94,7 +94,6 @@ export const addFile = async (params: {
         params.created_by.id,
       ],
     );
-    console.log(result);
     const newfile = new File({ ...params, size: params.bin?.length ?? 0 });
     if (params.bin) await newfile.saveFile(params.bin);
     return newfile;
