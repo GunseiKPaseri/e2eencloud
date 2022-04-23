@@ -1,7 +1,7 @@
 import client from '../dbclient.ts';
 import { Query, v4, Where } from '../deps.ts';
 import { distDir, isDir } from '../util.ts';
-import { User } from './Users.ts';
+import { getUserById, User } from './Users.ts';
 
 const validateFileId = (x: string) => x.indexOf('-') === -1 && v4.validate(x.replace(/_/g, '-'));
 
@@ -61,19 +61,29 @@ export const addFile = async (params: {
   encrypted_file_info: string;
   encrypted_file_info_iv: string;
   bin?: Uint8Array;
-  created_by: User | number;
+  created_by: User;
 }) => {
   if (!validateFileId(params.id)) return null;
   try {
-    await client.execute(
+    if (
+      params.created_by.file_usage + (params.bin?.length ?? 0) + params.encrypted_file_info.length >
+        params.created_by.max_capacity
+    ) {
+      return null;
+    }
+
+    const patchUserResult = params.created_by.patchUsage((params.bin?.length ?? 0) + params.encrypted_file_info.length);
+    if (patchUserResult === null) return null;
+
+    const result = await client.execute(
       `INSERT INTO files(
-      id,
-      encrypted_file_iv,
-      encrypted_file_key,
-      encrypted_file_info,
-      encrypted_file_info_iv,
-      size,
-      created_by) values(?, ?, ?, ?, ?, ?, ?)`,
+        id,
+        encrypted_file_iv,
+        encrypted_file_key,
+        encrypted_file_info,
+        encrypted_file_info_iv,
+        size,
+        created_by) VALUES(?, ?, ?, ?, ?, ?, ?)`,
       [
         params.id,
         params.encrypted_file_iv ?? null,
@@ -81,9 +91,10 @@ export const addFile = async (params: {
         params.encrypted_file_info,
         params.encrypted_file_info_iv,
         params.bin?.length ?? 0,
-        typeof params.created_by === 'number' ? params.created_by : params.created_by.id,
+        params.created_by.id,
       ],
     );
+    console.log(result);
     const newfile = new File({ ...params, size: params.bin?.length ?? 0 });
     if (params.bin) await newfile.saveFile(params.bin);
     return newfile;

@@ -11,6 +11,8 @@ export default class extends AbstractMigration<ClientMySQL> {
         encrypted_master_key VARCHAR(24) NOT NULL,
         encrypted_master_key_iv VARCHAR(24) NOT NULL,
         hashed_authentication_key VARCHAR(44) NOT NULL,
+        max_capacity BIGINT NOT NULL,
+        file_usage BIGINT NOT NULL,
         is_email_confirmed BOOLEAN NOT NULL,
         two_factor_authentication_secret_key VARCHAR(32),
         encrypted_rsa_private_key TEXT,

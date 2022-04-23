@@ -28,3 +28,19 @@ Checked 14 files
 $ deno test --allow-net --allow-read --allow-write
 ...
 ```
+
+## DB
+
+### migrate
+
+```bash
+$ deno run -A --unstable https://deno.land/x/nessie/cli.ts migrate
+...
+```
+
+### rollback
+
+```bash
+$ deno run -A --unstable https://deno.land/x/nessie/cli.ts rollback
+...
+```

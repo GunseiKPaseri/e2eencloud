@@ -19,9 +19,9 @@ interface POSTSignUpJSON {
 }
 
 router.post('/signup', async (ctx) => {
-  if (!ctx.request.hasBody) return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
-  if (body.type !== 'json') return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
   const data: Partial<POSTSignUpJSON> = await body.value;
   if (
     !data ||
@@ -31,7 +31,7 @@ router.post('/signup', async (ctx) => {
     typeof data.encryptedMasterKeyIVBase64 !== 'string' ||
     typeof data.hashedAuthenticationKeyBase64 !== 'string'
   ) {
-    return ctx.throw(Status.BadRequest, 'Bad Request');
+    return ctx.response.status = Status.BadRequest;
   }
 
   const issuccess = await addUser({
@@ -62,16 +62,16 @@ interface POSTEmailConfirmJSON {
 }
 
 router.post('/email_confirm', async (ctx) => {
-  if (!ctx.request.hasBody) return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
-  if (body.type !== 'json') return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
   const data: Partial<POSTEmailConfirmJSON> = await body.value;
 
   if (
     typeof data.email !== 'string' ||
     typeof data.emailConfirmationToken !== 'string'
   ) {
-    return ctx.throw(Status.BadRequest, 'Bad Request');
+    return ctx.response.status = Status.BadRequest;
   }
 
   // OK
@@ -98,13 +98,13 @@ interface GETSaltJSON {
 
 // GETではBODYに格納するのが困難
 router.post('/salt', async (ctx) => {
-  if (!ctx.request.hasBody) return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
-  if (body.type !== 'json') return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
   const data: Partial<GETSaltJSON> = await body.value;
 
   if (typeof data.email !== 'string') {
-    return ctx.throw(Status.BadRequest, 'Bad Request');
+    return ctx.response.status = Status.BadRequest;
   }
 
   // OK
@@ -123,9 +123,9 @@ interface POSTloginJSON {
 }
 
 router.post('/login', async (ctx) => {
-  if (!ctx.request.hasBody) return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
-  if (body.type !== 'json') return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
   const data: Partial<POSTloginJSON> = await body.value;
 
   if (
@@ -133,7 +133,7 @@ router.post('/login', async (ctx) => {
     typeof data.authenticationKeyBase64 !== 'string' ||
     typeof data.token !== 'string'
   ) {
-    return ctx.throw(Status.BadRequest, 'Bad Request');
+    return ctx.response.status = Status.BadRequest;
   }
 
   // OK
@@ -146,7 +146,7 @@ router.post('/login', async (ctx) => {
   const user = await getUserByEmail(data.email);
   // there is no user || same hash?
   if (!user || user.hashed_authentication_key !== hashed_authentication_key) {
-    return ctx.throw(Status.Unauthorized, 'Unauthorized');
+    return ctx.response.status = Status.Unauthorized;
   }
   // use totp?
   if (user.two_factor_authentication_secret_key) {
@@ -159,7 +159,7 @@ router.post('/login', async (ctx) => {
       secret: user.two_factor_authentication_secret_key,
     });
     if (totp.validate({ token: data.token, window: 1 }) === null) {
-      return ctx.throw(Status.Unauthorized, 'Unauthorized');
+      return ctx.response.status = Status.Unauthorized;
     }
   }
   // login!!
@@ -216,13 +216,13 @@ router.put('/user/totp', async (ctx) => {
   if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
 
   // verify body
-  if (!ctx.request.hasBody) return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
-  if (body.type !== 'json') return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
   const data: Partial<POSTAddTwoFactorSecretKeyJSON> = await body.value;
 
   if (typeof data.secretKey !== 'string' || typeof data.token !== 'string') {
-    return ctx.throw(Status.BadRequest, 'Bad Request');
+    return ctx.response.status = Status.BadRequest;
   }
 
   // verify token
@@ -239,7 +239,7 @@ router.put('/user/totp', async (ctx) => {
     window: 1,
   });
 
-  if (result === null) return ctx.throw(Status.BadRequest, 'Bad Token');
+  if (result === null) return ctx.response.status = Status.BadRequest;
 
   await user.addTwoFactorAuthSecretKey(data.secretKey);
 
@@ -256,6 +256,31 @@ router.delete('/user/totp', async (ctx) => {
   await user.addTwoFactorAuthSecretKey(null);
 
   return ctx.response.status = Status.NoContent;
+});
+
+// get capacity
+interface GETCapacityResultJSON {
+  usage: number;
+  max_capacity: number;
+}
+
+router.get('/user/capacity', async (ctx) => {
+  // auth
+  const uid: number | null = await ctx.state.session.get('uid');
+  const user = await getUserById(uid);
+  if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
+
+  const usage = user.file_usage;
+
+  // verify body
+  const result: GETCapacityResultJSON = {
+    usage,
+    max_capacity: user.max_capacity,
+  };
+
+  ctx.response.status = Status.OK;
+  ctx.response.body = result;
+  ctx.response.type = 'json';
 });
 
 interface PATCHPasswordJSON {
@@ -310,9 +335,9 @@ router.put('/user/pubkey', async (ctx) => {
   if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
 
   // verify body
-  if (!ctx.request.hasBody) return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
-  if (body.type !== 'json') return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
   const data: Partial<PUTpubkeyJSON> = await body.value;
 
   if (
@@ -320,7 +345,7 @@ router.put('/user/pubkey', async (ctx) => {
     typeof data.encryptedRSAPrivateKeyIVBase64 !== 'string' ||
     typeof data.RSAPublicKeyBase64 !== 'string'
   ) {
-    return ctx.throw(Status.BadRequest, 'Bad Request');
+    return ctx.response.status = Status.BadRequest;
   }
 
   await user.addRSAPublicKey({
@@ -374,12 +399,12 @@ router.patch('/user/sessions', async (ctx) => {
   if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
 
   // verify body
-  if (!ctx.request.hasBody) return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
-  if (body.type !== 'json') return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
   const data: Partial<PATCHsessionsJSON> = await body.value;
 
-  if (!data.clientName) return ctx.throw(Status.BadRequest, 'BadRequest');
+  if (!data.clientName) return ctx.response.status = Status.BadRequest;
   await ctx.state.session.set('client_name', data.clientName);
   ctx.response.status = Status.NoContent;
 });
@@ -450,7 +475,7 @@ router.post('/files', async (ctx) => {
 
   if (receivedFile.encryptedFileIVBase64) {
     // with bin
-    if (!data.files) return ctx.throw(Status.BadRequest, 'Bad Request');
+    if (!data.files) return ctx.response.status = Status.BadRequest;
     for (const x of data.files) {
       if (x.name === 'encryptedFile' && x.content) {
         receivedFile[x.name] = new Uint8Array(
@@ -460,7 +485,7 @@ router.post('/files', async (ctx) => {
         );
       }
     }
-    if (!receivedFile.encryptedFile) return ctx.throw(Status.BadRequest, 'Bad Request');
+    if (!receivedFile.encryptedFile) return ctx.response.status = Status.BadRequest;
   }
 
   // save file
@@ -473,6 +498,9 @@ router.post('/files', async (ctx) => {
     bin: receivedFile.encryptedFile,
     created_by: user,
   });
+  if (x === null) {
+    return ctx.response.status = Status.BadRequest;
+  }
   console.log('save ', x?.id);
 
   return ctx.response.status = Status.NoContent;
@@ -489,13 +517,13 @@ router.post('/files/delete', async (ctx) => {
   if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
 
   // verify body
-  if (!ctx.request.hasBody) return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
-  if (body.type !== 'json') return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
   const data: Partial<POSTdeletefilesJSON> = await body.value;
 
   console.log(data);
-  if (!(data.files instanceof Array)) return ctx.throw(Status.BadRequest, 'Bad Request');
+  if (!(data.files instanceof Array)) return ctx.response.status = Status.BadRequest;
 
   const deletedTarget = data.files.filter((x) => typeof x === 'string');
   const deleted = await deleteFiles(user.id, deletedTarget);
@@ -508,7 +536,7 @@ router.post('/files/delete', async (ctx) => {
 // GET FILEINFO
 router.get('/files/:fileid', async (ctx) => {
   const fileinfo = await getFileById(ctx.params.fileid);
-  if (!fileinfo) return ctx.throw(Status.NotFound, 'Not Found');
+  if (!fileinfo) return ctx.response.status = Status.NotFound;
 
   ctx.response.status = Status.OK;
   ctx.response.body = fileinfo.toSendObj();

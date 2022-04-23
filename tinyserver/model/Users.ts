@@ -3,6 +3,8 @@ import { createSalt } from '../util.ts';
 import { deleteEmailConfirms, isEmailConfirmSuccess } from './EmailConfirmations.ts';
 import { byteArray2base64 } from '../deps.ts';
 
+const DEFAULT_MAX_CAPACITY = 10 * 1024 * 1024; //10MiB
+
 export class User {
   readonly id: number;
   readonly email: string;
@@ -11,6 +13,8 @@ export class User {
   readonly encrypted_master_key_iv: string;
   readonly hashed_authentication_key: string;
   readonly is_email_confirmed: boolean;
+  readonly max_capacity: number;
+  #file_usage: number;
   #two_factor_authentication_secret_key: string | null;
   #rsa_public_key: string | null;
   #encrypted_rsa_private_key: string | null;
@@ -23,6 +27,8 @@ export class User {
     encrypted_master_key_iv: string;
     hashed_authentication_key: string;
     is_email_confirmed: boolean;
+    max_capacity: number;
+    file_usage: number;
     two_factor_authentication_secret_key: string | null;
     rsa_public_key: string | null;
     encrypted_rsa_private_key: string | null;
@@ -35,6 +41,8 @@ export class User {
     this.encrypted_master_key_iv = user.encrypted_master_key_iv;
     this.hashed_authentication_key = user.hashed_authentication_key;
     this.is_email_confirmed = !!(user.is_email_confirmed);
+    this.max_capacity = user.max_capacity;
+    this.#file_usage = user.file_usage;
     this.#two_factor_authentication_secret_key = user.two_factor_authentication_secret_key;
     this.#rsa_public_key = user.rsa_public_key;
     this.#encrypted_rsa_private_key = user.encrypted_rsa_private_key;
@@ -53,6 +61,31 @@ export class User {
   get encrypted_rsa_private_key_iv() {
     return this.#encrypted_rsa_private_key_iv;
   }
+  get file_usage() {
+    return this.#file_usage;
+  }
+
+  async patchUsage(diffUsage: number) {
+    try {
+      if (diffUsage > 0) {
+        const result = await client.execute(
+          `UPDATE users SET file_usage = file_usage + ? WHERE id = ? AND max_capacity - file_usage >= ?`,
+          [diffUsage, this.id, diffUsage],
+        );
+        if (result.affectedRows === 0) return null;
+      } else {
+        await client.execute(
+          `UPDATE users SET file_usage = file_usage - ? WHERE id = ?`,
+          [-diffUsage, this.id],
+        );
+      }
+      this.#file_usage += diffUsage;
+      return this.#file_usage;
+    } catch (_) {
+      return null;
+    }
+  }
+
   async addTwoFactorAuthSecretKey(key: string | null) {
     try {
       await client.execute(
@@ -125,6 +158,7 @@ export const addUser = async (params: {
   encrypted_master_key: string;
   encrypted_master_key_iv: string;
   hashed_authentication_key: string;
+  max_capacity?: number;
 }) => {
   try {
     await client.execute(
@@ -134,17 +168,22 @@ export const addUser = async (params: {
       encrypted_master_key,
       encrypted_master_key_iv,
       hashed_authentication_key,
-      is_email_confirmed) values(?, ?, ?, ?, ?, ?)`,
+      max_capacity,
+      file_usage,
+      is_email_confirmed) values(?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         params.email,
         params.client_random_value,
         params.encrypted_master_key,
         params.encrypted_master_key_iv,
         params.hashed_authentication_key,
+        params.max_capacity ?? DEFAULT_MAX_CAPACITY,
+        0,
         false,
       ],
     );
   } catch (_) {
+    console.log(_);
     // ユーザが既に存在する場合
     const alreadyExistUsers = await client.query(
       `SELECT * FROM users WHERE email = ?`,
