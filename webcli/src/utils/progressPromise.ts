@@ -1,15 +1,22 @@
 /**
  * Promise all with progress
  */
-export const allProgress = <T>(values: Array<PromiseLike<T>>, callback: (resolved:number, all: number) => void): Promise<Awaited<T>[]> => {
-  let cnt = 0
+export const allProgress = <T>(values: Array<Promise<T>>, callback: (resolved:number, rejected: number, all: number) => void): Promise<(Awaited<T>|null)[]> => {
+  let resolvecnt = 0
+  let rejectcnt = 0
   const all = values.length
-  callback(cnt, all)
-  const thenFunc = (u:unknown) => {
-    callback(cnt, all)
-    cnt++
+  callback(resolvecnt, rejectcnt, all)
+  const thenFunc = (u:T) => {
+    resolvecnt++
+    callback(resolvecnt, rejectcnt, all)
     return u
   }
-  values.map(x => x.then(thenFunc))
-  return Promise.all(values)
+  const rejectFunc = (u:unknown) => {
+    rejectcnt++
+    callback(resolvecnt, rejectcnt, all)
+    return Promise.resolve(null)
+  }
+  return Promise.all(
+    values.map(x => x.then(thenFunc, rejectFunc))
+  )
 }

@@ -39,16 +39,23 @@ export const fileuploadAsync = createAsyncThunk<fileuploadAsyncResult, {files: F
         parent.files.flatMap(x => (fileTable[x].type === 'file' ? [fileTable[x].name] : []))
       )
   
+      let rejectedCnt = 0
       const loadedfile = await allProgress(
         files.map((x, i) => submitFileWithEncryption(x, changedNameFile[i], parentId)),
-        (resolved, all) => {
-          dispatch(setProgress({ progress: resolved / (all + 1), progressBuffer: all / (all + 1) }))
+        (resolved, rejected, all) => {
+          console.log(resolved, rejected, all)
+          rejectedCnt = rejected
+          dispatch(setProgress({ progress: (resolved + rejected) / (all + 1), progressBuffer: all / (all + 1) }))
         })
       console.log(loadedfile)
       dispatch(deleteProgress())
-      dispatch(enqueueSnackbar({message: `${files.length}件のファイルをアップロードしました`, options: {variant: 'success'}}))
-  
-      return { uploaded: loadedfile, parentId }
+      if(files.length - rejectedCnt !== 0){
+        dispatch(enqueueSnackbar({message: `${files.length - rejectedCnt}件のファイルをアップロードしました`, options: {variant: 'success'}}))
+      }
+      if(rejectedCnt !== 0) {
+        dispatch(enqueueSnackbar({message: `${rejectedCnt}件のファイルのアップロードに失敗しました`, options: {variant: 'error'}}))
+      }
+      return { uploaded: loadedfile.flatMap(x => x!==null ? [x] : []), parentId }  
     }
   )
 
