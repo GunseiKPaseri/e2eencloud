@@ -115,28 +115,31 @@ export const getFileInfo = async (uid: number) => {
   return files.map((x) => new File(x));
 };
 
-export const deleteFiles = async (uid: number, fileIDs: string[]) => {
-  const builder = new Query();
-
+export const deleteFiles = async (user: User, fileIDs: string[]) => {
   const targetFileIDs = fileIDs.filter((id) => v4.validate(id.replaceAll('_', '-')));
 
-  const selectQuery = builder
+  const selectQuery = (new Query())
     .table('files')
     .where(Where.field('id').in(targetFileIDs))
-    .where(Where.field('created_by').eq(uid))
+    .where(Where.field('created_by').eq(user.id))
     .select('id')
     .build();
   const result: { id: string }[] = await client.query(selectQuery.trim());
 
   const files = result.map((x) => x.id);
-  console.log(files);
 
-  const sql = builder
+  const [sumResult]: [{ 'SUM(LENGTH(encrypted_file_info))+SUM(size)': number }] = await client.query(
+    `SELECT SUM(LENGTH(encrypted_file_info))+SUM(size) FROM files WHERE id in ? AND created_by = ?`,
+    [files, user.id],
+  );
+  const deletedItemSize = sumResult['SUM(LENGTH(encrypted_file_info))+SUM(size)'];
+
+  const fileDeleteSql = (new Query())
     .table('files')
     .where(Where.field('id').in(files))
     .delete()
     .build();
-  await client.execute(sql.trim());
+  await client.execute(fileDeleteSql.trim());
 
   // DeleteFile
   // 存在しないファイルは無視
@@ -147,6 +150,8 @@ export const deleteFiles = async (uid: number, fileIDs: string[]) => {
           .catch(() => Promise.resolve())
       ),
   );
+
+  await user.patchUsage(-deletedItemSize);
 
   return files;
 };

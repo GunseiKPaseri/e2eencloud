@@ -526,7 +526,7 @@ router.post('/files/delete', async (ctx) => {
   if (!(data.files instanceof Array)) return ctx.response.status = Status.BadRequest;
 
   const deletedTarget = data.files.filter((x) => typeof x === 'string');
-  const deleted = await deleteFiles(user.id, deletedTarget);
+  const deleted = await deleteFiles(user, deletedTarget);
 
   ctx.response.status = Status.OK;
   ctx.response.body = { deleted };
