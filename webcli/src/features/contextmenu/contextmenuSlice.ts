@@ -8,7 +8,8 @@ export type ContextMenuState = {
     menu: {
       type: 'filelistitemfile',
       targetFile: FileNode<FileInfoFile>,
-      isDir?: boolean
+      isDir?: boolean,
+      selected?: boolean,
     }
   } | null
 };

@@ -7,12 +7,13 @@ import ListItemAvatar from '@mui/material/ListItemAvatar'
 import ListItemText from '@mui/material/ListItemText'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
-import { Theme } from '@mui/material/styles'
+import { useTheme, Theme } from '@mui/material/styles'
 import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile'
 import FolderIcon from '@mui/icons-material/Folder'
 import DeleteIcon from '@mui/icons-material/Delete'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 
 import { useDrop, useDrag, DragPreviewImage } from 'react-dnd'
 import { genUseDropReturn, genUseDragReturn } from '../dnd'
@@ -29,8 +30,8 @@ import { Highlight, SearchQuery } from '../util/search'
 import { Badge } from '@mui/material'
 
 
-const FileListListFolder = (props: {targetFolder: FileNode<FileInfoFolder>, onSelectFolder: (id: string)=>void}) => {
-  const { targetFolder, onSelectFolder } = props
+const FileListListFolder = (props: {selected: boolean, targetFolder: FileNode<FileInfoFolder>, onSelectFolder: (id: string)=>void}) => {
+  const { targetFolder, onSelectFolder, selected } = props
 
   const dispatch = useAppDispatch()
   
@@ -65,14 +66,14 @@ const FileListListFolder = (props: {targetFolder: FileNode<FileInfoFolder>, onSe
   )
 }
 
-const FileListListFile = (props: {targetFile: FileNode<FileInfoFile>, onSelectFile: (id: string)=>void, mark?: Highlight[]}) => {
-  const { targetFile, onSelectFile, mark } = props
+const FileListListFile = (props: {selected: boolean, targetFile: FileNode<FileInfoFile>, onSelectFile: (id: string)=>void, mark?: Highlight[]}) => {
+  const { targetFile, onSelectFile, mark , selected} = props
   const [{isDragging}, drag, dragPreview] = useDrag(() => genUseDragReturn(targetFile.id))
   const dispatch = useAppDispatch()
 
   const handleContextMenu: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.preventDefault()
-    dispatch(openContextmenu({anchor: {left: event.clientX, top: event.clientY}, menu: {type: 'filelistitemfile', targetFile}}))
+    dispatch(openContextmenu({anchor: {left: event.clientX, top: event.clientY}, menu: {type: 'filelistitemfile', targetFile, selected}}))
   }
 
   return (
@@ -83,15 +84,24 @@ const FileListListFile = (props: {targetFile: FileNode<FileInfoFile>, onSelectFi
           <ListItemAvatar>
             <Badge
               overlap="circular"
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'right'}}
-              invisible={!targetFile.tag.includes('bin')}
+              anchorOrigin={{ vertical: 'top', horizontal: 'left'}}
+              invisible={!selected}
               badgeContent={
-                <DeleteIcon />
+                <CheckCircleIcon color="info" />
               }
             >
-              <Avatar>
-                {targetFile.previewURL ? <PngIcon src={targetFile.previewURL} /> : <InsertDriveFileIcon />}
-              </Avatar>
+              <Badge
+                overlap="circular"
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right'}}
+                invisible={!targetFile.tag.includes('bin')}
+                badgeContent={
+                  <DeleteIcon />
+                }
+              >
+                <Avatar>
+                  {targetFile.previewURL ? <PngIcon src={targetFile.previewURL} /> : <InsertDriveFileIcon />}
+                </Avatar>
+              </Badge>
             </Badge>
           </ListItemAvatar>
           <ListItemText
@@ -107,31 +117,35 @@ const FileListListFile = (props: {targetFile: FileNode<FileInfoFile>, onSelectFi
 export const FileSimpleList = (props: ListProps & {nodeRef: ListProps['ref'],onSelectFolder: (id:string) => void, onSelectFile: (id: string) => void}) => {
   const { fileTable, activeFileGroup } = useAppSelector<FileState>(state => state.file)
   const { nodeRef, onSelectFile, onSelectFolder, ...listprops} = props
+  if(!activeFileGroup) return <></>
+
+  const selecting = new Set(activeFileGroup.selecting)
+
   return (
-      activeFileGroup
-      ? <List ref={nodeRef} {...listprops}>
-          {
-            activeFileGroup.type === 'search'
-              ? activeFileGroup.exfiles.map((x) => {
-                  const target = fileTable[x[0]]
-                  assertNonFileNodeDiff(target)
-                  if (target.type === 'folder') {
-                    return (<FileListListFolder key={target.id} targetFolder={target} onSelectFolder={onSelectFolder} />)
-                  } else {
-                    return (<FileListListFile key={target.id} targetFile={target} onSelectFile={onSelectFile} mark={x[1]} />)
-                  }
-                })
-              : activeFileGroup.files.map((x) => {
-                  const target = fileTable[x]
-                  assertNonFileNodeDiff(target)
-                  if (target.type === 'folder') {
-                    return (<FileListListFolder key={target.id} targetFolder={target} onSelectFolder={onSelectFolder} />)
-                  } else {
-                    return (<FileListListFile key={target.id} targetFile={target} onSelectFile={onSelectFile} />)
-                  }
-                })
-          }
-        </List>
-      : <></>
+    <List ref={nodeRef} {...listprops}>
+      {
+        activeFileGroup.type === 'search'
+          ? activeFileGroup.exfiles.map((x) => {
+              const target = fileTable[x[0]]
+              assertNonFileNodeDiff(target)
+              const selected = selecting.has(target.id)
+              if (target.type === 'folder') {
+                return (<FileListListFolder selected={selected} key={target.id} targetFolder={target} onSelectFolder={onSelectFolder} />)
+              } else {
+                return (<FileListListFile selected={selected} key={target.id} targetFile={target} onSelectFile={onSelectFile} mark={x[1]} />)
+              }
+            })
+          : activeFileGroup.files.map((x) => {
+              const target = fileTable[x]
+              assertNonFileNodeDiff(target)
+              const selected = selecting.has(target.id)
+              if (target.type === 'folder') {
+                return (<FileListListFolder selected={selected} key={target.id} targetFolder={target} onSelectFolder={onSelectFolder} />)
+              } else {
+                return (<FileListListFile selected={selected} key={target.id} targetFile={target} onSelectFile={onSelectFile} />)
+              }
+            })
+      }
+    </List>
   )
 }
