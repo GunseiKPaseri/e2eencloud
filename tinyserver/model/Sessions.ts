@@ -1,6 +1,18 @@
 import type { OakSessionStore } from '../deps.ts';
 import { Client, SessionData } from '../deps.ts';
 import client from '../dbclient.ts';
+
+interface ResultSelectIDDataFromSession {
+  id: string;
+  data: string;
+}
+
+interface ResultSelectIDDataUserIdFromSession {
+  id: string;
+  data: string;
+  user_id: number;
+}
+
 class SessionsStore implements OakSessionStore {
   db: Client;
   tableName: string;
@@ -81,16 +93,22 @@ class SessionsStore implements OakSessionStore {
   }
 
   async getSessionsByUserId(userId: number) {
-    const sessions: any[] = await this.db.query(`SELECT id, data FROM ${this.tableName} WHERE user_id = ?`, [
-      userId,
-    ]);
+    const sessions: ResultSelectIDDataFromSession[] = await this.db.query(
+      `SELECT id, data FROM ${this.tableName} WHERE user_id = ?`,
+      [
+        userId,
+      ],
+    );
     return sessions.map((x): { id: string; data: SessionData } => ({ id: x.id, data: JSON.parse(x.data) }));
   }
 
   async getSessionByUniqueId(id: string) {
-    const sessions: any[] = await this.db.query(`SELECT id, data, user_id FROM ${this.tableName} WHERE id = ?`, [
-      id,
-    ]);
+    const sessions: ResultSelectIDDataUserIdFromSession[] = await this.db.query(
+      `SELECT id, data, user_id FROM ${this.tableName} WHERE id = ?`,
+      [
+        id,
+      ],
+    );
     if (sessions.length !== 1) return null;
     const sessionData: SessionData = JSON.parse(sessions[0].data);
     if (sessions[0].user_id) sessionData.uid = sessions[0].user_id;

@@ -16,7 +16,7 @@ export class File {
   readonly created_by: User | number;
   constructor(file: {
     id: string;
-    encrypted_file_iv?: string;
+    encrypted_file_iv?: string | null;
     encrypted_file_key: string;
     encrypted_file_info: string;
     encrypted_file_info_iv: string;
@@ -24,7 +24,7 @@ export class File {
     created_by: User | number;
   }) {
     this.id = file.id;
-    this.encrypted_file_iv = file.encrypted_file_iv;
+    this.encrypted_file_iv = file.encrypted_file_iv ?? undefined;
     this.encrypted_file_info = file.encrypted_file_info;
     this.encrypted_file_info_iv = file.encrypted_file_info_iv;
     this.encrypted_file_key = file.encrypted_file_key;
@@ -75,7 +75,7 @@ export const addFile = async (params: {
     const patchUserResult = params.created_by.patchUsage((params.bin?.length ?? 0) + params.encrypted_file_info.length);
     if (patchUserResult === null) return null;
 
-    const result = await client.execute(
+    await client.execute(
       `INSERT INTO files(
         id,
         encrypted_file_iv,
@@ -109,8 +109,20 @@ export const getFileById = async (id: string) => {
   return new File(files[0]);
 };
 
+interface ResultSelectFromFile {
+  id: string;
+  encrypted_file_iv: string | null;
+  encrypted_file_key: string;
+  encrypted_file_info: string;
+  encrypted_file_info_iv: string;
+  size: number;
+  created_by: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export const getFileInfo = async (uid: number) => {
-  const files: any[] = await client.query(`SELECT * FROM files WHERE created_by = ?`, [uid]);
+  const files: ResultSelectFromFile[] = await client.query(`SELECT * FROM files WHERE created_by = ?`, [uid]);
   return files.map((x) => new File(x));
 };
 
