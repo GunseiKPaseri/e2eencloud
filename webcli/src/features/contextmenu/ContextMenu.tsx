@@ -32,7 +32,7 @@ const ContextMenu: React.FC = () => {
             const bintarget = fileState.fileTable[id]
             console.log(id, bintarget)
             if(bintarget.type === 'file' && !bintarget.tag.includes('bin')){
-              dispatch(createDiffAsync({ targetId: id, newTags: [...bintarget.tag, 'bin'] }))
+              dispatch(createDiffAsync({ targetId: id, newTags: {addtag: ['bin']} }))
             }
           }
           dispatch(closeContextmenu())
@@ -42,7 +42,7 @@ const ContextMenu: React.FC = () => {
             const bintarget = fileState.fileTable[id]
             console.log(id, bintarget)
             if(bintarget.type === 'file' && bintarget.tag.includes('bin')){
-              dispatch(createDiffAsync({ targetId: id, newTags: bintarget.tag.filter(x => x!=='bin') }))
+              dispatch(createDiffAsync({ targetId: id, newTags: {deltag: ['bin']}}))
             }
           }
           dispatch(closeContextmenu())

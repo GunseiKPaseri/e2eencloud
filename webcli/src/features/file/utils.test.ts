@@ -116,7 +116,7 @@ describe('#createDiff', () => {
         }
       ],
       [
-        createDiff({ targetId: 'b', newTags: ['あ', 'う'] }, fileTable),
+        createDiff({ targetId: 'b', newTags: ['あ', 'う', 'う'] }, fileTable),
         {
           type: 'diff',
           id: 'PRESET',
@@ -130,12 +130,40 @@ describe('#createDiff', () => {
             deltag: ['い']
           }
         }
+      ],
+      [
+        createDiff({ targetId: 'b', newTags: {addtag: ['え', 'お', 'お'], deltag: ['え']} }, fileTable),
+        {
+          type: 'diff',
+          id: 'PRESET',
+          name: 'd',
+          version: latestVersion,
+          createdAt: 0,
+          parentId: 'a',
+          prevId: 'd',
+          diff: {
+            addtag: ['お']
+          }
+        }
+      ],
+      [
+        createDiff({ targetId: 'b', newTags: {addtag: ['い'], deltag: ['い']} }, fileTable),
+        {
+          type: 'diff',
+          id: 'PRESET',
+          name: 'd',
+          version: latestVersion,
+          createdAt: 0,
+          parentId: 'a',
+          prevId: 'd',
+          diff: {}
+        }
       ]
     ]
     for (const set of testSet) {
       set[1].id = set[0].id
       set[1].createdAt = set[0].createdAt
-      expect(set[0]).toEqual(set[1])
+      expect(JSON.parse(JSON.stringify(set[0]))).toEqual(set[1])
     }
   })
 })

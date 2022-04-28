@@ -572,7 +572,7 @@ const checkRename = (newName: string, prevNode: FileNode<FileInfoFile | FileInfo
 /**
  * 差分情報を作成
  */
-export const createDiff = (props: {targetId: string, newName?: string, newTags?: string[], newParentId?:string}, fileTable: FileTable):FileInfoDiffFile => {
+export const createDiff = (props: {targetId: string, newName?: string, newTags?: string[] | {addtag?: string[], deltag?: string[]}, newParentId?:string}, fileTable: FileTable):FileInfoDiffFile => {
   const { targetId, newName, newTags, newParentId } = props
   const targetNode = fileTable[targetId]
   if (!targetNode) throw new Error('存在しないファイルです')
@@ -603,8 +603,20 @@ export const createDiff = (props: {targetId: string, newName?: string, newTags?:
   // tag変更
   if (targetNode.type === 'file' && newTags) {
     const oldTags = targetNode.tag
-    diff.deltag = oldTags.filter(x => !newTags.includes(x))
-    diff.addtag = newTags.filter(x => !oldTags.includes(x))
+    let deltag: string[] = []
+    let addtag: string[] = []
+    if(Array.isArray(newTags)){
+      const newTagSet = new Set(newTags)
+      deltag = oldTags.filter(x => !newTagSet.has(x))
+      addtag = [...newTagSet].filter(x => !oldTags.includes(x))
+    } else {
+      const newDeltag = new Set(newTags.deltag)
+      const newAddtag = new Set(newTags.addtag)
+      deltag = oldTags.filter(x => newDeltag.has(x) && !newAddtag.has(x))
+      addtag = [...newAddtag].filter(x => !oldTags.includes(x) && !newDeltag.has(x))
+    }
+    diff.deltag = deltag.length > 0 ? deltag : undefined
+    diff.addtag = addtag.length > 0 ? addtag : undefined
   }
 
   return {
