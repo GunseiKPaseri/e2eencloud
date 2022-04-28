@@ -34,13 +34,13 @@ $ deno test --allow-net --allow-read --allow-write
 ### migrate
 
 ```bash
-$ deno run -A --unstable https://deno.land/x/nessie/cli.ts migrate
+$ deno run -A --unstable https://deno.land/x/nessie@2.0.6/cli.ts migrate
 ...
 ```
 
 ### rollback
 
 ```bash
-$ deno run -A --unstable https://deno.land/x/nessie/cli.ts rollback
+$ deno run -A --unstable https://deno.land/x/nessie@2.0.6/cli.ts rollback
 ...
 ```

@@ -501,7 +501,7 @@ router.post('/files', async (ctx) => {
   if (x === null) {
     return ctx.response.status = Status.BadRequest;
   }
-  console.log(new Date(),'save ', x?.id);
+  console.log(new Date(), 'save ', x?.id);
 
   return ctx.response.status = Status.NoContent;
 });

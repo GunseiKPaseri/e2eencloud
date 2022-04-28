@@ -1,7 +1,7 @@
 import client from '../dbclient.ts';
 import { Query, v4, Where } from '../deps.ts';
 import { distDir, isDir } from '../util.ts';
-import { getUserById, User } from './Users.ts';
+import { User } from './Users.ts';
 
 const validateFileId = (x: string) => x.indexOf('-') === -1 && v4.validate(x.replace(/_/g, '-'));
 
