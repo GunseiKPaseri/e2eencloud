@@ -5,6 +5,14 @@ export {
 export { bold, yellow } from 'https://deno.land/std@0.136.0/fmt/colors.ts';
 export { v4 } from 'https://deno.land/std@0.136.0/uuid/mod.ts';
 
+// load dotenv
+import 'https://deno.land/std@0.136.0/dotenv/load.ts';
+export const DB_HOSTNAME = Deno.env.get('DB_HOSTNAME') ?? '__NOTFOUND__';
+export const DB_PORT = parseInt(Deno.env.get('DB_PORT') ?? '__NOTFOUND__');
+export const DB_NAME = Deno.env.get('DB_NAME') ?? '__NOTFOUND__';
+export const DB_USER = Deno.env.get('DB_USER') ?? '__NOTFOUND__';
+export const DB_PASS = Deno.env.get('DB_PASS') ?? '__NOTFOUND__';
+
 export { ClientMySQL } from 'https://deno.land/x/nessie@2.0.6/mod.ts';
 export type { NessieConfig } from 'https://deno.land/x/nessie@2.0.6/mod.ts';
 
@@ -19,6 +27,7 @@ export { oakCors } from 'https://deno.land/x/cors@v1.2.2/mod.ts';
 
 export { Client, configLogger } from 'https://deno.land/x/mysql@v2.10.2/mod.ts';
 export type { ClientConfig } from 'https://deno.land/x/mysql@v2.10.2/mod.ts';
+export { Query, Where } from 'https://deno.land/x/sql_builder@v1.9.1/mod.ts';
 
 // @deno-types="https://deno.land/x/otpauth@v7.1.2/dist/otpauth.d.ts"
 export * as OTPAuth from 'https://deno.land/x/otpauth@v7.1.2/dist/otpauth.esm.js';
@@ -26,5 +35,3 @@ export * as OTPAuth from 'https://deno.land/x/otpauth@v7.1.2/dist/otpauth.esm.js
 // @deno-types="https://cdn.skypack.dev/@types/ua-parser-js?dts"
 import uaparser from 'https://cdn.skypack.dev/ua-parser-js@1.0.2?dts';
 export { uaparser };
-
-export { Query, Where } from 'https://deno.land/x/sql_builder@v1.9.1/mod.ts';

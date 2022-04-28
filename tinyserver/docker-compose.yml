@@ -2,11 +2,15 @@ version: '3.7'
 services:
   db:
     image: mysql:8
-    ports:
-        - "3306:3306"    
+    container_name: db-container
     environment:
-      - MYSQL_ROOT_PASSWORD=Passw0rd
-      - MYSQL_DATABASE=e2ee
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASS}
+      - MYSQL_ROOT_PASSWORD=${DB_PASS}
+      - TZ=${TZ}
+    ports:
+        - "${DB_PORT}:3306"
     volumes:
       - db-volume:/var/lib/mysql
       - ./mysql/conf:/etc/mysql/conf.d

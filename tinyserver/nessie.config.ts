@@ -1,4 +1,4 @@
-import { ClientMySQL } from './deps.ts';
+import { ClientMySQL, DB_HOSTNAME, DB_NAME, DB_PASS, DB_PORT, DB_USER } from './deps.ts';
 import type { NessieConfig } from './deps.ts';
 
 /** Select one of the supported clients */
@@ -11,11 +11,11 @@ import type { NessieConfig } from './deps.ts';
 // });
 
 const client = new ClientMySQL({
-  hostname: 'localhost',
-  port: 3306,
-  username: 'root',
-  password: 'Passw0rd', // uncomment this line for <8
-  db: 'e2ee',
+  hostname: DB_HOSTNAME,
+  port: DB_PORT,
+  username: DB_USER,
+  password: DB_PASS,
+  db: DB_NAME,
 });
 
 // const client = new ClientSQLite("./sqlite.db");
