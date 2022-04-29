@@ -7,6 +7,7 @@ import { addFile, getFileById, getFileInfo } from '../model/Files.ts';
 import { uaparser } from '../deps.ts';
 import SessionsStore from '../model/Sessions.ts';
 import { deleteFiles } from '../model/Files.ts';
+import { bucket } from '../s3client.ts';
 
 const router = new Router({ prefix: '/api' });
 
@@ -522,7 +523,6 @@ router.post('/files/delete', async (ctx) => {
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
   const data: Partial<POSTdeletefilesJSON> = await body.value;
 
-  console.log(data);
   if (!(data.files instanceof Array)) return ctx.response.status = Status.BadRequest;
 
   const deletedTarget = data.files.filter((x) => typeof x === 'string');
@@ -541,6 +541,15 @@ router.get('/files/:fileid', async (ctx) => {
   ctx.response.status = Status.OK;
   ctx.response.body = fileinfo.toSendObj();
   ctx.response.type = 'json';
+});
+
+router.get('/files/:fileid/bin', async (ctx) => {
+  const result = await bucket.getObject(ctx.params.fileid);
+  if (!result) return ctx.response.status = Status.NotFound;
+
+  ctx.response.status = Status.OK;
+  ctx.response.body = result.body;
+  ctx.response.type = 'application/octet-stream';
 });
 
 export default router;

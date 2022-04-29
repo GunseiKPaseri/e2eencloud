@@ -7,13 +7,40 @@ services:
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASS}
-      - MYSQL_ROOT_PASSWORD=${DB_PASS}
+      - MYSQL_ROOT_PASSWORD=${L_DB_ROOT_PASS}
       - TZ=${TZ}
     ports:
         - "${DB_PORT}:3306"
     volumes:
       - db-volume:/var/lib/mysql
       - ./mysql/conf:/etc/mysql/conf.d
-      
+  minio:
+    image: 'minio/minio'
+    container_name: minio
+    environment:
+      - MINIO_ROOT_USER=${L_MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${L_MINIO_ROOT_PASSWORD}
+      - MINIO_ACCESS_KEY=${AWS_ACCESS_KEY_ID}
+      - MINIO_SECRET_KEY=${AWS_SECRET_ACCESS_KEY}
+    command: "server /data --console-address :9001"
+    volumes:
+      - minio-volume:/data
+    ports:
+      - "${L_MINIO_PORT}:9000"
+      - "${L_MINIO_CONSOLE_PORT}:9001" 
+  createbuckets:
+    image: minio/mc
+    container_name: minio-createbucketd
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc config host add myminio http://minio:9000 ${L_MINIO_ROOT_USER} ${L_MINIO_ROOT_PASSWORD}) do echo '...waiting...' && sleep 1; done;
+      /usr/bin/mc alias set myminio http://minio:9000 user password;
+      /usr/bin/mc mb myminio/${AWS_BUCKET} --region=${AWS_DEFAULT_REGION};
+      exit 0;
+      "
+
 volumes:
   db-volume:
+  minio-volume:

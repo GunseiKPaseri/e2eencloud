@@ -1,11 +1,10 @@
 import client from '../dbclient.ts';
 import { Query, v4, Where } from '../deps.ts';
-import { distDir, isDir } from '../util.ts';
+import { bucket } from '../s3client.ts';
 import { User } from './Users.ts';
 
 const validateFileId = (x: string) => x.indexOf('-') === -1 && v4.validate(x.replace(/_/g, '-'));
 
-const binDir = `${distDir}/bin`;
 export class File {
   readonly id: string;
   readonly encrypted_file_iv?: string;
@@ -33,13 +32,7 @@ export class File {
   }
 
   async saveFile(file: Uint8Array) {
-    if (!(await isDir(`${binDir}`))) {
-      await Deno.mkdir(`${binDir}`);
-    }
-
-    await Deno.writeFile(`${binDir}/${this.id}`, file, {
-      append: true,
-    });
+    await bucket.putObject(this.id, file);
   }
 
   toSendObj() {
@@ -157,8 +150,10 @@ export const deleteFiles = async (user: User, fileIDs: string[]) => {
   await Promise.all(
     files
       .map((id) =>
-        Deno.remove(`${binDir}/${id}`)
-          .catch(() => Promise.resolve())
+        bucket.deleteObject(id).catch(() => {
+          console.log(id, 'can\'t delete');
+          return Promise.resolve();
+        })
       ),
   );
 

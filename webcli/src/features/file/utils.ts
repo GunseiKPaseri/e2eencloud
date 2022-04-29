@@ -332,7 +332,7 @@ export const decryptoFileInfo = async (fileinforaw: getfileinfoJSONRow): Promise
  * 対象ファイルの生データを取得
  */
 export const getEncryptedFileRaw = async (fileId: string) => {
-  const encryptedFileRowDL = await axiosWithSession.get<{}, AxiosResponse<ArrayBuffer>>(`${appLocation}/bin/${fileId}`, { responseType: 'arraybuffer' })
+  const encryptedFileRowDL = await axiosWithSession.get<{}, AxiosResponse<ArrayBuffer>>(`${appLocation}/api/files/${fileId}/bin`, { responseType: 'arraybuffer' })
   return encryptedFileRowDL.data
 }
 
