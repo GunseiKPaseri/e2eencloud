@@ -42,45 +42,49 @@ const initialState: AuthState = {
 export const signupAsync = createAsyncThunk<{success: boolean}, UserForm>(
   'auth/signup',
   async (userinfo, { dispatch }) => {
-    // 128 bit MasterKey
-    const MasterKey = window.crypto.getRandomValues(new Uint8Array(AES_AUTH_KEY_LENGTH))
-    // 128 bit Client Random Value
-    const ClientRandomValue = window.crypto.getRandomValues(new Uint8Array(AES_AUTH_KEY_LENGTH))
-    // 256 bit Salt
-    const salt = createSalt(ClientRandomValue)
-    // 256bit Derived Key
-    const DerivedKey = await argon2encrypt(userinfo.password, salt)
-    // 128bit Derived Encryption Key & Derived Authentication Key
-    const DerivedEncryptionKey = await getAESCTRKey(DerivedKey.slice(0, AES_AUTH_KEY_LENGTH))
-    const DerivedAuthenticationKey = DerivedKey.slice(AES_AUTH_KEY_LENGTH, AES_AUTH_KEY_LENGTH * 2)
-    // 128bit Encrypted Master Key
-    const EncryptedMasterKey = await AESCTR(MasterKey, DerivedEncryptionKey)
-    const HashedAuthenticationKey = SHA256(DerivedAuthenticationKey)
-    console.log(MasterKey, DerivedEncryptionKey, EncryptedMasterKey)
+    try{
+      // 128 bit MasterKey
+      const MasterKey = window.crypto.getRandomValues(new Uint8Array(AES_AUTH_KEY_LENGTH))
+      // 128 bit Client Random Value
+      const ClientRandomValue = window.crypto.getRandomValues(new Uint8Array(AES_AUTH_KEY_LENGTH))
+      // 256 bit Salt
+      const salt = createSalt(ClientRandomValue)
+      // 256bit Derived Key
+      const DerivedKey = await argon2encrypt(userinfo.password, salt)
+      // 128bit Derived Encryption Key & Derived Authentication Key
+      const DerivedEncryptionKey = await getAESCTRKey(DerivedKey.slice(0, AES_AUTH_KEY_LENGTH))
+      const DerivedAuthenticationKey = DerivedKey.slice(AES_AUTH_KEY_LENGTH, AES_AUTH_KEY_LENGTH * 2)
+      // 128bit Encrypted Master Key
+      const EncryptedMasterKey = await AESCTR(MasterKey, DerivedEncryptionKey)
+      const HashedAuthenticationKey = SHA256(DerivedAuthenticationKey)
+      console.log(MasterKey, DerivedEncryptionKey, EncryptedMasterKey)
 
-    const sendData = {
-      email: userinfo.email,
-      clientRandomValueBase64: byteArray2base64(ClientRandomValue),
-      encryptedMasterKeyBase64: byteArray2base64(EncryptedMasterKey.encrypt),
-      encryptedMasterKeyIVBase64: byteArray2base64(EncryptedMasterKey.iv),
-      hashedAuthenticationKeyBase64: byteArray2base64(HashedAuthenticationKey)
+      const sendData = {
+        email: userinfo.email,
+        clientRandomValueBase64: byteArray2base64(ClientRandomValue),
+        encryptedMasterKeyBase64: byteArray2base64(EncryptedMasterKey.encrypt),
+        encryptedMasterKeyIVBase64: byteArray2base64(EncryptedMasterKey.iv),
+        hashedAuthenticationKeyBase64: byteArray2base64(HashedAuthenticationKey)
+      }
+      const result = await axiosWithSession.post<
+                              UserForm,
+                              AxiosResponse<{success: boolean}>
+                            >(
+                              `${appLocation}/api/signup`,
+                              sendData,
+                              {
+                                onUploadProgress: (progressEvent) => {
+                                  dispatch(setProgress(progress(0, 1, progressEvent.loaded / progressEvent.total)))
+                                }
+                              }
+                            )
+      dispatch(deleteProgress())
+      return { success: result.data.success ?? false }
+    } catch(e) {
+      console.log(e)
+      dispatch(deleteProgress())
+      return { success: false }
     }
-
-    const result = await axiosWithSession.post<
-                          UserForm,
-                          AxiosResponse<{success: boolean}>
-                        >(
-                          `${appLocation}/api/signup`,
-                          sendData,
-                          {
-                            onUploadProgress: (progressEvent) => {
-                              dispatch(setProgress(progress(0, 1, progressEvent.loaded / progressEvent.total)))
-                            }
-                          }
-                        )
-
-    dispatch(deleteProgress())
-    return { success: result.data.success ?? false }
   }
 )
 
@@ -143,7 +147,9 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
   async (userinfo, { dispatch }) => {
     const step = 4
     dispatch(setProgress(progress(0, step)))
-    const getSalt = await axiosWithSession.post<
+    let getSalt: AxiosResponse<{salt: string}>
+    try{
+      getSalt = await axiosWithSession.post<
                         {email: string},
                         AxiosResponse<{salt: string}>
                       >(
@@ -155,6 +161,11 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
                           }
                         }
                       )
+    } catch (e) {
+      dispatch(deleteProgress())
+      dispatch(enqueueSnackbar({message: 'サーバに接続できませんでした', options: {variant: 'error'}}))
+      throw e
+    }
 
     const salt = base642ByteArray(getSalt.data.salt)
 
@@ -167,7 +178,14 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
     const authenticationKeyBase64 = byteArray2base64(DerivedAuthenticationKey)
 
     // login
-    let result
+    let result: AxiosResponse<{
+                  encryptedMasterKeyBase64: string,
+                  encryptedMasterKeyIVBase64: string,
+                  useTwoFactorAuth: boolean,
+                  encryptedRSAPrivateKeyBase64?: string,
+                  encryptedRSAPrivateKeyIVBase64?: string,
+                  RSAPublicKeyBase64?: string,
+                }>
     try {
       result = await axiosWithSession.post<
         {email: string, authenticationKey: string, token: string},
