@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
 import Grid from '@mui/material/Grid'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
-import Alert from '@mui/lab/Alert'
+import Alert from '@mui/material/Alert'
 import { PasswordChanger } from './PasswordChanger'
 
 export const Login = () => {
