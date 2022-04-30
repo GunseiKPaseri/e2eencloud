@@ -18,7 +18,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'happy-dom',
-    setupFiles: './src/setup.ts',
+    setupFiles: './setup.ts',
     deps: {
       external: ['**\/dist\/**']
     }

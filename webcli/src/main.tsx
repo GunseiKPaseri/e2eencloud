@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
 import { store } from './app/store'
@@ -34,21 +34,25 @@ const ComposedProvider = composeComponents(
   (props) => <DndProvider {...props} backend={HTML5Backend} />,
 )
 
-ReactDOM.render(
-  <ComposedProvider>
-    <CssBaseline />
-    <Notifier />
-    <ContextMenuProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<App />} />
-          <Route path="/signup" element={<Signup />}/>
-          <Route path="/setup" element={<Setup />}/>
-          <Route path="/login" element={<Login />}/>
-          <Route path="/session" element={<SessionConfig />}/>
-        </Routes>
-      </BrowserRouter>
-    </ContextMenuProvider>
-  </ComposedProvider>,
-  document.getElementById('root')
-)
+const rootElement = document.getElementById('root')
+if(rootElement){
+  const root = createRoot(rootElement)
+  
+  root.render(
+    <ComposedProvider>
+      <CssBaseline />
+      <Notifier />
+      <ContextMenuProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<App />} />
+            <Route path="/signup" element={<Signup />}/>
+            <Route path="/setup" element={<Setup />}/>
+            <Route path="/login" element={<Login />}/>
+            <Route path="/session" element={<SessionConfig />}/>
+          </Routes>
+        </BrowserRouter>
+      </ContextMenuProvider>
+    </ComposedProvider>
+  )
+}
