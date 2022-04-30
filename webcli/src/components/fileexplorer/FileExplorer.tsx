@@ -12,7 +12,7 @@ import { StorageInfo } from '../../features/file/StorageInfo'
 
 export const FileExplorer = () => {
   const theme = useTheme()
-  return ( 
+  return (
     <div style={{
       display: 'grid',
       gridAutoFlow: 'column',
@@ -29,11 +29,11 @@ export const FileExplorer = () => {
         <TagButton tag='bin' />
         <Login />
       </Paper>
-      <Paper sx={{ overflowY: 'scroll', padding: 1}}>
+      <Paper sx={{ overflowY: 'scroll', padding: 1 }}>
         <AddFolder />
         <FileList />
       </Paper>
-      <Paper sx={{ overflowY: 'scroll', padding: 1}}>
+      <Paper sx={{ overflowY: 'scroll', padding: 1 }}>
         <Viewer />
         <DiffTree />
       </Paper>

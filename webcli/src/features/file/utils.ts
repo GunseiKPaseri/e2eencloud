@@ -11,11 +11,9 @@ import {
   FileInfoDiffFile,
   FileDifference,
   buildFileTableAsyncResult,
-  FileInfoNotFile,
-  ExpansionInfoImage
+  FileInfoNotFile
 } from './file.type'
 import {
-  assertFileNodeFile,
   assertFileNodeFolder,
   assertNonFileNodeDiff
 } from './filetypeAssert'
@@ -23,7 +21,7 @@ import {
 import { decryptByRSA, encryptByRSA } from '../../encrypt'
 import { assertArrayNumber } from '../../utils/assert'
 import { string2ByteArray, byteArray2base64, base642ByteArray, byteArray2string } from '../../utils/uint8'
-import { getAESGCMKey, AESGCM,  decryptAESGCM } from '../../utils/crypto'
+import { getAESGCMKey, AESGCM, decryptAESGCM } from '../../utils/crypto'
 import { axiosWithSession, appLocation } from '../componentutils'
 import FormData from 'form-data'
 import { AxiosResponse } from 'axios'
@@ -111,21 +109,21 @@ export const readfile = (x: File) => new Promise<ArrayBuffer>((resolve, reject) 
  */
 export const getFileHash = async (bin: ArrayBuffer) => {
   const hash = await crypto.subtle.digest('SHA-256', bin)
-  return { hashStr: Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join(''), bin: bin }
+  return { hashStr: Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join(''), bin }
 }
 
 /**
  * 容量値を分かりやすい値に落としこむ
  * @param byte 数値(byte)
- * @returns 
+ * @returns
  */
-export const explainByte = (byte: number)=>{
-  if(byte < 1000) return `${byte}B`
-  const kb = Math.ceil(byte/100)/10
-  if(kb < 1000) return `${kb}KB`
-  const mb = Math.ceil(kb/100)/10
-  if(mb < 1000) return `${mb}MB`
-  const gb = Math.ceil(mb/100)/10
+export const explainByte = (byte: number) => {
+  if (byte < 1000) return `${byte}B`
+  const kb = Math.ceil(byte / 100) / 10
+  if (kb < 1000) return `${kb}KB`
+  const mb = Math.ceil(kb / 100) / 10
+  if (mb < 1000) return `${mb}MB`
+  const gb = Math.ceil(mb / 100) / 10
   return `${gb}GB`
 }
 
@@ -133,11 +131,11 @@ export const explainByte = (byte: number)=>{
  * ファイル拡張情報の生成
  */
 export const genExpansion = async (fileInfo: FileInfoFile, blobURL: string): Promise<{expansion: FileInfoFile['expansion'], expansionLocal: FileNode<FileInfoFile>['expansion']} | undefined> => {
-  if(fileInfo.mime.indexOf("image/") === 0 ){
+  if (fileInfo.mime.indexOf('image/') === 0) {
     // image
     const img = await (new BrowserJimpImgClass()).init(blobURL)
     console.log(img)
-    const imghashs = {ahashObj: ahash(img.clone()), dhashObj: dhash(img.clone()), phashObj: phash(img.clone())}
+    const imghashs = { ahashObj: ahash(img.clone()), dhashObj: dhash(img.clone()), phashObj: phash(img.clone()) }
     const expansion: FileInfoFile['expansion'] = {
       type: 'img',
       width: img.raw().bitmap.width,
@@ -147,7 +145,7 @@ export const genExpansion = async (fileInfo: FileInfoFile, blobURL: string): Pro
       phash: imghashs.phashObj.hex
     }
     return {
-      expansion: expansion,
+      expansion,
       expansionLocal: {
         ...expansion,
         ahashObj: imghashs.ahashObj.byte,
@@ -158,7 +156,6 @@ export const genExpansion = async (fileInfo: FileInfoFile, blobURL: string): Pro
   }
   return undefined
 }
-
 
 /**
  * ローカル用に取得する情報
@@ -176,17 +173,17 @@ export const expandServerData = async (fileObj: FileNode<FileInfoFile>, blobURL:
     const MAX_SIZE = 150
     previewURL = await getPreview(blobURL, MAX_SIZE, 'image/png')
     const expansionOrigin = fileObj.origin.fileInfo.expansion
-    if(!expansion && expansionOrigin && expansionOrigin.type === 'img'){
+    if (!expansion && expansionOrigin && expansionOrigin.type === 'img') {
       expansion = {
         ...expansionOrigin,
         ahashObj: (new ImgHash('ahash', expansionOrigin.ahash, 'hex')).byte,
         dhashObj: (new ImgHash('dhash', expansionOrigin.dhash, 'hex')).byte,
-        phashObj: (new ImgHash('phash', expansionOrigin.phash, 'hex')).byte,
+        phashObj: (new ImgHash('phash', expansionOrigin.phash, 'hex')).byte
       }
     }
   }
 
-  return {blobURL, previewURL, expansion}
+  return { blobURL, previewURL, expansion }
 }
 
 /**
@@ -221,89 +218,89 @@ export const submitFileInfoWithEncryption = async <T extends FileInfoNotFile>(fi
 /**
  * ファイルをenryptoしてサーバに保存
  */
-export const submitFileWithEncryption
-  = async (x: File, name: string, parentId: string | null):
+export const submitFileWithEncryption =
+  async (x: File, name: string, parentId: string | null):
     Promise<{server: FileCryptoInfoWithBin, local: ExpandServerDataResult}> => {
   // gen unique name
-  const uuid = genUUID()
+    const uuid = genUUID()
 
-  // blob
-  const blobURL = URL.createObjectURL(x)
+    // blob
+    const blobURL = URL.createObjectURL(x)
 
-  const fileKeyRaw = crypto.getRandomValues(new Uint8Array(AES_FILE_KEY_LENGTH))
-  // readfile,getHash | getKey
-  const fileKeyAsync = getAESGCMKey(fileKeyRaw)
-  const { bin, hashStr } = await readfile(x).then((bin) => getFileHash(bin))
+    const fileKeyRaw = crypto.getRandomValues(new Uint8Array(AES_FILE_KEY_LENGTH))
+    // readfile,getHash | getKey
+    const fileKeyAsync = getAESGCMKey(fileKeyRaw)
+    const { bin, hashStr } = await readfile(x).then((bin) => getFileHash(bin))
 
-  const fileInfo:FileInfoFile = {
-    id: uuid,
-    name: name,
-    createdAt: Date.now(),
-    version: latestVersion,
-    sha256: hashStr,
-    mime: x.type,
-    type: 'file',
-    size: bin.byteLength,
-    parentId: parentId ?? 'root',
-    tag: []
+    const fileInfo:FileInfoFile = {
+      id: uuid,
+      name,
+      createdAt: Date.now(),
+      version: latestVersion,
+      sha256: hashStr,
+      mime: x.type,
+      type: 'file',
+      size: bin.byteLength,
+      parentId: parentId ?? 'root',
+      tag: []
+    }
+    const expansion = await genExpansion(fileInfo, blobURL)
+    console.log(fileInfo, expansion)
+    if (expansion) fileInfo.expansion = expansion.expansion
+
+    const fileKey = await fileKeyAsync
+    // encrypt
+    const [
+      encryptedFile,
+      encryptedFileInfo,
+      encryptedFileKey
+    ] = await Promise.all([
+      AESGCM(bin, fileKey),
+      AESGCM(string2ByteArray(JSON.stringify(fileInfo)), fileKey),
+      encryptByRSA(fileKeyRaw)
+    ])
+    const encryptedFileBlob = new Blob([encryptedFile.encrypt], { type: 'application/octet-binary' })
+
+    const encryptedFileIV = encryptedFile.iv
+    const encryptedFileIVBase64 = byteArray2base64(encryptedFile.iv)
+    console.log(encryptedFile, encryptedFile.iv, fileKey)
+
+    const encryptedFileInfoBase64 = byteArray2base64(new Uint8Array(encryptedFileInfo.encrypt))
+    const encryptedFileInfoIVBase64 = byteArray2base64(encryptedFileInfo.iv)
+
+    const encryptedFileKeyBase64 = byteArray2base64(new Uint8Array(encryptedFileKey))
+
+    // send encryptedfile, send encryptedfileinfo, encryptedfilekey iv,iv
+    const fileSendData = new FormData()
+    fileSendData.append('id', uuid)
+    fileSendData.append('encryptedFile', encryptedFileBlob)
+    fileSendData.append('encryptedFileIVBase64', encryptedFileIVBase64)
+    fileSendData.append('encryptedFileInfoBase64', encryptedFileInfoBase64)
+    fileSendData.append('encryptedFileInfoIVBase64', encryptedFileInfoIVBase64)
+    fileSendData.append('encryptedFileKeyBase64', encryptedFileKeyBase64)
+    await axiosWithSession.post(`${appLocation}/api/files`, fileSendData)
+
+    // memory file to indexedDB
+    const encryptedFileIVBin = Array.from(encryptedFileIV)
+    const fileKeyBin = Array.from(fileKeyRaw)
+
+    const fileObj: FileNode<FileInfoFile> = {
+      ...fileInfo,
+      expansion: undefined,
+      history: [fileInfo.id],
+      origin: {
+        fileInfo,
+        fileKeyBin,
+        encryptedFileIVBin,
+        originalVersion: fileInfo.version
+      },
+      blobURL
+    }
+
+    const local = await expandServerData(fileObj, blobURL, { expansion: expansion?.expansionLocal })
+
+    return { server: { encryptedFileIVBin, fileKeyBin, fileInfo, originalVersion: fileInfo.version }, local }
   }
-  const expansion = await genExpansion(fileInfo, blobURL)
-  console.log(fileInfo, expansion)
-  if(expansion) fileInfo.expansion = expansion.expansion
-
-  const fileKey = await fileKeyAsync
-  // encrypt
-  const [
-    encryptedFile,
-    encryptedFileInfo,
-    encryptedFileKey
-  ] = await Promise.all([
-    AESGCM(bin, fileKey),
-    AESGCM(string2ByteArray(JSON.stringify(fileInfo)), fileKey),
-    encryptByRSA(fileKeyRaw)
-  ])
-  const encryptedFileBlob = new Blob([encryptedFile.encrypt], { type: 'application/octet-binary' })
-
-  const encryptedFileIV = encryptedFile.iv
-  const encryptedFileIVBase64 = byteArray2base64(encryptedFile.iv)
-  console.log(encryptedFile, encryptedFile.iv, fileKey)
-
-  const encryptedFileInfoBase64 = byteArray2base64(new Uint8Array(encryptedFileInfo.encrypt))
-  const encryptedFileInfoIVBase64 = byteArray2base64(encryptedFileInfo.iv)
-
-  const encryptedFileKeyBase64 = byteArray2base64(new Uint8Array(encryptedFileKey))
-
-  // send encryptedfile, send encryptedfileinfo, encryptedfilekey iv,iv
-  const fileSendData = new FormData()
-  fileSendData.append('id', uuid)
-  fileSendData.append('encryptedFile', encryptedFileBlob)
-  fileSendData.append('encryptedFileIVBase64', encryptedFileIVBase64)
-  fileSendData.append('encryptedFileInfoBase64', encryptedFileInfoBase64)
-  fileSendData.append('encryptedFileInfoIVBase64', encryptedFileInfoIVBase64)
-  fileSendData.append('encryptedFileKeyBase64', encryptedFileKeyBase64)
-  await axiosWithSession.post(`${appLocation}/api/files`, fileSendData)
-
-  // memory file to indexedDB
-  const encryptedFileIVBin = Array.from(encryptedFileIV)
-  const fileKeyBin = Array.from(fileKeyRaw)
-
-  const fileObj: FileNode<FileInfoFile> = {
-    ...fileInfo,
-    expansion: undefined,
-    history: [fileInfo.id],
-    origin: {
-      fileInfo,
-      fileKeyBin,
-      encryptedFileIVBin,
-      originalVersion: fileInfo.version
-    },
-    blobURL
-  }
-
-  const local = await expandServerData(fileObj, blobURL, {expansion: expansion?.expansionLocal})
-
-  return {server: { encryptedFileIVBin, fileKeyBin, fileInfo, originalVersion: fileInfo.version }, local}
-}
 
 /**
  * 取得したファイル情報を複合
@@ -317,7 +314,7 @@ export const decryptoFileInfo = async (fileinforaw: getfileinfoJSONRow): Promise
 
   const fileKey = await getAESGCMKey(fileKeyRaw)
   const fileKeyBin = Array.from(fileKeyRaw)
-  const {fileInfo, originalVersion} = fileInfoMigrate(byteArray2string(await decryptAESGCM(encryptedFileInfo, fileKey, encryptedFileInfoIV)))
+  const { fileInfo, originalVersion } = fileInfoMigrate(byteArray2string(await decryptAESGCM(encryptedFileInfo, fileKey, encryptedFileInfoIV)))
   if (fileInfo.type === 'file') {
     if (!fileinforaw.encryptedFileIVBase64) throw new Error('取得情報が矛盾しています。fileにも関わらずencryptedFileIVが含まれていません')
     const encryptedFileIV = base642ByteArray(fileinforaw.encryptedFileIVBase64)
@@ -340,7 +337,7 @@ export const getEncryptedFileRaw = async (fileId: string) => {
  * 差分をオブジェクトに反映したものを返す
  */
 export const integrateDifference = <T extends FileNode<FileInfoFile | FileInfoFolder>>(diffs: string[], fileTable: FileTable, targetFile: T):T => {
-  const copiedTargetFile = {...targetFile}
+  const copiedTargetFile = { ...targetFile }
   const tagset = new Set<string>((copiedTargetFile.type === 'file' ? copiedTargetFile.tag : []))
   for (const c of diffs) {
     const nextFile = fileTable[c]
@@ -407,7 +404,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):buildFileTable
       files: [],
       parentId: null,
       history: [],
-      origin:{
+      origin: {
         fileInfo: {
           type: 'folder',
           createdAt: 0,
@@ -417,7 +414,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):buildFileTable
           parentId: null
         },
         fileKeyBin: [],
-        originalVersion: latestVersion,
+        originalVersion: latestVersion
       }
     }
   }
@@ -431,7 +428,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):buildFileTable
           parentId: fileInfo.parentId ?? 'root',
           history: [],
           files: [],
-          origin: {fileInfo, fileKeyBin, originalVersion}
+          origin: { fileInfo, fileKeyBin, originalVersion }
         }
         break
       case 'file': {
@@ -444,7 +441,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):buildFileTable
           expansion: undefined,
           parentId: fileInfo.parentId ?? 'root',
           history: [],
-          origin: {fileInfo, fileKeyBin, encryptedFileIVBin, originalVersion}
+          origin: { fileInfo, fileKeyBin, encryptedFileIVBin, originalVersion }
         }
         break
       }
@@ -452,7 +449,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):buildFileTable
         fileTable[fileInfo.id] = {
           ...fileInfo,
           parentId: fileInfo.parentId ?? 'root',
-          origin: {fileInfo, fileKeyBin, originalVersion},
+          origin: { fileInfo, fileKeyBin, originalVersion }
         }
     }
     if (fileInfo.prevId) nextTable[fileInfo.prevId] = fileInfo.id
@@ -581,16 +578,16 @@ export const createDiff = (props: {targetId: string, newName?: string, newTags?:
   const diff: FileDifference = {}
 
   // 親の変更
-  if(newParentId){
-    if(newParentId === targetNode.parentId) throw new Error('親が同じです')
+  if (newParentId) {
+    if (newParentId === targetNode.parentId) throw new Error('親が同じです')
     const newParent = fileTable[newParentId]
-    if(!newParent) throw new Error('存在しない親です')
-    if(newParent.type !== 'folder') throw new Error('親に出来ない要素です')
-    if(targetNode.type === 'folder'){
+    if (!newParent) throw new Error('存在しない親です')
+    if (newParent.type !== 'folder') throw new Error('親に出来ない要素です')
+    if (targetNode.type === 'folder') {
       const parents = getFileParentsList(newParentId, fileTable)
       console.log(targetNode, newParentId, parents)
       // 新しく追加する場所が今の要素の子要素であってはならない（フォルダの場合）
-      if(parents.includes(targetNode.id)) throw new Error('子要素に移動することは出来ません')
+      if (parents.includes(targetNode.id)) throw new Error('子要素に移動することは出来ません')
     }
   }
   const parent = newParentId ?? targetNode.parentId ?? 'root'
@@ -605,7 +602,7 @@ export const createDiff = (props: {targetId: string, newName?: string, newTags?:
     const oldTags = targetNode.tag
     let deltag: string[] = []
     let addtag: string[] = []
-    if(Array.isArray(newTags)){
+    if (Array.isArray(newTags)) {
       const newTagSet = new Set(newTags)
       deltag = oldTags.filter(x => !newTagSet.has(x))
       addtag = [...newTagSet].filter(x => !oldTags.includes(x))
@@ -621,7 +618,7 @@ export const createDiff = (props: {targetId: string, newName?: string, newTags?:
 
   return {
     id: genUUID(),
-    name: name,
+    name,
     createdAt: Date.now(),
     version: latestVersion,
     type: 'diff',
@@ -635,18 +632,18 @@ export const createDiff = (props: {targetId: string, newName?: string, newTags?:
  * 対象を削除した時同時に削除するノードの一覧を取得
  */
 export const getAllDependentFile = (target: FileNode<FileInfo>, fileTable: FileTable) => {
-  let result = [target.id]
-  if(target.type === 'folder'){
+  const result = [target.id]
+  if (target.type === 'folder') {
     // 以下に存在する全てのファイル
     target.files.map((x) => {
       return getAllDependentFile(fileTable[x], fileTable)
     }).flat()
   }
   // 変更履歴全て
-  for(let t=target.prevId; t; t=fileTable[t].prevId){
+  for (let t = target.prevId; t; t = fileTable[t].prevId) {
     result.push(t)
   }
-  for(let t=target.nextId; t; t=fileTable[t].nextId){
+  for (let t = target.nextId; t; t = fileTable[t].nextId) {
     result.push(t)
   }
   return result
@@ -659,26 +656,26 @@ export const listUpSimilarFile = (target: FileNode<FileInfoFile>, fileTable: Fil
   const similarFiles: [number, string][] = []
   console.log(target.expansion)
   const imgHashMode = target.expansion && target.expansion.type === 'img' ? new ImgHash('phash', target.expansion.phashObj) : null
-  for(const x of Object.values(fileTable)){
+  for (const x of Object.values(fileTable)) {
     // 探索対象は相異なる最新のファイル実体のみ
     console.log(x)
-    if(x.type !== 'file' || x.history.length === 0 || x.id === target.id) continue;
+    if (x.type !== 'file' || x.history.length === 0 || x.id === target.id) continue
     console.log(x.id, imgHashMode)
-    if(imgHashMode){
-      if(x.expansion && x.expansion.type === 'img'){
+    if (imgHashMode) {
+      if (x.expansion && x.expansion.type === 'img') {
         // imghash
         const score = imgHashMode.degreeOfSimilarity(new ImgHash('phash', x.expansion.phashObj))
         console.log(score)
-        if( score > 0.6){
+        if (score > 0.6) {
           similarFiles.push([score, x.id])
         }
       }
-    }else{
+    } else {
       // hash
-      if(target.sha256 === x.sha256) similarFiles.push([1, x.id])
+      if (target.sha256 === x.sha256) similarFiles.push([1, x.id])
     }
   }
-  similarFiles.sort((a,b) => b[0] - a[0])
+  similarFiles.sort((a, b) => b[0] - a[0])
   console.log(similarFiles)
   return similarFiles.slice(0, num).map(x => x[1])
 }

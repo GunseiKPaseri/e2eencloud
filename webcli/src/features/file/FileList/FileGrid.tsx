@@ -1,19 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react'
 
-import { SxProps, Theme } from '@mui/material/styles';
+import { SxProps, Theme } from '@mui/material/styles'
 
 import { DataGrid, GridRenderCellParams, GridRowsProp, GridSelectionModel, jaJP } from '@mui/x-data-grid'
 
-import { useAppDispatch, useAppSelector } from '../../../app/hooks';
-import { FileState } from '../fileSlice';
-import { assertNonFileNodeDiff } from '../filetypeAssert';
-import { TagButton } from '../TagButton';
-import { changeSelection } from '../fileSlice';
-import { assertArrayString } from '../../../utils/assert';
-
+import { useAppDispatch, useAppSelector } from '../../../app/hooks'
+import { FileState, changeSelection } from '../fileSlice'
+import { assertNonFileNodeDiff } from '../filetypeAssert'
+import { TagButton } from '../TagButton'
+import { assertArrayString } from '../../../utils/assert'
 
 export const FileGrid = (props: {sx?: SxProps<Theme>, nodeRef?: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>['ref'], onSelectFolder: (id:string) => void, onSelectFile: (id: string) => void}) => {
-  const {sx, nodeRef, onSelectFile, onSelectFolder} = props
+  const { sx, nodeRef } = props
   const { fileTable, activeFileGroup } = useAppSelector<FileState>(state => state.file)
   const dispatch = useAppDispatch()
   const selectionModel: GridSelectionModel = activeFileGroup?.selecting ?? []
@@ -28,7 +26,7 @@ export const FileGrid = (props: {sx?: SxProps<Theme>, nodeRef?: React.DetailedHT
           selectionModel={selectionModel}
           onSelectionModelChange={(newSelectionModel) => {
             assertArrayString(newSelectionModel)
-            dispatch(changeSelection({selection: newSelectionModel}))
+            dispatch(changeSelection({ selection: newSelectionModel }))
           }}
           rows={
             activeFileGroup.files.map<GridRowsProp[number]>(x => {

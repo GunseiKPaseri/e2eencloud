@@ -1,49 +1,40 @@
-import { createAction, createSlice } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit'
 
 import {
   FileTable,
   tagGroup,
   dirGroup,
-  FileNode,
-  FileInfo,
   searchGroup,
-  StorageInfo,
+  StorageInfo
 } from './file.type'
 
-import { getFileParentsList } from './utils'
 import { logoutAsync } from '../auth/authSlice'
 
 import {
   buildFileTableAsync,
   afterBuildFileTableAsyncFullfilled
 } from './thunk/buildFileTableAsync'
-export { buildFileTableAsync }
 import {
   createDiffAsync,
   afterCreateDiffAsyncFullfilled
 } from './thunk/createDiffAsync'
-export { createDiffAsync }
 import {
   fileuploadAsync,
   afterFileuploadAsyncFullfilled
 } from './thunk/fileuploadAsync'
-export { fileuploadAsync }
 import {
   createFolderAsync,
   afterCreateFolderAsyncFullfilled
 } from './thunk/createFolderAsync'
-export { createFolderAsync }
 import {
   filedownloadAsync,
   afterFiledownloadAsyncFullfilled
 } from './thunk/filedownloadAsync'
-export { filedownloadAsync }
 
 import {
   fileDeleteAsync,
   afterFileDeleteAsyncFullfilled
 } from './thunk/fileDeleteAsync'
-export { fileDeleteAsync }
 
 import {
   changeActiveFileGroupDir,
@@ -56,9 +47,15 @@ import {
   afterChangeSelection
 } from './thunk/changeActiveFileGroup'
 import { afterUpdateUsageAsyncFullfilled, updateUsageAsync } from './thunk/updateUsageAsync'
+export { buildFileTableAsync }
+export { createDiffAsync }
+export { fileuploadAsync }
+export { createFolderAsync }
+export { filedownloadAsync }
+export { fileDeleteAsync }
 export {
   changeActiveFileGroupDir,
-  changeActiveFileGroupTag, 
+  changeActiveFileGroupTag,
   changeActiveFileGroupSearch,
   changeSelection
 }
@@ -87,7 +84,7 @@ const initialState: FileState = {
   activeFileGroup: null,
   storage: {
     usage: 0,
-    capacity: 0,
+    capacity: 0
   }
 }
 
@@ -108,10 +105,10 @@ export const fileSlice = createSlice({
       .addCase(changeActiveFileGroupTag, afterChangeActiveFileGroupTag)
       .addCase(changeActiveFileGroupSearch, afterChangeActiveFileGroupSearch)
       .addCase(changeSelection, afterChangeSelection)
-      .addCase(logoutAsync.pending, (state, action) =>{
+      .addCase(logoutAsync.pending, (state, action) => {
         // ログアウト時削除
-        Object.values(state.fileTable).map((row) =>{
-          if(row.type === 'file' && row.blobURL){
+        Object.values(state.fileTable).forEach((row) => {
+          if (row.type === 'file' && row.blobURL) {
             URL.revokeObjectURL(row.blobURL)
           }
         })
@@ -121,7 +118,7 @@ export const fileSlice = createSlice({
         state.tagTree = {}
         state.activeFile = null
         state.activeFileGroup = null
-        state.storage = {usage: 0, capacity: 0}
+        state.storage = { usage: 0, capacity: 0 }
       })
   }
 })

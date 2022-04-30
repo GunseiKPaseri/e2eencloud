@@ -1,6 +1,6 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit"
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { WritableDraft } from 'immer/dist/internal'
-import { FileInfoFile, FileNode } from "../file/file.type";
+import { FileInfoFile, FileNode } from '../file/file.type'
 
 export type ContextMenuState = {
   menuState: {
@@ -14,14 +14,14 @@ export type ContextMenuState = {
   } | null
 };
 
-const initialState: ContextMenuState = {menuState: null}
+const initialState: ContextMenuState = { menuState: null }
 
 export const contextmenuSlice = createSlice({
   name: 'contextmenu',
   initialState,
   reducers: {
     openContextmenu: (state: WritableDraft<ContextMenuState>, action: PayloadAction<Exclude<ContextMenuState['menuState'], null>>) => {
-      state.menuState = {...action.payload}
+      state.menuState = { ...action.payload }
       console.log(state)
     },
     closeContextmenu: (state: WritableDraft<ContextMenuState>) => {

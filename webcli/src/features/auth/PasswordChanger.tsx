@@ -1,17 +1,16 @@
-import Box from "@mui/material/Box"
-import Step from "@mui/material/Step"
-import StepLabel from "@mui/material/StepLabel"
-import Stepper from "@mui/material/Stepper"
-import TextField from "@mui/material/TextField"
-import Typography from "@mui/material/Typography"
-import { useState } from "react"
-import { useAppDispatch, useAppSelector } from "../../app/hooks"
-import zxcvbn from "zxcvbn"
-import PasswordChecker from "./PasswordChecker"
-import { PasswordField } from "./PasswordField"
-import Grid from "@mui/material/Grid"
-import Button from "@mui/material/Button"
-import { changePasswordAsync } from "./authSlice"
+import Box from '@mui/material/Box'
+import Step from '@mui/material/Step'
+import StepLabel from '@mui/material/StepLabel'
+import Stepper from '@mui/material/Stepper'
+import Typography from '@mui/material/Typography'
+import { useState } from 'react'
+import { useAppDispatch, useAppSelector } from '../../app/hooks'
+import zxcvbn from 'zxcvbn'
+import PasswordChecker from './PasswordChecker'
+import { PasswordField } from './PasswordField'
+import Grid from '@mui/material/Grid'
+import Button from '@mui/material/Button'
+import { changePasswordAsync } from './authSlice'
 
 const steps = [
   '新規パスワード入力',
@@ -20,18 +19,18 @@ const steps = [
 
 export const PasswordChanger = () => {
   const [stepState, setStepState] = useState<0|1>(0)
-  const [password, setPassword] = useState<string>("")
-  const [confirmPassword, setConfirmPassword] = useState<string>("")
+  const [password, setPassword] = useState<string>('')
+  const [confirmPassword, setConfirmPassword] = useState<string>('')
   const dispatch = useAppDispatch()
 
   const email = useAppSelector(state => state.auth.user?.email) ?? ''
   // 現在のパスワードをスコア化
   const res = zxcvbn(password, [email])
   const passwordScore:0|1|2|3|4 = password.length < 8 ? 0 : res.score
-  
+
   const changePass:React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault()
-    dispatch(changePasswordAsync({newpassword: password}))
+    dispatch(changePasswordAsync({ newpassword: password }))
   }
 
   const confirm = () => {
@@ -109,5 +108,5 @@ export const PasswordChanger = () => {
         }
     </Box>
   </Box>
-)
+  )
 }

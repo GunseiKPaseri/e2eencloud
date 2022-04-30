@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { FileState } from './fileSlice'
+import { FileState, changeActiveFileGroupDir, filedownloadAsync } from './fileSlice'
 
 import StyledTreeItem from '../../components/customed/StyledTreeItem'
 
@@ -17,7 +17,6 @@ import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 import { useDrop } from 'react-dnd'
 
 import { genUseDropReturn } from './dnd'
-import { changeActiveFileGroupDir, filedownloadAsync } from './fileSlice'
 
 const FileTreeItemFile = ({ target, onDoubleClick }: {target: FileNode<FileInfoFile>, onDoubleClick: React.MouseEventHandler<HTMLLIElement>}) => {
   return (
@@ -43,14 +42,14 @@ const FileTreeItemFolder = ({
 }) => {
   const dispatch = useAppDispatch()
 
-  const [{ canDrop, isOver }, drop] = useDrop(() => genUseDropReturn(target.id , dispatch), [target.id])
+  const [{ canDrop, isOver }, drop] = useDrop(() => genUseDropReturn(target.id, dispatch), [target.id])
 
   const customStyle = useCallback<((theme: Theme) => SystemStyleObject<Theme>)>((theme) => ({
     boxSizing: 'border-box',
     border: 3,
     borderStyle: 'dashed',
     transitionDuration: '0.2s',
-    ...(isOver && canDrop ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' }),
+    ...(isOver && canDrop ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' })
   }), [isOver, canDrop])
 
   return (

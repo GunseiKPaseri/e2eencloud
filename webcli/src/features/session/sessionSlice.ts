@@ -63,10 +63,10 @@ export const sessionSlice = createSlice({
         const target = state.sessions.find((x) => x.id === action.meta.arg.id)
         if (target) target.clientName = action.meta.arg.newClientName
       })
-      .addCase(logoutAsync.pending, (state, action) =>{
+      .addCase(logoutAsync.pending, (state, action) => {
         // ログアウト時削除
         // initialState
-        state.sessions = [],
+        state.sessions = []
         state.loading = false
       })
   }

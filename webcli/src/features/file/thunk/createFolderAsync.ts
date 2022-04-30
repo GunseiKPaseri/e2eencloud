@@ -1,8 +1,7 @@
 import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit'
-import { 
+import {
   FileTable,
   FileInfoFolder,
-  FileCryptoInfoWithoutBin,
   FileCryptoInfo
 } from '../file.type'
 import { RootState } from '../../../app/store'
@@ -48,7 +47,7 @@ export const createFolderAsync = createAsyncThunk<createFolderAsyncResult, {name
     }
     const addFolder = await submitFileInfoWithEncryption(fileInfo)
 
-    dispatch(enqueueSnackbar({message: `${changedFolderName}ディレクトリを作成しました`, options: {variant: 'success'}}))
+    dispatch(enqueueSnackbar({ message: `${changedFolderName}ディレクトリを作成しました`, options: { variant: 'success' } }))
     // storage更新
     dispatch(updateUsageAsync())
 

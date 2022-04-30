@@ -7,10 +7,7 @@ import {
   isDiffExt
 } from './utils'
 import {
-  FileCryptoInfoWithBin,
-  FileDifference,
   FileInfoDiffFile,
-  FileInfoFolder,
   FileTable
 } from './file.type'
 import {
@@ -81,12 +78,12 @@ describe('#createDiff', () => {
           originalVersion: latestVersion
         }
       },
-      a: { ...a.fileInfo, type: 'folder', name: 'a', prevId: undefined, files: ['b', 'c'], parentId: 'root', history: ['a'], origin: {fileInfo: a.fileInfo, fileKeyBin: [], originalVersion: latestVersion} },
+      a: { ...a.fileInfo, type: 'folder', name: 'a', prevId: undefined, files: ['b', 'c'], parentId: 'root', history: ['a'], origin: { fileInfo: a.fileInfo, fileKeyBin: [], originalVersion: latestVersion } },
       // file
-      b: { ...b.fileInfo, type: 'file', name: 'd', expansion: undefined, prevId: undefined, parentId: 'a', nextId: 'd', history: ['d', 'b'], tag: ['あ', 'い'], origin: {fileInfo: b.fileInfo, fileKeyBin: [], encryptedFileIVBin: [], originalVersion: latestVersion}},
-      c: { ...c.fileInfo, type: 'file', name: 'c', expansion: undefined, prevId: undefined, parentId: 'a', history: ['i'], tag: ['う', 'え'], origin: {fileInfo: c.fileInfo, fileKeyBin: [], encryptedFileIVBin: [], originalVersion: latestVersion}},
+      b: { ...b.fileInfo, type: 'file', name: 'd', expansion: undefined, prevId: undefined, parentId: 'a', nextId: 'd', history: ['d', 'b'], tag: ['あ', 'い'], origin: { fileInfo: b.fileInfo, fileKeyBin: [], encryptedFileIVBin: [], originalVersion: latestVersion } },
+      c: { ...c.fileInfo, type: 'file', name: 'c', expansion: undefined, prevId: undefined, parentId: 'a', history: ['i'], tag: ['う', 'え'], origin: { fileInfo: c.fileInfo, fileKeyBin: [], encryptedFileIVBin: [], originalVersion: latestVersion } },
       // diff
-      d: { ...d.fileInfo, type: 'diff', name: 'd', prevId: 'b', parentId: 'a', diff: { addtag: ['い'] }, origin: {fileInfo: d.fileInfo, fileKeyBin: [], originalVersion: latestVersion} }
+      d: { ...d.fileInfo, type: 'diff', name: 'd', prevId: 'b', parentId: 'a', diff: { addtag: ['い'] }, origin: { fileInfo: d.fileInfo, fileKeyBin: [], originalVersion: latestVersion } }
     }
     const testSet:[FileInfoDiffFile, FileInfoDiffFile][] = [
       [
@@ -132,7 +129,7 @@ describe('#createDiff', () => {
         }
       ],
       [
-        createDiff({ targetId: 'b', newTags: {addtag: ['え', 'お', 'お'], deltag: ['え']} }, fileTable),
+        createDiff({ targetId: 'b', newTags: { addtag: ['え', 'お', 'お'], deltag: ['え'] } }, fileTable),
         {
           type: 'diff',
           id: 'PRESET',
@@ -147,7 +144,7 @@ describe('#createDiff', () => {
         }
       ],
       [
-        createDiff({ targetId: 'b', newTags: {addtag: ['い'], deltag: ['い']} }, fileTable),
+        createDiff({ targetId: 'b', newTags: { addtag: ['い'], deltag: ['い'] } }, fileTable),
         {
           type: 'diff',
           id: 'PRESET',
@@ -192,7 +189,7 @@ describe('#buildFileTable', () => {
         files: ['a'],
         parentId: null,
         history: [],
-        origin:{
+        origin: {
           fileKeyBin: [],
           fileInfo: {
             type: 'folder',
@@ -205,20 +202,20 @@ describe('#buildFileTable', () => {
           originalVersion: latestVersion
         }
       },
-      a: { ...a.fileInfo, type: 'folder', name: 'j', prevId: undefined, nextId: 'j', files: ['f', 'h', 'i'], parentId: 'root', history: ['j', 'a'], origin: {fileInfo: a.fileInfo, fileKeyBin: [], originalVersion: latestVersion} },
+      a: { ...a.fileInfo, type: 'folder', name: 'j', prevId: undefined, nextId: 'j', files: ['f', 'h', 'i'], parentId: 'root', history: ['j', 'a'], origin: { fileInfo: a.fileInfo, fileKeyBin: [], originalVersion: latestVersion } },
       // file(dirobj) 最新の情報が反映される
-      f: { ...f.fileInfo, type: 'file', name: 'k', expansion: undefined, prevId: 'e', nextId: 'g', parentId: 'a', history: ['k', 'g', 'f', 'e', 'd', 'c', 'b'], tag: ['う', 'え', 'い'], origin: {fileInfo: f.fileInfo, fileKeyBin: [], encryptedFileIVBin: [], originalVersion: latestVersion} },
-      h: { ...h.fileInfo, type: 'file', name: 'h', expansion: undefined, prevId: undefined, parentId: 'a', history: ['h'], tag: ['い'], origin: {fileInfo: h.fileInfo, fileKeyBin: [], encryptedFileIVBin: [], originalVersion: latestVersion} },
-      i: { ...i.fileInfo, type: 'file', name: 'i', expansion: undefined, prevId: undefined, parentId: 'a', history: ['i'], tag: [], origin: {fileInfo: i.fileInfo, fileKeyBin: [], encryptedFileIVBin: [], originalVersion: latestVersion} },
+      f: { ...f.fileInfo, type: 'file', name: 'k', expansion: undefined, prevId: 'e', nextId: 'g', parentId: 'a', history: ['k', 'g', 'f', 'e', 'd', 'c', 'b'], tag: ['う', 'え', 'い'], origin: { fileInfo: f.fileInfo, fileKeyBin: [], encryptedFileIVBin: [], originalVersion: latestVersion } },
+      h: { ...h.fileInfo, type: 'file', name: 'h', expansion: undefined, prevId: undefined, parentId: 'a', history: ['h'], tag: ['い'], origin: { fileInfo: h.fileInfo, fileKeyBin: [], encryptedFileIVBin: [], originalVersion: latestVersion } },
+      i: { ...i.fileInfo, type: 'file', name: 'i', expansion: undefined, prevId: undefined, parentId: 'a', history: ['i'], tag: [], origin: { fileInfo: i.fileInfo, fileKeyBin: [], encryptedFileIVBin: [], originalVersion: latestVersion } },
       // file
-      b: { ...b.fileInfo, type: 'file', name: 'b', expansion: undefined, prevId: undefined, nextId: 'c', parentId: 'a', history: [], tag: [], origin: {fileInfo: b.fileInfo, fileKeyBin: [], encryptedFileIVBin: [], originalVersion: latestVersion} },
-      e: { ...e.fileInfo, type: 'file', name: 'e', expansion: undefined, prevId: 'd', nextId: 'f', parentId: 'a', history: [], tag: ['あ', 'い'], origin: {fileInfo: e.fileInfo, fileKeyBin: [], encryptedFileIVBin: [], originalVersion: latestVersion} },
+      b: { ...b.fileInfo, type: 'file', name: 'b', expansion: undefined, prevId: undefined, nextId: 'c', parentId: 'a', history: [], tag: [], origin: { fileInfo: b.fileInfo, fileKeyBin: [], encryptedFileIVBin: [], originalVersion: latestVersion } },
+      e: { ...e.fileInfo, type: 'file', name: 'e', expansion: undefined, prevId: 'd', nextId: 'f', parentId: 'a', history: [], tag: ['あ', 'い'], origin: { fileInfo: e.fileInfo, fileKeyBin: [], encryptedFileIVBin: [], originalVersion: latestVersion } },
       // diff
-      c: { ...c.fileInfo, type: 'diff', name: 'c', prevId: 'b', nextId: 'd', parentId: 'a', diff: { addtag: ['あ'] }, origin: {fileInfo: c.fileInfo, fileKeyBin: [], originalVersion: latestVersion} },
-      d: { ...d.fileInfo, type: 'diff', name: 'd', prevId: 'c', nextId: 'e', parentId: 'a', diff: { addtag: ['い'] }, origin: {fileInfo: d.fileInfo, fileKeyBin: [], originalVersion: latestVersion} },
-      g: { ...g.fileInfo, type: 'diff', name: 'g', prevId: 'f', nextId: 'k', parentId: 'a', diff: { addtag: ['い'] }, origin: {fileInfo: g.fileInfo, fileKeyBin: [], originalVersion: latestVersion} },
-      j: { ...j.fileInfo, type: 'diff', name: 'j', prevId: 'a', parentId: 'root', diff: {}, origin: {fileInfo: j.fileInfo, fileKeyBin: [], originalVersion: latestVersion} },
-      k: { ...k.fileInfo, type: 'diff', name: 'k', prevId: 'g', parentId: 'a', diff: { addtag: ['う', 'え'], deltag: ['あ'] }, origin: {fileInfo: k.fileInfo, fileKeyBin: [], originalVersion: latestVersion} }
+      c: { ...c.fileInfo, type: 'diff', name: 'c', prevId: 'b', nextId: 'd', parentId: 'a', diff: { addtag: ['あ'] }, origin: { fileInfo: c.fileInfo, fileKeyBin: [], originalVersion: latestVersion } },
+      d: { ...d.fileInfo, type: 'diff', name: 'd', prevId: 'c', nextId: 'e', parentId: 'a', diff: { addtag: ['い'] }, origin: { fileInfo: d.fileInfo, fileKeyBin: [], originalVersion: latestVersion } },
+      g: { ...g.fileInfo, type: 'diff', name: 'g', prevId: 'f', nextId: 'k', parentId: 'a', diff: { addtag: ['い'] }, origin: { fileInfo: g.fileInfo, fileKeyBin: [], originalVersion: latestVersion } },
+      j: { ...j.fileInfo, type: 'diff', name: 'j', prevId: 'a', parentId: 'root', diff: {}, origin: { fileInfo: j.fileInfo, fileKeyBin: [], originalVersion: latestVersion } },
+      k: { ...k.fileInfo, type: 'diff', name: 'k', prevId: 'g', parentId: 'a', diff: { addtag: ['う', 'え'], deltag: ['あ'] }, origin: { fileInfo: k.fileInfo, fileKeyBin: [], originalVersion: latestVersion } }
     }
     const result = buildFileTable([a, b, c, d, e, f, g, h, i, j, k])
     // setな要素はソートしておく
@@ -251,7 +248,6 @@ describe('#buildFileTable', () => {
   })
 })
 
-
 describe('#getAllDependentFile', () => {
   test('削除対象を正しく取得できる', () => {
     const a = genFileInfoFolder({ id: 'a', parentId: null })
@@ -265,9 +261,9 @@ describe('#getAllDependentFile', () => {
     const i = genFileInfoFile({ id: 'i', parentId: 'a', tag: [] })
     const j = genFileInfoDiff({ id: 'j', parentId: null, prevId: 'a', diff: {} })
     const k = genFileInfoDiff({ id: 'k', parentId: 'a', prevId: 'g', diff: { deltag: ['あ'], addtag: ['う', 'え'] } })
-    const {fileTable} = buildFileTable([a, b, c, d, e, f, g, h, i, j, k])
+    const { fileTable } = buildFileTable([a, b, c, d, e, f, g, h, i, j, k])
 
-    const result = getAllDependentFile(fileTable['f'], fileTable).sort()
+    const result = getAllDependentFile(fileTable.f, fileTable).sort()
 
     const expectArray = ['b', 'c', 'd', 'e', 'f', 'g', 'k']
 

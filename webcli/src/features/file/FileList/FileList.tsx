@@ -3,30 +3,29 @@ import ListItemText from '@mui/material/ListItemText'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import ToggleButton from '@mui/material/ToggleButton'
 
-
 import FolderIcon from '@mui/icons-material/Folder'
 import LocalOfferIcon from '@mui/icons-material/LocalOffer'
 import ViewListIcon from '@mui/icons-material/ViewList'
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline'
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon from '@mui/icons-material/Delete'
 
 import { useAppDispatch, useAppSelector } from '../../../app/hooks'
-import { changeActiveFileGroupDir, createDiffAsync, fileDeleteAsync, filedownloadAsync, FileState, fileuploadAsync } from '../fileSlice'
-import { assertFileNodeFolder, assertNonFileNodeDiff } from '../filetypeAssert'
-import { FileNode, FileInfoFile, FileInfoFolder } from '../file.type'
+import { changeActiveFileGroupDir, fileDeleteAsync, filedownloadAsync, FileState } from '../fileSlice'
+import { assertFileNodeFolder } from '../filetypeAssert'
+import { FileNode, FileInfoFolder } from '../file.type'
 import { TagButton } from '../TagButton'
 import Breadcrumbs from '@mui/material/Breadcrumbs'
 import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '../../../components/customed/StyledBreadcrumb'
 import MenuItem from '@mui/material/MenuItem'
 import ListItemIcon from '@mui/material/ListItemIcon'
-import ViewComfyIcon from '@mui/icons-material/ViewComfy';
+import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
 import { Theme } from '@mui/material/styles'
 import { SystemStyleObject } from '@mui/system/styleFunctionSx'
 
-import { useDrop, useDrag, DragPreviewImage } from 'react-dnd'
-import { genUseDropReturn, genUseDragReturn } from '../dnd'
+import { useDrop } from 'react-dnd'
+import { genUseDropReturn } from '../dnd'
 import { FileSimpleList } from './FileSimpleList'
 import { FileGrid } from './FileGrid'
 import { FileImgList } from './FileImgList'
@@ -36,7 +35,7 @@ const DIRBreadcrumb = (props: {target: FileNode<FileInfoFolder>}) => {
   const { target } = props
   const dispatch = useAppDispatch()
   const fileTable = useAppSelector((state) => state.file.fileTable)
-  
+
   const [{ canDrop, isOver }, drop] = useDrop(
     () =>
       genUseDropReturn(
@@ -50,7 +49,7 @@ const DIRBreadcrumb = (props: {target: FileNode<FileInfoFolder>}) => {
     border: 3,
     borderStyle: 'dashed',
     transitionDuration: '0.2s',
-    ...(isOver && canDrop ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' }),
+    ...(isOver && canDrop ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' })
   }), [isOver, canDrop])
 
   return (
@@ -104,12 +103,12 @@ export const FileList = () => {
     border: 3,
     borderStyle: 'dashed',
     transitionDuration: '0.2s',
-    ...(isOver && canDrop ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' }),
+    ...(isOver && canDrop ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' })
   }), [isOver, canDrop])
 
   const handleDeleteClick = () => {
-    if(!activeFileGroup) return
-    dispatch(fileDeleteAsync({targetIds: activeFileGroup.files}))
+    if (!activeFileGroup) return
+    dispatch(fileDeleteAsync({ targetIds: activeFileGroup.files }))
   }
 
   return (
@@ -122,7 +121,8 @@ export const FileList = () => {
       <SearchInput />
       {
         activeFileGroup && activeFileGroup.type === 'tag' && activeFileGroup.tagName === 'bin'
-        ? <Tooltip title='完全削除'><IconButton onClick={handleDeleteClick}><DeleteIcon /></IconButton></Tooltip> : <></>
+          ? <Tooltip title='完全削除'><IconButton onClick={handleDeleteClick}><DeleteIcon /></IconButton></Tooltip>
+          : <></>
       }
       {
         activeFileGroup

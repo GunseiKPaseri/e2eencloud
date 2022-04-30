@@ -19,45 +19,45 @@ import { updateUsageAsync } from './updateUsageAsync'
  * ファイルを完全削除するReduxThunk
  */
 export const fileDeleteAsync = createAsyncThunk<buildFileTableAsyncResult, {targetIds: string[]}, {state: RootState}>(
-    'file/filedelete',
-    async ({ targetIds }, { getState, dispatch }) => {
-      const step = 1
-      const state = getState()
-      dispatch(setProgress(progress(0, step)))
-  
-      const fileTable = state.file.fileTable
-  
-      const deleteItems = targetIds.map(targetId => getAllDependentFile(fileTable[targetId], fileTable)).flat()
+  'file/filedelete',
+  async ({ targetIds }, { getState, dispatch }) => {
+    const step = 1
+    const state = getState()
+    dispatch(setProgress(progress(0, step)))
 
-      // get all file info
-      const rowfiles = await axiosWithSession.post<{files: string[]}, AxiosResponse<{deleted: string[]}>>(
+    const fileTable = state.file.fileTable
+
+    const deleteItems = targetIds.map(targetId => getAllDependentFile(fileTable[targetId], fileTable)).flat()
+
+    // get all file info
+    const rowfiles = await axiosWithSession.post<{files: string[]}, AxiosResponse<{deleted: string[]}>>(
         `${appLocation}/api/files/delete`,
-        {files: deleteItems},
+        { files: deleteItems },
         {
           onDownloadProgress: (progressEvent) => {
             dispatch(setProgress(progress(0, step, progressEvent.loaded / progressEvent.total)))
           }
         }
-      )
+    )
 
-      console.log(rowfiles)
-      const deleteItemsSet = new Set(rowfiles.data.deleted)
-      const result = buildFileTable(
-        Object
-          .values(fileTable)
-          .filter(x => !deleteItemsSet.has(x.id) && x.id !== 'root')
-          .map(x => ({...x.origin}))
-      )
-      dispatch(deleteProgress())
-      const itemsize = targetIds.filter(id => deleteItemsSet.has(id)).length
-      dispatch(enqueueSnackbar({message: `${itemsize}件のファイルを完全に削除しました`, options: {variant: 'success'}}))
+    console.log(rowfiles)
+    const deleteItemsSet = new Set(rowfiles.data.deleted)
+    const result = buildFileTable(
+      Object
+        .values(fileTable)
+        .filter(x => !deleteItemsSet.has(x.id) && x.id !== 'root')
+        .map(x => ({ ...x.origin }))
+    )
+    dispatch(deleteProgress())
+    const itemsize = targetIds.filter(id => deleteItemsSet.has(id)).length
+    dispatch(enqueueSnackbar({ message: `${itemsize}件のファイルを完全に削除しました`, options: { variant: 'success' } }))
 
-      // storage更新
-      dispatch(updateUsageAsync())
-  
-      return result
-    }
-  )
+    // storage更新
+    dispatch(updateUsageAsync())
+
+    return result
+  }
+)
 
 export const afterFileDeleteAsyncFullfilled:
   CaseReducer<FileState, PayloadAction<buildFileTableAsyncResult>> = (state, action) => {

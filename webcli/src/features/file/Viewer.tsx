@@ -1,10 +1,9 @@
 import Box from '@mui/material/Box'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { FileInfo, FileInfoFile, FileNode } from './file.type'
-import { changeActiveFileGroupDir, filedownloadAsync, FileState } from './fileSlice'
+import { filedownloadAsync, FileState } from './fileSlice'
 import { Renamer } from './Renamer'
 import { TagSetter } from './TagSetter'
-import DownloadIcon from '@mui/icons-material/Download';
+import DownloadIcon from '@mui/icons-material/Download'
 import IconButton from '@mui/material/IconButton'
 import Link from '@mui/material/Link'
 import Tooltip from '@mui/material/Tooltip'
@@ -34,27 +33,27 @@ export const Viewer = () => {
             </Tooltip>
           </Box>
           {activeNode.mime.indexOf('image/') === 0 ? <img width='100%' src={activeFile.link} /> : <></>}
-          
+
           <ImageList rowHeight={164} sx={{
-            gridAutoFlow: "column",
-            gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr)) !important",
-            gridAutoColumns: "minmax(160px, 1fr)"
+            gridAutoFlow: 'column',
+            gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr)) !important',
+            gridAutoColumns: 'minmax(160px, 1fr)'
           }}>
             {activeFile.similarFiles.map((x) => {
               const target = fileState.fileTable[x]
               assertFileNodeFile(target)
-              
+
               return (
                 <ImageListItem
                   key={x}
                   onDoubleClick={(e) => dispatch(filedownloadAsync({ fileId: target.id }))}
                   onContextMenu={(event) => {
                     event.preventDefault()
-                    if(target.type !== 'file') return
-                    dispatch(openContextmenu({anchor: {left: event.clientX, top: event.clientY}, menu: {type: 'filelistitemfile', targetFile: target, isDir: false}}))
+                    if (target.type !== 'file') return
+                    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitemfile', targetFile: target, isDir: false } }))
                   }}
                 >
-                {/*<ImageListItem key={x} onDoubleClick={target.type === 'file' ? (e) => props.onSelectFile(target.id) : (e) => props.onSelectFolder(target.id)}>*/}
+                {/* <ImageListItem key={x} onDoubleClick={target.type === 'file' ? (e) => props.onSelectFile(target.id) : (e) => props.onSelectFolder(target.id)}> */}
                   {
                     target.type === 'file' && target.mime.indexOf('image/') === 0 && target.blobURL
                       ? <img
@@ -68,9 +67,9 @@ export const Viewer = () => {
                     position="top"
                     title={target.name}
                     sx={{
-                      background: 
+                      background:
                         'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
-                        'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+                        'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)'
                     }} />
                 </ImageListItem>
               )

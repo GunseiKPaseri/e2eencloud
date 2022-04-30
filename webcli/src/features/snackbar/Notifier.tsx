@@ -22,11 +22,11 @@ export const Notifier = () => {
 
   useEffect(() => {
     notifications.forEach(({ message, options }) => {
-      if(options.dismissed){
+      if (options.dismissed) {
         closeSnackbar(options.key)
-        return;
+        return
       }
-      if (displayed.includes(options.key)) return;
+      if (displayed.includes(options.key)) return
       enqueueSnackbar(message, {
         ...options,
         onExited: (e, myKey) => {
@@ -36,8 +36,6 @@ export const Notifier = () => {
       })
       storeDisplayed(options.key)
     })
-
   }, [notifications, closeSnackbar, enqueueSnackbar, dispatch, displayed])
   return null
 }
-

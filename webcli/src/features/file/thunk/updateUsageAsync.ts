@@ -24,5 +24,5 @@ export const updateUsageAsync = createAsyncThunk<StorageInfo>(
 export const afterUpdateUsageAsyncFullfilled:
   CaseReducer<FileState, PayloadAction<StorageInfo>> = (state, action) => {
   // 生成したファイルツリーをstateに反映
-  state.storage = action.payload
-}
+    state.storage = action.payload
+  }

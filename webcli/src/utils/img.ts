@@ -13,22 +13,22 @@ export const loadImage = (src: string) => {
 
 /**
  * 画像を縮小してbase64を出力
- * @param x 
+ * @param x
  */
-export const getPreview = async (src: string, mas_size: number, mime: string) => {
+export const getPreview = async (src: string, maxSize: number, mime: string) => {
   const img = await loadImage(src)
   const w = img.width
   const h = img.height
   const [resizedWidth, resizedHeight] = (
-    w > mas_size || h > mas_size
-      ? (w > h ? [mas_size, mas_size * h / w] : [mas_size * w / h, mas_size])
+    w > maxSize || h > maxSize
+      ? (w > h ? [maxSize, maxSize * h / w] : [maxSize * w / h, maxSize])
       : [w, h]
   )
   const canvas = document.createElement('canvas')
   canvas.width = resizedWidth
   canvas.height = resizedHeight
   const ctx = canvas.getContext('2d')
-  if(ctx === null) throw new Error('You can\'t use canvas') 
-  ctx.drawImage(img, 0,0, resizedWidth, resizedHeight)
+  if (ctx === null) throw new Error('You can\'t use canvas')
+  ctx.drawImage(img, 0, 0, resizedWidth, resizedHeight)
   return canvas.toDataURL(mime)
 }

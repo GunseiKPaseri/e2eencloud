@@ -1,16 +1,16 @@
 
 /**
  * 要素がstring[]であると確信
- * @param x 
+ * @param x
  */
 export const assertArrayString:
 (x: unknown) => asserts x is string[] =
 (x) => {
   if (!Array.isArray(x)) {
-   throw new Error('This is not Array!!')
+    throw new Error('This is not Array!!')
   }
   if (!x.every(x => typeof x === 'string')) {
-   throw new Error('This is not string[]')
+    throw new Error('This is not string[]')
   }
 }
 
@@ -21,10 +21,10 @@ export const assertArrayNumber:
   (x: unknown) => asserts x is number[] =
   (x) => {
     if (!Array.isArray(x)) {
-     throw new Error('This is not Array!!')
+      throw new Error('This is not Array!!')
     }
     if (!x.every(x => typeof x === 'number')) {
-     throw new Error('This is not number[]')
+      throw new Error('This is not number[]')
     }
   }
 

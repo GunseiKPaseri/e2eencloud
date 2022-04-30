@@ -76,11 +76,11 @@ export type OldFileInfo = FileInfo
 
 /**
  * FileInfoのversionを202204081414まで上げる
- * @param x 
- * @returns 
+ * @param x
+ * @returns
  */
 export const upFile =
   (x: OldFileInfo, blob?: {blob: Blob, beforeVersion: OldFileInfo['version']}):
     {fileInfo: FileInfo, originalVersion: OldFileInfo['version']} => {
-  return {fileInfo: x, originalVersion: x.version}
-}
+    return { fileInfo: x, originalVersion: x.version }
+  }

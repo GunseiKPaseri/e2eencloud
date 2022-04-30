@@ -23,7 +23,7 @@ export const createDiffExpression = (before: FileInfo, after: FileInfo):JSX.Elem
     result.push(<React.Fragment key='0'>{`ファイル名を"${after.name}"に変更`}</React.Fragment>)
   }
   if (before.parentId !== after.parentId) {
-    result.push(<React.Fragment key='1'>{`ディレクトリを移動`}</React.Fragment>)
+    result.push(<React.Fragment key='1'>{'ディレクトリを移動'}</React.Fragment>)
   }
   if (after.type === 'diff') {
     if (after.diff.addtag && after.diff.addtag.length > 0) {

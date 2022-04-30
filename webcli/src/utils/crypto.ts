@@ -6,7 +6,6 @@ import { AES_AUTH_KEY_LENGTH, ARGON2_ITERATIONS, ARGON2_MEMORYSISE, ARGON2_PARAL
 
 import { string2ByteArray, byteArray2base64, base642ByteArray, hex2bytearray } from './uint8'
 
-
 type SupportArray = Uint8Array | ArrayBuffer | Int8Array | Int16Array | Int32Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView
 
 // AES-CTR

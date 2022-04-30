@@ -3,10 +3,10 @@ import Chip from '@mui/material/Chip'
 import { useAppDispatch } from '../../app/hooks'
 import { changeActiveFileGroupTag } from './fileSlice'
 
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon from '@mui/icons-material/Delete'
 
 const TAGICON: Record<string, {icon: JSX.Element, text: string}| undefined> = {
-  bin: {icon: <DeleteIcon />, text: 'ゴミ箱'}
+  bin: { icon: <DeleteIcon />, text: 'ゴミ箱' }
 }
 
 export const TagButton = (props: {tag: string}) => {
@@ -15,9 +15,9 @@ export const TagButton = (props: {tag: string}) => {
     dispatch(changeActiveFileGroupTag({ tag: props.tag }))
   }
   const extag = TAGICON[props.tag]
-  if(extag){
+  if (extag) {
     return (<Chip sx={{ marginRight: 1 }} label={extag.text} icon={extag.icon} variant='outlined' onClick={handleSelectTag} />)
-  }else{
+  } else {
     return (<Chip sx={{ marginRight: 1 }} label={props.tag} variant='outlined' onClick={handleSelectTag} />)
   }
 }

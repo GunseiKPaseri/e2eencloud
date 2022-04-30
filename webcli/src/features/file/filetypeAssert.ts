@@ -3,7 +3,7 @@ import {
   FileInfoFolder,
   FileInfo,
   FileNode,
-  FileInfoDiffFile,
+  FileInfoDiffFile
 } from './file.type'
 import { WritableDraft } from 'immer/dist/internal'
 
@@ -26,9 +26,9 @@ export const assertNonFileNodeDiff:
 export const assertFileNodeFolder:
 (fileNode:FileNode<FileInfo>) => asserts fileNode is FileNode<FileInfoFolder> =
 (fileNode) => {
-   if (fileNode.type !== 'folder') {
-     throw new Error('This is not Folder Object!!')
-   }
+  if (fileNode.type !== 'folder') {
+    throw new Error('This is not Folder Object!!')
+  }
 }
 
 /**
@@ -54,7 +54,7 @@ export const assertFileNodeFileORUndefined:
     throw new Error(`${fileNode} is not File Object and undefined!!`)
   }
 }
- 
+
 /**
  * 要素がWritableDraft<FFileNode<FileInfoDiffFile>>で無いと確信
  * @param fileNode WritableDraft<FileNode<FileInfo>>

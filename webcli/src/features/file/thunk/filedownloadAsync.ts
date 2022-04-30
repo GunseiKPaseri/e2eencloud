@@ -41,7 +41,7 @@ export const filedownloadAsync = createAsyncThunk<filedownloadAsyncResult, {file
 
       if (hashStr !== fileObj.sha256) throw new Error('hashが異なります')
       url = URL.createObjectURL(new Blob([filebin], { type: fileObj.mime }))
-      dispatch(enqueueSnackbar({message: `${fileObj.name}を複号しました`, options: {variant: 'success'}}))
+      dispatch(enqueueSnackbar({ message: `${fileObj.name}を複号しました`, options: { variant: 'success' } }))
     }
 
     const local = await expandServerData(fileObj, url)
@@ -57,8 +57,8 @@ export const afterFiledownloadAsyncFullfilled:
     const { fileId, local } = action.payload
     const target = state.fileTable[fileId]
     assertFileNodeFile(target)
-    const nextFileNode = {...target,expansion: local.expansion, blobURL: local.blobURL}
-    if(local.previewURL) nextFileNode.previewURL = local.previewURL
+    const nextFileNode = { ...target, expansion: local.expansion, blobURL: local.blobURL }
+    if (local.previewURL) nextFileNode.previewURL = local.previewURL
 
     const newFileTable = { ...state.fileTable, [fileId]: nextFileNode }
 
@@ -66,7 +66,7 @@ export const afterFiledownloadAsyncFullfilled:
 
     state.activeFile = {
       link: local.blobURL,
-      fileId: fileId,
+      fileId,
       similarFiles: listUpSimilarFile(nextFileNode, newFileTable)
     }
   }

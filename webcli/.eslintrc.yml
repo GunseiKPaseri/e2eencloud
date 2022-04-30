@@ -11,13 +11,18 @@ parserOptions:
     jsx: true
   ecmaVersion: 12
   sourceType: module
+settings:
+  react:
+    version: "18.1.0"
+  jest:
+    version: 26
 plugins:
   - react
   - '@typescript-eslint'
   - jest
 globals:
-  - JSX: true
-  - React: true
+  React: true
+  JSX: true
 rules:
   import/no-default-export: "off"
   no-use-before-define: "off"

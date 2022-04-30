@@ -42,7 +42,7 @@ const initialState: AuthState = {
 export const signupAsync = createAsyncThunk<{success: boolean}, UserForm>(
   'auth/signup',
   async (userinfo, { dispatch }) => {
-    try{
+    try {
       // 128 bit MasterKey
       const MasterKey = window.crypto.getRandomValues(new Uint8Array(AES_AUTH_KEY_LENGTH))
       // 128 bit Client Random Value
@@ -80,7 +80,7 @@ export const signupAsync = createAsyncThunk<{success: boolean}, UserForm>(
                             )
       dispatch(deleteProgress())
       return { success: result.data.success ?? false }
-    } catch(e) {
+    } catch (e) {
       console.log(e)
       dispatch(deleteProgress())
       return { success: false }
@@ -148,7 +148,7 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
     const step = 4
     dispatch(setProgress(progress(0, step)))
     let getSalt: AxiosResponse<{salt: string}>
-    try{
+    try {
       getSalt = await axiosWithSession.post<
                         {email: string},
                         AxiosResponse<{salt: string}>
@@ -163,7 +163,7 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
                       )
     } catch (e) {
       dispatch(deleteProgress())
-      dispatch(enqueueSnackbar({message: 'サーバに接続できませんでした', options: {variant: 'error'}}))
+      dispatch(enqueueSnackbar({ message: 'サーバに接続できませんでした', options: { variant: 'error' } }))
       throw e
     }
 
@@ -209,7 +209,7 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
       console.log(result.data)
     } catch (e) {
       dispatch(deleteProgress())
-      dispatch(enqueueSnackbar({message: 'ログインに失敗しました', options: {variant: 'error'}}))
+      dispatch(enqueueSnackbar({ message: 'ログインに失敗しました', options: { variant: 'error' } }))
       throw e
     }
     const EncryptedMasterKey = base642ByteArray(result.data.encryptedMasterKeyBase64)
@@ -254,7 +254,7 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
         setRSAKey({ rsaPublicKey: importKey.publicKey, rsaPrivateKey: importKey.privateKey })
       } catch (e) {
         dispatch(deleteProgress())
-        dispatch(enqueueSnackbar({message: '暗号鍵の復元に失敗しました', options: {variant: 'error'}}))
+        dispatch(enqueueSnackbar({ message: '暗号鍵の復元に失敗しました', options: { variant: 'error' } }))
         throw e
       }
     }
@@ -266,7 +266,7 @@ export const loginAsync = createAsyncThunk<UserState, {email: string, password: 
 
     dispatch(deleteProgress())
 
-    dispatch(enqueueSnackbar({message: 'ログインに成功しました', options: {variant: 'success'}}))
+    dispatch(enqueueSnackbar({ message: 'ログインに成功しました', options: { variant: 'success' } }))
     return { email: userinfo.email, MasterKey: Array.from(MasterKeyRaw), useTowFactorAuth: result.data.useTwoFactorAuth }
   }
 )
@@ -289,9 +289,9 @@ export const changePasswordAsync = createAsyncThunk<{}, {newpassword: string}, {
 
     const state = getState()
     const user = state.auth.user
-    if(!user) throw new Error('ログインしろ')
+    if (!user) throw new Error('ログインしろ')
     const MasterKey = new Uint8Array(user.MasterKey)
-    
+
     // 128 bit Client Random Value
     const ClientRandomValue = window.crypto.getRandomValues(new Uint8Array(AES_AUTH_KEY_LENGTH))
     // 256 bit Salt
@@ -320,20 +320,20 @@ export const changePasswordAsync = createAsyncThunk<{}, {newpassword: string}, {
       encryptedMasterKeyIVBase64: byteArray2base64(EncryptedMasterKey.iv),
       hashedAuthenticationKeyBase64: byteArray2base64(HashedAuthenticationKey)
     }
-    const result = await axiosWithSession.patch<
-                          UserForm,
-                          AxiosResponse<{success: boolean}>
-                        >(
-                          `${appLocation}/api/user/password`,
-                          sendData,
-                          {
-                            onUploadProgress: (progressEvent) => {
-                              dispatch(setProgress(progress(4, step, progressEvent.loaded / progressEvent.total)))
-                            }
-                          }
-                        )
+    await axiosWithSession.patch<
+            UserForm,
+            AxiosResponse<{success: boolean}>
+          >(
+            `${appLocation}/api/user/password`,
+            sendData,
+            {
+              onUploadProgress: (progressEvent) => {
+                dispatch(setProgress(progress(4, step, progressEvent.loaded / progressEvent.total)))
+              }
+            }
+          )
 
-    dispatch(enqueueSnackbar({message: 'パスワードを変更しました', options: {variant: 'success'}}))
+    dispatch(enqueueSnackbar({ message: 'パスワードを変更しました', options: { variant: 'success' } }))
     dispatch(deleteProgress())
     return {}
   }

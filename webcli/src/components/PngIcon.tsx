@@ -1,6 +1,6 @@
-import React from 'react';
+import React from 'react'
 
-import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
+import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon'
 
 interface Props extends React.HTMLProps<SvgIconProps> {
   ariaHidden?: boolean;
@@ -15,9 +15,9 @@ export const PngIcon: React.FC<Props> = (props) => {
     ariaLabel,
     className,
     src
-  } = props;
+  } = props
 
-  return(
+  return (
     <SvgIcon
       aria-hidden={ariaHidden}
       aria-label={ariaLabel}

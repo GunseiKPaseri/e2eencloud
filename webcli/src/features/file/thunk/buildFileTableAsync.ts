@@ -40,8 +40,8 @@ export const buildFileTableAsync = createAsyncThunk<buildFileTableAsyncResult>(
 export const afterBuildFileTableAsyncFullfilled:
   CaseReducer<FileState, PayloadAction<buildFileTableAsyncResult>> = (state, action) => {
   // 生成したファイルツリーをstateに反映
-  state.fileTable = action.payload.fileTable
-  state.tagTree = action.payload.tagTree
-  assertFileNodeFolder(action.payload.fileTable.root)
-  state.activeFileGroup = { type: 'dir', folderId: 'root', files: action.payload.fileTable.root.files, selecting: [], parents: ['root'] }
-}
+    state.fileTable = action.payload.fileTable
+    state.tagTree = action.payload.tagTree
+    assertFileNodeFolder(action.payload.fileTable.root)
+    state.activeFileGroup = { type: 'dir', folderId: 'root', files: action.payload.fileTable.root.files, selecting: [], parents: ['root'] }
+  }

@@ -1,4 +1,4 @@
-import { Highlight, SearchQuery } from "./util/search"
+import { Highlight, SearchQuery } from './util/search'
 
 import {
   FileDifference,

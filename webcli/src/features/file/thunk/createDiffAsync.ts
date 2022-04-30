@@ -9,7 +9,7 @@ import {
   fileSort
 } from '../utils'
 import {
-  assertFileInfoDiffFile, 
+  assertFileInfoDiffFile,
   assertNonWritableDraftFileNodeDiff,
   assertWritableDraftFileNodeFolder
 } from '../filetypeAssert'
@@ -32,14 +32,14 @@ export const createDiffAsync = createAsyncThunk<createDiffAsyncResult, Parameter
     const fileTable = state.file.fileTable
 
     let uploaded
-    try{
+    try {
       uploaded = createDiff(params, fileTable)
     } catch (e) {
       dispatch(deleteProgress())
-      if(e instanceof Error) {
-        dispatch(enqueueSnackbar({message: e.message, options: {variant: 'error'}}))
+      if (e instanceof Error) {
+        dispatch(enqueueSnackbar({ message: e.message, options: { variant: 'error' } }))
       } else {
-        dispatch(enqueueSnackbar({message: '不明な内部エラー', options: {variant: 'error'}}))
+        dispatch(enqueueSnackbar({ message: '不明な内部エラー', options: { variant: 'error' } }))
       }
       throw e
     }
@@ -48,17 +48,17 @@ export const createDiffAsync = createAsyncThunk<createDiffAsyncResult, Parameter
     dispatch(setProgress(progress(1, step)))
     dispatch(deleteProgress())
     // 変更を表示
-    if(addObject.fileInfo.diff.addtag && addObject.fileInfo.diff.addtag.length > 0){
-      dispatch(enqueueSnackbar({message: '『'+addObject.fileInfo.diff.addtag.join('』,『')+'』タグを追加しました', options: {variant: 'success'}}))
+    if (addObject.fileInfo.diff.addtag && addObject.fileInfo.diff.addtag.length > 0) {
+      dispatch(enqueueSnackbar({ message: '『' + addObject.fileInfo.diff.addtag.join('』,『') + '』タグを追加しました', options: { variant: 'success' } }))
     }
-    if(addObject.fileInfo.diff.deltag && addObject.fileInfo.diff.deltag.length > 0){
-      dispatch(enqueueSnackbar({message: '『'+addObject.fileInfo.diff.deltag.join('』,『')+'』タグを削除しました', options: {variant: 'success'}}))
+    if (addObject.fileInfo.diff.deltag && addObject.fileInfo.diff.deltag.length > 0) {
+      dispatch(enqueueSnackbar({ message: '『' + addObject.fileInfo.diff.deltag.join('』,『') + '』タグを削除しました', options: { variant: 'success' } }))
     }
-    if(params.newName){
-      dispatch(enqueueSnackbar({message: "名称を"+params.newName+'に変更しました', options: {variant: 'success'}}))
+    if (params.newName) {
+      dispatch(enqueueSnackbar({ message: '名称を' + params.newName + 'に変更しました', options: { variant: 'success' } }))
     }
-    if(params.newParentId){
-      dispatch(enqueueSnackbar({message: "ファイルを移動しました", options: {variant: 'success'}}))
+    if (params.newParentId) {
+      dispatch(enqueueSnackbar({ message: 'ファイルを移動しました', options: { variant: 'success' } }))
     }
     // storage更新
     dispatch(updateUsageAsync())
@@ -71,7 +71,7 @@ export const afterCreateDiffAsyncFullfilled:
   CaseReducer<FileState, PayloadAction<createDiffAsyncResult>> = (state, action) => {
     const { uploaded, targetId } = action.payload
     const { fileInfo } = uploaded
-    const fileTable = {...state.fileTable}
+    const fileTable = { ...state.fileTable }
     assertFileInfoDiffFile(fileInfo)
     // fileTableを更新
     if (!fileInfo.prevId) throw new Error('前方が指定されていません')
@@ -79,7 +79,7 @@ export const afterCreateDiffAsyncFullfilled:
     fileTable[fileInfo.id] = { ...fileInfo, parentId: fileInfo.parentId, origin: uploaded }
     // tagTreeを更新
     if (fileInfo.diff.addtag || fileInfo.diff.deltag) {
-      const tagTree = {...state.tagTree}
+      const tagTree = { ...state.tagTree }
       for (const tag of fileInfo.diff.addtag ?? []) {
         tagTree[tag] = [...(tagTree[tag] ?? []), targetId]
       }
@@ -88,7 +88,7 @@ export const afterCreateDiffAsyncFullfilled:
       }
       state.tagTree = tagTree
 
-      if(state.activeFileGroup && state.activeFileGroup.type === 'tag'){
+      if (state.activeFileGroup && state.activeFileGroup.type === 'tag') {
         state.activeFileGroup.files = tagTree[state.activeFileGroup.tagName] ?? []
       }
     }
@@ -105,17 +105,17 @@ export const afterCreateDiffAsyncFullfilled:
       const beforeParent = fileTable[beforeParentId]
       assertWritableDraftFileNodeFolder(beforeParent)
       const beforeParentChildren = beforeParent.files.filter(child => child !== targetId)
-      fileTable[beforeParentId] = {...beforeParent, files: beforeParentChildren}
-      
+      fileTable[beforeParentId] = { ...beforeParent, files: beforeParentChildren }
+
       const afterParent = fileTable[afterParentId]
       assertWritableDraftFileNodeFolder(afterParent)
       const afterParentChildren = fileSort([...afterParent.files, targetId], fileTable)
-      fileTable[afterParentId] = {...afterParent, files: afterParentChildren}
-      if(state.activeFileGroup?.type === 'dir'){
-        if (state.activeFileGroup.folderId === afterParentId){
-          state.activeFileGroup = {...state.activeFileGroup, files: [...afterParentChildren]}
-        }else if(state.activeFileGroup.folderId === beforeParentId) {
-          state.activeFileGroup = {...state.activeFileGroup, files: [...beforeParentChildren]}
+      fileTable[afterParentId] = { ...afterParent, files: afterParentChildren }
+      if (state.activeFileGroup?.type === 'dir') {
+        if (state.activeFileGroup.folderId === afterParentId) {
+          state.activeFileGroup = { ...state.activeFileGroup, files: [...afterParentChildren] }
+        } else if (state.activeFileGroup.folderId === beforeParentId) {
+          state.activeFileGroup = { ...state.activeFileGroup, files: [...beforeParentChildren] }
         }
       }
     }

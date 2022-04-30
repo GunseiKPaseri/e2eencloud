@@ -2,11 +2,9 @@
 import { SideMenu } from './components/sidemenu/SideMenu'
 
 import Box from '@mui/material/Box'
-import { useTheme } from '@mui/material/styles'
 import { FileExplorer } from './components/fileexplorer/FileExplorer'
 
 function App () {
-  const theme = useTheme()
   return (
     <Box sx={{ display: 'flex' }}>
       <SideMenu/>

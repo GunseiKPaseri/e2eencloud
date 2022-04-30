@@ -30,14 +30,14 @@ const ComposedProvider = composeComponents(
   React.StrictMode,
   (props) => <Provider {...props} store={store} />,
   (props) => <ThemeProvider {...props} theme={mdTheme} />,
-  (props) => <SnackbarProvider {...props} maxSnack={3} anchorOrigin={{vertical: 'bottom', horizontal: 'right'}} />,
-  (props) => <DndProvider {...props} backend={HTML5Backend} />,
+  (props) => <SnackbarProvider {...props} maxSnack={3} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} />,
+  (props) => <DndProvider {...props} backend={HTML5Backend} />
 )
 
 const rootElement = document.getElementById('root')
-if(rootElement){
+if (rootElement) {
   const root = createRoot(rootElement)
-  
+
   root.render(
     <ComposedProvider>
       <CssBaseline />
