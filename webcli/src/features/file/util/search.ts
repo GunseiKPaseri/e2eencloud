@@ -1,3 +1,4 @@
+import { ExhaustiveError } from '../../../utils/assert';
 import type {
   SearchQuery,
   SearchQuerySet,
@@ -46,6 +47,7 @@ const strtest = (
         const p = target.normalize('NFC').indexOf(word.normalize('NFC'));
         return p !== -1 ? [p, p + word.length] : null;
       }
+      case 'inlike':
       default: {
         // include like
         const q = searchNormalize(target).indexOf(searchNormalize(word));
@@ -67,8 +69,11 @@ const numtest = (target: number, value: number, operator: NumberSearchType):bool
       return target >= value;
     case '<=':
       return target <= value;
-    default:
+    case '==':
       return target === value;
+    default:
+      // Comprehensiveness check
+      throw new ExhaustiveError(operator);
   }
 };
 
@@ -103,13 +108,17 @@ export const searchTest = (
           break;
         case 'size':
           return numtest(target[andterm.type], andterm.value, andterm.operator);
-        default: {
+        case 'name':
+        case 'mime': {
           const mk = strtest(target[andterm.type], andterm.word, andterm.searchType);
           if (mk) {
             marker.push([andterm.type, ...mk]);
           }
           return !!mk;
         }
+        default:
+          // Comprehensiveness check
+          throw new ExhaustiveError(andterm);
       }
     });
     if (isOK) allMarker = [...allMarker, ...marker];

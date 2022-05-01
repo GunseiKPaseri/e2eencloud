@@ -35,3 +35,10 @@ export const assertNotNull:
       throw new Error(`This(${x}) is bad!!`);
     }
   };
+
+export class ExhaustiveError extends Error {
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+  constructor(value: never, message = `Unsupported type: ${value}`) {
+    super(message);
+  }
+}

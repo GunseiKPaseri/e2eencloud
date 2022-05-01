@@ -27,7 +27,7 @@ import {
 } from './filetypeAssert';
 
 import { decryptByRSA, encryptByRSA } from '../../encrypt';
-import { assertArrayNumber } from '../../utils/assert';
+import { assertArrayNumber, ExhaustiveError } from '../../utils/assert';
 import {
   string2ByteArray, byteArray2base64, base642ByteArray, byteArray2string,
 } from '../../utils/uint8';
@@ -462,12 +462,16 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):BuildFileTable
         };
         break;
       }
-      default:
+      case 'diff':
         fileTable[fileInfo.id] = {
           ...fileInfo,
           parentId: fileInfo.parentId ?? 'root',
           origin: { fileInfo, fileKeyBin, originalVersion },
         };
+        break;
+      default:
+        // Comprehensiveness check
+        throw new ExhaustiveError(fileInfo);
     }
     if (fileInfo.prevId) nextTable[fileInfo.prevId] = fileInfo.id;
   });
