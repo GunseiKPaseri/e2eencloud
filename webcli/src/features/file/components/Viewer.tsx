@@ -7,13 +7,13 @@ import Tooltip from '@mui/material/Tooltip';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
-import { assertFileNodeFile, assertFileNodeFileORUndefined } from './filetypeAssert';
+import { assertFileNodeFile, assertFileNodeFileORUndefined } from '../filetypeAssert';
 import TagSetter from './TagSetter';
 import Renamer from './Renamer';
-import type { FileState } from './fileSlice';
-import { filedownloadAsync } from './fileSlice';
-import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { openContextmenu } from '../contextmenu/contextmenuSlice';
+import type { FileState } from '../fileSlice';
+import { filedownloadAsync } from '../fileSlice';
+import { useAppDispatch, useAppSelector } from '../../../app/hooks';
+import { openContextmenu } from '../../contextmenu/contextmenuSlice';
 
 function Viewer() {
   const fileState = useAppSelector<FileState>((store) => store.file);

@@ -9,11 +9,11 @@ import type {
   GridRenderCellParams, GridRowsProp, GridSelectionModel,
 } from '@mui/x-data-grid';
 
-import { useAppDispatch, useAppSelector } from '../../../app/hooks';
-import { type FileState, changeSelection } from '../fileSlice';
-import { assertNonFileNodeDiff } from '../filetypeAssert';
+import { useAppDispatch, useAppSelector } from '../../../../app/hooks';
+import { type FileState, changeSelection } from '../../fileSlice';
+import { assertNonFileNodeDiff } from '../../filetypeAssert';
 import TagButton from '../TagButton';
-import { assertArrayString } from '../../../utils/assert';
+import { assertArrayString } from '../../../../utils/assert';
 
 function FileGrid({
   sx,

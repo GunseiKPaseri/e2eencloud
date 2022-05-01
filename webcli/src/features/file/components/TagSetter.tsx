@@ -1,11 +1,11 @@
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import type { FilterOptionsState } from '@mui/material/useAutocomplete';
-import { useAppSelector, useAppDispatch } from '../../app/hooks';
+import { useAppSelector, useAppDispatch } from '../../../app/hooks';
 
-import type { FileState } from './fileSlice';
-import { createDiffAsync } from './fileSlice';
-import { assertFileNodeFile } from './filetypeAssert';
+import type { FileState } from '../fileSlice';
+import { createDiffAsync } from '../fileSlice';
+import { assertFileNodeFile } from '../filetypeAssert';
 
 const filter = createFilterOptions();
 

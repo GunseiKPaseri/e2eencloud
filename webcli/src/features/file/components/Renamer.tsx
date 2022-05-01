@@ -4,9 +4,9 @@ import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
-import { createDiffAsync } from './fileSlice';
-import { useAppDispatch } from '../../app/hooks';
-import { isDiffExt } from './utils';
+import { createDiffAsync } from '../fileSlice';
+import { useAppDispatch } from '../../../app/hooks';
+import { isDiffExt } from '../utils';
 
 function Renamer({ id, name }: { id: string, name: string }) {
   const [newName, setNewName] = useState<string>(name);

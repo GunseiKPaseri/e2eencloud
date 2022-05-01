@@ -7,10 +7,10 @@ import TimelineDot from '@mui/lab/TimelineDot';
 import TimelineItem from '@mui/lab/TimelineItem';
 import TimelineSeparator from '@mui/lab/TimelineSeparator';
 import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
-import type { FileState } from './fileSlice';
-import { assertNonFileNodeDiff } from './filetypeAssert';
-import { useAppSelector } from '../../app/hooks';
-import type { FileInfo } from './file.type';
+import type { FileState } from '../fileSlice';
+import { assertNonFileNodeDiff } from '../filetypeAssert';
+import { useAppSelector } from '../../../app/hooks';
+import type { FileInfo } from '../file.type';
 import TagButton from './TagButton';
 
 /**

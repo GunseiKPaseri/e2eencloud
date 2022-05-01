@@ -1,13 +1,13 @@
 import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/material/styles';
 import Login from '../../features/auth/Login';
-import FileTreeViewer from '../../features/file/fileTreeViewer';
-import FileList from '../../features/file/FileList/FileList';
-import Viewer from '../../features/file/Viewer';
-import { AddFolder } from '../../features/file/AddFolder';
-import { DiffTree } from '../../features/file/DiffTree';
-import TagButton from '../../features/file/TagButton';
-import StorageInfo from '../../features/file/StorageInfo';
+import FileTreeViewer from '../../features/file/components/FileTreeViewer';
+import FileList from '../../features/file/components/FileList/FileList';
+import Viewer from '../../features/file/components/Viewer';
+import { AddFolder } from '../../features/file/components/AddFolder';
+import { DiffTree } from '../../features/file/components/DiffTree';
+import TagButton from '../../features/file/components/TagButton';
+import StorageInfo from '../../features/file/components/StorageInfo';
 
 export default function FileExplorer() {
   const theme = useTheme();

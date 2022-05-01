@@ -19,15 +19,15 @@ import type { Theme } from '@mui/material/styles';
 import type { SystemStyleObject } from '@mui/system/styleFunctionSx';
 
 import { useDrop } from 'react-dnd';
-import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '../../../components/customed/StyledBreadcrumb';
+import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '../../../../components/customed/StyledBreadcrumb';
 import TagButton from '../TagButton';
-import type { FileNode, FileInfoFolder } from '../file.type';
-import { assertFileNodeFolder } from '../filetypeAssert';
-import type { FileState } from '../fileSlice';
+import type { FileNode, FileInfoFolder } from '../../file.type';
+import { assertFileNodeFolder } from '../../filetypeAssert';
+import type { FileState } from '../../fileSlice';
 import {
   changeActiveFileGroupDir, fileDeleteAsync, filedownloadAsync,
-} from '../fileSlice';
-import { useAppDispatch, useAppSelector } from '../../../app/hooks';
+} from '../../fileSlice';
+import { useAppDispatch, useAppSelector } from '../../../../app/hooks';
 import { genUseDropReturn } from '../dnd';
 import FileSimpleList from './FileSimpleList';
 import FileGrid from './FileGrid';
