@@ -1,20 +1,20 @@
-import React, { useState } from 'react'
-import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { FileState, createFolderAsync } from './fileSlice'
+import React, { useState } from 'react';
 
-import TextField from '@mui/material/TextField'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
+import TextField from '@mui/material/TextField';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import { FileState, createFolderAsync } from './fileSlice';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 
-export const AddFolder = () => {
-  const [name, setName] = useState<string>('')
-  const dispatch = useAppDispatch()
-  const filegroup = useAppSelector<FileState['activeFileGroup']>((state) => state.file.activeFileGroup)
-  if (filegroup?.type !== 'dir') return (<></>)
+export function AddFolder() {
+  const [name, setName] = useState<string>('');
+  const dispatch = useAppDispatch();
+  const filegroup = useAppSelector<FileState['activeFileGroup']>((state) => state.file.activeFileGroup);
+  if (filegroup?.type !== 'dir') return null;
   const handleAddDir = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    await dispatch(createFolderAsync({ name }))
-  }
+    event.preventDefault();
+    await dispatch(createFolderAsync({ name }));
+  };
 
   return (
     <Box component="form" onSubmit={handleAddDir} noValidate sx={{ mt: 1 }}>
@@ -25,7 +25,7 @@ export const AddFolder = () => {
         label="新規ディレクトリ名"
         type="normal"
         value={name}
-        onChange={(e) => { setName(e.target.value) }}
+        onChange={(e) => { setName(e.target.value); }}
       />
       <Button
         type="submit"
@@ -36,5 +36,8 @@ export const AddFolder = () => {
       >
         作成
       </Button>
-    </Box>)
+    </Box>
+  );
 }
+
+export default AddFolder;

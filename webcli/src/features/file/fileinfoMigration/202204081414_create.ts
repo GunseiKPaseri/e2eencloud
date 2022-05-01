@@ -1,4 +1,3 @@
-
 /**
  * 差分情報
  */
@@ -62,25 +61,24 @@ export interface FileInfoDiffFile {
   diff: FileDifference
 }
 
-export type FileInfoNotFile = FileInfoFolder | FileInfoDiffFile
+export type FileInfoNotFile = FileInfoFolder | FileInfoDiffFile;
 
 /**
  * サーバに保存する情報
  */
-export type FileInfo = FileInfoFile | FileInfoNotFile
+export type FileInfo = FileInfoFile | FileInfoNotFile;
 
 /**
  * 古いバージョンも含むあらゆるFileInfo
  */
-export type OldFileInfo = FileInfo
+export type OldFileInfo = FileInfo;
 
 /**
  * FileInfoのversionを202204081414まで上げる
  * @param x
  * @returns
  */
-export const upFile =
-  (x: OldFileInfo, blob?: {blob: Blob, beforeVersion: OldFileInfo['version']}):
-    {fileInfo: FileInfo, originalVersion: OldFileInfo['version']} => {
-    return { fileInfo: x, originalVersion: x.version }
-  }
+export const upFile = (x: OldFileInfo, blob?: { blob: Blob, beforeVersion: OldFileInfo['version'] })
+:{ fileInfo: FileInfo, originalVersion: OldFileInfo['version'] } => (
+  { fileInfo: x, originalVersion: x.version }
+);

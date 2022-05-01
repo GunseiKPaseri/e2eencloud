@@ -1,22 +1,22 @@
-import { useAppSelector, useAppDispatch } from '../../app/hooks'
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
+import { FilterOptionsState } from '@mui/material/useAutocomplete';
+import { useAppSelector, useAppDispatch } from '../../app/hooks';
 
-import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete'
-import { FileState, createDiffAsync } from './fileSlice'
-import { assertFileNodeFile } from './filetypeAssert'
-import TextField from '@mui/material/TextField'
-import { FilterOptionsState } from '@mui/material/useAutocomplete'
+import { FileState, createDiffAsync } from './fileSlice';
+import { assertFileNodeFile } from './filetypeAssert';
 
-const filter = createFilterOptions()
+const filter = createFilterOptions();
 
-export const TagSetter = () => {
-  const { activeFile, fileTable, tagTree } = useAppSelector<FileState>(state => state.file)
-  const dispatch = useAppDispatch()
-  if (!activeFile) return <></>
+function TagSetter() {
+  const { activeFile, fileTable, tagTree } = useAppSelector<FileState>((state) => state.file);
+  const dispatch = useAppDispatch();
+  if (!activeFile) return null;
 
-  const allTags: (string | {addition: string})[] = Object.keys(tagTree)
+  const allTags: (string | { addition: string })[] = Object.keys(tagTree);
 
-  const targetNode = fileTable[activeFile.fileId]
-  assertFileNodeFile(targetNode)
+  const targetNode = fileTable[activeFile.fileId];
+  assertFileNodeFile(targetNode);
 
   return (
     <Autocomplete
@@ -33,17 +33,22 @@ export const TagSetter = () => {
         />
       )}
       onChange={(_event, newTagItems) => {
-        const newTags = newTagItems.map(x => (typeof x === 'string' ? x : x.addition))
-        console.log(newTags)
-        dispatch(createDiffAsync({ targetId: targetNode.id, newTags }))
+        const newTags = newTagItems.map((x) => (typeof x === 'string' ? x : x.addition));
+        // console.log(newTags);
+        dispatch(createDiffAsync({ targetId: targetNode.id, newTags }));
       }}
       filterOptions={(options, params) => {
-        const filtered = filter(options, params as FilterOptionsState<unknown>) as (string | {addition: string})[]
+        const filtered = filter(
+          options,
+          params as FilterOptionsState<unknown>,
+        ) as (string | { addition: string })[];
         if (params.inputValue !== '' && !filtered.includes(params.inputValue)) {
-          filtered.push({ addition: params.inputValue })
+          filtered.push({ addition: params.inputValue });
         }
-        return filtered
+        return filtered;
       }}
     />
-  )
+  );
 }
+
+export default TagSetter;

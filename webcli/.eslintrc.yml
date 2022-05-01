@@ -2,14 +2,17 @@ env:
   browser: true
   es2021: true
 extends:
-  - 'plugin:react/recommended'
-  - standard
+  - airbnb
+  - airbnb-typescript
   - plugin:jest/recommended
+  - plugin:@typescript-eslint/recommended
+  - plugin:@typescript-eslint/recommended-requiring-type-checking
 parser: '@typescript-eslint/parser'
 parserOptions:
   ecmaFeatures:
     jsx: true
   ecmaVersion: 12
+  project: './tsconfig.eslint.json'
   sourceType: module
 settings:
   react:
@@ -18,13 +21,23 @@ settings:
     version: 26
 plugins:
   - react
+  - react-hooks
   - '@typescript-eslint'
   - jest
 globals:
   React: true
   JSX: true
 rules:
+  no-nested-ternary: "off"
   import/no-default-export: "off"
   no-use-before-define: "off"
+  no-param-reassign: "off"
+  jsx-a11y/label-has-associated-control: "off"
+  react/jsx-props-no-spreading: "off"
+  react/jsx-no-useless-fragment: "off"
+  react/require-default-props: "off"
+  react/no-unused-prop-types: "off"
+  "@typescript-eslint/no-misused-promises": "off"
+  "@typescript-eslint/no-floating-promises": "off"
   "@typescript-eslint/no-use-before-define":
     - "error"

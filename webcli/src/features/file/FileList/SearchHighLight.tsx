@@ -1,10 +1,14 @@
-import { Highlight, highlightMark } from '../util/search'
-import parse from 'html-react-parser'
+import parse from 'html-react-parser';
+import { highlightMark } from '../util/search';
+import type { Highlight } from '../util/search.type';
 
-export const SearchHighLight = (props: {value: string, search?: {target: Highlight[0], mark: Highlight[]}}) => {
-  if (props.search) {
-    return <>{parse(highlightMark(props.value, props.search.target, props.search.mark))}</>
-  } else {
-    return <>{props.value}</>
+function SearchHighLight(
+  { value, search }: { value: string, search?: { target: Highlight[0], mark: Highlight[] } },
+) {
+  if (search) {
+    return <>{parse(highlightMark(value, search.target, search.mark))}</>;
   }
+  return <>{value}</>;
 }
+
+export default SearchHighLight;

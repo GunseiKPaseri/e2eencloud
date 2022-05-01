@@ -1,55 +1,65 @@
-import { useEffect, useState } from 'react'
-import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { changeClientNameAsync, deleteSessionAsync, getSessionsAsync, SessionsState } from './sessionSlice'
+import { useEffect, useState } from 'react';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import {
+  changeClientNameAsync, deleteSessionAsync, getSessionsAsync, SessionsState,
+} from './sessionSlice';
 
-const NameChanger = (params:{id: string, name: string}) => {
-  const [name, setName] = useState(params.name)
-  const dispatch = useAppDispatch()
+function NameChanger({ id, name }:{ id: string, name: string }) {
+  const [newName, setNewName] = useState(name);
+  const dispatch = useAppDispatch();
   const handleClick = () => {
-    dispatch(changeClientNameAsync({ id: params.id, newClientName: name }))
-  }
+    dispatch(changeClientNameAsync({ id, newClientName: newName }));
+  };
 
   useEffect(() => {
-    setName(params.name)
-  }, [params.name])
+    setNewName(name);
+  }, [name]);
 
   return (
     <>
-      <input value={name} onChange={(e) => setName(e.target.value)}/>
-      <button onClick={handleClick}>変更</button>
+      <input value={name} onChange={(e) => setNewName(e.target.value)} />
+      <button type="button" onClick={handleClick}>変更</button>
     </>
-  )
+  );
 }
 
-export const SessionConfig = () => {
-  const dispatch = useAppDispatch()
-  const sessionState = useAppSelector<SessionsState>((store) => store.session)
+function SessionConfig() {
+  const dispatch = useAppDispatch();
+  const sessionState = useAppSelector<SessionsState>((store) => store.session);
   // const selector = useAppSelector<FileState>((state) => state.file)
 
   const getSession = () => {
-    dispatch(getSessionsAsync())
-  }
+    dispatch(getSessionsAsync());
+  };
 
-  if (sessionState.sessions.length === 0 && !sessionState.loading) getSession()
+  if (sessionState.sessions.length === 0 && !sessionState.loading) getSession();
 
   return (
     <article>
       <h2>セッション</h2>
-      <button onClick={getSession}>更新</button>
+      <button type="button" onClick={getSession}>更新</button>
       <table>
         <thead>
-          <tr><th></th><th>クライアント名</th><th>削除</th></tr>
+          <tr>
+            <th>自己</th>
+            <th>クライアント名</th>
+            <th>削除</th>
+          </tr>
         </thead>
         <tbody>
-          {sessionState.sessions.map(x =>
+          {sessionState.sessions.map((x) => (
             <tr key={x.id}>
               <td>{x.isMe ? '◎' : ''}</td>
-              <td>{x.isMe ? <NameChanger id={x.id} name={x.clientName}/> : x.clientName}</td>
-              <td><button onClick={() => dispatch(deleteSessionAsync({ id: x.id }))}>削除</button></td>
+              <td>{x.isMe ? <NameChanger id={x.id} name={x.clientName} /> : x.clientName}</td>
+              <td>
+                <button type="button" onClick={() => dispatch(deleteSessionAsync({ id: x.id }))}>削除</button>
+              </td>
             </tr>
-          )}
+          ))}
         </tbody>
       </table>
     </article>
-  )
+  );
 }
+
+export default SessionConfig;

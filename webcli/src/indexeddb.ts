@@ -1,4 +1,4 @@
-import Dexie from 'dexie'
+import Dexie from 'dexie';
 
 export interface IndexDBFilesFile {
   type: 'file',
@@ -23,19 +23,19 @@ export interface IndexDBFilesFolder {
   fileKeyRaw: Uint8Array
 }
 
-export type IndexDBFiles = IndexDBFilesFile | IndexDBFilesFolder
+export type IndexDBFiles = IndexDBFilesFile | IndexDBFilesFolder;
 
 class E2EEDB extends Dexie {
-  files!: Dexie.Table<IndexDBFiles, string>
+  files!: Dexie.Table<IndexDBFiles, string>;
 
-  constructor () {
-    super('E2EEDB')
+  constructor() {
+    super('E2EEDB');
 
     // Define tables and indexes
     this.version(1).stores({
-      files: '&id, name, sha256, type, encryptedFileIV, fileKeyRaw, mime, size, prevId, parentId, tag'
-    })
+      files: '&id, name, sha256, type, encryptedFileIV, fileKeyRaw, mime, size, prevId, parentId, tag',
+    });
   }
 }
 
-export const db = new E2EEDB()
+export const db = new E2EEDB();

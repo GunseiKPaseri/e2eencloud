@@ -1,2 +1,2 @@
-globalThis.IS_REACT_ACT_ENVIRONMENT = true
-export {}
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+export {};

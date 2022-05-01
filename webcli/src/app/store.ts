@@ -1,11 +1,11 @@
-import { configureStore } from '@reduxjs/toolkit'
-import logger from 'redux-logger'
-import authReducer from '../features/auth/authSlice'
-import contextmenuReducer from '../features/contextmenu/contextmenuSlice'
-import fileReducer from '../features/file/fileSlice'
-import progressReducer from '../features/progress/progressSlice'
-import sessionReducer from '../features/session/sessionSlice'
-import snackbarReducer from '../features/snackbar/snackbarSlice'
+import { configureStore } from '@reduxjs/toolkit';
+import logger from 'redux-logger';
+import authReducer from '../features/auth/authSlice';
+import contextmenuReducer from '../features/contextmenu/contextmenuSlice';
+import fileReducer from '../features/file/fileSlice';
+import progressReducer from '../features/progress/progressSlice';
+import sessionReducer from '../features/session/sessionSlice';
+import snackbarReducer from '../features/snackbar/snackbarSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,11 +14,11 @@ export const store = configureStore({
     file: fileReducer,
     progress: progressReducer,
     session: sessionReducer,
-    snackbar: snackbarReducer
+    snackbar: snackbarReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
-  devTools: true
-})
+  devTools: true,
+});
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>;

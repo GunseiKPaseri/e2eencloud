@@ -1,6 +1,6 @@
-import React from 'react'
+import React from 'react';
 
-import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon'
+import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
 
 interface Props extends React.HTMLProps<SvgIconProps> {
   ariaHidden?: boolean;
@@ -9,14 +9,12 @@ interface Props extends React.HTMLProps<SvgIconProps> {
   src: string;
 }
 
-export const PngIcon: React.FC<Props> = (props) => {
-  const {
-    ariaHidden,
-    ariaLabel,
-    className,
-    src
-  } = props
-
+export default function PngIcon({
+  ariaHidden,
+  ariaLabel,
+  className,
+  src,
+}: Props) {
   return (
     <SvgIcon
       aria-hidden={ariaHidden}
@@ -25,9 +23,9 @@ export const PngIcon: React.FC<Props> = (props) => {
       component="span"
       viewBox=""
     >
-      <svg width='1em' height='1em' fill='none' xmlns='https://www.w3.org/2000/svg'>
-        <image width="1em" height="1em" xlinkHref={src} ></image>
+      <svg width="1em" height="1em" fill="none" xmlns="https://www.w3.org/2000/svg">
+        <image width="1em" height="1em" xlinkHref={src} />
       </svg>
     </SvgIcon>
-  )
+  );
 }

@@ -1,23 +1,23 @@
-import React, { useEffect, useState } from 'react'
-import { useAppDispatch } from '../../app/hooks'
-import { createDiffAsync } from './fileSlice'
+import React, { useEffect, useState } from 'react';
 
-import TextField from '@mui/material/TextField'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Alert from '@mui/material/Alert'
-import { isDiffExt } from './utils'
+import TextField from '@mui/material/TextField';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
+import { createDiffAsync } from './fileSlice';
+import { useAppDispatch } from '../../app/hooks';
+import { isDiffExt } from './utils';
 
-export const Renamer = (props: {id: string, name: string}) => {
-  const [name, setName] = useState<string>(props.name)
+function Renamer({ id, name }: { id: string, name: string }) {
+  const [newName, setNewName] = useState<string>(name);
   useEffect(() => {
-    setName(props.name)
-  }, [props.name])
-  const dispatch = useAppDispatch()
+    setNewName(name);
+  }, [name]);
+  const dispatch = useAppDispatch();
   const handleChangeName: React.FormEventHandler<HTMLFormElement> = (event) => {
-    event.preventDefault()
-    dispatch(createDiffAsync({ targetId: props.id, newName: name }))
-  }
+    event.preventDefault();
+    dispatch(createDiffAsync({ targetId: id, newName }));
+  };
 
   return (
     <Box component="form" onSubmit={handleChangeName} noValidate sx={{ mt: 1 }}>
@@ -27,24 +27,28 @@ export const Renamer = (props: {id: string, name: string}) => {
         name="newname"
         label="新規名称"
         type="normal"
-        value={name}
-        onChange={(e) => { setName(e.target.value) }}
+        value={newName}
+        onChange={(e) => { setNewName(e.target.value); }}
       />
       {
-        isDiffExt(props.name, name)
-          ? <Alert severity='warning'>
+        isDiffExt(name, newName)
+          && (
+            <Alert severity="warning">
               拡張子が変化しています
             </Alert>
-          : <></>
+          )
       }
       <Button
         type="submit"
-        disabled={name === '' || name === props.name}
+        disabled={newName === '' || newName === name}
         fullWidth
         variant="contained"
         sx={{ mt: 3, mb: 2 }}
       >
         変更
       </Button>
-    </Box>)
+    </Box>
+  );
 }
+
+export default Renamer;

@@ -1,22 +1,21 @@
-import { useState } from 'react'
+import { useState } from 'react';
 
-import { drawerWidth } from '../../util'
+import { styled } from '@mui/material/styles';
 
-import { styled } from '@mui/material/styles'
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import MuiDrawer from '@mui/material/Drawer';
+import Toolbar from '@mui/material/Toolbar';
 
-import Divider from '@mui/material/Divider'
-import IconButton from '@mui/material/IconButton'
-import List from '@mui/material/List'
-import ListItem from '@mui/material/ListItem'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import ListItemText from '@mui/material/ListItemText'
-import MuiDrawer from '@mui/material/Drawer'
-import Toolbar from '@mui/material/Toolbar'
+import SettingsIcon from '@mui/icons-material/Settings';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import { drawerWidth } from '../../util';
 
-import SettingsIcon from '@mui/icons-material/Settings'
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-
-import { HeadAppBar } from '../headappbar/HeadAppBar'
+import HeadAppBar from '../headappbar/HeadAppBar';
 
 const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
   ({ theme, open }) => ({
@@ -26,29 +25,29 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
       width: drawerWidth,
       transition: theme.transitions.create('width', {
         easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.enteringScreen
+        duration: theme.transitions.duration.enteringScreen,
       }),
       boxSizing: 'border-box',
       ...(!open && {
         overflowX: 'hidden',
         transition: theme.transitions.create('width', {
           easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.leavingScreen
+          duration: theme.transitions.duration.leavingScreen,
         }),
         width: theme.spacing(7),
         [theme.breakpoints.up('sm')]: {
-          width: theme.spacing(9)
-        }
-      })
-    }
-  })
-)
+          width: theme.spacing(9),
+        },
+      }),
+    },
+  }),
+);
 
-export const SideMenu = () => {
-  const [open, setOpen] = useState(false)
+export default function SideMenu() {
+  const [open, setOpen] = useState(false);
   const toggleDrawer = () => {
-    setOpen(!open)
-  }
+    setOpen(!open);
+  };
   return (
     <>
       <HeadAppBar open={open} setOpen={setOpen} />
@@ -58,7 +57,7 @@ export const SideMenu = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'flex-end',
-            px: [1]
+            px: [1],
           }}
         >
           <IconButton onClick={toggleDrawer}>
@@ -71,10 +70,10 @@ export const SideMenu = () => {
             <ListItemIcon>
               <SettingsIcon />
             </ListItemIcon>
-            <ListItemText primary="設定"/>
+            <ListItemText primary="設定" />
           </ListItem>
         </List>
       </Drawer>
     </>
-  )
+  );
 }

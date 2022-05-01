@@ -1,47 +1,50 @@
-import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit'
-import { buildFileTableAsyncResult, getfileinfoJSONRow } from '../file.type'
-import { axiosWithSession, appLocation } from '../../componentutils'
-import { AxiosResponse } from 'axios'
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice'
-import { buildFileTable, decryptoFileInfo } from '../utils'
-import { assertFileNodeFolder } from '../filetypeAssert'
-import { FileState } from '../fileSlice'
+import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit';
+import type { AxiosResponse } from 'axios';
+import { BuildFileTableAsyncResult, GetfileinfoJSONRow } from '../file.type';
+import { axiosWithSession, appLocation } from '../../componentutils';
+import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
+import { buildFileTable, decryptoFileInfo } from '../utils';
+import { assertFileNodeFolder } from '../filetypeAssert';
+import type { FileState } from '../fileSlice';
 
 /**
  * ファイル情報を解析してディレクトリツリーを構成するReduxThunk
  */
-export const buildFileTableAsync = createAsyncThunk<buildFileTableAsyncResult>(
+export const buildFileTableAsync = createAsyncThunk<BuildFileTableAsyncResult>(
   'file/createfiletree',
   async (_, { dispatch }) => {
-    const step = 3
-    dispatch(setProgress(progress(0, step)))
+    const step = 3;
+    dispatch(setProgress(progress(0, step)));
     // get all file info
-    const rowfiles = await axiosWithSession.get<{}, AxiosResponse<getfileinfoJSONRow[]>>(
+    const rowfiles = await axiosWithSession.get<
+    Record<string, never>, AxiosResponse<GetfileinfoJSONRow[]>>(
       `${appLocation}/api/user/files`,
       {
-        onDownloadProgress: (progressEvent) => {
-          dispatch(setProgress(progress(0, step, progressEvent.loaded / progressEvent.total)))
-        }
-      }
-    )
-    dispatch(setProgress(progress(1, step)))
-    const files = await Promise.all(rowfiles.data.map(x => decryptoFileInfo(x)))
-    dispatch(setProgress(progress(2, step)))
+        onDownloadProgress: (progressEvent: { loaded: number, total: number }) => {
+          dispatch(setProgress(progress(0, step, progressEvent.loaded / progressEvent.total)));
+        },
+      },
+    );
+    dispatch(setProgress(progress(1, step)));
+    const files = await Promise.all(rowfiles.data.map((x) => decryptoFileInfo(x)));
+    dispatch(setProgress(progress(2, step)));
 
     // create filetable
-    console.log(files)
+    // console.log(files);
 
-    const result = buildFileTable(files)
-    dispatch(deleteProgress())
-    return result
-  }
-)
+    const result = buildFileTable(files);
+    dispatch(deleteProgress());
+    return result;
+  },
+);
 
 export const afterBuildFileTableAsyncFullfilled:
-  CaseReducer<FileState, PayloadAction<buildFileTableAsyncResult>> = (state, action) => {
+CaseReducer<FileState, PayloadAction<BuildFileTableAsyncResult>> = (state, action) => {
   // 生成したファイルツリーをstateに反映
-    state.fileTable = action.payload.fileTable
-    state.tagTree = action.payload.tagTree
-    assertFileNodeFolder(action.payload.fileTable.root)
-    state.activeFileGroup = { type: 'dir', folderId: 'root', files: action.payload.fileTable.root.files, selecting: [], parents: ['root'] }
-  }
+  state.fileTable = action.payload.fileTable;
+  state.tagTree = action.payload.tagTree;
+  assertFileNodeFolder(action.payload.fileTable.root);
+  state.activeFileGroup = {
+    type: 'dir', folderId: 'root', files: action.payload.fileTable.root.files, selecting: [], parents: ['root'],
+  };
+};

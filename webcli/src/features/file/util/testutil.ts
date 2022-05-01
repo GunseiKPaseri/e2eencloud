@@ -1,11 +1,11 @@
-import {
+import type {
   FileCryptoInfoWithBin,
   FileCryptoInfoWithoutBin,
   FileDifference,
   FileInfoDiffFile,
-  FileInfoFolder
-} from '../file.type'
-import { latestVersion } from '../fileinfoMigration/fileinfo'
+  FileInfoFolder,
+} from '../file.type';
+import { latestVersion } from '../fileinfoMigration/fileinfo';
 
 export const genFileInfoFile = (props: {
   id: string,
@@ -29,11 +29,11 @@ export const genFileInfoFile = (props: {
     size: 0,
     parentId: props.parentId,
     prevId: props.prevId,
-    tag: props.tag
+    tag: props.tag,
   },
   originalVersion: latestVersion,
-  encryptedFileIVBin: props.encryptedFileIVBin ?? []
-})
+  encryptedFileIVBin: props.encryptedFileIVBin ?? [],
+});
 
 export const genFileInfoFolder = (props: {
   id: string,
@@ -50,10 +50,10 @@ export const genFileInfoFolder = (props: {
     version: latestVersion,
     createdAt: props.createdAt ?? 0,
     parentId: props.parentId,
-    prevId: props.prevId
+    prevId: props.prevId,
   },
-  originalVersion: latestVersion
-})
+  originalVersion: latestVersion,
+});
 
 export const genFileInfoDiff = (props: {
   id: string,
@@ -73,7 +73,7 @@ export const genFileInfoDiff = (props: {
     createdAt: props.createdAt ?? 0,
     parentId: props.parentId,
     prevId: props.prevId,
-    diff: props.diff ?? {}
+    diff: props.diff ?? {},
   },
-  originalVersion: latestVersion
-})
+  originalVersion: latestVersion,
+});
