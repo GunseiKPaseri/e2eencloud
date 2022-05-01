@@ -1,5 +1,6 @@
-import { CaseReducer, createAction, PayloadAction } from '@reduxjs/toolkit';
-import { FileInfo, FileNode } from '../file.type';
+import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
+import { createAction } from '@reduxjs/toolkit';
+import type { FileInfo, FileNode } from '../file.type';
 import type { FileState } from '../fileSlice';
 import { searchFromTable, SearchQueryParser } from '../util/search';
 import { getFileParentsList } from '../utils';

@@ -1,6 +1,7 @@
-import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit';
-import { AxiosResponse } from 'axios';
-import { BuildFileTableAsyncResult } from '../file.type';
+import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import type { AxiosResponse } from 'axios';
+import type { BuildFileTableAsyncResult } from '../file.type';
 import {
   getAllDependentFile,
   buildFileTable,

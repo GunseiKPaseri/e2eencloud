@@ -3,7 +3,7 @@ import * as OTPAuth from 'otpauth';
 import QRcode from 'qrcode';
 
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { addTOTPAsync, AuthState, deleteTOTPAsync } from './authSlice';
+import { addTOTPAsync, deleteTOTPAsync, type AuthState } from './authSlice';
 
 const genQR = (totp: OTPAuth.TOTP) => new Promise<string>((resolve, reject) => {
   QRcode.toDataURL(totp.toString(), (err, qrcode) => {

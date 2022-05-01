@@ -1,10 +1,12 @@
-import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit';
-import { FileInfo, FileNode } from '../file.type';
+import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import type { FileInfo, FileNode } from '../file.type';
 import { decryptAESGCM, getAESGCMKey } from '../../../utils/crypto';
 import type { RootState } from '../../../app/store';
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
+import type { ExpandServerDataResult } from '../utils';
 import {
-  expandServerData, ExpandServerDataResult, getEncryptedFileRaw, getFileHash, listUpSimilarFile,
+  expandServerData, getEncryptedFileRaw, getFileHash, listUpSimilarFile,
 } from '../utils';
 import { assertFileNodeFile } from '../filetypeAssert';
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice';

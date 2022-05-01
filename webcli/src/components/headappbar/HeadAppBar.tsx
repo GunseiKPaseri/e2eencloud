@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { styled } from '@mui/material/styles';
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
+import MuiAppBar, { type AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
@@ -10,7 +10,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useAppSelector } from '../../app/hooks';
 
-import { ProgressState } from '../../features/progress/progressSlice';
+import { type ProgressState } from '../../features/progress/progressSlice';
 
 import UserIcon from './UserIcon';
 

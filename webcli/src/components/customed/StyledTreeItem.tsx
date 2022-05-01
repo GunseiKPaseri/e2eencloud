@@ -3,12 +3,11 @@ import React from 'react';
 import { alpha, styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { SvgIconProps } from '@mui/material/SvgIcon';
+import { type SvgIconProps } from '@mui/material/SvgIcon';
 
-import TreeItem, { TreeItemProps, treeItemClasses } from '@mui/lab/TreeItem';
+import TreeItem, { type TreeItemProps, treeItemClasses } from '@mui/lab/TreeItem';
 
 declare module 'react' {
-  // eslint-disable-next-line no-unused-vars
   interface CSSProperties {
     '--tree-view-color'? : CSSProperties['color'],
     '--tree-view-bg-color'? : CSSProperties['color']

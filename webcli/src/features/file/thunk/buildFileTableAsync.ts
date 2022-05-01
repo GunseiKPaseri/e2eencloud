@@ -1,6 +1,7 @@
-import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit';
+import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import { BuildFileTableAsyncResult, GetfileinfoJSONRow } from '../file.type';
+import type { BuildFileTableAsyncResult, GetfileinfoJSONRow } from '../file.type';
 import { axiosWithSession, appLocation } from '../../componentutils';
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 import { buildFileTable, decryptoFileInfo } from '../utils';

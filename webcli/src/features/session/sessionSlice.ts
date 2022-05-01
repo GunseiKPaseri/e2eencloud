@@ -1,6 +1,5 @@
-/* eslint-disable no-param-reassign */
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { AxiosResponse } from 'axios';
+import type { AxiosResponse } from 'axios';
 import { appLocation, axiosWithSession } from '../componentutils';
 import { logoutAsync } from '../auth/authSlice';
 

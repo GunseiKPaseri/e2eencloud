@@ -10,7 +10,7 @@ import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
 import type { FileState } from './fileSlice';
 import { assertNonFileNodeDiff } from './filetypeAssert';
 import { useAppSelector } from '../../app/hooks';
-import { FileInfo } from './file.type';
+import type { FileInfo } from './file.type';
 import TagButton from './TagButton';
 
 /**
@@ -33,7 +33,6 @@ export const createDiffExpression = (before: FileInfo, after: FileInfo):JSX.Elem
       result.push(<React.Fragment key="3">{[...after.diff.deltag.map((x) => <TagButton key={x} tag={x} />), <React.Fragment key="_">タグを削除</React.Fragment>]}</React.Fragment>);
     }
   }
-  // eslint-disable-next-line react/jsx-no-useless-fragment
   return <>{[...result, <React.Fragment key="4">しました</React.Fragment>]}</>;
 };
 

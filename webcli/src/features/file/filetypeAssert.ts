@@ -1,5 +1,5 @@
 import type { WritableDraft } from 'immer/dist/internal';
-import {
+import type {
   FileInfoFile,
   FileInfoFolder,
   FileInfo,

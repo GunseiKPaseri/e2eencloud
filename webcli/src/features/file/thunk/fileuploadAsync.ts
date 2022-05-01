@@ -1,10 +1,11 @@
-import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit';
-import { FileCryptoInfoWithBin, FileInfo, FileNode } from '../file.type';
+import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import type { FileCryptoInfoWithBin, FileInfo, FileNode } from '../file.type';
+import type { ExpandServerDataResult } from '../utils';
 import {
   getSafeName,
   submitFileWithEncryption,
   fileSort,
-  ExpandServerDataResult,
   listUpSimilarFile,
 } from '../utils';
 import {

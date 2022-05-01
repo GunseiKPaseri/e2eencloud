@@ -1,5 +1,6 @@
-import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit';
-import { FileCryptoInfo, FileInfoDiffFile } from '../file.type';
+import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import type { FileCryptoInfo, FileInfoDiffFile } from '../file.type';
 import type { RootState } from '../../../app/store';
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 import {

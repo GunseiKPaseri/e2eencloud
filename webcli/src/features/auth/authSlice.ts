@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { AxiosResponse } from 'axios';
+import type { AxiosResponse } from 'axios';
 import { axiosWithSession, appLocation } from '../componentutils';
 import {
   createSalt,

@@ -1,4 +1,5 @@
-import React, { useState, ReactNode } from 'react';
+import { useState } from 'react';
+import type { ReactNode, ChangeEventHandler } from 'react';
 
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -38,7 +39,7 @@ export default function PasswordField({
   id: string,
   label: string,
   name: string,
-  onChange?: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>,
+  onChange?: ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>,
   required?: boolean,
   value?: unknown,
   margin?: 'dense' | 'none' | 'normal',

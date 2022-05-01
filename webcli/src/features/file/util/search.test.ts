@@ -9,7 +9,7 @@ import {
   searchFromTable, SearchQueryParser,
 } from './search';
 
-import {
+import type {
   SearchQuery,
 } from './search.type';
 

@@ -1,5 +1,4 @@
-/* eslint-disable no-param-reassign */
-import { SnackbarMessage, VariantType, SnackbarKey } from 'notistack';
+import type { SnackbarMessage, VariantType, SnackbarKey } from 'notistack';
 import { createAction, createSlice } from '@reduxjs/toolkit';
 
 type NotificationOption = { key?: SnackbarKey, variant?: VariantType, dismissed?: boolean };

@@ -73,12 +73,13 @@ export type FileInfo = FileInfoFile | FileInfoNotFile;
  */
 export type OldFileInfo = FileInfo;
 
+type UpgradeFile = (oldfile: OldFileInfo, blob?: { blob: Blob, beforeVersion: OldFileInfo['version'] }) => { fileInfo: FileInfo, originalVersion: OldFileInfo['version'] };
+
 /**
  * FileInfoのversionを202204081414まで上げる
  * @param x
  * @returns
  */
-export const upFile = (x: OldFileInfo, blob?: { blob: Blob, beforeVersion: OldFileInfo['version'] })
-:{ fileInfo: FileInfo, originalVersion: OldFileInfo['version'] } => (
-  { fileInfo: x, originalVersion: x.version }
+export const upFile:UpgradeFile = (oldfile) => (
+  { fileInfo: oldfile, originalVersion: oldfile.version }
 );

@@ -18,7 +18,6 @@ export const getPreview = async (src: string, maxSize: number, mime: string) => 
   const w = img.width;
   const h = img.height;
   const [resizedWidth, resizedHeight] = (
-    // eslint-disable-next-line no-nested-ternary
     w > maxSize || h > maxSize
       ? (w > h ? [maxSize, (maxSize * h) / w] : [(maxSize * w) / h, maxSize])
       : [w, h]

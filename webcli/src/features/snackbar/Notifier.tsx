@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
-import { useSnackbar, SnackbarKey } from 'notistack';
+import type { SnackbarKey } from 'notistack';
+import { useSnackbar } from 'notistack';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { removeSnackbar } from './snackbarSlice';
 

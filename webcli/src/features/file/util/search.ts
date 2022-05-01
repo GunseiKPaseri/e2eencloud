@@ -1,4 +1,4 @@
-import {
+import type {
   SearchQuery,
   SearchQuerySet,
   Highlight,
@@ -6,7 +6,7 @@ import {
   NumberSearchType,
 } from './search.type';
 
-import {
+import type {
   FileInfo,
   FileInfoFile,
   FileNode,

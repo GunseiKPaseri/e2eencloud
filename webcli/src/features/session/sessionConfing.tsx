@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import type { SessionsState } from './sessionSlice';
 import {
-  changeClientNameAsync, deleteSessionAsync, getSessionsAsync, SessionsState,
+  changeClientNameAsync, deleteSessionAsync, getSessionsAsync,
 } from './sessionSlice';
 
 function NameChanger({ id, name }:{ id: string, name: string }) {

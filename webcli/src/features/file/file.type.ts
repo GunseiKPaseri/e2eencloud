@@ -1,6 +1,6 @@
-import { Highlight, SearchQuery } from './util/search.type';
+import type { Highlight, SearchQuery } from './util/search.type';
 
-import {
+import type {
   FileDifference,
   ExpansionInfoImage,
   FileInfoFile,

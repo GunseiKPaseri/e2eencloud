@@ -5,14 +5,14 @@ import TreeView from '@mui/lab/TreeView';
 import FolderIcon from '@mui/icons-material/Folder';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import { Theme } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import { SystemStyleObject } from '@mui/system/styleFunctionSx';
+import type { SystemStyleObject } from '@mui/system/styleFunctionSx';
 
 import { useDrop } from 'react-dnd';
 import type { FileNode, FileInfoFile, FileInfoFolder } from './file.type';
 import StyledTreeItem from '../../components/customed/StyledTreeItem';
-import { FileState, changeActiveFileGroupDir, filedownloadAsync } from './fileSlice';
+import { type FileState, changeActiveFileGroupDir, filedownloadAsync } from './fileSlice';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 
 import { genUseDropReturn } from './dnd';

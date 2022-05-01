@@ -10,7 +10,8 @@ import ImageListItemBar from '@mui/material/ImageListItemBar';
 import { assertFileNodeFile, assertFileNodeFileORUndefined } from './filetypeAssert';
 import TagSetter from './TagSetter';
 import Renamer from './Renamer';
-import { filedownloadAsync, FileState } from './fileSlice';
+import type { FileState } from './fileSlice';
+import { filedownloadAsync } from './fileSlice';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { openContextmenu } from '../contextmenu/contextmenuSlice';
 

@@ -6,7 +6,7 @@ import {
   getSafeName,
   isDiffExt,
 } from './utils';
-import {
+import type {
   FileInfoDiffFile,
   FileTable,
 } from './file.type';

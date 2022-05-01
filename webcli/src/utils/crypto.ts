@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import { createHash as createSHA256Hash } from 'sha256-uint8array';
 
 import { argon2id } from 'hash-wasm';

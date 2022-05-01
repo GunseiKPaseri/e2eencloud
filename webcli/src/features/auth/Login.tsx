@@ -12,7 +12,7 @@ import Alert from '@mui/material/Alert';
 import { correctEmailaddr } from '../../util';
 import TowFactorAuth from './twofactorauth';
 import PasswordField from './PasswordField';
-import { AuthState, loginAsync, logoutAsync } from './authSlice';
+import { type AuthState, loginAsync, logoutAsync } from './authSlice';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import PasswordChanger from './PasswordChanger';
 

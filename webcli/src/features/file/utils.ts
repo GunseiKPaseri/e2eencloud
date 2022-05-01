@@ -1,12 +1,12 @@
 import FormData from 'form-data';
-import { AxiosResponse } from 'axios';
+import type { AxiosResponse } from 'axios';
 import { v4 } from 'uuid';
 import BrowserJimpImgClass from 'imghash-js/dist/esm/ImgClass/BrowserJimpImgClass';
 import ImgHash from 'imghash-js/dist/esm/ImgHash';
 import ahash from 'imghash-js/dist/esm/ahash';
 import dhash from 'imghash-js/dist/esm/dhash';
 import phash from 'imghash-js/dist/esm/phash';
-import {
+import type {
   FileInfoFile,
   FileInfoFolder,
   FileCryptoInfoWithoutBin,

@@ -8,7 +8,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { logoutAsync, AuthState } from '../../features/auth/authSlice';
+import { logoutAsync, type AuthState } from '../../features/auth/authSlice';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 
 export default function UserIcon() {

@@ -1,4 +1,5 @@
-import { createAsyncThunk, CaseReducer, PayloadAction } from '@reduxjs/toolkit';
+import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
 import type { StorageInfo } from '../file.type';
 import { axiosWithSession, appLocation } from '../../componentutils';

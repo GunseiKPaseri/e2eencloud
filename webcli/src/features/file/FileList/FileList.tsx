@@ -15,16 +15,17 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ViewComfyIcon from '@mui/icons-material/ViewComfy';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import { Theme } from '@mui/material/styles';
-import { SystemStyleObject } from '@mui/system/styleFunctionSx';
+import type { Theme } from '@mui/material/styles';
+import type { SystemStyleObject } from '@mui/system/styleFunctionSx';
 
 import { useDrop } from 'react-dnd';
 import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '../../../components/customed/StyledBreadcrumb';
 import TagButton from '../TagButton';
 import type { FileNode, FileInfoFolder } from '../file.type';
 import { assertFileNodeFolder } from '../filetypeAssert';
+import type { FileState } from '../fileSlice';
 import {
-  changeActiveFileGroupDir, fileDeleteAsync, filedownloadAsync, FileState,
+  changeActiveFileGroupDir, fileDeleteAsync, filedownloadAsync,
 } from '../fileSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { genUseDropReturn } from '../dnd';

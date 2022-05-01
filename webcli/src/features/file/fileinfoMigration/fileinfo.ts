@@ -1,5 +1,4 @@
-import {
-  upFile,
+import type {
   FileDifference,
   ExpansionInfoImage,
   FileInfoFile,
@@ -8,6 +7,9 @@ import {
   FileInfoNotFile,
   FileInfo,
   OldFileInfo,
+} from './202204081414_create';
+import {
+  upFile,
 } from './202204081414_create';
 
 export const latestVersion = 202204081414;

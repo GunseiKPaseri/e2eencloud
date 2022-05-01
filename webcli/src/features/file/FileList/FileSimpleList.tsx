@@ -1,12 +1,13 @@
 import React, { useCallback } from 'react';
 
 import Avatar from '@mui/material/Avatar';
-import List, { ListProps } from '@mui/material/List';
+import type { ListProps } from '@mui/material/List';
+import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
-import { Theme } from '@mui/material/styles';
-import { SystemStyleObject } from '@mui/system/styleFunctionSx';
+import type { Theme } from '@mui/material/styles';
+import type { SystemStyleObject } from '@mui/system/styleFunctionSx';
 
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -20,7 +21,7 @@ import { genUseDropReturn, genUseDragReturn } from '../dnd';
 import PngIcon from '../../../components/PngIcon';
 
 import { useAppSelector, useAppDispatch } from '../../../app/hooks';
-import { FileNode, FileInfoFile, FileInfoFolder } from '../file.type';
+import type { FileNode, FileInfoFile, FileInfoFolder } from '../file.type';
 import type { FileState } from '../fileSlice';
 import { assertNonFileNodeDiff } from '../filetypeAssert';
 import { openContextmenu } from '../../contextmenu/contextmenuSlice';

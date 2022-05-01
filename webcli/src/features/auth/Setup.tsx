@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { AuthState, confirmEmailAsync } from './authSlice';
+import { type AuthState, confirmEmailAsync } from './authSlice';
 
 export default function Setup() {
   const [token, setToken] = useState('');

@@ -1,9 +1,12 @@
 import React from 'react';
 
-import { SxProps, Theme } from '@mui/material/styles';
+import type { SxProps, Theme } from '@mui/material/styles';
 
 import {
-  DataGrid, GridRenderCellParams, GridRowsProp, GridSelectionModel, jaJP,
+  DataGrid, jaJP,
+} from '@mui/x-data-grid';
+import type {
+  GridRenderCellParams, GridRowsProp, GridSelectionModel,
 } from '@mui/x-data-grid';
 
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
