@@ -19,54 +19,45 @@ export interface ExpansionInfoImage {
 }
 
 /**
- *  サーバDBに保存するファイルに関する情報
+ * サーバDBに保存する共通情報
  */
-export interface FileInfoFile {
-  type: 'file',
+interface FileInfoCommon {
   id: string,
   name: string,
   createdAt: number,
   version: 202204081414,
+  parentId: string | null,
+  prevId?: string,
+}
+/**
+ *  サーバDBに保存するファイルに関する情報
+ */
+export interface FileInfoFile extends FileInfoCommon {
+  type: 'file',
   sha256: string,
   mime: string,
   size: number,
-  parentId: string | null,
-  prevId?: string,
   tag: string[],
   expansion?: ExpansionInfoImage
 }
 /**
  *  サーバDBに保存するフォルダに関する情報
  */
-export interface FileInfoFolder {
+export interface FileInfoFolder extends FileInfoCommon {
   type: 'folder',
-  id: string,
-  name: string,
-  createdAt: number,
-  version: 202204081414,
-  parentId: string | null,
-  prevId?: string,
 }
 /**
  *  サーバDBに保存する差分に関する情報
  */
-export interface FileInfoDiffFile {
+export interface FileInfoDiffFile extends FileInfoCommon {
   type: 'diff',
-  id: string,
-  name: string,
-  createdAt: number,
-  version: 202204081414,
-  parentId: string | null,
-  prevId?: string,
   diff: FileDifference
 }
-
-export type FileInfoNotFile = FileInfoFolder | FileInfoDiffFile;
 
 /**
  * サーバに保存する情報
  */
-export type FileInfo = FileInfoFile | FileInfoNotFile;
+export type FileInfo = FileInfoFile | FileInfoFolder | FileInfoDiffFile;
 
 /**
  * 古いバージョンも含むあらゆるFileInfo

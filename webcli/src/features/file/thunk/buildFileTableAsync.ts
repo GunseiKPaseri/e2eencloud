@@ -44,8 +44,9 @@ CaseReducer<FileState, PayloadAction<BuildFileTableAsyncResult>> = (state, actio
   // 生成したファイルツリーをstateに反映
   state.fileTable = action.payload.fileTable;
   state.tagTree = action.payload.tagTree;
-  assertFileNodeFolder(action.payload.fileTable.root);
+  const rootOrigin = action.payload.fileTable.root;
+  assertFileNodeFolder(rootOrigin);
   state.activeFileGroup = {
-    type: 'dir', folderId: 'root', files: action.payload.fileTable.root.files, selecting: [], parents: ['root'],
+    type: 'dir', folderId: 'root', files: rootOrigin.files, selecting: [], parents: ['root'],
   };
 };

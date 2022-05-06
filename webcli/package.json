@@ -78,5 +78,9 @@
     "vite": "^2.9.6",
     "vite-react-jsx": "^1.1.2",
     "vitest": "^0.10.0"
-  }
+  },
+  "eslintIgnore": [
+    "startupJest.js",
+    "jest.config.js"
+  ]
 }

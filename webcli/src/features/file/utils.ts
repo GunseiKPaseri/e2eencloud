@@ -19,7 +19,6 @@ import type {
   FileInfoDiffFile,
   FileDifference,
   BuildFileTableAsyncResult,
-  FileInfoNotFile,
 } from './file.type';
 import {
   assertFileNodeFolder,
@@ -193,7 +192,7 @@ export const expandServerData = async (fileObj: FileNode<FileInfoFile>, blobURL:
 /**
  * ファイル情報のみをサーバに保存
  */
-export const submitFileInfoWithEncryption = async <T extends FileInfoNotFile>(
+export const submitFileInfoWithEncryption = async <T extends Exclude<FileInfo, FileInfoFile>>(
   fileInfo: T,
 ): Promise<FileCryptoInfoWithoutBin<T>> => {
   // genkey

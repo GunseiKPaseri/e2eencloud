@@ -4,7 +4,6 @@ import type {
   FileInfoFile,
   FileInfoFolder,
   FileInfoDiffFile,
-  FileInfoNotFile,
   FileInfo,
   OldFileInfo,
 } from './202204081414_create';
@@ -20,7 +19,6 @@ export type{
   FileInfoFile,
   FileInfoFolder,
   FileInfoDiffFile,
-  FileInfoNotFile,
   FileInfo,
 };
 
