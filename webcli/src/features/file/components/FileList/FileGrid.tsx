@@ -15,6 +15,10 @@ import { assertNonFileNodeDiff } from '../../filetypeAssert';
 import TagButton from '../TagButton';
 import { assertArrayString } from '../../../../utils/assert';
 
+export const serializeTags = (tags: string[]) => tags.map((x) => x.replaceAll('|', '||')).join('|p');
+
+export const deserializeTags = (serialized: string) => serialized.split('|p').map((x) => x.replaceAll('||', '|'));
+
 function FileGrid({
   sx,
   nodeRef,
@@ -51,7 +55,11 @@ function FileGrid({
                   id: target.id, name: target.name, mime: '', size: -1, tags: null,
                 }
                 : {
-                  id: target.id, name: target.name, mime: target.mime, size: target.size, tags: target.tag.join('|||'),
+                  id: target.id,
+                  name: target.name,
+                  mime: target.mime,
+                  size: target.size,
+                  tags: serializeTags(target.tag),
                 };
             })
           }
@@ -67,7 +75,7 @@ function FileGrid({
               headerName: 'タグ',
               width: 600,
               renderCell: (params: GridRenderCellParams<string>) => (params.value
-                && params.value.split('|||').map((x) => (<TagButton key={x} tag={x} />))
+                && deserializeTags(params.value).map((x) => (<TagButton key={x} tag={x} />))
               ),
             },
           ]}
