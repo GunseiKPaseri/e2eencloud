@@ -29,8 +29,9 @@ interface UserForm {
 
 interface UserState {
   email: string;
-  useTowFactorAuth: boolean;
+  useTwoFactorAuth: boolean;
   MasterKey: number[];
+  authority: 'ADMIN' | null;
 }
 export interface AuthState {
   user: UserState | null;
@@ -193,26 +194,21 @@ UserState, { email: string, password: string, token: string }>(
 
     const authenticationKeyBase64 = byteArray2base64(DerivedAuthenticationKey);
 
-    // login
-    let result: AxiosResponse<{
+    type APILoginResopnse = {
+      authority: 'ADMIN' | null,
       encryptedMasterKeyBase64: string,
       encryptedMasterKeyIVBase64: string,
       useTwoFactorAuth: boolean,
       encryptedRSAPrivateKeyBase64?: string,
       encryptedRSAPrivateKeyIVBase64?: string,
       RSAPublicKeyBase64?: string,
-    }>;
+    };
+    // login
+    let result: AxiosResponse<APILoginResopnse>;
     try {
       result = await axiosWithSession.post<
       { email: string, authenticationKey: string, token: string },
-      AxiosResponse<{
-        encryptedMasterKeyBase64: string,
-        encryptedMasterKeyIVBase64: string,
-        useTwoFactorAuth: boolean,
-        encryptedRSAPrivateKeyBase64?: string,
-        encryptedRSAPrivateKeyIVBase64?: string,
-        RSAPublicKeyBase64?: string,
-      }>
+      AxiosResponse<APILoginResopnse>
       >(
         `${appLocation}/api/login`,
         { email: userinfo.email, authenticationKeyBase64, token: userinfo.token },
@@ -290,9 +286,10 @@ UserState, { email: string, password: string, token: string }>(
 
     dispatch(enqueueSnackbar({ message: 'ログインに成功しました', options: { variant: 'success' } }));
     return {
+      authority: result.data.authority,
       email: userinfo.email,
       MasterKey: Array.from(MasterKeyRaw),
-      useTowFactorAuth: result.data.useTwoFactorAuth,
+      useTwoFactorAuth: result.data.useTwoFactorAuth,
     };
   },
 );
@@ -379,12 +376,12 @@ export const authSlice = createSlice({
       })
       .addCase(addTOTPAsync.fulfilled, (state) => {
         if (state.user) {
-          state.user.useTowFactorAuth = true;
+          state.user.useTwoFactorAuth = true;
         }
       })
       .addCase(deleteTOTPAsync.fulfilled, (state) => {
         if (state.user) {
-          state.user.useTowFactorAuth = false;
+          state.user.useTwoFactorAuth = false;
         }
       })
       .addCase(loginAsync.pending, (state) => {

@@ -5,6 +5,23 @@ import { byteArray2base64 } from '../deps.ts';
 
 const DEFAULT_MAX_CAPACITY = 10 * 1024 * 1024; //10MiB
 
+interface SQLTableUser {
+  id: number;
+  email: string;
+  client_random_value: string;
+  encrypted_master_key: string;
+  encrypted_master_key_iv: string;
+  hashed_authentication_key: string;
+  is_email_confirmed: boolean;
+  max_capacity: number;
+  file_usage: number;
+  two_factor_authentication_secret_key: string | null;
+  rsa_public_key: string | null;
+  encrypted_rsa_private_key: string | null;
+  encrypted_rsa_private_key_iv: string | null;
+  authority: string | null;
+}
+
 export class User {
   readonly id: number;
   readonly email: string;
@@ -19,21 +36,8 @@ export class User {
   #rsa_public_key: string | null;
   #encrypted_rsa_private_key: string | null;
   #encrypted_rsa_private_key_iv: string | null;
-  constructor(user: {
-    id: number;
-    email: string;
-    client_random_value: string;
-    encrypted_master_key: string;
-    encrypted_master_key_iv: string;
-    hashed_authentication_key: string;
-    is_email_confirmed: boolean;
-    max_capacity: number;
-    file_usage: number;
-    two_factor_authentication_secret_key: string | null;
-    rsa_public_key: string | null;
-    encrypted_rsa_private_key: string | null;
-    encrypted_rsa_private_key_iv: string | null;
-  }) {
+  #authority: 'ADMIN' | null;
+  constructor(user: SQLTableUser) {
     this.id = user.id;
     this.email = user.email;
     this.client_random_value = user.client_random_value;
@@ -47,6 +51,7 @@ export class User {
     this.#rsa_public_key = user.rsa_public_key;
     this.#encrypted_rsa_private_key = user.encrypted_rsa_private_key;
     this.#encrypted_rsa_private_key_iv = user.encrypted_rsa_private_key_iv;
+    this.#authority = user.authority === 'ADMIN' ? 'ADMIN' : null;
   }
 
   get two_factor_authentication_secret_key() {
@@ -63,6 +68,9 @@ export class User {
   }
   get file_usage() {
     return this.#file_usage;
+  }
+  get authority() {
+    return this.#authority;
   }
 
   async patchUsage(diffUsage: number) {
@@ -262,4 +270,27 @@ export const getClientRandomSalt = async (email: string): Promise<string> => {
     users.length === 1 ? users[0].client_random_value : null,
   );
   return byteArray2base64(hashedClientRandomSalt);
+};
+
+export const getUsers = async (offset: number, limit: number): Promise<User[]> => {
+  const users: SQLTableUser[] = await client.query(`SELECT * FROM users ORDER BY email LIMIT ? OFFSET ?`, [
+    limit,
+    offset,
+  ]);
+  return users.map((user) => new User(user));
+};
+
+export const getNumberOfUsers = async (): Promise<number> => {
+  const [result]: [{ 'COUNT(*)': number }] = await client.query(`SELECT COUNT(*) FROM users`);
+  return result['COUNT(*)'];
+};
+
+export const deleteUserById = async (id: number | null): Promise<{ success: boolean }> => {
+  if (!id) return { success: false };
+  const result = await client.execute(`DELETE FROM users WHERE id = ?`, [
+    id,
+  ]);
+  return {
+    success: (result.affectedRows && result.affectedRows > 0 ? true : false),
+  };
 };

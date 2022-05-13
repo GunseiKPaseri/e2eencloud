@@ -68,7 +68,7 @@ function GenTwoFactorAuth({ email }: { email: string }) {
   );
 }
 
-export default function TowFactorAuth() {
+export default function TwoFactorAuth() {
   const selector = useAppSelector<AuthState>((state) => state.auth);
   const dispatch = useAppDispatch();
   const deleteKey = () => {
@@ -79,7 +79,7 @@ export default function TowFactorAuth() {
       {
         selector.user
           && (
-            (selector.user.useTowFactorAuth)
+            (selector.user.useTwoFactorAuth)
               ? (
                 <>
                   <p>二要素認証を利用しています</p>

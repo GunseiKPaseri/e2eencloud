@@ -8,9 +8,12 @@ import { AddFolder } from '../../features/file/components/AddFolder';
 import { DiffTree } from '../../features/file/components/DiffTree';
 import TagButton from '../../features/file/components/TagButton';
 import StorageInfo from '../../features/file/components/StorageInfo';
+import Userlist from '../admin/Userlist';
+import { useAppSelector } from '../../app/hooks';
 
 export default function FileExplorer() {
   const theme = useTheme();
+  const user = useAppSelector((state) => state.auth.user);
   return (
     <div style={{
       display: 'grid',
@@ -28,6 +31,7 @@ export default function FileExplorer() {
         <FileTreeViewer />
         <TagButton tag="bin" />
         <Login />
+        {user?.authority === 'ADMIN' && <Userlist />}
       </Paper>
       <Paper sx={{ overflowY: 'scroll', padding: 1 }}>
         <AddFolder />

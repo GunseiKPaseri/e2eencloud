@@ -25,10 +25,13 @@ TZ = Asia/Tokyo
 # ----First time only
 $ docker-compose up -d
 $ deno run -A --unstable https://deno.land/x/nessie@2.0.6/cli.ts migrate
-# ----End
+$ deno run -A --unstable https://deno.land/x/nessie@2.0.6/cli.ts seed
+# ----End of First time only
 $ deno run --allow-env --allow-net --allow-read --allow-write --unstable main.ts
 server has started on http://localhost:3001 🚀
 ```
+
+_You should delete or change password `admin@example.com`, `testuser@example.com`_ ( See /db/seeds/users.ts )
 
 ## lint
 

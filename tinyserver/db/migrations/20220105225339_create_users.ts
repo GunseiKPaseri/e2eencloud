@@ -3,6 +3,7 @@ import { AbstractMigration, ClientMySQL } from 'https://deno.land/x/nessie@2.0.4
 export default class extends AbstractMigration<ClientMySQL> {
   /** Runs on migrate */
   async up(): Promise<void> {
+    // users
     await this.client.query(`
       CREATE TABLE users (
         id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
@@ -18,11 +19,14 @@ export default class extends AbstractMigration<ClientMySQL> {
         encrypted_rsa_private_key TEXT,
         encrypted_rsa_private_key_iv VARCHAR(24),
         rsa_public_key TEXT,
+        authority TEXT,
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX(id),
         INDEX(email)
       )`);
+
+    // email_confirmations
     await this.client.query(`
       CREATE TABLE email_confirmations (
         email varchar(256) NOT NULL,
@@ -32,6 +36,8 @@ export default class extends AbstractMigration<ClientMySQL> {
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX(email)
       )`);
+
+    // sessions
     await this.client.query(`
       CREATE TABLE sessions (
         id varchar(36) PRIMARY KEY NOT NULL,
@@ -43,11 +49,13 @@ export default class extends AbstractMigration<ClientMySQL> {
         INDEX(id),
         INDEX(session_key),
         INDEX(user_id),
-        CONSTRAINT fk_session_user_id
+        CONSTRAINT fk_sessions_user_id_users_id
           FOREIGN KEY (user_id)
           REFERENCES users (id)
           ON DELETE CASCADE ON UPDATE RESTRICT
       )`);
+
+    // files
     await this.client.query(`
       CREATE TABLE files (
         id varchar(36) PRIMARY KEY NOT NULL,
@@ -60,7 +68,7 @@ export default class extends AbstractMigration<ClientMySQL> {
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX(id),
-        CONSTRAINT fk_user_id
+        CONSTRAINT fk_files_created_by_users_id
           FOREIGN KEY (created_by)
           REFERENCES users (id)
           ON DELETE RESTRICT ON UPDATE RESTRICT

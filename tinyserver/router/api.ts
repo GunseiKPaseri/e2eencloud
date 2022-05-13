@@ -1,7 +1,16 @@
 import { base642ByteArray, byteArray2base64 } from '../deps.ts';
 import { Router, Status } from '../deps.ts';
 import { addEmailConfirmation } from '../model/EmailConfirmations.ts';
-import { addUser, getClientRandomSalt, getUserByEmail, getUserById, userEmailConfirm } from '../model/Users.ts';
+import {
+  addUser,
+  deleteUserById,
+  getClientRandomSalt,
+  getNumberOfUsers,
+  getUserByEmail,
+  getUserById,
+  getUsers,
+  userEmailConfirm,
+} from '../model/Users.ts';
 import { OTPAuth } from '../deps.ts';
 import { addFile, getFileById, getFileInfo } from '../model/Files.ts';
 import { uaparser } from '../deps.ts';
@@ -181,6 +190,7 @@ router.post('/login', async (ctx) => {
     encryptedMasterKeyBase64: user.encrypted_master_key,
     encryptedMasterKeyIVBase64: user.encrypted_master_key_iv,
     useTwoFactorAuth: user.two_factor_authentication_secret_key !== null,
+    authority: user.authority,
   };
   const result_rsa_key = {
     encryptedRSAPrivateKeyBase64: user.encrypted_rsa_private_key,
@@ -550,6 +560,68 @@ router.get('/files/:fileid/bin', async (ctx) => {
   ctx.response.status = Status.OK;
   ctx.response.body = result.body;
   ctx.response.type = 'application/octet-stream';
+});
+
+// ADMIN
+
+interface GETuserlistJSON {
+  number_of_user: number;
+  users: {
+    id: number;
+    email: string;
+    max_capacity: number;
+    file_usage: number;
+    authority?: string;
+    two_factor_authentication: boolean;
+  }[];
+}
+
+router.get('/users', async (ctx) => {
+  // admin auth
+  const uid: number | null = await ctx.state.session.get('uid');
+  const user = await getUserById(uid);
+  if (!user || user.authority !== 'ADMIN') return ctx.response.status = Status.Forbidden;
+
+  // varidate
+  const prmoffset: number = parseInt(ctx.request.url.searchParams.get('offset') ?? '0', 10);
+  const prmlimit: number = parseInt(ctx.request.url.searchParams.get('limit') ?? '10', 10);
+  const offset = isNaN(prmoffset) ? 0 : prmoffset;
+  const limit = isNaN(prmlimit) ? 10 : prmlimit;
+
+  // get
+  const number_of_users = getNumberOfUsers();
+  const list = (await getUsers(offset, limit)).map((user): GETuserlistJSON['users'][0] => ({
+    id: user.id,
+    email: user.email,
+    max_capacity: user.max_capacity,
+    file_usage: user.file_usage,
+    authority: user.authority ?? undefined,
+    two_factor_authentication: user.two_factor_authentication_secret_key ? true : false,
+  }));
+
+  const result: GETuserlistJSON = {
+    number_of_user: await number_of_users,
+    users: list,
+  };
+  ctx.response.status = Status.OK;
+  ctx.response.body = result;
+  ctx.response.type = 'json';
+});
+
+router.delete('/user/:id', async (ctx) => {
+  // auth
+  const uid: number | null = await ctx.state.session.get('uid');
+  const user = await getUserById(uid);
+  if (!user || user.authority !== 'ADMIN') return ctx.response.status = Status.Forbidden;
+
+  const id = parseInt(ctx.params.id);
+
+  if (user.id === id) return ctx.response.status = Status.BadRequest;
+
+  const result = await deleteUserById(id);
+  if (!result.success) return ctx.response.status = Status.BadRequest;
+  ctx.response.status = Status.NoContent;
+  ctx.response.type = 'json';
 });
 
 export default router;
