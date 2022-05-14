@@ -1,5 +1,5 @@
-import PasswordChanger from '../../features/auth/PasswordChanger';
-import TwoFactorAuth from '../../features/auth/TwoFactorAuth';
+import PasswordChanger from '../../features/auth/components/PasswordChanger';
+import TwoFactorAuth from '../../features/auth/components/TwoFactorAuth';
 import { useAppSelector } from '../../app/hooks';
 import SessionConfig from '../../features/session/sessionConfing';
 import Userlist from '../admin/Userlist';

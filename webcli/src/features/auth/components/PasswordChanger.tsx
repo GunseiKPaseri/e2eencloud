@@ -7,10 +7,10 @@ import { useState } from 'react';
 import zxcvbn from 'zxcvbn';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import PasswordChecker from './PasswordChecker';
 import PasswordField from './PasswordField';
-import { changePasswordAsync } from './authSlice';
+import { changePasswordAsync } from '../authSlice';
 
 const steps = [
   '新規パスワード入力',

@@ -9,10 +9,10 @@ import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Alert from '@mui/material/Alert';
-import { correctEmailaddr } from '../../util';
+import { correctEmailaddr } from '../../../util';
 import PasswordField from './PasswordField';
-import { type AuthState, loginAsync, logoutAsync } from './authSlice';
-import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { type AuthState, loginAsync, logoutAsync } from '../authSlice';
+import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 
 export default function Login() {
   const [email, setEmail] = useState('');

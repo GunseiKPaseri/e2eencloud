@@ -10,11 +10,11 @@ import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { correctEmailaddr } from '../../util';
+import { correctEmailaddr } from '../../../util';
 import PasswordChecker from './PasswordChecker';
 import PasswordField from './PasswordField';
-import { signupAsync } from './authSlice';
-import { useAppDispatch } from '../../app/hooks';
+import { signupAsync } from '../authSlice';
+import { useAppDispatch } from '../../../app/hooks';
 
 const steps = [
   'ユーザ情報入力',

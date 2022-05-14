@@ -11,9 +11,9 @@ import CssBaseline from '@mui/material/CssBaseline';
 import App from './App';
 import { store } from './app/store';
 
-import Signup from './features/auth/Signup';
-import Login from './features/auth/Login';
-import Setup from './features/auth/Setup';
+import Signup from './features/auth/components/Signup';
+import Login from './features/auth/components/Login';
+import Setup from './features/auth/components/Setup';
 
 import composeComponents from './utils/composeComponents';
 
