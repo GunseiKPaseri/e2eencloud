@@ -22,6 +22,7 @@ import Notifier from './features/snackbar/Notifier';
 import ContextMenuProvider from './features/contextmenu/ContextMenu';
 import FileExplorer from './components/fileexplorer/FileExplorer';
 import ConfigurePage from './components/configpage/ConfigurePage';
+import Initialize from './features/init/Initialize';
 
 const mdTheme = createTheme();
 
@@ -31,6 +32,7 @@ const ComposedProvider = composeComponents(
   (props) => <ThemeProvider {...props} theme={mdTheme} />,
   (props) => <SnackbarProvider {...props} maxSnack={3} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} />,
   (props) => <DndProvider {...props} backend={HTML5Backend} />,
+  (props) => <Initialize {...props} />,
 );
 
 const rootElement = document.getElementById('root');
