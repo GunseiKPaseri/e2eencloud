@@ -18,7 +18,7 @@ import { useDrop, useDrag, DragPreviewImage } from 'react-dnd';
 import { Badge } from '@mui/material';
 import { genUseDropReturn, genUseDragReturn } from '../dnd';
 
-import PngIcon from '../../../../components/PngIcon';
+import PngIcon from '../../../../components/assets/PngIcon';
 
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import type { FileNode, FileInfoFile, FileInfoFolder } from '../../file.type';

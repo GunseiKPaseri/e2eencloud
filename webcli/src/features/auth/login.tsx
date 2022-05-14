@@ -10,11 +10,9 @@ import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Alert from '@mui/material/Alert';
 import { correctEmailaddr } from '../../util';
-import TowFactorAuth from './twofactorauth';
 import PasswordField from './PasswordField';
 import { type AuthState, loginAsync, logoutAsync } from './authSlice';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import PasswordChanger from './PasswordChanger';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -54,8 +52,6 @@ export default function Login() {
                 {selector.user.email}
                 としてログイン済みです
               </Typography>
-              <TowFactorAuth />
-              <PasswordChanger />
               <Button
                 type="button"
                 variant="outlined"

@@ -14,13 +14,14 @@ import { store } from './app/store';
 import Signup from './features/auth/Signup';
 import Login from './features/auth/Login';
 import Setup from './features/auth/Setup';
-import SessionConfig from './features/session/sessionConfing';
 
 import composeComponents from './utils/composeComponents';
 
 import Notifier from './features/snackbar/Notifier';
 
 import ContextMenuProvider from './features/contextmenu/ContextMenu';
+import FileExplorer from './components/fileexplorer/FileExplorer';
+import ConfigurePage from './components/configpage/ConfigurePage';
 
 const mdTheme = createTheme();
 
@@ -43,11 +44,15 @@ if (rootElement) {
       <ContextMenuProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<App />} />
+            <Route path="/" element={<App />}>
+              <Route index element={<FileExplorer />} />
+              <Route path="configure">
+                <Route index element={<ConfigurePage />} />
+              </Route>
+            </Route>
             <Route path="/signup" element={<Signup />} />
             <Route path="/setup" element={<Setup />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/session" element={<SessionConfig />} />
           </Routes>
         </BrowserRouter>
       </ContextMenuProvider>

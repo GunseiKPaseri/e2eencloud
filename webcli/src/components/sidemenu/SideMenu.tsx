@@ -12,10 +12,13 @@ import MuiDrawer from '@mui/material/Drawer';
 import Toolbar from '@mui/material/Toolbar';
 
 import SettingsIcon from '@mui/icons-material/Settings';
+import HomeIcon from '@mui/icons-material/Home';
+
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import { useNavigate } from 'react-router-dom';
 import { drawerWidth } from '../../util';
 
-import HeadAppBar from '../headappbar/HeadAppBar';
+import HeadAppBar from './HeadAppBar';
 
 const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
   ({ theme, open }) => ({
@@ -48,6 +51,7 @@ export default function SideMenu() {
   const toggleDrawer = () => {
     setOpen(!open);
   };
+  const navigate = useNavigate();
   return (
     <>
       <HeadAppBar open={open} setOpen={setOpen} />
@@ -66,7 +70,13 @@ export default function SideMenu() {
         </Toolbar>
         <Divider />
         <List>
-          <ListItem button>
+          <ListItem button onClick={() => navigate('/')}>
+            <ListItemIcon>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText primary="ホーム" />
+          </ListItem>
+          <ListItem button onClick={() => navigate('/configure')}>
             <ListItemIcon>
               <SettingsIcon />
             </ListItemIcon>

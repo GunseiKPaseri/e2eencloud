@@ -1,7 +1,8 @@
 import Box from '@mui/material/Box';
-import SideMenu from './components/sidemenu/SideMenu';
 
-import FileExplorer from './components/fileexplorer/FileExplorer';
+import { Outlet } from 'react-router-dom';
+
+import SideMenu from './components/sidemenu/SideMenu';
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
           height: '100vh',
         }}
       >
-        <FileExplorer />
+        <Outlet />
       </Box>
     </Box>
   );

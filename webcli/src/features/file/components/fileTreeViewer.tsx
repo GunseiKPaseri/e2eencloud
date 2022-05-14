@@ -11,7 +11,7 @@ import type { SystemStyleObject } from '@mui/system/styleFunctionSx';
 
 import { useDrop } from 'react-dnd';
 import type { FileNode, FileInfoFile, FileInfoFolder } from '../file.type';
-import StyledTreeItem from '../../../components/customed/StyledTreeItem';
+import StyledTreeItem from '../../../components/assets/StyledTreeItem';
 import { type FileState, changeActiveFileGroupDir, filedownloadAsync } from '../fileSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 
