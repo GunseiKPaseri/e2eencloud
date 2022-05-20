@@ -3,6 +3,7 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import reactJsx from 'vite-react-jsx'
+import manifestSRI from 'vite-plugin-manifest-sri'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -24,6 +25,7 @@ export default defineConfig({
     }
   },
   plugins: [
+    manifestSRI({ algorithms: ['sha384', 'sha512'] }),
     reactJsx()
   ]
 })
