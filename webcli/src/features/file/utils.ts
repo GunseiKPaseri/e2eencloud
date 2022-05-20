@@ -127,6 +127,42 @@ export const explainByte = (byte: number) => {
 };
 
 /**
+ * ファイル拡張情報の復元
+ */
+export const restoreExpansion = (expansion: FileInfoFile['expansion']): FileNode<FileInfoFile>['expansion'] => {
+  if (!expansion) return undefined;
+  switch (expansion.type) {
+    case 'img': {
+      return {
+        ...expansion,
+        ahashObj: (new ImgHash('ahash', expansion.ahash, 'hex')).byte,
+        dhashObj: (new ImgHash('dhash', expansion.dhash, 'hex')).byte,
+        phashObj: (new ImgHash('phash', expansion.phash, 'hex')).byte,
+      };
+    }
+    default:
+      throw new ExhaustiveError(expansion.type);
+  }
+};
+
+/**
+ * ファイル拡張情報を保存可能な形式に変換
+ */
+export const trimExpansion = (expansionLocal: FileNode<FileInfoFile>['expansion']): FileInfoFile['expansion'] => {
+  if (!expansionLocal) return undefined;
+  switch (expansionLocal.type) {
+    case 'img': {
+      const {
+        ahashObj, dhashObj, phashObj, ...expansion
+      } = expansionLocal;
+      return expansion;
+    }
+    default:
+      throw new ExhaustiveError(expansionLocal.type);
+  }
+};
+
+/**
  * ファイル拡張情報の生成
  */
 export const genExpansion = async (fileInfo: FileInfoFile, blobURL: string): Promise<{ expansion: FileInfoFile['expansion'], expansionLocal: FileNode<FileInfoFile>['expansion'] } | undefined> => {
@@ -149,12 +185,7 @@ export const genExpansion = async (fileInfo: FileInfoFile, blobURL: string): Pro
     };
     return {
       expansion,
-      expansionLocal: {
-        ...expansion,
-        ahashObj: imghashs.ahashObj.byte,
-        dhashObj: imghashs.dhashObj.byte,
-        phashObj: imghashs.phashObj.byte,
-      },
+      expansionLocal: restoreExpansion(expansion),
     };
   }
   return undefined;
@@ -452,7 +483,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):BuildFileTable
         assertArrayNumber(encryptedFileIVBin);
         fileTable[fileInfo.id] = {
           ...fileInfo,
-          expansion: undefined,
+          expansion: restoreExpansion(fileInfo.expansion),
           parentId: fileInfo.parentId ?? 'root',
           history: [],
           origin: {

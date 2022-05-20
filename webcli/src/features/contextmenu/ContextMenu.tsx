@@ -6,6 +6,8 @@ import Divider from '@mui/material/Divider';
 import { useAppSelector, useAppDispatch } from '../../app/hooks';
 import { changeActiveFileGroupDir, createDiffAsync, filedownloadAsync } from '../file/fileSlice';
 import { closeContextmenu } from './contextmenuSlice';
+import { string2ByteArray } from '../../utils/uint8';
+import { exportFileInfo } from '../file/util/exportinfo';
 
 function ContextMenu() {
   const menuState = useAppSelector((store) => store.contextmenu.menuState);
@@ -88,6 +90,26 @@ function ContextMenu() {
       };
       if (targetFile.tag.includes('bin')) result.push(<MenuItem key="menuRestoreFromBin" onClick={handleMenuRestoreFromBin}>ゴミ箱から復元</MenuItem>);
       else result.push(<MenuItem key="menuAddBin" onClick={handleMenuAddBin}>ゴミ箱に追加</MenuItem>);
+
+      // download meta data
+      const handleMenuDLInfo = () => {
+        const metadata = new Blob([string2ByteArray(JSON.stringify(exportFileInfo(targetFile)))], { type: 'application/json' });
+        const metadataURI = URL.createObjectURL(metadata);
+
+        // Download
+        const a = document.createElement('a');
+        a.href = metadataURI;
+        a.download = `${targetFile.name}.meta.json`;
+        document.body.appendChild(a);
+
+        a.click();
+
+        a.parentNode?.removeChild(a);
+
+        URL.revokeObjectURL(metadataURI);
+        dispatch(closeContextmenu());
+      };
+      result.push(<MenuItem key="menuDLInfo" onClick={handleMenuDLInfo}>メタデータをダウンロード</MenuItem>);
     }
   }
 
