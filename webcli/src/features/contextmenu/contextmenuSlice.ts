@@ -1,14 +1,14 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { WritableDraft } from 'immer/dist/internal';
-import type { FileInfoFile, FileNode } from '../file/file.type';
+import type { FileInfoFile, FileInfoFolder, FileNode } from '../file/file.type';
 
 export type ContextMenuState = {
   menuState: {
     anchor: { left: number, top: number },
     menu: {
       type: 'filelistitemfile',
-      targetFile: FileNode<FileInfoFile>,
-      isDir?: boolean,
+      target: FileNode<FileInfoFile | FileInfoFolder>,
+      isInDir?: boolean,
       selected?: boolean,
     }
   } | null

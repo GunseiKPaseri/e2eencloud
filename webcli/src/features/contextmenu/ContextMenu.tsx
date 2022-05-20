@@ -7,7 +7,8 @@ import { useAppSelector, useAppDispatch } from '../../app/hooks';
 import { changeActiveFileGroupDir, createDiffAsync, filedownloadAsync } from '../file/fileSlice';
 import { closeContextmenu } from './contextmenuSlice';
 import { string2ByteArray } from '../../utils/uint8';
-import { exportFileInfo } from '../file/util/exportinfo';
+import { ExhaustiveError } from '../../utils/assert';
+import { exportFileInfo, exportFolderInfo } from '../file/util/exportinfo';
 
 function ContextMenu() {
   const menuState = useAppSelector((store) => store.contextmenu.menuState);
@@ -21,8 +22,8 @@ function ContextMenu() {
 
   if (menuState !== null) {
     if (menuState.menu.type === 'filelistitemfile') {
-      const { targetFile } = menuState.menu;
-      const isDir = menuState.menu.isDir !== false ? (activeFileGroup && activeFileGroup.type === 'dir') : false;
+      const { target } = menuState.menu;
+      const isInDir = menuState.menu.isInDir !== false ? (activeFileGroup && activeFileGroup.type === 'dir') : false;
 
       if (menuState.menu.selected && activeFileGroup) {
         // (All Item) Add Bin or Restore From Bin
@@ -51,9 +52,9 @@ function ContextMenu() {
           dispatch(closeContextmenu());
         };
         const [haveBinItem, haveNotBinItem] = activeFileGroup.selecting.reduce((acc, value) => {
-          const target = fileState.fileTable[value];
-          if (target.type !== 'file' || (acc[0] && acc[1])) return acc;
-          if (target.tag.includes('bin')) return [true, acc[1]];
+          const selectItem = fileState.fileTable[value];
+          if (selectItem.type !== 'file' || (acc[0] && acc[1])) return acc;
+          if (selectItem.tag.includes('bin')) return [true, acc[1]];
           return [acc[0], true];
         }, [false, false]);
         if (haveNotBinItem) result.push(<MenuItem key="menuAllAddBin" onClick={handleMenuAllAddBin}>すべてゴミ箱に追加</MenuItem>);
@@ -64,42 +65,45 @@ function ContextMenu() {
       // Show Dir
 
       const handleMenuShowDir = () => {
-        if (targetFile.parentId) dispatch(changeActiveFileGroupDir({ id: targetFile.parentId }));
+        if (target.parentId) dispatch(changeActiveFileGroupDir({ id: target.parentId }));
         dispatch(closeContextmenu());
       };
-      if (!isDir) result.push(<MenuItem key="menuShowDir" onClick={handleMenuShowDir}>ファイルの場所を表示</MenuItem>);
+      if (!isInDir) result.push(<MenuItem key="menuShowDir" onClick={handleMenuShowDir}>ファイルの場所を表示</MenuItem>);
 
-      // Show or DL
+      if (target.type === 'file') {
+        // Show or DL
 
-      const handleMenuDecrypto = () => {
-        dispatch(filedownloadAsync({ fileId: targetFile.id }));
-        dispatch(closeContextmenu());
-      };
-      if (targetFile.blobURL) result.push(<MenuItem key="menuDownload" component={Link} download={targetFile.name} href={targetFile.blobURL}>ダウンロード</MenuItem>);
-      else result.push(<MenuItem key="menuDecrypto" onClick={handleMenuDecrypto}>ファイルを復号して表示</MenuItem>);
+        const handleMenuDecrypto = () => {
+          dispatch(filedownloadAsync({ fileId: target.id }));
+          dispatch(closeContextmenu());
+        };
+        if (target.blobURL) result.push(<MenuItem key="menuDownload" component={Link} download={target.name} href={target.blobURL}>ダウンロード</MenuItem>);
+        else result.push(<MenuItem key="menuDecrypto" onClick={handleMenuDecrypto}>ファイルを復号して表示</MenuItem>);
 
-      // ADD Bin or Restore From Bin
+        // ADD Bin or Restore From Bin
 
-      const handleMenuAddBin = () => {
-        dispatch(createDiffAsync({ targetId: targetFile.id, newTags: [...targetFile.tag, 'bin'] }));
-        dispatch(closeContextmenu());
-      };
-      const handleMenuRestoreFromBin = () => {
-        dispatch(createDiffAsync({ targetId: targetFile.id, newTags: targetFile.tag.filter((x) => x !== 'bin') }));
-        dispatch(closeContextmenu());
-      };
-      if (targetFile.tag.includes('bin')) result.push(<MenuItem key="menuRestoreFromBin" onClick={handleMenuRestoreFromBin}>ゴミ箱から復元</MenuItem>);
-      else result.push(<MenuItem key="menuAddBin" onClick={handleMenuAddBin}>ゴミ箱に追加</MenuItem>);
-
+        const handleMenuAddBin = () => {
+          dispatch(createDiffAsync({ targetId: target.id, newTags: [...target.tag, 'bin'] }));
+          dispatch(closeContextmenu());
+        };
+        const handleMenuRestoreFromBin = () => {
+          dispatch(createDiffAsync({ targetId: target.id, newTags: target.tag.filter((x) => x !== 'bin') }));
+          dispatch(closeContextmenu());
+        };
+        if (target.tag.includes('bin')) result.push(<MenuItem key="menuRestoreFromBin" onClick={handleMenuRestoreFromBin}>ゴミ箱から復元</MenuItem>);
+        else result.push(<MenuItem key="menuAddBin" onClick={handleMenuAddBin}>ゴミ箱に追加</MenuItem>);
+      }
       // download meta data
       const handleMenuDLInfo = () => {
-        const metadata = new Blob([string2ByteArray(JSON.stringify(exportFileInfo(targetFile)))], { type: 'application/json' });
-        const metadataURI = URL.createObjectURL(metadata);
+        const metadata = target.type === 'file' ? exportFileInfo(target)
+          : target.type === 'folder' ? exportFolderInfo(target, fileState.fileTable)
+            : (() => { throw new ExhaustiveError(target); })();
+        const metadataURI = URL.createObjectURL(new Blob([string2ByteArray(JSON.stringify(metadata))], { type: 'application/json' }));
 
         // Download
         const a = document.createElement('a');
         a.href = metadataURI;
-        a.download = `${targetFile.name}.meta.json`;
+        a.download = `${target.name}.meta.json`;
         document.body.appendChild(a);
 
         a.click();
@@ -110,6 +114,8 @@ function ContextMenu() {
         dispatch(closeContextmenu());
       };
       result.push(<MenuItem key="menuDLInfo" onClick={handleMenuDLInfo}>メタデータをダウンロード</MenuItem>);
+    } else {
+      throw new ExhaustiveError(menuState.menu.type);
     }
   }
 

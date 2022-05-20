@@ -29,7 +29,7 @@ function FileImgList({ sx, onSelectFile, onSelectFolder }: {
               onContextMenu={(event) => {
                 event.preventDefault();
                 if (target.type !== 'file') return;
-                dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitemfile', targetFile: target } }));
+                dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitemfile', target } }));
               }}
             >
               {

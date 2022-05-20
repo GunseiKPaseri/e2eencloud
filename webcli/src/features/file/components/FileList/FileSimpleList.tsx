@@ -37,6 +37,11 @@ function FileListListFolder(
 ) {
   const dispatch = useAppDispatch();
 
+  const handleContextMenu: React.MouseEventHandler<HTMLDivElement> = (event) => {
+    event.preventDefault();
+    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitemfile', target: targetFolder, selected: false } }));
+  };
+
   const drag = useDrag(() => genUseDragReturn(targetFolder.id))[1];
 
   const [{ canDrop, isOver }, drop] = useDrop(() => (
@@ -60,6 +65,7 @@ function FileListListFolder(
     <ListItem
       ref={attachRef}
       button
+      onContextMenu={handleContextMenu}
       onDoubleClick={() => onSelectFolder(targetFolder.id)}
       sx={customSX}
     >
@@ -88,7 +94,7 @@ function FileListListFile({
 
   const handleContextMenu: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.preventDefault();
-    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitemfile', targetFile, selected } }));
+    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitemfile', target: targetFile, selected } }));
   };
 
   return (

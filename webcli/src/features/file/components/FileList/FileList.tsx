@@ -33,6 +33,7 @@ import FileSimpleList from './FileSimpleList';
 import FileGrid from './FileGrid';
 import FileImgList from './FileImgList';
 import SearchInput from '../SearchInput';
+import { openContextmenu } from '../../../contextmenu/contextmenuSlice';
 
 function DIRBreadcrumb(props: { target: FileNode<FileInfoFolder> }) {
   const { target } = props;
@@ -55,11 +56,17 @@ function DIRBreadcrumb(props: { target: FileNode<FileInfoFolder> }) {
     ...(isOver && canDrop ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' }),
   }), [isOver, canDrop]);
 
+  const handleContextMenu: React.MouseEventHandler<HTMLDivElement> = (event) => {
+    event.preventDefault();
+    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitemfile', target, selected: false } }));
+  };
+
   return (
     <StyledBreadcrumbWithMenu
       innerRef={drop}
       sx={customSX}
       label={target.name}
+      onContextMenu={handleContextMenu}
       onClick={() => {
         dispatch(changeActiveFileGroupDir({ id: target.id }));
       }}
