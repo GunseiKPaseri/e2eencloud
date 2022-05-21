@@ -40,7 +40,8 @@ export const genFileInfoFolder = (props: {
   parentId: string | null,
   createdAt?: number,
   prevId?: string,
-  fileKeyBin?: number[]
+  fileKeyBin?: number[],
+  tag: string[],
 }):FileCryptoInfoWithoutBin<FileInfoFolder> => ({
   fileKeyBin: props.fileKeyBin ?? [],
   fileInfo: {
@@ -51,6 +52,7 @@ export const genFileInfoFolder = (props: {
     createdAt: props.createdAt ?? 0,
     parentId: props.parentId,
     prevId: props.prevId,
+    tag: props.tag,
   },
   originalVersion: latestVersion,
 });

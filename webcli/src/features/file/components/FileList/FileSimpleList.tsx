@@ -29,7 +29,7 @@ import SearchHighLight from './SearchHighLight';
 import type { Highlight } from '../../util/search.type';
 
 function FileListListFolder(
-  { targetFolder, onSelectFolder }: {
+  { selected, targetFolder, onSelectFolder }: {
     selected: boolean,
     targetFolder: FileNode<FileInfoFolder>,
     onSelectFolder: (id: string)=>void
@@ -39,7 +39,7 @@ function FileListListFolder(
 
   const handleContextMenu: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.preventDefault();
-    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitemfile', target: targetFolder, selected: false } }));
+    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitemfile', target: targetFolder, selected } }));
   };
 
   const drag = useDrag(() => genUseDragReturn(targetFolder.id))[1];
@@ -70,9 +70,27 @@ function FileListListFolder(
       sx={customSX}
     >
       <ListItemAvatar>
-        <Avatar>
-          <FolderIcon />
-        </Avatar>
+        <Badge
+          overlap="circular"
+          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+          invisible={!selected}
+          badgeContent={
+            <CheckCircleIcon color="info" />
+          }
+        >
+          <Badge
+            overlap="circular"
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            invisible={!targetFolder.tag.includes('bin')}
+            badgeContent={
+              <DeleteIcon />
+            }
+          >
+            <Avatar>
+              <FolderIcon />
+            </Avatar>
+          </Badge>
+        </Badge>
       </ListItemAvatar>
       <ListItemText
         primary={targetFolder.name}

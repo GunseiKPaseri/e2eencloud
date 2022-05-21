@@ -33,7 +33,7 @@ function ContextMenu() {
             activeFileGroup.selecting.forEach((id) => {
               const bintarget = fileState.fileTable[id];
               // console.log(id, bintarget);
-              if (bintarget.type === 'file' && !bintarget.tag.includes('bin')) {
+              if ((bintarget.type === 'file' || bintarget.type === 'folder') && !bintarget.tag.includes('bin')) {
                 dispatch(createDiffAsync({ targetId: id, newTags: { addtag: ['bin'] } }));
               }
             });
@@ -45,7 +45,7 @@ function ContextMenu() {
             activeFileGroup.selecting.forEach((id) => {
               const bintarget = fileState.fileTable[id];
               // console.log(id, bintarget);
-              if (bintarget.type === 'file' && bintarget.tag.includes('bin')) {
+              if ((bintarget.type === 'file' || bintarget.type === 'folder') && bintarget.tag.includes('bin')) {
                 dispatch(createDiffAsync({ targetId: id, newTags: { deltag: ['bin'] } }));
               }
             });
@@ -54,7 +54,7 @@ function ContextMenu() {
         };
         const [haveBinItem, haveNotBinItem] = activeFileGroup.selecting.reduce((acc, value) => {
           const selectItem = fileState.fileTable[value];
-          if (selectItem.type !== 'file' || (acc[0] && acc[1])) return acc;
+          if ((acc[0] && acc[1]) || !(selectItem.type === 'file' || selectItem.type === 'folder')) return acc;
           if (selectItem.tag.includes('bin')) return [true, acc[1]];
           return [acc[0], true];
         }, [false, false]);
@@ -80,19 +80,6 @@ function ContextMenu() {
         };
         if (target.blobURL) result.push(<MenuItem key="menuDownload" component={Link} download={target.name} href={target.blobURL}>ダウンロード</MenuItem>);
         else result.push(<MenuItem key="menuDecrypto" onClick={handleMenuDecrypto}>ファイルを復号して表示</MenuItem>);
-
-        // ADD Bin or Restore From Bin
-
-        const handleMenuAddBin = () => {
-          dispatch(createDiffAsync({ targetId: target.id, newTags: [...target.tag, 'bin'] }));
-          dispatch(closeContextmenu());
-        };
-        const handleMenuRestoreFromBin = () => {
-          dispatch(createDiffAsync({ targetId: target.id, newTags: target.tag.filter((x) => x !== 'bin') }));
-          dispatch(closeContextmenu());
-        };
-        if (target.tag.includes('bin')) result.push(<MenuItem key="menuRestoreFromBin" onClick={handleMenuRestoreFromBin}>ゴミ箱から復元</MenuItem>);
-        else result.push(<MenuItem key="menuAddBin" onClick={handleMenuAddBin}>ゴミ箱に追加</MenuItem>);
       } else if (target.type === 'folder') {
         const handleDirDownload = async () => {
           const zipblob = genZipFile(target, fileState.fileTable);
@@ -113,6 +100,19 @@ function ContextMenu() {
         };
         result.push(<MenuItem key="menuDirDownload" onClick={handleDirDownload}>ダウンロード</MenuItem>);
       }
+      // ADD Bin or Restore From Bin
+
+      const handleMenuAddBin = () => {
+        dispatch(createDiffAsync({ targetId: target.id, newTags: [...target.tag, 'bin'] }));
+        dispatch(closeContextmenu());
+      };
+      const handleMenuRestoreFromBin = () => {
+        dispatch(createDiffAsync({ targetId: target.id, newTags: target.tag.filter((x) => x !== 'bin') }));
+        dispatch(closeContextmenu());
+      };
+      if (target.tag.includes('bin')) result.push(<MenuItem key="menuRestoreFromBin" onClick={handleMenuRestoreFromBin}>ゴミ箱から復元</MenuItem>);
+      else result.push(<MenuItem key="menuAddBin" onClick={handleMenuAddBin}>ゴミ箱に追加</MenuItem>);
+
       // download meta data
       const handleMenuDLInfo = () => {
         const metadata = target.type === 'file' ? exportFileInfo(target)

@@ -26,7 +26,7 @@ describe('#highlightMark', () => {
 
 describe('#searchFromTable', () => {
   test('正しく取得できる', () => {
-    const a = genFileInfoFolder({ id: 'a', parentId: null });
+    const a = genFileInfoFolder({ id: 'a', parentId: null, tag: [] });
     const b = genFileInfoFile({
       id: 'b', parentId: 'a', tag: [], name: 'b.hoge',
     });

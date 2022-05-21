@@ -382,7 +382,10 @@ export const getEncryptedFileRaw = async (fileId: string) => {
  * 差分をオブジェクトに反映したものを返す
  */
 export const integrateDifference = <T extends FileNode<FileInfoFile | FileInfoFolder>>(
-  diffs: string[], fileTable: FileTable, targetFile: T):T => {
+  diffs: string[],
+  fileTable: FileTable,
+  targetFile: T,
+):T => {
   const copiedTargetFile = { ...targetFile };
   const tagset = new Set<string>((copiedTargetFile.type === 'file' ? copiedTargetFile.tag : []));
   diffs.forEach((c) => {
@@ -392,18 +395,20 @@ export const integrateDifference = <T extends FileNode<FileInfoFile | FileInfoFo
 
     if (nextFile.type === 'diff') {
       const { addtag, deltag } = nextFile.diff;
-      if (copiedTargetFile.type === 'file') {
+      if (copiedTargetFile.type === 'file' || copiedTargetFile.type === 'folder') {
         if (addtag) {
           addtag.forEach((x) => tagset.add(x));
         }
         if (deltag) {
           deltag.forEach((x) => tagset.delete(x));
         }
+      } else {
+        throw new ExhaustiveError(copiedTargetFile);
       }
     }
   });
 
-  if (copiedTargetFile.type === 'file') {
+  if (copiedTargetFile.type === 'file' || copiedTargetFile.type === 'folder') {
     copiedTargetFile.tag = [...tagset];
   }
   return copiedTargetFile;
@@ -471,6 +476,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):BuildFileTable
       files: [],
       parentId: null,
       history: [],
+      tag: [],
       origin: {
         fileInfo: {
           type: 'folder',
@@ -479,6 +485,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):BuildFileTable
           id: 'root',
           name: 'root',
           parentId: null,
+          tag: [],
         },
         fileKeyBin: [],
         originalVersion: latestVersion,
@@ -532,7 +539,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):BuildFileTable
   const descendantsTable:{ [key: string]: {
     prevId?: string, nextId?: string, diffList?: string[] } | undefined } = {};
   const fileNodes = files
-    .filter((x) => x.fileInfo.type === 'folder' || x.fileInfo.type === 'file')
+    .filter((x): x is FileCryptoInfoWithBin | FileCryptoInfoWithoutBin<FileInfoFolder> => x.fileInfo.type === 'folder' || x.fileInfo.type === 'file')
     .map((x) => x.fileInfo.id);
   // 次のfileNodesまで子孫を探索・nextの更新
   fileNodes
@@ -595,9 +602,11 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):BuildFileTable
   // create dir tree
   dirTreeItems.forEach((x) => {
     assertNonFileNodeDiff(fileTable[x]);
-    const parentNode = fileTable[fileTable[x].parentId ?? 'root'];
-    assertFileNodeFolder(parentNode);
-    parentNode.files.push(x);
+    const parentNode:FileNode<FileInfo> | undefined = fileTable[fileTable[x].parentId ?? 'root'];
+    // 親が存在する場合にツリーに追加
+    if (parentNode && parentNode.type === 'folder') {
+      parentNode.files.push(x);
+    }
   });
   // sort directory name
   dirTreeItems.push('root');
@@ -612,7 +621,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):BuildFileTable
   const tagTree: { [key: string]: string[] } = {};
   dirTreeItems.forEach((x) => {
     const t = fileTable[x];
-    if (t.type !== 'file') return;
+    if (!(t.type === 'file' || t.type === 'folder')) return;
     t.tag.forEach((tag) => {
       if (tagTree[tag]) {
         tagTree[tag].push(x);
@@ -686,7 +695,7 @@ export const createDiff = (props: {
   const prevId = targetNode.history[0];
 
   // tag変更
-  if (targetNode.type === 'file' && newTags) {
+  if ((targetNode.type === 'file' || targetNode.type === 'folder') && newTags) {
     const oldTags = targetNode.tag;
     let deltag: string[] = [];
     let addtag: string[] = [];
@@ -719,12 +728,13 @@ export const createDiff = (props: {
 /**
  * 対象を削除した時同時に削除するノードの一覧を取得
  */
-export const getAllDependentFile = (target: FileNode<FileInfo>, fileTable: FileTable) => {
-  const result = [target.id];
-  if (target.type === 'folder') {
-    // 以下に存在する全てのファイル
-    target.files.map((x) => getAllDependentFile(fileTable[x], fileTable)).flat();
-  }
+export const getAllDependentFile = (target: FileNode<FileInfo>, fileTable: FileTable):string[] => {
+  const result = target.type === 'folder'
+    ? [
+      target.id,
+      ...target.files.map((x) => getAllDependentFile(fileTable[x], fileTable)).flat(),
+    ]
+    : [target.id];
   // 変更履歴全て
   for (let t = target.prevId; t; t = fileTable[t].prevId) {
     result.push(t);

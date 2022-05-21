@@ -51,6 +51,7 @@ CreateFolderAsyncResult,
       createdAt: Date.now(),
       type: 'folder',
       parentId: parent,
+      tag: [],
     };
     const addFolder = await submitFileInfoWithEncryption(fileInfo);
 

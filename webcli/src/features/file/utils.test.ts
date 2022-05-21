@@ -49,7 +49,7 @@ describe('#isDiffExt', () => {
 
 describe('#createDiff', () => {
   test('正しく差分を作成できる', () => {
-    const a = genFileInfoFolder({ id: 'a', parentId: null });
+    const a = genFileInfoFolder({ id: 'a', parentId: null, tag: [] });
     const b = genFileInfoFile({ id: 'b', parentId: 'a', tag: ['あ'] });
     const c = genFileInfoFile({ id: 'c', parentId: 'a', tag: [] });
     const d = genFileInfoDiff({
@@ -66,6 +66,7 @@ describe('#createDiff', () => {
         files: ['a'],
         parentId: null,
         history: [],
+        tag: [],
         origin: {
           fileKeyBin: [],
           fileInfo: {
@@ -75,6 +76,7 @@ describe('#createDiff', () => {
             version: latestVersion,
             parentId: null,
             createdAt: 0,
+            tag: [],
           },
           originalVersion: latestVersion,
         },
@@ -203,7 +205,7 @@ describe('#createDiff', () => {
 
 describe('#buildFileTable', () => {
   test('正しく構築できる', () => {
-    const a = genFileInfoFolder({ id: 'a', parentId: null });
+    const a = genFileInfoFolder({ id: 'a', parentId: null, tag: [] });
     const b = genFileInfoFile({ id: 'b', parentId: 'a', tag: [] });
     const c = genFileInfoDiff({
       id: 'c', parentId: 'a', prevId: 'b', diff: { addtag: ['あ'] },
@@ -239,6 +241,7 @@ describe('#buildFileTable', () => {
         files: ['a'],
         parentId: null,
         history: [],
+        tag: [],
         origin: {
           fileKeyBin: [],
           fileInfo: {
@@ -248,6 +251,7 @@ describe('#buildFileTable', () => {
             createdAt: 0,
             parentId: null,
             version: latestVersion,
+            tag: [],
           },
           originalVersion: latestVersion,
         },
@@ -391,7 +395,7 @@ describe('#buildFileTable', () => {
 
 describe('#getAllDependentFile', () => {
   test('削除対象を正しく取得できる', () => {
-    const a = genFileInfoFolder({ id: 'a', parentId: null });
+    const a = genFileInfoFolder({ id: 'a', parentId: null, tag: [] });
     const b = genFileInfoFile({ id: 'b', parentId: 'a', tag: [] });
     const c = genFileInfoDiff({
       id: 'c', parentId: 'a', prevId: 'b', diff: { addtag: ['あ'] },
