@@ -13,18 +13,18 @@ import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
 
 import type { FileState } from '../fileSlice';
 
-type FiledownloadAsyncResult = { fileId: string, local: ExpandServerDataResult };
+type FiledownloadAsyncResult = { fileId: string, local: ExpandServerDataResult, active: boolean };
 
 /**
  * ファイルをダウンロードするThunk
  */
 export const filedownloadAsync = createAsyncThunk<
 FiledownloadAsyncResult,
-{ fileId: string },
+{ fileId: string, active: boolean },
 { state: RootState }
 >(
   'file/filedownload',
-  async ({ fileId }, { getState, dispatch }) => {
+  async ({ fileId, active }, { getState, dispatch }) => {
     const step = 4;
     dispatch(setProgress(progress(0, step)));
 
@@ -59,14 +59,14 @@ FiledownloadAsyncResult,
     const local = await expandServerData(fileObj, url);
 
     dispatch(deleteProgress());
-    return { fileId, local };
+    return { fileId, local, active };
   },
 );
 
 export const afterFiledownloadAsyncFullfilled:
 CaseReducer<FileState, PayloadAction<FiledownloadAsyncResult>> = (state, action) => {
   // 生成したblobリンク等を反映
-  const { fileId, local } = action.payload;
+  const { fileId, local, active } = action.payload;
   const target = state.fileTable[fileId];
   assertFileNodeFile(target);
   const nextFileNode = { ...target, expansion: local.expansion, blobURL: local.blobURL };
@@ -76,9 +76,11 @@ CaseReducer<FileState, PayloadAction<FiledownloadAsyncResult>> = (state, action)
 
   state.fileTable = newFileTable;
 
-  state.activeFile = {
-    link: local.blobURL,
-    fileId,
-    similarFiles: listUpSimilarFile(nextFileNode, newFileTable),
-  };
+  if (active) {
+    state.activeFile = {
+      link: local.blobURL,
+      fileId,
+      similarFiles: listUpSimilarFile(nextFileNode, newFileTable),
+    };
+  }
 };

@@ -104,7 +104,7 @@ function FileList() {
   }, []);
 
   const onSelectFile = useCallback((fileId: string) => {
-    dispatch(filedownloadAsync({ fileId }));
+    dispatch(filedownloadAsync({ fileId, active: true }));
   }, []);
 
   const [{ canDrop, isOver }, drop] = useDrop(

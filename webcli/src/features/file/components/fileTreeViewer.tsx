@@ -114,7 +114,7 @@ function FileTreeItem({
 function FileTreeViewer() {
   const dispatch = useAppDispatch();
 
-  const onSelectFile = (fileId: string) => dispatch(filedownloadAsync({ fileId }));
+  const onSelectFile = (fileId: string) => dispatch(filedownloadAsync({ fileId, active: true }));
   const onSelectFolder = (id: string) => dispatch(changeActiveFileGroupDir({ id }));
 
   return (

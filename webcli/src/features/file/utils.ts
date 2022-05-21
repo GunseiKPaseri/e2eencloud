@@ -425,6 +425,28 @@ export const getFileParentsList = (firstId: string, fileTable: FileTable) => {
 };
 
 /**
+ * ファイルの子の一覧を取得
+ * @param root 対象ディレクトリ
+ * @param fileTable FileTable
+ * @returns 一覧
+ */
+export const getFileChildren = (root: FileNode<FileInfoFolder>, fileTable: FileTable): string[] => (
+  root.files.map((id) => {
+    const target = fileTable[id];
+    switch (target.type) {
+      case 'file':
+        return id;
+      case 'folder':
+        return getFileChildren(target, fileTable);
+      case 'diff':
+        return [];
+      default:
+        throw new ExhaustiveError(target);
+    }
+  }).flat()
+);
+
+/**
  * 与えられたファイルIdをファイル名でソート
  */
 export const fileSort = (filelist: string[], fileTable: FileTable) => filelist.sort((a, b) => {

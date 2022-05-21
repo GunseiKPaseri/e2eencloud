@@ -51,7 +51,9 @@ function Viewer() {
               return (
                 <ImageListItem
                   key={x}
-                  onDoubleClick={() => dispatch(filedownloadAsync({ fileId: target.id }))}
+                  onDoubleClick={() => dispatch(
+                    filedownloadAsync({ fileId: target.id, active: true }),
+                  )}
                   onContextMenu={(event) => {
                     event.preventDefault();
                     if (target.type !== 'file') return;

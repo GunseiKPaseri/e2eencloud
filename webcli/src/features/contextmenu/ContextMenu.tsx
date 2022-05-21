@@ -9,6 +9,7 @@ import { closeContextmenu } from './contextmenuSlice';
 import { string2ByteArray } from '../../utils/uint8';
 import { ExhaustiveError } from '../../utils/assert';
 import { exportFileInfo, exportFolderInfo } from '../file/util/exportinfo';
+import genZipFile from '../file/util/zip';
 
 function ContextMenu() {
   const menuState = useAppSelector((store) => store.contextmenu.menuState);
@@ -74,7 +75,7 @@ function ContextMenu() {
         // Show or DL
 
         const handleMenuDecrypto = () => {
-          dispatch(filedownloadAsync({ fileId: target.id }));
+          dispatch(filedownloadAsync({ fileId: target.id, active: true }));
           dispatch(closeContextmenu());
         };
         if (target.blobURL) result.push(<MenuItem key="menuDownload" component={Link} download={target.name} href={target.blobURL}>ダウンロード</MenuItem>);
@@ -92,6 +93,25 @@ function ContextMenu() {
         };
         if (target.tag.includes('bin')) result.push(<MenuItem key="menuRestoreFromBin" onClick={handleMenuRestoreFromBin}>ゴミ箱から復元</MenuItem>);
         else result.push(<MenuItem key="menuAddBin" onClick={handleMenuAddBin}>ゴミ箱に追加</MenuItem>);
+      } else if (target.type === 'folder') {
+        const handleDirDownload = async () => {
+          const zipblob = genZipFile(target, fileState.fileTable);
+          const metadataURI = URL.createObjectURL(await zipblob);
+
+          // Download
+          const a = document.createElement('a');
+          a.href = metadataURI;
+          a.download = `${target.name}.zip`;
+          document.body.appendChild(a);
+
+          a.click();
+
+          a.parentNode?.removeChild(a);
+
+          URL.revokeObjectURL(metadataURI);
+          dispatch(closeContextmenu());
+        };
+        result.push(<MenuItem key="menuDirDownload" onClick={handleDirDownload}>ダウンロード</MenuItem>);
       }
       // download meta data
       const handleMenuDLInfo = () => {
