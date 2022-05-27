@@ -1,6 +1,5 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import './index.css';
 import { Provider } from 'react-redux';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { DndProvider } from 'react-dnd';
@@ -8,6 +7,11 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { SnackbarProvider } from 'notistack';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+
+import './index.css';
+
 import App from './App';
 import { store } from './app/store';
 
@@ -24,7 +28,7 @@ import FileExplorer from './components/fileexplorer/FileExplorer';
 import ConfigurePage from './components/configpage/ConfigurePage';
 import Initialize from './features/init/Initialize';
 
-const mdTheme = createTheme();
+const mdTheme = createTheme({});
 
 const ComposedProvider = composeComponents(
   React.StrictMode,
@@ -33,6 +37,7 @@ const ComposedProvider = composeComponents(
   (props) => <SnackbarProvider {...props} maxSnack={3} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} />,
   (props) => <DndProvider {...props} backend={HTML5Backend} />,
   (props) => <Initialize {...props} />,
+  (props) => <LocalizationProvider {...props} dateAdapter={AdapterDateFns} />,
 );
 
 const rootElement = document.getElementById('root');

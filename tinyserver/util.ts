@@ -45,11 +45,9 @@ export const createSalt = (email: string, ClientRandomValue: string | null) => {
   }
 };
 
-export const isDir = async (folderPath: string): Promise<boolean> => {
-  try {
-    const file = await Deno.stat(folderPath);
-    return file.isDirectory;
-  } catch (_) {
-    return false;
+export class ExhaustiveError extends Error {
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+  constructor(value: never, message = `Unsupported type: ${value}`) {
+    super(message);
   }
-};
+}

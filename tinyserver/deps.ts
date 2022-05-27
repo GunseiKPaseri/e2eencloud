@@ -44,3 +44,9 @@ import uaparser from 'https://cdn.skypack.dev/ua-parser-js@1.0.2?dts';
 export { uaparser };
 
 export { S3Bucket } from 'https://deno.land/x/s3@0.1.0/mod.ts';
+
+import compareAsc from 'https://deno.land/x/date_fns@v2.22.1/compareAsc/index.ts';
+export { compareAsc };
+
+import bs58 from 'https://cdn.skypack.dev/bs58@5.0.0?dts';
+export { bs58 };

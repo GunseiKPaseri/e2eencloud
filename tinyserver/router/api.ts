@@ -1,4 +1,4 @@
-import { base642ByteArray, byteArray2base64 } from '../deps.ts';
+import { base642ByteArray, byteArray2base64, compareAsc } from '../deps.ts';
 import { Router, Status } from '../deps.ts';
 import { addEmailConfirmation } from '../model/EmailConfirmations.ts';
 import {
@@ -17,6 +17,8 @@ import { uaparser } from '../deps.ts';
 import SessionsStore from '../model/Sessions.ts';
 import { deleteFiles } from '../model/Files.ts';
 import { bucket } from '../s3client.ts';
+import { addHook, getHook, getHooksList, getNumberOfHooks, HookData, parseHookData } from '../model/Hooks.ts';
+import { ExhaustiveError } from '../util.ts';
 
 const router = new Router({ prefix: '/api' });
 
@@ -622,6 +624,89 @@ router.delete('/user/:id', async (ctx) => {
   if (!result.success) return ctx.response.status = Status.BadRequest;
   ctx.response.status = Status.NoContent;
   ctx.response.type = 'json';
+});
+
+// hook
+
+interface POSThooksJSON {
+  name: string;
+  data: HookData;
+  expired_at?: string;
+}
+
+router.post('/hooks', async (ctx) => {
+  const uid: number | null = await ctx.state.session.get('uid');
+  const user = await getUserById(uid);
+  if (!user) return ctx.response.status = Status.Forbidden;
+  if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
+  const body = ctx.request.body();
+  if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
+  // varidate
+  const bodyvalue: Partial<POSThooksJSON> = await body.value;
+  if (typeof bodyvalue.name !== 'string' || typeof bodyvalue.data !== 'object') {
+    return ctx.response.status = Status.BadRequest;
+  }
+  const data = parseHookData(bodyvalue.data);
+  if (!data || data.method === 'NONE') return ctx.response.status = Status.BadRequest;
+
+  const result = await addHook({
+    name: bodyvalue.name,
+    data,
+    user_id: user.id,
+    expired_at: bodyvalue.expired_at ? new Date(bodyvalue.expired_at) : undefined,
+  });
+  ctx.response.status = Status.OK;
+  ctx.response.body = result.value();
+  ctx.response.type = 'json';
+});
+
+router.get('/hooks', async (ctx) => {
+  const uid: number | null = await ctx.state.session.get('uid');
+  const user = await getUserById(uid);
+  if (!user) return ctx.response.status = Status.Forbidden;
+  // varidate
+  const prmoffset: number = parseInt(ctx.request.url.searchParams.get('offset') ?? '0', 10);
+  const prmlimit: number = parseInt(ctx.request.url.searchParams.get('limit') ?? '10', 10);
+  const offset = isNaN(prmoffset) ? 0 : prmoffset;
+  const limit = isNaN(prmlimit) ? 10 : prmlimit;
+
+  const list = getHooksList(user.id, offset, limit);
+  const getSizeOfHooks = getNumberOfHooks(user.id);
+
+  const result = {
+    number_of_hook: await getSizeOfHooks,
+    hooks: (await list).map((hook) => hook.value()),
+  };
+
+  ctx.response.status = Status.OK;
+  ctx.response.body = result;
+  ctx.response.type = 'json';
+});
+
+router.post('/hook/:id', async (ctx) => {
+  const hook = await getHook(ctx.params.id);
+  console.log(hook?.value());
+  if (
+    !hook ||
+    (hook.expired_at && compareAsc(hook.expired_at, new Date(Date.now())) < 0)
+  ) {
+    return ctx.response.status = Status.Forbidden;
+  }
+
+  switch (hook.data.method) {
+    case 'USER_DELETE': {
+      const result = await deleteUserById(typeof hook.user_id === 'number' ? hook.user_id : hook.user_id.id);
+      if (!result.success) return ctx.response.status = Status.BadRequest;
+      break;
+    }
+    case 'NONE': {
+      break;
+    }
+    default:
+      throw new ExhaustiveError(hook.data);
+  }
+
+  ctx.response.status = Status.OK;
 });
 
 export default router;

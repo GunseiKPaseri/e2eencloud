@@ -22,7 +22,6 @@ export default class extends AbstractMigration<ClientMySQL> {
         authority TEXT,
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX(id),
         INDEX(email)
       )`);
 
@@ -46,7 +45,6 @@ export default class extends AbstractMigration<ClientMySQL> {
         user_id INT,
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX(id),
         INDEX(session_key),
         INDEX(user_id),
         CONSTRAINT fk_sessions_user_id_users_id
@@ -67,11 +65,28 @@ export default class extends AbstractMigration<ClientMySQL> {
         created_by INT NOT NULL,
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX(id),
+        INDEX(created_by),
         CONSTRAINT fk_files_created_by_users_id
           FOREIGN KEY (created_by)
           REFERENCES users (id)
           ON DELETE RESTRICT ON UPDATE RESTRICT
+      )`);
+
+    // hooks
+    await this.client.query(`
+      CREATE TABLE hooks (
+        id varchar(36) PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL,
+        data TEXT NOT NULL,
+        user_id INT NOT NULL,
+        created_at datetime DEFAULT CURRENT_TIMESTAMP,
+        expired_at datetime,
+        INDEX(user_id),
+        INDEX(created_at),
+        CONSTRAINT fk_hooks_user_id_users_id
+          FOREIGN KEY (user_id)
+          REFERENCES users (id)
+          ON DELETE CASCADE ON UPDATE RESTRICT
       )`);
   }
 
@@ -80,6 +95,7 @@ export default class extends AbstractMigration<ClientMySQL> {
     await this.client.query('DROP TABLE email_confirmations');
     await this.client.query('DROP TABLE sessions');
     await this.client.query('DROP TABLE files');
+    await this.client.query('DROP TABLE hooks');
     await this.client.query('DROP TABLE users');
   }
 }
