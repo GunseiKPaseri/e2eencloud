@@ -1,3 +1,4 @@
+import type { GridFilterModel, GridSortItem } from '@mui/x-data-grid';
 import { type AxiosResponse } from 'axios';
 import { appLocation, axiosWithSession } from '../../features/componentutils';
 
@@ -13,11 +14,27 @@ type GetUserListJSONRow = {
   }[]
 };
 
-export const getUserList = async (offset: number, limit: number) => {
+export const getUserList = async (
+  offset: number,
+  limit: number,
+  sortQuery: GridSortItem[],
+  filterQuery: GridFilterModel,
+) => {
   const result = await axiosWithSession.get<
   Record<string, never>,
   AxiosResponse<GetUserListJSONRow>,
-  { offset: number, limit: number }>(`${appLocation}/api/users`, { params: { offset, limit } });
+  { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(
+    `${appLocation}/api/users`,
+    {
+      params: {
+        offset,
+        limit,
+        orderby: sortQuery[0]?.field,
+        order: sortQuery[0]?.sort,
+        q: JSON.stringify(filterQuery),
+      },
+    },
+  );
   return result.data;
 };
 

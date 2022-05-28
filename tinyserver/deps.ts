@@ -34,7 +34,7 @@ export { oakCors } from 'https://deno.land/x/cors@v1.2.2/mod.ts';
 
 export { Client, configLogger } from 'https://deno.land/x/mysql@v2.10.2/mod.ts';
 export type { ClientConfig } from 'https://deno.land/x/mysql@v2.10.2/mod.ts';
-export { Query, Where } from 'https://deno.land/x/sql_builder@v1.9.1/mod.ts';
+export { Order, Query, Where } from 'https://deno.land/x/sql_builder@v1.9.1/mod.ts';
 
 // @deno-types="https://deno.land/x/otpauth@v7.1.2/dist/otpauth.d.ts"
 export * as OTPAuth from 'https://deno.land/x/otpauth@v7.1.2/dist/otpauth.esm.js';

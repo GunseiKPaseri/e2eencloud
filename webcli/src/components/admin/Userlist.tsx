@@ -2,15 +2,22 @@ import { useEffect, useState } from 'react';
 import {
   DataGrid, GridActionsCellItem, jaJP,
 } from '@mui/x-data-grid';
-import type { GridRowsProp, GridRowParams } from '@mui/x-data-grid';
+import type {
+  GridRowsProp,
+  GridRowParams,
+  GridSortItem,
+  GridFilterModel,
+} from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { deleteUser, getUserList } from './adminrequest';
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 12;
 
 function Userlist() {
   const [rows, setRows] = useState<GridRowsProp>([]);
   const [page, setPage] = useState(0);
+  const [sortQuery, setSortQuery] = useState<GridSortItem[]>([]);
+  const [filterQuery, setFilterQuery] = useState<GridFilterModel>({ items: [] });
   const [rowLength, setRowLength] = useState(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [pageReloader, setPageReloader] = useState<symbol>(Symbol('pageload'));
@@ -20,7 +27,7 @@ function Userlist() {
 
     (async () => {
       setLoading(true);
-      const userlist = await getUserList(page * PAGE_SIZE, PAGE_SIZE);
+      const userlist = await getUserList(page * PAGE_SIZE, PAGE_SIZE, sortQuery, filterQuery);
       const newRows:GridRowsProp = userlist.users;
 
       if (!active) {
@@ -35,7 +42,7 @@ function Userlist() {
     return () => {
       active = false;
     };
-  }, [page, pageReloader]);
+  }, [page, sortQuery, filterQuery, pageReloader]);
 
   return (
     <div style={{ height: 400, width: '100%' }}>
@@ -88,8 +95,17 @@ function Userlist() {
         pageSize={PAGE_SIZE}
         rowsPerPageOptions={[PAGE_SIZE]}
         rowCount={rowLength}
+        rowHeight={25}
         paginationMode="server"
         onPageChange={(newPage) => setPage(newPage)}
+        sortingMode="server"
+        onSortModelChange={(model) => {
+          setSortQuery([...model]);
+        }}
+        filterMode="server"
+        onFilterModelChange={(model) => {
+          setFilterQuery(model);
+        }}
         page={page}
         loading={loading}
       />

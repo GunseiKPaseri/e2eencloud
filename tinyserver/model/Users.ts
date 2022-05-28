@@ -1,7 +1,18 @@
 import client from '../dbclient.ts';
-import { createSalt } from '../util.ts';
+import { createSalt, ExhaustiveError } from '../util.ts';
 import { deleteEmailConfirms, isEmailConfirmSuccess } from './EmailConfirmations.ts';
-import { byteArray2base64 } from '../deps.ts';
+import { byteArray2base64, Order, Query } from '../deps.ts';
+import parseJSONwithoutErr from '../utils/parseJSONWithoutErr.ts';
+import {
+  easyIsFilterItem,
+  FilterBooleanItem,
+  filterModelToSQLWhereObj,
+  FilterNumberItem,
+  FilterStringItem,
+  isFilterBooleanItem,
+  isFilterNumberItem,
+  isFilterStringItem,
+} from '../utils/dataGridFilter.ts';
 
 const DEFAULT_MAX_CAPACITY = 10 * 1024 * 1024; //10MiB
 
@@ -71,6 +82,17 @@ export class User {
   }
   get authority() {
     return this.#authority;
+  }
+
+  value() {
+    return {
+      id: this.id,
+      email: this.email,
+      max_capacity: this.max_capacity,
+      file_usage: this.file_usage,
+      authority: this.authority ?? undefined,
+      two_factor_authentication: this.two_factor_authentication_secret_key ? true : false,
+    };
   }
 
   async patchUsage(diffUsage: number) {
@@ -224,6 +246,15 @@ export const addUser = async (params: {
   return true;
 };
 
+const userFields = ['id', 'email', 'max_capacity', 'file_usage', 'authority', 'two_factor_authentication'] as const;
+type UserField = typeof userFields[number];
+const isUserField = (field: string): field is UserField => {
+  return userFields.some((value) => value === field);
+};
+export const userFieldValidate = (
+  field: unknown,
+): UserField => (typeof field === 'string' ? (isUserField(field) ? field : 'email') : 'email');
+
 export const userEmailConfirm = async (
   email: string,
   email_confirmation_token: string,
@@ -272,11 +303,26 @@ export const getClientRandomSalt = async (email: string): Promise<string> => {
   return byteArray2base64(hashedClientRandomSalt);
 };
 
-export const getUsers = async (offset: number, limit: number): Promise<User[]> => {
-  const users: SQLTableUser[] = await client.query(`SELECT * FROM users ORDER BY email LIMIT ? OFFSET ?`, [
-    limit,
-    offset,
-  ]);
+export const getUsers = async (
+  params: {
+    offset: number;
+    limit: number;
+    orderBy: UserField;
+    order: 'asc' | 'desc';
+    queryFilter: GridUserFilterModel;
+  },
+): Promise<User[]> => {
+  const query = (new Query())
+    .select('*')
+    .table('users')
+    .limit(params.offset, params.limit)
+    .order(Order.by(params.orderBy)[params.order]);
+  const whereobj = filterModelToSQLWhereObj(params.queryFilter);
+  // If there is no condition, remove the WHERE clause.
+  const query2 = (whereobj.value !== '()' ? query.where(whereobj) : query).build();
+
+  console.log(params.queryFilter, query2);
+  const users: SQLTableUser[] = await client.query(query2);
   return users.map((user) => new User(user));
 };
 
@@ -293,4 +339,56 @@ export const deleteUserById = async (id: number | null): Promise<{ success: bool
   return {
     success: (result.affectedRows && result.affectedRows > 0 ? true : false),
   };
+};
+
+type GridUserFilterItem =
+  | FilterBooleanItem<'two_factor_authentication'>
+  | FilterStringItem<'email' | 'authority'>
+  | FilterNumberItem<'id' | 'max_capacity' | 'file_usage'>;
+const isGridUserFilterItem = (item: unknown): item is GridUserFilterItem => {
+  if (!easyIsFilterItem<GridUserFilterItem['columnField']>(item)) return false;
+  switch (item.columnField) {
+    case 'email':
+    case 'authority':
+      return isFilterStringItem<'email' | 'authority'>(item);
+    case 'two_factor_authentication':
+      return isFilterBooleanItem<'two_factor_authentication'>(item);
+    case 'id':
+    case 'max_capacity':
+    case 'file_usage':
+      return isFilterNumberItem<'id' | 'max_capacity' | 'file_usage'>(item);
+    default:
+      console.log(new ExhaustiveError(item));
+      return false;
+  }
+};
+
+type FixedGridUserFilterItem =
+  | FilterStringItem<'email' | 'authority'>
+  | FilterStringItem<'two_factor_authentication_secret_key'> // true two_factor_authentication check item
+  | FilterNumberItem<'id' | 'max_capacity' | 'file_usage'>;
+interface GridUserFilterModel {
+  items: FixedGridUserFilterItem[];
+  linkOperator: 'and' | 'or';
+}
+
+/**
+ * parse as MUI DataGrid FilterModel
+ * @param query DataGrid FilterModel(for Users)
+ * @returns
+ */
+export const parseUserFilterQuery = (query: string): GridUserFilterModel => {
+  const parsed = parseJSONwithoutErr(query);
+  const linkOperator = parsed.linkOperator === 'or' ? 'or' : 'and';
+  console.log(parsed);
+  if (!Array.isArray(parsed.items)) return { items: [], linkOperator: 'and' };
+  const items = parsed.items.filter(isGridUserFilterItem).map((x): FixedGridUserFilterItem => (
+    x.columnField === 'two_factor_authentication'
+      ? {
+        columnField: 'two_factor_authentication_secret_key',
+        operatorValue: (x.value === 'true' ? 'isNotEmpty' : 'isEmpty'),
+      }
+      : x
+  ));
+  return { items, linkOperator };
 };

@@ -9,7 +9,9 @@ import {
   getUserByEmail,
   getUserById,
   getUsers,
+  parseUserFilterQuery,
   userEmailConfirm,
+  userFieldValidate,
 } from '../model/Users.ts';
 import { OTPAuth } from '../deps.ts';
 import { addFile, getFileById, getFileInfo } from '../model/Files.ts';
@@ -589,17 +591,15 @@ router.get('/users', async (ctx) => {
   const prmlimit: number = parseInt(ctx.request.url.searchParams.get('limit') ?? '10', 10);
   const offset = isNaN(prmoffset) ? 0 : prmoffset;
   const limit = isNaN(prmlimit) ? 10 : prmlimit;
+  const orderBy = userFieldValidate(ctx.request.url.searchParams.get('orderby'));
+  const order = ctx.request.url.searchParams.get('order') === 'desc' ? 'desc' : 'asc';
+  const queryFilter = parseUserFilterQuery(ctx.request.url.searchParams.get('q') ?? '');
 
   // get
   const number_of_users = getNumberOfUsers();
-  const list = (await getUsers(offset, limit)).map((user): GETuserlistJSON['users'][0] => ({
-    id: user.id,
-    email: user.email,
-    max_capacity: user.max_capacity,
-    file_usage: user.file_usage,
-    authority: user.authority ?? undefined,
-    two_factor_authentication: user.two_factor_authentication_secret_key ? true : false,
-  }));
+  const list = (await getUsers({ offset, limit, orderBy, order, queryFilter })).map((
+    user,
+  ): GETuserlistJSON['users'][0] => user.value());
 
   const result: GETuserlistJSON = {
     number_of_user: await number_of_users,

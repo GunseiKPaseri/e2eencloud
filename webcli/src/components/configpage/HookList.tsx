@@ -133,6 +133,7 @@ function HookList() {
         pageSize={PAGE_SIZE}
         rowsPerPageOptions={[PAGE_SIZE]}
         rowCount={rowLength}
+        rowHeight={25}
         paginationMode="server"
         onPageChange={(newPage) => setPage(newPage)}
         page={page}
