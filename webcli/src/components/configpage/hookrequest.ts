@@ -16,7 +16,7 @@ type GetHookListJSONRow = {
     created_at: string;
     name: string;
     data: HookData;
-    expired_at: string;
+    expired_at: string | null;
   }[]
 };
 
@@ -63,8 +63,8 @@ export const deleteHook = async (id: string) => {
 };
 
 export const editHook = async (
-  targetHook: { id: number; name: string; expired_at: Date },
-  edited: { name?: string; expired_at?: Date },
+  targetHook: { id: number; name: string; expired_at: Date | null },
+  edited: { name?: string; expired_at?: Date | null },
 ) => {
   await axiosWithSession.patch(`${appLocation}/api/hook/${targetHook.id}`, edited);
   return {

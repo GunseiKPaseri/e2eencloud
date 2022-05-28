@@ -757,7 +757,7 @@ router.post('/hook/:id', async (ctx) => {
 
 interface PATCHHookJSON {
   name?: string;
-  expired_at?: string;
+  expired_at?: string | null;
 }
 
 router.patch('/hook/:id', async (ctx) => {
@@ -778,18 +778,39 @@ router.patch('/hook/:id', async (ctx) => {
   const bodyvalue: Partial<PATCHHookJSON> = await body.value;
   if (
     !(typeof bodyvalue.name === 'string' || typeof bodyvalue.name === 'undefined') ||
-    !(typeof bodyvalue.expired_at === 'string' || typeof bodyvalue.expired_at === 'undefined')
+    !(typeof bodyvalue.expired_at === 'string' || typeof bodyvalue.expired_at === 'undefined' ||
+      bodyvalue.expired_at === null)
   ) {
     return ctx.response.status = Status.BadRequest;
   }
 
   const result = await hook.patch({
     ...bodyvalue,
-    expired_at: bodyvalue.expired_at === undefined ? undefined : new Date(bodyvalue.expired_at),
+    expired_at: (
+      bodyvalue.expired_at === undefined || bodyvalue.expired_at === null
+        ? bodyvalue.expired_at
+        : new Date(bodyvalue.expired_at)
+    ),
   });
 
   if (!result) return ctx.response.status = Status.BadRequest;
   ctx.response.status = Status.NoContent;
+});
+
+router.delete('/hook/:id', async (ctx) => {
+  const hook = await getHook(ctx.params.id);
+  if (!hook) return ctx.response.status = Status.NotFound;
+  // auth
+  const uid: number | null = await ctx.state.session.get('uid');
+  const user = await getUserById(uid);
+  if (!user) return ctx.response.status = Status.Unauthorized;
+  if (user.id !== hook.user_id) return ctx.response.status = Status.Forbidden;
+
+  const result = await hook.delete();
+
+  if (!result) return ctx.response.status = Status.BadRequest;
+
+  ctx.response.status = Status.OK;
 });
 
 export default router;

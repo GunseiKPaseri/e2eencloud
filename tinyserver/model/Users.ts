@@ -347,14 +347,14 @@ export const getUsers = async (
   // If there is no condition, remove the WHERE clause.
   const query2 = (whereobj.value !== '()' ? query.where(whereobj) : query).build();
 
-  console.log(params.queryFilter, query2);
   const users: SQLTableUser[] = await client.query(query2);
   return users.map((user) => new User(user));
 };
 
 export const getNumberOfUsers = async (queryFilter?: GridUserFilterModel): Promise<number> => {
-  const query = queryFilter
-    ? `SELECT COUNT(*) FROM users WHERE ${filterModelToSQLWhereObj(queryFilter).value}`
+  const wherequery = filterModelToSQLWhereObj(queryFilter).value;
+  const query = queryFilter && wherequery !== '()'
+    ? `SELECT COUNT(*) FROM users WHERE ${wherequery}`
     : `SELECT COUNT(*) FROM users`;
   const [result]: [{ 'COUNT(*)': number }] = await client.query(query);
   return result['COUNT(*)'];
@@ -407,7 +407,6 @@ type GridUserFilterModel = GridFilterModel<FixedGridUserFilterItem>;
 export const parseUserFilterQuery = (query: string): GridUserFilterModel => {
   const parsed = parseJSONwithoutErr(query);
   const linkOperator = parsed.linkOperator === 'or' ? 'or' : 'and';
-  console.log(parsed);
   if (!Array.isArray(parsed.items)) return { items: [], linkOperator: 'and' };
   const items = parsed.items.filter(isGridUserFilterItem).map((x): FixedGridUserFilterItem => (
     x.columnField === 'two_factor_authentication'

@@ -37,14 +37,29 @@ type HookDataGridRowModel = GridRowModel<{
   name: string;
   data: string;
   created_at: Date;
-  expired_at: Date;
+  expired_at: Date | null;
 }>;
 
 const computeMutation = (newRow: HookDataGridRowModel, oldRow: HookDataGridRowModel) => {
   if (newRow.name !== oldRow.name) {
     return `フック名：${oldRow.name} => ${newRow.name}`;
-  } if (newRow.expired_at.valueOf() !== oldRow.expired_at.valueOf()) {
-    return `有効期限：${oldRow.expired_at.toString()} => ${newRow.expired_at.toString()}`;
+  } if ((
+    (newRow.expired_at === null || oldRow.expired_at === null)
+    && (newRow.expired_at !== oldRow.expired_at)
+  ) || (
+    newRow.expired_at !== null
+    && oldRow.expired_at !== null
+    && newRow.expired_at.valueOf() !== oldRow.expired_at.valueOf()
+  )) {
+    return `有効期限：${
+      oldRow.expired_at
+        ? oldRow.expired_at.toString()
+        : 'なし'
+    } => ${
+      newRow.expired_at
+        ? newRow.expired_at.toString()
+        : 'なし'
+    }`;
   }
   return null;
 };
@@ -82,7 +97,7 @@ function HookList() {
           ...x,
           data: explainHook(x.data),
           created_at: new Date(x.created_at),
-          expired_at: new Date(x.expired_at),
+          expired_at: x.expired_at === null ? null : new Date(x.expired_at),
         }
       ));
 
@@ -185,99 +200,105 @@ function HookList() {
   };
 
   return (
-    <div style={{ height: 300, width: '100%', marginBottom: 53 }}>
-      <>
-        <TextField
-          label="Hook名"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-          }}
-        />
-        <DateTimePicker
-          renderInput={(props) => <TextField {...props} />}
-          label="有効期限"
-          value={expiredAt}
-          onChange={(newExpiredAt) => {
-            setExpiredAt(newExpiredAt);
-          }}
-        />
-        <Button
-          variant="outlined"
-          onClick={async () => {
-            await addHock(name, { method: 'USER_DELETE' }, expiredAt);
-            setPageReloader(Symbol('reload'));
-          }}
-        >
-          追加
-        </Button>
-      </>
-      {renderConfirmDialog()}
-      <DataGrid
-        localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
-        rows={rows}
-        columns={[
-          {
-            field: 'id',
-            headerName: 'url',
-            width: 500,
-            valueFormatter: (params: GridValueFormatterParams<string>) => `${appLocation}/api/hook/${params.value}`,
-          },
-          { field: 'name', headerName: '名前', width: 200 },
-          {
-            field: 'data',
-            headerName: '種別',
-            width: 100,
-          },
-          {
-            field: 'created_at',
-            headerName: '作成日',
-            type: 'dateTime',
-            width: 170,
-          },
-          {
-            field: 'expired_at',
-            headerName: '有効期限',
-            type: 'dateTime',
-            width: 170,
-          },
-          {
-            field: 'actions',
-            type: 'actions',
-            // eslint-disable-next-line react/no-unstable-nested-components
-            getActions: (params: GridRowParams) => ([
-              <GridActionsCellItem
-                icon={<DeleteIcon />}
-                label="削除"
-                onClick={() => {
-                  deleteHook(params.id as string);
-                  setPageReloader(Symbol('reload'));
-                }}
-              />,
-            ]),
-          },
-        ]}
-        pagination
-        pageSize={PAGE_SIZE}
-        rowsPerPageOptions={[PAGE_SIZE]}
-        rowCount={rowLength}
-        rowHeight={25}
-        paginationMode="server"
-        onPageChange={(newPage) => setPage(newPage)}
-        sortingMode="server"
-        onSortModelChange={(model) => {
-          setSortQuery([...model]);
+    <>
+      <TextField
+        label="Hook名"
+        value={name}
+        onChange={(e) => {
+          setName(e.target.value);
         }}
-        filterMode="server"
-        onFilterModelChange={(model) => {
-          setFilterQuery(model);
-        }}
-        page={page}
-        loading={loading}
-        processRowUpdate={processRowUpdate}
-        experimentalFeatures={{ newEditingApi: true }}
       />
-    </div>
+      <DateTimePicker
+        renderInput={(props) => <TextField {...props} />}
+        label="有効期限"
+        value={expiredAt}
+        onChange={(newExpiredAt) => {
+          setExpiredAt(newExpiredAt);
+        }}
+      />
+      <Button
+        variant="outlined"
+        onClick={async () => {
+          await addHock(name, { method: 'USER_DELETE' }, expiredAt);
+          setPageReloader(Symbol('reload'));
+        }}
+      >
+        追加
+      </Button>
+      <div style={{ height: 300, width: '100%' }}>
+        {renderConfirmDialog()}
+        <DataGrid
+          localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
+          rows={rows}
+          columns={[
+            {
+              field: 'id',
+              headerName: 'url',
+              width: 500,
+              valueFormatter: (params: GridValueFormatterParams<string>) => `${appLocation}/api/hook/${params.value}`,
+            },
+            {
+              field: 'name',
+              headerName: '名前',
+              width: 200,
+              editable: true,
+            },
+            {
+              field: 'data',
+              headerName: '種別',
+              width: 100,
+            },
+            {
+              field: 'created_at',
+              headerName: '作成日',
+              type: 'dateTime',
+              width: 170,
+            },
+            {
+              field: 'expired_at',
+              headerName: '有効期限',
+              type: 'dateTime',
+              editable: true,
+              width: 170,
+            },
+            {
+              field: 'actions',
+              type: 'actions',
+              // eslint-disable-next-line react/no-unstable-nested-components
+              getActions: (params: GridRowParams) => ([
+                <GridActionsCellItem
+                  icon={<DeleteIcon />}
+                  label="削除"
+                  onClick={() => {
+                    deleteHook(params.id as string);
+                    setPageReloader(Symbol('reload'));
+                  }}
+                />,
+              ]),
+            },
+          ]}
+          pagination
+          pageSize={PAGE_SIZE}
+          rowsPerPageOptions={[PAGE_SIZE]}
+          rowCount={rowLength}
+          rowHeight={25}
+          paginationMode="server"
+          onPageChange={(newPage) => setPage(newPage)}
+          sortingMode="server"
+          onSortModelChange={(model) => {
+            setSortQuery([...model]);
+          }}
+          filterMode="server"
+          onFilterModelChange={(model) => {
+            setFilterQuery(model);
+          }}
+          page={page}
+          loading={loading}
+          processRowUpdate={processRowUpdate}
+          experimentalFeatures={{ newEditingApi: true }}
+        />
+      </div>
+    </>
   );
 }
 

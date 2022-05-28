@@ -1,4 +1,4 @@
-import { bs58, Order, Query, Where } from '../deps.ts';
+import { bs58, compareAsc, Order, Query, Where } from '../deps.ts';
 import client from '../dbclient.ts';
 import { User } from './Users.ts';
 import {
@@ -77,25 +77,44 @@ export class Hook {
     };
   }
 
-  async patch(params: { name?: string; expired_at?: Date }) {
+  async patch(params: { name?: string; expired_at?: Date | null }) {
     // validate
-    if (params.expired_at !== undefined && Number.isNaN(params.expired_at.getTime())) return false;
+    if (
+      params.expired_at !== undefined &&
+      params.expired_at !== null &&
+      (
+        Number.isNaN(params.expired_at.getTime()) ||
+        !(
+          compareAsc(new Date(), params.expired_at) < 0
+        )
+      )
+    ) {
+      return false;
+    }
     await client.execute(
       `UPDATE hooks SET name = ?, expired_at = ? WHERE id = ?`,
       [
         params.name === undefined ? this.#name : params.name,
         params.expired_at === undefined ? this.#expired_at : params.expired_at,
-        typeof this.user_id === 'number' ? this.user_id : this.user_id.id,
+        this.id,
       ],
     );
     if (params.name) this.#name = params.name;
-    if (params.expired_at) this.#expired_at = params.expired_at;
+    if (params.expired_at !== undefined) this.#expired_at = params.expired_at;
     return true;
+  }
+
+  async delete() {
+    const result = await client.execute(`DELETE FROM hooks WHERE id = ?`, [
+      this.id,
+    ]);
+
+    return result.affectedRows && result.affectedRows > 0 ? true : false;
   }
 }
 
 export const addHook = async (
-  params: { name: string; data: HookData; user_id: number; expired_at?: Date },
+  params: { name: string; data: HookData; user_id: number; expired_at?: Date | null },
 ): Promise<Hook> => {
   const newId = bs58.encode(crypto.getRandomValues(new Uint8Array(25)));
   const now = new Date(Date.now());
@@ -161,12 +180,10 @@ const isGridHookFilterItem = (item: unknown): item is GridHookFilterItem => {
 export const parseHookFilterQuery = (query: string): GridHookFilterModel => {
   const parsed = parseJSONwithoutErr(query);
   const linkOperator = parsed.linkOperator === 'or' ? 'or' : 'and';
-  console.log(parsed);
   if (!Array.isArray(parsed.items)) return { items: [], linkOperator: 'and' };
   const items = parsed.items.filter((x): x is GridHookFilterItem => (
     isGridHookFilterItem(x) && (x.columnField !== 'data')
   ));
-  console.log(items);
   return { items, linkOperator };
 };
 
@@ -191,8 +208,6 @@ export const getHooksList = async (params: {
     ))
     .build();
 
-  console.log(params.queryFilter, query);
-
   const hooks: SQLTableHook[] = await client.query(query);
   return hooks.map((hook) => new Hook(hook));
 };
@@ -201,7 +216,6 @@ export const getNumberOfHooks = async (user_id: number, queryFilter?: GridHookFi
   const query = `SELECT COUNT(*) FROM hooks WHERE ${
     filterModelToSQLWhereObj(queryFilter, [Where.eq('user_id', user_id)]).value
   }`;
-  console.log(query);
   const [result]: [{ 'COUNT(*)': number }] = await client.query(query, [
     user_id,
   ]);
