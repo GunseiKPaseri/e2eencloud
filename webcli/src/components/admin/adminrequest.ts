@@ -41,3 +41,13 @@ export const getUserList = async (
 export const deleteUser = async (id: number) => {
   await axiosWithSession.delete(`${appLocation}/api/user/${id}`);
 };
+
+export const editUser = async (
+  targetUser: { id: number; max_capacity: number },
+  edited: { max_capacity?: number },
+) => {
+  await axiosWithSession.patch(`${appLocation}/api/user/${targetUser.id}`, edited);
+  return {
+    max_capacity: typeof edited.max_capacity === 'undefined' ? targetUser.max_capacity : edited.max_capacity,
+  };
+};

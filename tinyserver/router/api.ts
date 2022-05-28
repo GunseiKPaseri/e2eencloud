@@ -586,7 +586,7 @@ router.get('/users', async (ctx) => {
   const user = await getUserById(uid);
   if (!user || user.authority !== 'ADMIN') return ctx.response.status = Status.Forbidden;
 
-  // varidate
+  // validate
   const prmoffset: number = parseInt(ctx.request.url.searchParams.get('offset') ?? '0', 10);
   const prmlimit: number = parseInt(ctx.request.url.searchParams.get('limit') ?? '10', 10);
   const offset = isNaN(prmoffset) ? 0 : prmoffset;
@@ -611,19 +611,53 @@ router.get('/users', async (ctx) => {
 });
 
 router.delete('/user/:id', async (ctx) => {
-  // auth
+  // admin auth
   const uid: number | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user || user.authority !== 'ADMIN') return ctx.response.status = Status.Forbidden;
 
   const id = parseInt(ctx.params.id);
 
+  // can't remove me
   if (user.id === id) return ctx.response.status = Status.BadRequest;
 
   const result = await deleteUserById(id);
   if (!result.success) return ctx.response.status = Status.BadRequest;
   ctx.response.status = Status.NoContent;
   ctx.response.type = 'json';
+});
+
+interface PATCHUserJSON {
+  max_capacity: number;
+  two_factor_authentication: boolean;
+}
+
+router.patch('/user/:id', async (ctx) => {
+  // admin auth
+  const uid: number | null = await ctx.state.session.get('uid');
+  const user = await getUserById(uid);
+  if (!user || user.authority !== 'ADMIN') return ctx.response.status = Status.Forbidden;
+
+  const id = parseInt(ctx.params.id);
+
+  // validate request
+  if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
+  const body = ctx.request.body();
+  if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
+
+  const bodyvalue: Partial<PATCHUserJSON> = await body.value;
+  if (
+    !(typeof bodyvalue.max_capacity === 'number' || typeof bodyvalue.max_capacity === 'undefined') ||
+    !(bodyvalue.two_factor_authentication === false || typeof bodyvalue.two_factor_authentication === 'undefined')
+  ) {
+    return ctx.response.status = Status.BadRequest;
+  }
+
+  const targetUser = await getUserById(id);
+  const result = await targetUser?.patch(bodyvalue);
+
+  if (!result) return ctx.response.status = Status.BadRequest;
+  ctx.response.status = Status.NoContent;
 });
 
 // hook
@@ -641,7 +675,7 @@ router.post('/hooks', async (ctx) => {
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
-  // varidate
+  // validate
   const bodyvalue: Partial<POSThooksJSON> = await body.value;
   if (typeof bodyvalue.name !== 'string' || typeof bodyvalue.data !== 'object') {
     return ctx.response.status = Status.BadRequest;
@@ -664,7 +698,7 @@ router.get('/hooks', async (ctx) => {
   const uid: number | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.response.status = Status.Forbidden;
-  // varidate
+  // validate
   const prmoffset: number = parseInt(ctx.request.url.searchParams.get('offset') ?? '0', 10);
   const prmlimit: number = parseInt(ctx.request.url.searchParams.get('limit') ?? '10', 10);
   const offset = isNaN(prmoffset) ? 0 : prmoffset;

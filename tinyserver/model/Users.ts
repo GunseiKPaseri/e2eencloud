@@ -180,6 +180,32 @@ export class User {
       return false;
     }
   }
+
+  async patch(params: {
+    max_capacity?: number;
+    two_factor_authentication?: boolean;
+  }) {
+    console.log(params);
+    // validation
+    if (typeof params.max_capacity === 'number' && params.max_capacity < 0) return false;
+    if (params.two_factor_authentication) return false;
+    try {
+      await client.execute(
+        `UPDATE users SET
+        max_capacity = ?,
+        two_factor_authentication_secret_key = ?
+        WHERE id = ?`,
+        [
+          typeof params.max_capacity === 'number' ? params.max_capacity : this.max_capacity,
+          params.two_factor_authentication === false ? null : this.#two_factor_authentication_secret_key,
+          this.id,
+        ],
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 }
 
 export const addUser = async (params: {
