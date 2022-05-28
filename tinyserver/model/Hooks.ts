@@ -1,6 +1,17 @@
-import { bs58 } from '../deps.ts';
+import { bs58, Order, Query, Where } from '../deps.ts';
 import client from '../dbclient.ts';
 import { User } from './Users.ts';
+import {
+  easyIsFilterItem,
+  FilterDateItem,
+  filterModelToSQLWhereObj,
+  FilterStringItem,
+  GridFilterModel,
+  isFilterStringItem,
+} from '../utils/dataGridFilter.ts';
+import { ExhaustiveError } from '../util.ts';
+import { isFilterDateItem } from '../utils/dataGridFilter.ts';
+import parseJSONwithoutErr from '../utils/parseJSONWithoutErr.ts';
 
 interface SQLTableHook {
   id: string;
@@ -66,13 +77,20 @@ export class Hook {
     };
   }
 
-  async update(params: { name: string; expired_at: Date }) {
+  async patch(params: { name?: string; expired_at?: Date }) {
+    // validate
+    if (params.expired_at !== undefined && Number.isNaN(params.expired_at.getTime())) return false;
     await client.execute(
       `UPDATE hooks SET name = ?, expired_at = ? WHERE id = ?`,
-      [params.name, params.expired_at, typeof this.user_id === 'number' ? this.user_id : this.user_id.id],
+      [
+        params.name === undefined ? this.#name : params.name,
+        params.expired_at === undefined ? this.#expired_at : params.expired_at,
+        typeof this.user_id === 'number' ? this.user_id : this.user_id.id,
+      ],
     );
-    this.#name = params.name;
-    this.#expired_at = params.expired_at;
+    if (params.name) this.#name = params.name;
+    if (params.expired_at) this.#expired_at = params.expired_at;
+    return true;
   }
 }
 
@@ -106,20 +124,85 @@ export const addHook = async (
   });
 };
 
-export const getHooksList = async (user_id: number, offset: number, limit: number): Promise<Hook[]> => {
-  const hooks: SQLTableHook[] = await client.query(
-    `SELECT * FROM hooks WHERE user_id = ? ORDER BY created_at LIMIT ? OFFSET ?`,
-    [
-      user_id,
-      limit,
-      offset,
-    ],
-  );
+const hookFields = ['id', 'created_at', 'name', 'data', 'expired_at'] as const;
+type HookField = typeof hookFields[number];
+const isHookField = (field: string): field is HookField => {
+  return hookFields.some((value) => value === field);
+};
+export const hookFieldValidate = (
+  field: unknown,
+): HookField => (typeof field === 'string' ? (isHookField(field) ? field : 'created_at') : 'created_at');
+
+type GridHookFilterItem =
+  | FilterStringItem<'id' | 'name' | 'data'>
+  | FilterDateItem<'created_at' | 'expired_at'>;
+type GridHookFilterModel = GridFilterModel<GridHookFilterItem>;
+const isGridHookFilterItem = (item: unknown): item is GridHookFilterItem => {
+  if (!easyIsFilterItem<GridHookFilterItem['columnField']>(item)) return false;
+  switch (item.columnField) {
+    case 'id':
+    case 'name':
+    case 'data':
+      return isFilterStringItem<'id' | 'name' | 'data'>(item);
+    case 'created_at':
+    case 'expired_at':
+      return isFilterDateItem<'created_at' | 'expired_at'>(item);
+    default:
+      console.log(new ExhaustiveError(item));
+      return false;
+  }
+};
+
+/**
+ * parse as MUI DataGrid FilterModel
+ * @param query DataGrid FilterModel(for Users)
+ * @returns
+ */
+export const parseHookFilterQuery = (query: string): GridHookFilterModel => {
+  const parsed = parseJSONwithoutErr(query);
+  const linkOperator = parsed.linkOperator === 'or' ? 'or' : 'and';
+  console.log(parsed);
+  if (!Array.isArray(parsed.items)) return { items: [], linkOperator: 'and' };
+  const items = parsed.items.filter((x): x is GridHookFilterItem => (
+    isGridHookFilterItem(x) && (x.columnField !== 'data')
+  ));
+  console.log(items);
+  return { items, linkOperator };
+};
+
+export const getHooksList = async (params: {
+  user_id: number;
+  offset: number;
+  limit: number;
+  orderBy: HookField;
+  order: 'asc' | 'desc';
+  queryFilter: GridHookFilterModel;
+}): Promise<Hook[]> => {
+  const whereobj = filterModelToSQLWhereObj(params.queryFilter);
+  const query = (new Query())
+    .select('*')
+    .table('hooks')
+    .limit(params.offset, params.limit)
+    .order(Order.by(params.orderBy)[params.order])
+    // If there is no condition, remove the WHERE clause.
+    .where(Where.and(
+      whereobj.value !== '()' ? whereobj : null,
+      Where.eq('user_id', params.user_id),
+    ))
+    .build();
+
+  console.log(params.queryFilter, query);
+
+  const hooks: SQLTableHook[] = await client.query(query);
   return hooks.map((hook) => new Hook(hook));
 };
 
-export const getNumberOfHooks = async (user_id: number): Promise<number> => {
-  const [result]: [{ 'COUNT(*)': number }] = await client.query(`SELECT COUNT(*) FROM hooks WHERE user_id = ?`, [
+export const getNumberOfHooks = async (user_id: number, queryFilter?: GridHookFilterModel): Promise<number> => {
+  const query = `SELECT COUNT(*) FROM hooks WHERE ${
+    filterModelToSQLWhereObj(queryFilter, [Where.eq('user_id', user_id)]).value
+  }`;
+  console.log(query);
+  const [result]: [{ 'COUNT(*)': number }] = await client.query(query, [
     user_id,
   ]);
   return result['COUNT(*)'];

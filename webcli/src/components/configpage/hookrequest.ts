@@ -1,4 +1,5 @@
 import type { AxiosResponse } from 'axios';
+import type { GridFilterModel, GridSortItem } from '@mui/x-data-grid/models';
 import { ExhaustiveError } from '../../utils/assert';
 import { appLocation, axiosWithSession } from '../../features/componentutils';
 
@@ -32,11 +33,24 @@ export const explainHook = (hook: HookData) => {
   }
 };
 
-export const getHookList = async (offset: number, limit: number) => {
+export const getHookList = async (
+  offset: number,
+  limit: number,
+  sortQuery: GridSortItem[],
+  filterQuery: GridFilterModel,
+) => {
   const result = await axiosWithSession.get<
   Record<string, never>,
   AxiosResponse<GetHookListJSONRow>,
-  { offset: number, limit: number }>(`${appLocation}/api/hooks`, { params: { offset, limit } });
+  { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(`${appLocation}/api/hooks`, {
+    params: {
+      offset,
+      limit,
+      orderby: sortQuery[0]?.field,
+      order: sortQuery[0]?.sort,
+      q: JSON.stringify(filterQuery),
+    },
+  });
   return result.data;
 };
 
@@ -46,4 +60,15 @@ export const addHock = async (name: string, hook: HookData, expired_at: Date | n
 
 export const deleteHook = async (id: string) => {
   await axiosWithSession.delete(`${appLocation}/api/hook/${id}`);
+};
+
+export const editHook = async (
+  targetHook: { id: number; name: string; expired_at: Date },
+  edited: { name?: string; expired_at?: Date },
+) => {
+  await axiosWithSession.patch(`${appLocation}/api/hook/${targetHook.id}`, edited);
+  return {
+    name: typeof edited.name === 'undefined' ? targetHook.name : edited.name,
+    expired_at: typeof edited.expired_at === 'undefined' ? targetHook.expired_at : edited.expired_at,
+  };
 };

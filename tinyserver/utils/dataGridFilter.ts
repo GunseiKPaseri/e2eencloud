@@ -130,7 +130,7 @@ export type FilterDateItem<T extends string> = {
   columnField: T;
   operatorValue: 'isEmpty' | 'isNotEmpty';
 };
-export const isFilteDateItem = <T extends string>(
+export const isFilterDateItem = <T extends string>(
   item: { columnField: T; value?: unknown; operatorValue: unknown },
 ): item is FilterStringItem<T> => {
   if (typeof item.operatorValue !== 'string' || !isFilterOperatorDate(item.operatorValue)) return false;
@@ -144,64 +144,71 @@ type GridFilterModelItem<T extends string> =
   | FilterStringItem<T>
   | FilterDateItem<T>;
 
-interface GridFilterModel {
-  items: GridFilterModelItem<string>[];
+export interface GridFilterModel<T> {
+  items: T[];
   linkOperator: 'and' | 'or';
 }
 
-export const filterModelToSQLWhereObj = (filterModel: GridFilterModel) => {
-  const terms = filterModel.items.map((x) => {
-    switch (x.operatorValue) {
-      // number
-      case '!=':
-        return Where.ne(x.columnField, Number(x.value));
-      case '<':
-        return Where.lt(x.columnField, Number(x.value));
-      case '<=':
-        return Where.lte(x.columnField, Number(x.value));
-      case '>':
-        return Where.gt(x.columnField, Number(x.value));
-      case '>=':
-        return Where.gte(x.columnField, Number(x.value));
-      case '=':
-        return Where.eq(x.columnField, Number(x.value));
-      // string
-      case 'contains':
-        return Where.like(x.columnField, `%${x.value}%`);
-      case 'equals':
-        return Where.like(x.columnField, x.value);
-      case 'startsWith':
-        return Where.like(x.columnField, `${x.value}%`);
-      case 'endsWith':
-        return Where.like(x.columnField, `%${x.value}`);
-      // boolean
-      case 'is':
-        return x.value === 'true'
-          ? Where.eq(x.columnField, true)
-          : x.value === 'false'
-          ? Where.eq(x.columnField, false)
-          : null;
-      // date
-      case 'not':
-        return Where.ne(x.columnField, x.value);
-      case 'before':
-        return Where.lt(x.columnField, x.value);
-      case 'onOrBefore':
-        return Where.lte(x.columnField, x.value);
-      case 'after':
-        return Where.gt(x.columnField, x.value);
-      case 'onOrAfter':
-        return Where.gte(x.columnField, x.value);
-      case 'isEmpty':
-        return Where.isNull(x.columnField);
-      case 'isNotEmpty':
-        // return Where.isNotNull(x.columnField); // has bug
-        return Where.expr('?? IS NOT NULL', x.columnField);
-      case 'isAnyOf':
-        return x.value.length > 0 ? Where.in(x.columnField, x.value) : null;
-      default:
-        throw new ExhaustiveError(x);
-    }
-  });
-  return filterModel.linkOperator === 'and' ? Where.and(...terms) : Where.or(...terms);
+export const filterModelToSQLWhereObj = (
+  filterModel?: GridFilterModel<GridFilterModelItem<string>>,
+  additionalObj: Where[] = [],
+) => {
+  const terms = filterModel
+    ? filterModel.items.map((x) => {
+      switch (x.operatorValue) {
+        // number
+        case '!=':
+          return Where.ne(x.columnField, Number(x.value));
+        case '<':
+          return Where.lt(x.columnField, Number(x.value));
+        case '<=':
+          return Where.lte(x.columnField, Number(x.value));
+        case '>':
+          return Where.gt(x.columnField, Number(x.value));
+        case '>=':
+          return Where.gte(x.columnField, Number(x.value));
+        case '=':
+          return Where.eq(x.columnField, Number(x.value));
+        // string
+        case 'contains':
+          return Where.like(x.columnField, `%${x.value}%`);
+        case 'equals':
+          return Where.like(x.columnField, x.value);
+        case 'startsWith':
+          return Where.like(x.columnField, `${x.value}%`);
+        case 'endsWith':
+          return Where.like(x.columnField, `%${x.value}`);
+        // boolean
+        case 'is':
+          return x.value === 'true'
+            ? Where.eq(x.columnField, true)
+            : x.value === 'false'
+            ? Where.eq(x.columnField, false)
+            : null;
+        // date
+        case 'not':
+          return Where.ne(x.columnField, new Date(x.value));
+        case 'before':
+          return Where.lt(x.columnField, new Date(x.value));
+        case 'onOrBefore':
+          return Where.lte(x.columnField, new Date(x.value));
+        case 'after':
+          return Where.gt(x.columnField, new Date(x.value));
+        case 'onOrAfter':
+          return Where.gte(x.columnField, new Date(x.value));
+        case 'isEmpty':
+          return Where.isNull(x.columnField);
+        case 'isNotEmpty':
+          // return Where.isNotNull(x.columnField); // has bug
+          return Where.expr('?? IS NOT NULL', x.columnField);
+        case 'isAnyOf':
+          return x.value.length > 0 ? Where.in(x.columnField, x.value) : null;
+        default:
+          throw new ExhaustiveError(x);
+      }
+    })
+    : [];
+  return filterModel?.linkOperator === 'or'
+    ? Where.or(...terms, ...additionalObj)
+    : Where.and(...terms, ...additionalObj);
 };

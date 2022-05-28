@@ -13,6 +13,7 @@ import {
   isFilterNumberItem,
   isFilterStringItem,
 } from '../utils/dataGridFilter.ts';
+import { GridFilterModel } from '../utils/dataGridFilter.ts';
 
 const DEFAULT_MAX_CAPACITY = 10 * 1024 * 1024; //10MiB
 
@@ -185,7 +186,6 @@ export class User {
     max_capacity?: number;
     two_factor_authentication?: boolean;
   }) {
-    console.log(params);
     // validation
     if (typeof params.max_capacity === 'number' && params.max_capacity < 0) return false;
     if (params.two_factor_authentication) return false;
@@ -352,8 +352,11 @@ export const getUsers = async (
   return users.map((user) => new User(user));
 };
 
-export const getNumberOfUsers = async (): Promise<number> => {
-  const [result]: [{ 'COUNT(*)': number }] = await client.query(`SELECT COUNT(*) FROM users`);
+export const getNumberOfUsers = async (queryFilter?: GridUserFilterModel): Promise<number> => {
+  const query = queryFilter
+    ? `SELECT COUNT(*) FROM users WHERE ${filterModelToSQLWhereObj(queryFilter).value}`
+    : `SELECT COUNT(*) FROM users`;
+  const [result]: [{ 'COUNT(*)': number }] = await client.query(query);
   return result['COUNT(*)'];
 };
 
@@ -393,10 +396,8 @@ type FixedGridUserFilterItem =
   | FilterStringItem<'email' | 'authority'>
   | FilterStringItem<'two_factor_authentication_secret_key'> // true two_factor_authentication check item
   | FilterNumberItem<'id' | 'max_capacity' | 'file_usage'>;
-interface GridUserFilterModel {
-  items: FixedGridUserFilterItem[];
-  linkOperator: 'and' | 'or';
-}
+
+type GridUserFilterModel = GridFilterModel<FixedGridUserFilterItem>;
 
 /**
  * parse as MUI DataGrid FilterModel

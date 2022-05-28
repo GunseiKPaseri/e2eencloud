@@ -19,7 +19,16 @@ import { uaparser } from '../deps.ts';
 import SessionsStore from '../model/Sessions.ts';
 import { deleteFiles } from '../model/Files.ts';
 import { bucket } from '../s3client.ts';
-import { addHook, getHook, getHooksList, getNumberOfHooks, HookData, parseHookData } from '../model/Hooks.ts';
+import {
+  addHook,
+  getHook,
+  getHooksList,
+  getNumberOfHooks,
+  HookData,
+  hookFieldValidate,
+  parseHookData,
+  parseHookFilterQuery,
+} from '../model/Hooks.ts';
 import { ExhaustiveError } from '../util.ts';
 
 const router = new Router({ prefix: '/api' });
@@ -596,7 +605,7 @@ router.get('/users', async (ctx) => {
   const queryFilter = parseUserFilterQuery(ctx.request.url.searchParams.get('q') ?? '');
 
   // get
-  const number_of_users = getNumberOfUsers();
+  const number_of_users = getNumberOfUsers(queryFilter);
   const list = (await getUsers({ offset, limit, orderBy, order, queryFilter })).map((
     user,
   ): GETuserlistJSON['users'][0] => user.value());
@@ -703,9 +712,12 @@ router.get('/hooks', async (ctx) => {
   const prmlimit: number = parseInt(ctx.request.url.searchParams.get('limit') ?? '10', 10);
   const offset = isNaN(prmoffset) ? 0 : prmoffset;
   const limit = isNaN(prmlimit) ? 10 : prmlimit;
+  const orderBy = hookFieldValidate(ctx.request.url.searchParams.get('orderby'));
+  const order = ctx.request.url.searchParams.get('order') === 'desc' ? 'desc' : 'asc';
+  const queryFilter = parseHookFilterQuery(ctx.request.url.searchParams.get('q') ?? '');
 
-  const list = getHooksList(user.id, offset, limit);
-  const getSizeOfHooks = getNumberOfHooks(user.id);
+  const list = getHooksList({ user_id: user.id, offset, limit, order, orderBy, queryFilter });
+  const getSizeOfHooks = getNumberOfHooks(user.id, queryFilter);
 
   const result = {
     number_of_hook: await getSizeOfHooks,
@@ -741,6 +753,43 @@ router.post('/hook/:id', async (ctx) => {
   }
 
   ctx.response.status = Status.OK;
+});
+
+interface PATCHHookJSON {
+  name?: string;
+  expired_at?: string;
+}
+
+router.patch('/hook/:id', async (ctx) => {
+  // hook
+  const hook = await getHook(ctx.params.id);
+  if (!hook) return ctx.response.status = Status.NotFound;
+  // auth
+  const uid: number | null = await ctx.state.session.get('uid');
+  const user = await getUserById(uid);
+  if (!user) return ctx.response.status = Status.Unauthorized;
+  if (user.id !== hook.user_id) return ctx.response.status = Status.Forbidden;
+
+  // validate request
+  if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
+  const body = ctx.request.body();
+  if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
+
+  const bodyvalue: Partial<PATCHHookJSON> = await body.value;
+  if (
+    !(typeof bodyvalue.name === 'string' || typeof bodyvalue.name === 'undefined') ||
+    !(typeof bodyvalue.expired_at === 'string' || typeof bodyvalue.expired_at === 'undefined')
+  ) {
+    return ctx.response.status = Status.BadRequest;
+  }
+
+  const result = await hook.patch({
+    ...bodyvalue,
+    expired_at: bodyvalue.expired_at === undefined ? undefined : new Date(bodyvalue.expired_at),
+  });
+
+  if (!result) return ctx.response.status = Status.BadRequest;
+  ctx.response.status = Status.NoContent;
 });
 
 export default router;
