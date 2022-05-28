@@ -2,6 +2,7 @@ import type { AxiosResponse } from 'axios';
 import type { GridFilterModel, GridSortItem } from '@mui/x-data-grid/models';
 import { ExhaustiveError } from '../../utils/assert';
 import { appLocation, axiosWithSession } from '../../features/componentutils';
+import type { HookDataGridRowModel } from './HookList';
 
 export type HookData = {
   method: 'USER_DELETE';
@@ -12,7 +13,7 @@ export type HookData = {
 type GetHookListJSONRow = {
   number_of_hook: number;
   hooks: {
-    id: number;
+    id: string;
     created_at: string;
     name: string;
     data: HookData;
@@ -33,25 +34,33 @@ export const explainHook = (hook: HookData) => {
   }
 };
 
-export const getHookList = async (
+export const getHookList = async (params: {
   offset: number,
   limit: number,
   sortQuery: GridSortItem[],
   filterQuery: GridFilterModel,
-) => {
+}) => {
   const result = await axiosWithSession.get<
   Record<string, never>,
   AxiosResponse<GetHookListJSONRow>,
   { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(`${appLocation}/api/hooks`, {
     params: {
-      offset,
-      limit,
-      orderby: sortQuery[0]?.field,
-      order: sortQuery[0]?.sort,
-      q: JSON.stringify(filterQuery),
+      offset: params.offset,
+      limit: params.limit,
+      orderby: params.sortQuery[0]?.field,
+      order: params.sortQuery[0]?.sort,
+      q: JSON.stringify(params.filterQuery),
     },
   });
-  return result.data;
+  return {
+    total_number: result.data.number_of_hook,
+    items: result.data.hooks.map((x) => ({
+      ...x,
+      data: explainHook(x.data),
+      created_at: new Date(x.created_at),
+      expired_at: x.expired_at === null ? null : new Date(x.expired_at),
+    })),
+  };
 };
 
 export const addHock = async (name: string, hook: HookData, expired_at: Date | null) => {
@@ -63,11 +72,12 @@ export const deleteHook = async (id: string) => {
 };
 
 export const editHook = async (
-  targetHook: { id: number; name: string; expired_at: Date | null },
-  edited: { name?: string; expired_at?: Date | null },
+  targetHook: HookDataGridRowModel,
+  edited: Partial<HookDataGridRowModel>,
 ) => {
   await axiosWithSession.patch(`${appLocation}/api/hook/${targetHook.id}`, edited);
   return {
+    ...targetHook,
     name: typeof edited.name === 'undefined' ? targetHook.name : edited.name,
     expired_at: typeof edited.expired_at === 'undefined' ? targetHook.expired_at : edited.expired_at,
   };

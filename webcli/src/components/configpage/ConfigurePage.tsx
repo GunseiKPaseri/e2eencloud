@@ -2,7 +2,7 @@ import PasswordChanger from '../../features/auth/components/PasswordChanger';
 import TwoFactorAuth from '../../features/auth/components/TwoFactorAuth';
 import { useAppSelector } from '../../app/hooks';
 import SessionConfig from '../../features/session/sessionConfing';
-import Userlist from '../admin/Userlist';
+import UserList from '../admin/UserList';
 import StorageInfo from '../../features/file/components/StorageInfo';
 import HookList from './HookList';
 
@@ -20,7 +20,7 @@ export default function ConfigurePage() {
           <HookList />
         </>
         )}
-      {user && user.authority === 'ADMIN' && <Userlist />}
+      {user && user.authority === 'ADMIN' && <UserList />}
     </>
   );
 }

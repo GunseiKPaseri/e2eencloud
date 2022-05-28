@@ -1,6 +1,7 @@
 import type { GridFilterModel, GridSortItem } from '@mui/x-data-grid';
 import { type AxiosResponse } from 'axios';
 import { appLocation, axiosWithSession } from '../../features/componentutils';
+import type { UserDataGridRowModel } from './UserList';
 
 type GetUserListJSONRow = {
   number_of_user: number;
@@ -14,12 +15,12 @@ type GetUserListJSONRow = {
   }[]
 };
 
-export const getUserList = async (
+export const getUserList = async (props: {
   offset: number,
   limit: number,
   sortQuery: GridSortItem[],
   filterQuery: GridFilterModel,
-) => {
+}) => {
   const result = await axiosWithSession.get<
   Record<string, never>,
   AxiosResponse<GetUserListJSONRow>,
@@ -27,15 +28,21 @@ export const getUserList = async (
     `${appLocation}/api/users`,
     {
       params: {
-        offset,
-        limit,
-        orderby: sortQuery[0]?.field,
-        order: sortQuery[0]?.sort,
-        q: JSON.stringify(filterQuery),
+        offset: props.offset,
+        limit: props.limit,
+        orderby: props.sortQuery[0]?.field,
+        order: props.sortQuery[0]?.sort,
+        q: JSON.stringify(props.filterQuery),
       },
     },
   );
-  return result.data;
+  return {
+    total_number: result.data.number_of_user,
+    items: result.data.users.map((x) => ({
+      ...x,
+      authority: x.authority ?? null,
+    })),
+  };
 };
 
 export const deleteUser = async (id: number) => {
@@ -43,11 +50,12 @@ export const deleteUser = async (id: number) => {
 };
 
 export const editUser = async (
-  targetUser: { id: number; max_capacity: number },
-  edited: { max_capacity?: number },
+  targetUser: UserDataGridRowModel,
+  edited: Partial<UserDataGridRowModel>,
 ) => {
   await axiosWithSession.patch(`${appLocation}/api/user/${targetUser.id}`, edited);
   return {
+    ...targetUser,
     max_capacity: typeof edited.max_capacity === 'undefined' ? targetUser.max_capacity : edited.max_capacity,
   };
 };
