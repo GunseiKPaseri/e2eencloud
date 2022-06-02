@@ -65,15 +65,15 @@ export const argon2encrypt = async (password: string, salt: Uint8Array) => {
 export const SHA256 = (array: Uint8Array) => createSHA256Hash().update(array).digest();
 
 /**
- * Salt = SHA-256( “e2ee” || “Padding” || Client Random Value )
+ * Salt = SHA-256( “E2EEncloud” || “Padding” || Client Random Value )
  */
-const defaultString = 'e2ee';
+const defaultString = 'E2EEncloud';
 const saltStringMaxLength = 200;
-// “e2ee” || “Padding”
+// “E2EEncloud” || “Padding”
 const saltString = defaultString + 'P'.repeat(saltStringMaxLength - defaultString.length);
 const saltArray = string2ByteArray(saltString);
 export const createSalt = (ClientRandomValue: Uint8Array) => {
-  // "e2ee” || “Padding” || Client Random Value
+  // "E2EEncloud” || “Padding” || Client Random Value
   const concatenatedSaltArray = new Uint8Array(saltStringMaxLength + ClientRandomValue.length);
   concatenatedSaltArray.set(saltArray);
   concatenatedSaltArray.set(ClientRandomValue, saltStringMaxLength);

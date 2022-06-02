@@ -6,7 +6,7 @@ import type { NessieConfig } from './deps.ts';
 //     database: "nessie",
 //     hostname: "localhost",
 //     port: 5432,
-//     user: "root",
+//     username: "root",
 //     password: "pwd",
 // });
 

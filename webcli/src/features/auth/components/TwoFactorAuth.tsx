@@ -13,7 +13,7 @@ const genQR = (totp: OTPAuth.TOTP) => new Promise<string>((resolve, reject) => {
 });
 
 const genTOTP = (email: string) => new OTPAuth.TOTP({
-  issuer: 'E2EE',
+  issuer: 'E2EEncloud',
   label: `${email}`,
   algorithm: 'SHA1',
   digits: 6,

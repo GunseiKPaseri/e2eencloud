@@ -12,5 +12,8 @@
       "tags": ["recommended"],
       "include": ["eqeqeq", "no-eval"]
     }
+  },
+  "tasks": {
+    "server": "deno run --allow-env --allow-net --allow-read --allow-write --unstable main.ts"
   }
 }

@@ -174,7 +174,7 @@ router.post('/login', async (ctx) => {
   // use totp?
   if (user.two_factor_authentication_secret_key) {
     const totp = new OTPAuth.TOTP({
-      issuer: 'E2EE',
+      issuer: 'E2EEncloud',
       label: `${user.email}`,
       algorithm: 'SHA1',
       digits: 6,
@@ -251,7 +251,7 @@ router.put('/user/totp', async (ctx) => {
 
   // verify token
   const totp = new OTPAuth.TOTP({
-    issuer: 'E2EE',
+    issuer: 'E2EEncloud',
     label: `${user.email}`,
     algorithm: 'SHA1',
     digits: 6,

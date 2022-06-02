@@ -13,9 +13,9 @@ const concatByteArray = (a: Uint8Array, b: Uint8Array): Uint8Array => {
 };
 
 /**
- * Salt = SHA-256( “e2ee” || “Padding” || Client Random Value )
+ * Salt = SHA-256( “E2EEncloud” || “Padding” || Client Random Value )
  */
-const defaultString = 'e2ee';
+const defaultString = 'E2EEncloud';
 const saltStringMaxLength = 200;
 const ServerRandomValue = byteArray2base64(
   window.crypto.getRandomValues(new Uint8Array(16)),
@@ -23,7 +23,7 @@ const ServerRandomValue = byteArray2base64(
 export const createSalt = (email: string, ClientRandomValue: string | null) => {
   // 存在可否によらず類似した処理を行い，メルアド存在可否を不明に
   if (ClientRandomValue) {
-    // "e2ee” || “Padding” || Client Random Value
+    // "E2EEncloud” || “Padding” || Client Random Value
     const saltString = defaultString +
       'P'.repeat(saltStringMaxLength - defaultString.length);
     const saltArray = string2ByteArray(saltString);
@@ -33,7 +33,7 @@ export const createSalt = (email: string, ClientRandomValue: string | null) => {
       concatByteArray(saltArray, clientRandomValueArray),
     );
   } else {
-    // email || "e2ee" || "Padding" || Server Random Value(Dummy)
+    // email || "E2EEncloud" || "Padding" || Server Random Value(Dummy)
     const saltString = email + defaultString +
       'P'.repeat(saltStringMaxLength - defaultString.length - email.length);
     const saltArray = string2ByteArray(saltString);
