@@ -83,6 +83,7 @@ function HookList() {
       </Button>
       <EditableDataGrid <HookDataGridRowModel>
         computeMutation={computeMutation}
+        getName={(params) => (params.row.name === '' ? '<無名のHook>' : params.row.name)}
         columns={[
           {
             field: 'id',
@@ -122,8 +123,9 @@ function HookList() {
         rowsPerPageOptions={[PAGE_SIZE]}
         getList={getHookList}
         editItem={editHook}
-        onDelete={(params) => {
-          deleteHook(params.row.id);
+        onDelete={async (params) => {
+          await deleteHook(params.row.id);
+          dispatch(enqueueSnackbar({ message: '削除しました', options: { variant: 'success' } }));
         }}
         onEditSuccess={() => {
           dispatch(enqueueSnackbar({ message: '正常に変更を反映しました', options: { variant: 'success' } }));

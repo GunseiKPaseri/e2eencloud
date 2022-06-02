@@ -31,6 +31,7 @@ function UserList() {
   return (
     <EditableDataGrid <UserDataGridRowModel>
       computeMutation={computeMutation}
+      getName={(params) => params.row.email}
       columns={[
         { field: 'id', hide: true },
         { field: 'email', headerName: 'メールアドレス', width: 200 },

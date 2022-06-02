@@ -21,7 +21,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import { Typography } from '@mui/material';
+import { Tooltip, Typography } from '@mui/material';
 
 type GetListJSON<T> = {
   total_number: number;
@@ -31,6 +31,7 @@ type GetListJSON<T> = {
 function EditableDataGrid<T extends GridValidRowModel>(
   props: Omit<DataGridProps<T>, 'rows'> & {
     computeMutation: (newRow: T, oldRow: T) => string | null;
+    getName: (params: GridRowParams<T>) => string,
     getList: (props:{
       offset: number,
       limit: number,
@@ -47,6 +48,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
 ) {
   const {
     computeMutation,
+    getName,
     getList,
     editItem,
     onDelete,
@@ -65,12 +67,16 @@ function EditableDataGrid<T extends GridValidRowModel>(
   const [rowLength, setRowLength] = useState(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [pageReloader, setPageReloader] = useState<symbol>(Symbol('pageload'));
-  const [promiseArguments, setPromiseArguments] = useState<
+  const [editConfirmPromiseArguments, setEditConfirmPromiseArguments] = useState<
   {
     resolve:(x: T) => void,
     reject: (x: T) => void,
     newRow: T,
     oldRow: T
+  } | null>(null);
+  const [deleteConfirmArguments, setDeleteConfirmArguments] = useState<
+  {
+    params: GridRowParams<T>,
   } | null>(null);
 
   const noButtonRef = useRef<HTMLButtonElement>(null);
@@ -110,7 +116,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
         const mutation = computeMutation(newRow, oldRow);
         if (mutation) {
           // Save the arguments to resolve or reject the promise later
-          setPromiseArguments({
+          setEditConfirmPromiseArguments({
             resolve,
             reject,
             newRow,
@@ -123,66 +129,107 @@ function EditableDataGrid<T extends GridValidRowModel>(
     [],
   );
 
-  const handleNo = () => {
-    if (!promiseArguments) return;
-    const { oldRow, resolve } = promiseArguments;
+  const handleEditConfirmNo = () => {
+    if (!editConfirmPromiseArguments) return;
+    const { oldRow, resolve } = editConfirmPromiseArguments;
     resolve(oldRow); // Resolve with the old row to not update the internal state
-    setPromiseArguments(null);
+    setEditConfirmPromiseArguments(null);
   };
 
-  const handleYes = async () => {
-    if (!promiseArguments) return;
+  const handleEditConfirmYes = async () => {
+    if (!editConfirmPromiseArguments) return;
     const {
       newRow,
       oldRow,
       resolve,
-    } = promiseArguments;
+    } = editConfirmPromiseArguments;
 
     try {
       // Make the HTTP request to save in the backend
       const response = await editItem(oldRow, newRow);
       onEditSuccess();
       resolve({ ...oldRow, ...response });
-      setPromiseArguments(null);
+      setEditConfirmPromiseArguments(null);
       setPageReloader(Symbol('reload'));
     } catch (error) {
       onEditFailure();
       resolve(oldRow);
-      setPromiseArguments(null);
+      setEditConfirmPromiseArguments(null);
     }
   };
 
-  const handleEntered = () => {
+  const handleEditConfirmEntered = () => {
     // The `autoFocus` is not used because, if used, the same Enter that saves
     // the cell triggers "No". Instead, we manually focus the "No" button once
     // the dialog is fully open.
     // noButtonRef.current?.focus();
   };
 
-  const renderConfirmDialog = () => {
-    if (!promiseArguments) {
+  const renderEditConfirmDialog = () => {
+    if (!editConfirmPromiseArguments) {
       return <></>;
     }
 
-    const { newRow, oldRow } = promiseArguments;
+    const { newRow, oldRow } = editConfirmPromiseArguments;
     const mutation = computeMutation(newRow, oldRow);
     if (!mutation) return <></>;
 
     return (
       <Dialog
         maxWidth="xs"
-        TransitionProps={{ onEntered: handleEntered }}
-        open={!!promiseArguments}
+        TransitionProps={{ onEntered: handleEditConfirmEntered }}
+        open={!!editConfirmPromiseArguments}
       >
         <DialogTitle>以下の内容で変更しますか？</DialogTitle>
         <DialogContent dividers>
           <Typography>{mutation}</Typography>
         </DialogContent>
         <DialogActions>
-          <Button ref={noButtonRef} onClick={handleNo}>
+          <Button ref={noButtonRef} onClick={handleEditConfirmNo}>
             キャンセル
           </Button>
-          <Button onClick={handleYes}>編集</Button>
+          <Button onClick={handleEditConfirmYes}>編集</Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
+
+  const handleDeleteConfirmNo = () => {
+    if (!deleteConfirmArguments) return;
+    setDeleteConfirmArguments(null);
+  };
+
+  const handleDeleteConfirmYes = () => {
+    if (!deleteConfirmArguments) return;
+    const {
+      params,
+    } = deleteConfirmArguments;
+
+    onDelete(params);
+    setPageReloader(Symbol('reload'));
+    setDeleteConfirmArguments(null);
+  };
+
+  const renderDeleteConfirmDialog = () => {
+    if (!deleteConfirmArguments) {
+      return <></>;
+    }
+    const { params } = deleteConfirmArguments;
+
+    return (
+      <Dialog
+        maxWidth="xs"
+        open={!!deleteConfirmArguments}
+      >
+        <DialogTitle>以下の要素を削除しますか</DialogTitle>
+        <DialogContent dividers>
+          <Typography>{getName(params)}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button ref={noButtonRef} onClick={handleDeleteConfirmNo}>
+            キャンセル
+          </Button>
+          <Button onClick={handleDeleteConfirmYes} color="error">削除</Button>
         </DialogActions>
       </Dialog>
     );
@@ -195,21 +242,23 @@ function EditableDataGrid<T extends GridValidRowModel>(
       type: 'actions',
       // eslint-disable-next-line react/no-unstable-nested-components
       getActions: (params: GridRowParams<T>) => ([
-        <GridActionsCellItem
-          icon={<DeleteIcon />}
-          label="削除"
-          onClick={() => {
-            onDelete(params);
-            setPageReloader(Symbol('reload'));
-          }}
-        />,
+        <Tooltip title="削除">
+          <GridActionsCellItem
+            icon={<DeleteIcon />}
+            label="削除"
+            onClick={() => {
+              setDeleteConfirmArguments({ params });
+            }}
+          />
+        </Tooltip>,
       ]),
     },
   ];
 
   return (
     <div style={{ height: parentHeight, width: '100%' }}>
-      {renderConfirmDialog()}
+      {renderEditConfirmDialog()}
+      {renderDeleteConfirmDialog()}
       <DataGrid
         {...props}
         columns={columnsWithAction}
