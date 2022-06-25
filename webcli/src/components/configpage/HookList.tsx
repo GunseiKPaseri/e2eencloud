@@ -88,7 +88,7 @@ function HookList() {
           {
             field: 'id',
             headerName: 'url',
-            width: 500,
+            width: 600,
             valueFormatter: (params: GridValueFormatterParams<string>) => (
               `${appLocation}/api/hook/${params.value}`
             ),

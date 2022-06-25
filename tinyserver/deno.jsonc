@@ -14,6 +14,7 @@
     }
   },
   "tasks": {
-    "server": "deno run --lock=lock.json --allow-env --allow-net --allow-read --allow-write --unstable main.ts"
+    "server": "deno run --lock=lock.json --allow-env --allow-net --allow-read --allow-write --unstable main.ts",
+    "checkdependent": "deno cache --lock=lock.json --lock-write --unstable deps.ts"
   }
 }

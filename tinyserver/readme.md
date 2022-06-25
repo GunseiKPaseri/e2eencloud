@@ -1,6 +1,6 @@
 # Tiny Server
 
-Denoで実装してみたサーバ
+Server implemented in Deno
 
 ## how to move
 
@@ -48,7 +48,9 @@ On windows, change character encoding to UTF-8.
 
 ### 2. initialize (first time only)
 
-_You should delete or change password `admin@example.com`, `testuser@example.com`_ ( See /db/seeds/users.ts )
+_You should delete or change password
+`admin@example.com`,`testuser+XXX@example.com`,`baduser+XXX@example.com`_ ( See
+/db/seeds/users.ts )
 
 ```bash
 # ----First time only
@@ -96,6 +98,8 @@ $ deno run -A --unstable https://deno.land/x/nessie@2.0.6/cli.ts rollback
 
 ## lock
 
+Add lock information when dependent packages are changed
+
 ```bash
-$ deno cache --lock=lock.json --lock-write --unstable .\deps.ts
+$ deno task checkdependent
 ```

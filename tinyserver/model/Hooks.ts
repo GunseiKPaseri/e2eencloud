@@ -1,4 +1,4 @@
-import { bs58, compareAsc, Order, Query, Where } from '../deps.ts';
+import { bs58, compareAsc, Order, Query, Where, z } from '../deps.ts';
 import client from '../dbclient.ts';
 import { User } from './Users.ts';
 import {
@@ -12,7 +12,6 @@ import {
 import { ExhaustiveError } from '../util.ts';
 import { isFilterDateItem } from '../utils/dataGridFilter.ts';
 import parseJSONwithoutErr from '../utils/parseJSONWithoutErr.ts';
-
 interface SQLTableHook {
   id: string;
   name: string;
@@ -22,19 +21,24 @@ interface SQLTableHook {
   expired_at: Date | null;
 }
 
-export type HookData = {
-  method: 'USER_DELETE';
-} | {
-  method: 'NONE';
-};
+const hookScheme = z.union([
+  z.object({
+    method: z.literal('USER_DELETE'),
+  }),
+  z.object({
+    method: z.literal('NONE'),
+  }),
+]);
 
-export const parseHookData = (object: unknown): HookData | null => {
-  if (typeof object !== 'object' || object === null) return null;
-  const maybeHookData: Partial<HookData> = object;
-  if (maybeHookData.method && maybeHookData.method === 'USER_DELETE') {
-    return { method: maybeHookData.method };
+export type HookData = z.infer<typeof hookScheme>;
+
+export const parseHookData = (target: string | unknown): HookData | null => {
+  const object = (typeof target === 'string' ? parseJSONwithoutErr(target) : target);
+  try {
+    return hookScheme.parse(object);
+  } catch (_) {
+    return null;
   }
-  return null;
 };
 
 export class Hook {
@@ -48,9 +52,7 @@ export class Hook {
     this.id = hook.id;
     this.created_at = hook.created_at;
     this.user_id = hook.user_id;
-    this.#data = typeof hook.data === 'string'
-      ? (parseHookData(JSON.parse(hook.data)) ?? { method: 'NONE' })
-      : hook.data;
+    this.#data = parseHookData(hook.data) ?? { method: 'NONE' };
     this.#name = hook.name;
     this.#expired_at = hook.expired_at;
   }
