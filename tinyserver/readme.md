@@ -93,3 +93,9 @@ $ deno run -A --unstable https://deno.land/x/nessie@2.0.6/cli.ts migrate
 $ deno run -A --unstable https://deno.land/x/nessie@2.0.6/cli.ts rollback
 ...
 ```
+
+## lock
+
+```bash
+$ deno cache --lock=lock.json --lock-write --unstable .\deps.ts
+```
