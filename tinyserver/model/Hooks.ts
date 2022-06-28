@@ -21,7 +21,7 @@ interface SQLTableHook {
   expired_at: Date | null;
 }
 
-const hookScheme = z.union([
+export const hookScheme = z.union([
   z.object({
     method: z.literal('USER_DELETE'),
   }),

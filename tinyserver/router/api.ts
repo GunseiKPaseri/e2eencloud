@@ -26,10 +26,11 @@ import {
   getNumberOfHooks,
   HookData,
   hookFieldValidate,
-  parseHookData,
+  hookScheme,
   parseHookFilterQuery,
 } from '../model/Hooks.ts';
 import { ExhaustiveError } from '../util.ts';
+import { z } from '../deps.ts';
 
 const router = new Router({ prefix: '/api' });
 
@@ -79,23 +80,21 @@ router.post('/signup', async (ctx) => {
   return;
 });
 
-interface POSTEmailConfirmJSON {
-  email: string;
-  emailConfirmationToken: string;
-}
+const POSTEmailConfirmScheme = z.object({
+  email: z.string().email(),
+  emailConfirmationToken: z.string(),
+});
 
 router.post('/email_confirm', async (ctx) => {
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
-  const data: Partial<POSTEmailConfirmJSON> = await body.value;
 
-  if (
-    typeof data.email !== 'string' ||
-    typeof data.emailConfirmationToken !== 'string'
-  ) {
+  const parsed = POSTEmailConfirmScheme.safeParse(await body.value);
+  if (!parsed.success) {
     return ctx.response.status = Status.BadRequest;
   }
+  const data = parsed.data;
 
   // OK
   const status = await userEmailConfirm(
@@ -115,20 +114,21 @@ router.post('/email_confirm', async (ctx) => {
 
 // client random salt
 
-interface GETSaltJSON {
-  email: string;
-}
+const GETSaltScheme = z.object({
+  email: z.string().email(),
+});
 
 // GETではBODYに格納するのが困難
 router.post('/salt', async (ctx) => {
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
-  const data: Partial<GETSaltJSON> = await body.value;
 
-  if (typeof data.email !== 'string') {
+  const parsed = GETSaltScheme.safeParse(await body.value);
+  if (!parsed.success) {
     return ctx.response.status = Status.BadRequest;
   }
+  const data = parsed.data;
 
   // OK
   const salt = await getClientRandomSalt(data.email);
@@ -139,25 +139,22 @@ router.post('/salt', async (ctx) => {
 });
 
 // login
-interface POSTloginJSON {
-  email: string;
-  token: string;
-  authenticationKeyBase64: string;
-}
+const POSTloginScheme = z.object({
+  email: z.string().email(),
+  token: z.string(),
+  authenticationKeyBase64: z.string(),
+});
 
 router.post('/login', async (ctx) => {
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
-  const data: Partial<POSTloginJSON> = await body.value;
 
-  if (
-    typeof data.email !== 'string' ||
-    typeof data.authenticationKeyBase64 !== 'string' ||
-    typeof data.token !== 'string'
-  ) {
+  const parsed = POSTloginScheme.safeParse(await body.value);
+  if (!parsed.success) {
     return ctx.response.status = Status.BadRequest;
   }
+  const data = parsed.data;
 
   // OK
   const hashedAuthenticationKey = await crypto.subtle.digest(
@@ -193,7 +190,10 @@ router.post('/login', async (ctx) => {
     const ua = ctx.request.headers.get('user-agent');
     if (ua) {
       const userEnv = uaparser(ua);
-      await ctx.state.session.set('client_name', `${userEnv.os.name}${userEnv.os.version} ${userEnv.browser.name}`);
+      await ctx.state.session.set(
+        'client_name',
+        `${userEnv.os.name}${userEnv.os.version} ${userEnv.browser.name}`,
+      );
     } else {
       await ctx.state.session.set('client_name', `unknown`);
     }
@@ -228,10 +228,10 @@ router.post('/logout', async (ctx) => {
 
 // user
 
-interface POSTAddTwoFactorSecretKeyJSON {
-  secretKey: string;
-  token: string;
-}
+const POSTAddTwoFactorSecretKeyScheme = z.object({
+  secretKey: z.string(),
+  token: z.string(),
+});
 
 router.put('/user/totp', async (ctx) => {
   // auth
@@ -243,12 +243,12 @@ router.put('/user/totp', async (ctx) => {
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
-  const data: Partial<POSTAddTwoFactorSecretKeyJSON> = await body.value;
-
-  if (typeof data.secretKey !== 'string' || typeof data.token !== 'string') {
+  const parsed = POSTAddTwoFactorSecretKeyScheme.safeParse(await body.value);
+  if (!parsed.success) {
     return ctx.response.status = Status.BadRequest;
   }
 
+  const data = parsed.data;
   // verify token
   const totp = new OTPAuth.TOTP({
     issuer: 'E2EEncloud',
@@ -307,6 +307,12 @@ router.get('/user/capacity', async (ctx) => {
   ctx.response.type = 'json';
 });
 
+const PATCHPasswordScheme = z.object({
+  clientRandomValueBase64: z.string(),
+  encryptedMasterKeyBase64: z.string(),
+  encryptedMasterKeyIVBase64: z.string(),
+  hashedAuthenticationKeyBase64: z.string(),
+});
 interface PATCHPasswordJSON {
   clientRandomValueBase64: string;
   encryptedMasterKeyBase64: string;
@@ -324,16 +330,11 @@ router.patch('/user/password', async (ctx) => {
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.throw(Status.BadRequest, 'Bad Request');
 
-  const data: Partial<PATCHPasswordJSON> = await body.value;
-  if (
-    !data ||
-    typeof data.clientRandomValueBase64 !== 'string' ||
-    typeof data.encryptedMasterKeyBase64 !== 'string' ||
-    typeof data.encryptedMasterKeyIVBase64 !== 'string' ||
-    typeof data.hashedAuthenticationKeyBase64 !== 'string'
-  ) {
+  const parsed = PATCHPasswordScheme.safeParse(await body.value);
+  if (!parsed.success) {
     return ctx.throw(Status.BadRequest, 'Bad Request');
   }
+  const data = parsed.data;
 
   await user.patchPassword({
     client_random_value: data.clientRandomValueBase64,
@@ -347,11 +348,11 @@ router.patch('/user/password', async (ctx) => {
 
 // ADD public key
 
-interface PUTpubkeyJSON {
-  encryptedRSAPrivateKeyBase64: string;
-  encryptedRSAPrivateKeyIVBase64: string;
-  RSAPublicKeyBase64: string;
-}
+const PUTpubkeyScheme = z.object({
+  encryptedRSAPrivateKeyBase64: z.string(),
+  encryptedRSAPrivateKeyIVBase64: z.string(),
+  RSAPublicKeyBase64: z.string(),
+});
 router.put('/user/pubkey', async (ctx) => {
   // auth
   const uid: number | null = await ctx.state.session.get('uid');
@@ -362,16 +363,13 @@ router.put('/user/pubkey', async (ctx) => {
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
-  const data: Partial<PUTpubkeyJSON> = await body.value;
 
-  if (
-    typeof data.encryptedRSAPrivateKeyBase64 !== 'string' ||
-    typeof data.encryptedRSAPrivateKeyIVBase64 !== 'string' ||
-    typeof data.RSAPublicKeyBase64 !== 'string'
-  ) {
+  const parsed = PUTpubkeyScheme.safeParse(await body.value);
+  if (!parsed.success) {
     return ctx.response.status = Status.BadRequest;
   }
 
+  const data = parsed.data;
   await user.addRSAPublicKey({
     encrypted_rsa_private_key: data.encryptedRSAPrivateKeyBase64,
     encrypted_rsa_private_key_iv: data.encryptedRSAPrivateKeyIVBase64,
@@ -399,7 +397,9 @@ router.get('/user/sessions', async (ctx) => {
   const me: string = await ctx.state.session.get('id');
   const user = await getUserById(uid);
   if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
-  const sessions = (await SessionsStore.getSessionsByUserId(user.id)).map((x) => ({
+  const sessions = (await SessionsStore.getSessionsByUserId(user.id)).map((
+    x,
+  ) => ({
     id: x.id,
     clientName: x.data.client_name,
     accessed: x.data._accessed,
@@ -411,9 +411,9 @@ router.get('/user/sessions', async (ctx) => {
   ctx.response.type = 'json';
 });
 
-interface PATCHsessionsJSON {
-  clientName?: string;
-}
+const PATCHSessionsScheme = z.object({
+  clientName: z.string(),
+});
 
 router.patch('/user/sessions', async (ctx) => {
   // auth
@@ -426,9 +426,11 @@ router.patch('/user/sessions', async (ctx) => {
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
-  const data: Partial<PATCHsessionsJSON> = await body.value;
 
-  if (!data.clientName) return ctx.response.status = Status.BadRequest;
+  const parsed = PATCHSessionsScheme.safeParse(await body.value);
+  if (!parsed.success) return ctx.response.status = Status.BadRequest;
+
+  const data = parsed.data;
   await ctx.state.session.set('client_name', data.clientName);
   ctx.response.status = Status.NoContent;
 });
@@ -476,9 +478,16 @@ router.post('/files', async (ctx) => {
   const body = ctx.request.body({ type: 'form-data' });
   const reader = await body.value;
   const data = await reader.read({ maxSize: 10000000 });
-  let receivedFile: Partial<POSTFilesFormWithBin> | Partial<POSTFilesFormWithoutBin> = {};
-  const { id, encryptedFileIVBase64, encryptedFileInfoBase64, encryptedFileInfoIVBase64, encryptedFileKeyBase64 } =
-    data.fields;
+  let receivedFile:
+    | Partial<POSTFilesFormWithBin>
+    | Partial<POSTFilesFormWithoutBin> = {};
+  const {
+    id,
+    encryptedFileIVBase64,
+    encryptedFileInfoBase64,
+    encryptedFileInfoIVBase64,
+    encryptedFileKeyBase64,
+  } = data.fields;
 
   receivedFile = {
     id,
@@ -509,7 +518,9 @@ router.post('/files', async (ctx) => {
         );
       }
     }
-    if (!receivedFile.encryptedFile) return ctx.response.status = Status.BadRequest;
+    if (!receivedFile.encryptedFile) {
+      return ctx.response.status = Status.BadRequest;
+    }
   }
 
   // save file
@@ -530,9 +541,9 @@ router.post('/files', async (ctx) => {
   return ctx.response.status = Status.NoContent;
 });
 
-interface POSTdeletefilesJSON {
-  files: string[];
-}
+const POSTDeleteFilesScheme = z.object({
+  files: z.string().array(),
+});
 
 router.post('/files/delete', async (ctx) => {
   // auth
@@ -544,10 +555,13 @@ router.post('/files/delete', async (ctx) => {
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
-  const data: Partial<POSTdeletefilesJSON> = await body.value;
 
-  if (!(data.files instanceof Array)) return ctx.response.status = Status.BadRequest;
+  const parsed = POSTDeleteFilesScheme.safeParse(await body.value);
+  if (!parsed.success) {
+    return ctx.response.status = Status.BadRequest;
+  }
 
+  const data = parsed.data;
   const deletedTarget = data.files.filter((x) => typeof x === 'string');
   const deleted = await deleteFiles(user, deletedTarget);
 
@@ -593,22 +607,35 @@ router.get('/users', async (ctx) => {
   // admin auth
   const uid: number | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
-  if (!user || user.authority !== 'ADMIN') return ctx.response.status = Status.Forbidden;
+  if (!user || user.authority !== 'ADMIN') {
+    return ctx.response.status = Status.Forbidden;
+  }
 
   // validate
-  const prmoffset: number = parseInt(ctx.request.url.searchParams.get('offset') ?? '0', 10);
-  const prmlimit: number = parseInt(ctx.request.url.searchParams.get('limit') ?? '10', 10);
+  const prmoffset: number = parseInt(
+    ctx.request.url.searchParams.get('offset') ?? '0',
+    10,
+  );
+  const prmlimit: number = parseInt(
+    ctx.request.url.searchParams.get('limit') ?? '10',
+    10,
+  );
   const offset = isNaN(prmoffset) ? 0 : prmoffset;
   const limit = isNaN(prmlimit) ? 10 : prmlimit;
-  const orderBy = userFieldValidate(ctx.request.url.searchParams.get('orderby'));
+  const orderBy = userFieldValidate(
+    ctx.request.url.searchParams.get('orderby'),
+  );
   const order = ctx.request.url.searchParams.get('order') === 'desc' ? 'desc' : 'asc';
-  const queryFilter = parseUserFilterQuery(ctx.request.url.searchParams.get('q') ?? '');
+  const queryFilter = parseUserFilterQuery(
+    ctx.request.url.searchParams.get('q') ?? '',
+  );
 
   // get
   const number_of_users = getNumberOfUsers(queryFilter);
-  const list = (await getUsers({ offset, limit, orderBy, order, queryFilter })).map((
-    user,
-  ): GETuserlistJSON['users'][0] => user.value());
+  const list = (await getUsers({ offset, limit, orderBy, order, queryFilter }))
+    .map((
+      user,
+    ): GETuserlistJSON['users'][0] => user.value());
 
   const result: GETuserlistJSON = {
     number_of_user: await number_of_users,
@@ -623,7 +650,9 @@ router.delete('/user/:id', async (ctx) => {
   // admin auth
   const uid: number | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
-  if (!user || user.authority !== 'ADMIN') return ctx.response.status = Status.Forbidden;
+  if (!user || user.authority !== 'ADMIN') {
+    return ctx.response.status = Status.Forbidden;
+  }
 
   const id = parseInt(ctx.params.id);
 
@@ -636,16 +665,21 @@ router.delete('/user/:id', async (ctx) => {
   ctx.response.type = 'json';
 });
 
-interface PATCHUserJSON {
-  max_capacity: number;
-  two_factor_authentication: boolean;
-}
+const PATCHUserScheme = z.object({
+  max_capacity: z.number(),
+  two_factor_authentication: z.boolean(),
+}).partial({
+  max_capacity: true,
+  two_factor_authentication: true,
+});
 
 router.patch('/user/:id', async (ctx) => {
   // admin auth
   const uid: number | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
-  if (!user || user.authority !== 'ADMIN') return ctx.response.status = Status.Forbidden;
+  if (!user || user.authority !== 'ADMIN') {
+    return ctx.response.status = Status.Forbidden;
+  }
 
   const id = parseInt(ctx.params.id);
 
@@ -654,16 +688,13 @@ router.patch('/user/:id', async (ctx) => {
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
 
-  const bodyvalue: Partial<PATCHUserJSON> = await body.value;
-  if (
-    !(typeof bodyvalue.max_capacity === 'number' || typeof bodyvalue.max_capacity === 'undefined') ||
-    !(bodyvalue.two_factor_authentication === false || typeof bodyvalue.two_factor_authentication === 'undefined')
-  ) {
+  const parsed = PATCHUserScheme.safeParse(await body.value);
+  if (!parsed.success) {
     return ctx.response.status = Status.BadRequest;
   }
 
   const targetUser = await getUserById(id);
-  const result = await targetUser?.patch(bodyvalue);
+  const result = await targetUser?.patch(parsed.data);
 
   if (!result) return ctx.response.status = Status.BadRequest;
   ctx.response.status = Status.NoContent;
@@ -671,6 +702,13 @@ router.patch('/user/:id', async (ctx) => {
 
 // hook
 
+const POSTHooksScheme = z.object({
+  name: z.string(),
+  data: hookScheme,
+  expired_at: z.string(),
+}).partial({
+  expired_at: true,
+});
 interface POSThooksJSON {
   name: string;
   data: HookData;
@@ -685,12 +723,12 @@ router.post('/hooks', async (ctx) => {
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
   // validate
-  const bodyvalue: Partial<POSThooksJSON> = await body.value;
-  if (typeof bodyvalue.name !== 'string' || typeof bodyvalue.data !== 'object') {
+  const parsed = POSTHooksScheme.safeParse(await body.value);
+  if (!parsed.success || parsed.data.data.method === 'NONE') {
     return ctx.response.status = Status.BadRequest;
   }
-  const data = parseHookData(bodyvalue.data);
-  if (!data || data.method === 'NONE') return ctx.response.status = Status.BadRequest;
+  const bodyvalue = parsed.data;
+  const data = bodyvalue.data;
 
   const result = await addHook({
     name: bodyvalue.name,
@@ -708,15 +746,32 @@ router.get('/hooks', async (ctx) => {
   const user = await getUserById(uid);
   if (!user) return ctx.response.status = Status.Forbidden;
   // validate
-  const prmoffset: number = parseInt(ctx.request.url.searchParams.get('offset') ?? '0', 10);
-  const prmlimit: number = parseInt(ctx.request.url.searchParams.get('limit') ?? '10', 10);
+  const prmoffset: number = parseInt(
+    ctx.request.url.searchParams.get('offset') ?? '0',
+    10,
+  );
+  const prmlimit: number = parseInt(
+    ctx.request.url.searchParams.get('limit') ?? '10',
+    10,
+  );
   const offset = isNaN(prmoffset) ? 0 : prmoffset;
   const limit = isNaN(prmlimit) ? 10 : prmlimit;
-  const orderBy = hookFieldValidate(ctx.request.url.searchParams.get('orderby'));
+  const orderBy = hookFieldValidate(
+    ctx.request.url.searchParams.get('orderby'),
+  );
   const order = ctx.request.url.searchParams.get('order') === 'desc' ? 'desc' : 'asc';
-  const queryFilter = parseHookFilterQuery(ctx.request.url.searchParams.get('q') ?? '');
+  const queryFilter = parseHookFilterQuery(
+    ctx.request.url.searchParams.get('q') ?? '',
+  );
 
-  const list = getHooksList({ user_id: user.id, offset, limit, order, orderBy, queryFilter });
+  const list = getHooksList({
+    user_id: user.id,
+    offset,
+    limit,
+    order,
+    orderBy,
+    queryFilter,
+  });
   const getSizeOfHooks = getNumberOfHooks(user.id, queryFilter);
 
   const result = {
@@ -741,7 +796,9 @@ router.post('/hook/:id', async (ctx) => {
 
   switch (hook.data.method) {
     case 'USER_DELETE': {
-      const result = await deleteUserById(typeof hook.user_id === 'number' ? hook.user_id : hook.user_id.id);
+      const result = await deleteUserById(
+        typeof hook.user_id === 'number' ? hook.user_id : hook.user_id.id,
+      );
       if (!result.success) return ctx.response.status = Status.BadRequest;
       break;
     }
@@ -760,6 +817,11 @@ interface PATCHHookJSON {
   expired_at?: string | null;
 }
 
+const PATCHHookScheme = z.object({
+  name: z.string(),
+  expired_at: z.string().nullable(),
+}).partial();
+
 router.patch('/hook/:id', async (ctx) => {
   // hook
   const hook = await getHook(ctx.params.id);
@@ -775,14 +837,13 @@ router.patch('/hook/:id', async (ctx) => {
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
 
-  const bodyvalue: Partial<PATCHHookJSON> = await body.value;
-  if (
-    !(typeof bodyvalue.name === 'string' || typeof bodyvalue.name === 'undefined') ||
-    !(typeof bodyvalue.expired_at === 'string' || typeof bodyvalue.expired_at === 'undefined' ||
-      bodyvalue.expired_at === null)
-  ) {
+  const parsed = PATCHHookScheme.safeParse(await body.value);
+
+  if (!parsed.success) {
     return ctx.response.status = Status.BadRequest;
   }
+
+  const bodyvalue = parsed.data;
 
   const result = await hook.patch({
     ...bodyvalue,
