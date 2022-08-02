@@ -42,7 +42,7 @@ export class User {
   readonly encrypted_master_key_iv: string;
   readonly hashed_authentication_key: string;
   readonly is_email_confirmed: boolean;
-  readonly max_capacity: number;
+  #max_capacity: number;
   #file_usage: number;
   #two_factor_authentication_secret_key: string | null;
   #rsa_public_key: string | null;
@@ -57,7 +57,7 @@ export class User {
     this.encrypted_master_key_iv = user.encrypted_master_key_iv;
     this.hashed_authentication_key = user.hashed_authentication_key;
     this.is_email_confirmed = !!(user.is_email_confirmed);
-    this.max_capacity = user.max_capacity;
+    this.#max_capacity = user.max_capacity;
     this.#file_usage = user.file_usage;
     this.#two_factor_authentication_secret_key = user.two_factor_authentication_secret_key;
     this.#rsa_public_key = user.rsa_public_key;
@@ -83,6 +83,9 @@ export class User {
   }
   get authority() {
     return this.#authority;
+  }
+  get max_capacity() {
+    return this.#max_capacity;
   }
 
   value() {
@@ -189,6 +192,9 @@ export class User {
     // validation
     if (typeof params.max_capacity === 'number' && params.max_capacity < 0) return false;
     if (params.two_factor_authentication) return false;
+
+    if (typeof params.max_capacity === 'number') this.#max_capacity = params.max_capacity;
+    if (params.two_factor_authentication === false) this.#two_factor_authentication_secret_key = null;
     try {
       await client.execute(
         `UPDATE users SET
@@ -196,8 +202,8 @@ export class User {
         two_factor_authentication_secret_key = ?
         WHERE id = ?`,
         [
-          typeof params.max_capacity === 'number' ? params.max_capacity : this.max_capacity,
-          params.two_factor_authentication === false ? null : this.#two_factor_authentication_secret_key,
+          this.#max_capacity,
+          this.#two_factor_authentication_secret_key,
           this.id,
         ],
       );

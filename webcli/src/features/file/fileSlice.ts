@@ -60,6 +60,7 @@ export {
   changeActiveFileGroupSearch,
   changeSelection,
 };
+export { updateUsageAsync };
 
 /**
  * ファイル関連のReduxState

@@ -59,3 +59,16 @@ export const editUser = async (
     max_capacity: typeof edited.max_capacity === 'undefined' ? targetUser.max_capacity : edited.max_capacity,
   };
 };
+
+export const issuanceCoupon = async (num: number) => {
+  const result = await axiosWithSession.post<
+  Record<string, never>,
+  AxiosResponse<{ coupons_id: string[] }>>(`${appLocation}/api/coupons`, {
+    coupon: {
+      method: 'ADD_CAPACITY',
+      value: 5 * 1024 * 1024 * 1024,
+    },
+    number: num,
+  });
+  return result.data.coupons_id;
+};

@@ -54,7 +54,7 @@ _You should delete or change password `admin@example.com`,`testuser+XXX@example.
 ```bash
 # ----First time only
 $ docker-compose up -d
-$ deno run -A --unstable https://deno.land/x/nessie@2.0.6/cli.ts migrate
+$ deno task migrate
 $ deno run -A --unstable https://deno.land/x/nessie@2.0.6/cli.ts seed
 ```
 
@@ -84,14 +84,14 @@ Checked 20 files
 ### migrate
 
 ```bash
-$ deno run -A --unstable https://deno.land/x/nessie@2.0.6/cli.ts migrate
+$ deno task migrate
 ...
 ```
 
 ### rollback
 
 ```bash
-$ deno run -A --unstable https://deno.land/x/nessie@2.0.6/cli.ts rollback
+$ deno task rollback
 ...
 ```
 

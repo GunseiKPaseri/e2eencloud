@@ -12,3 +12,5 @@ export const hex2bytearray = (hex: string) => {
   if (!array) throw new Error('bad hex');
   return new Uint8Array(array);
 };
+
+export const byteArray2hex = (x: Uint8Array) => Array.from(new Uint8Array(x)).map((b) => b.toString(16).padStart(2, '0')).join('');

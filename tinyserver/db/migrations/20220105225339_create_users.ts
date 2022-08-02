@@ -88,6 +88,15 @@ export default class extends AbstractMigration<ClientMySQL> {
           REFERENCES users (id)
           ON DELETE CASCADE ON UPDATE RESTRICT
       )`);
+    // coupons
+    await this.client.query(`
+      CREATE TABLE coupons (
+        id varchar(36) PRIMARY KEY NOT NULL,
+        data TEXT NOT NULL,
+        created_at datetime DEFAULT CURRENT_TIMESTAMP,
+        expired_at datetime,
+        INDEX(created_at)
+    )`);
   }
 
   /** Runs on rollback */
@@ -97,5 +106,6 @@ export default class extends AbstractMigration<ClientMySQL> {
     await this.client.query('DROP TABLE files');
     await this.client.query('DROP TABLE hooks');
     await this.client.query('DROP TABLE users');
+    await this.client.query('DROP TABLE coupons');
   }
 }

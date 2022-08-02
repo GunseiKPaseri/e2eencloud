@@ -34,10 +34,12 @@ export { oakCors } from 'https://deno.land/x/cors@v1.2.2/mod.ts';
 
 export { Client, configLogger } from 'https://deno.land/x/mysql@v2.10.2/mod.ts';
 export type { ClientConfig } from 'https://deno.land/x/mysql@v2.10.2/mod.ts';
-export { Order, Query, Where } from 'https://deno.land/x/sql_builder@v1.9.1/mod.ts';
+export { Order, Query, replaceParams, Where } from 'https://deno.land/x/sql_builder@v1.9.1/mod.ts';
 
 import * as z from 'https://deno.land/x/zod@v3.17.3/mod.ts';
 export { z };
+
+export { expect } from 'https://deno.land/x/expect@v0.2.9/mod.ts';
 
 // @deno-types="https://deno.land/x/otpauth@v7.1.2/dist/otpauth.d.ts"
 export * as OTPAuth from 'https://deno.land/x/otpauth@v7.1.2/dist/otpauth.esm.js';
@@ -51,5 +53,10 @@ export { S3Bucket } from 'https://deno.land/x/s3@0.1.0/mod.ts';
 import compareAsc from 'https://deno.land/x/date_fns@v2.22.1/compareAsc/index.ts';
 export { compareAsc };
 
-import bs58 from 'https://cdn.skypack.dev/bs58@5.0.0?dts';
+import baseX from 'https://cdn.skypack.dev/base-x@4.0.0?dts';
+
+const BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+
+const bs58 = baseX(BASE58);
+
 export { bs58 };
