@@ -69,7 +69,11 @@ CaseReducer<FileState, PayloadAction<FiledownloadAsyncResult>> = (state, action)
   const { fileId, local, active } = action.payload;
   const target = state.fileTable[fileId];
   assertFileNodeFile(target);
-  const nextFileNode = { ...target, expansion: local.expansion, blobURL: local.blobURL };
+  const nextFileNode = {
+    ...target,
+    expansion: (target.expansion ?? local.expansion),
+    blobURL: local.blobURL,
+  };
   if (local.previewURL) nextFileNode.previewURL = local.previewURL;
 
   const newFileTable = { ...state.fileTable, [fileId]: nextFileNode };
