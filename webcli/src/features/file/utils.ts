@@ -355,9 +355,12 @@ export const decryptoFileInfo = async (fileinforaw: GetfileinfoJSONRow)
 
   const fileKey = await getAESGCMKey(fileKeyRaw);
   const fileKeyBin = Array.from(fileKeyRaw);
-  const { fileInfo, originalVersion } = fileInfoMigrate(byteArray2string(
+  const res = fileInfoMigrate(byteArray2string(
     await decryptAESGCM(encryptedFileInfo, fileKey, encryptedFileInfoIV),
   ));
+  if (!res) throw new Error('UnSafeData');
+  const { fileInfo, originalVersion } = res;
+
   if (fileInfo.type === 'file') {
     if (!fileinforaw.encryptedFileIVBase64) throw new Error('取得情報が矛盾しています。fileにも関わらずencryptedFileIVが含まれていません');
     const encryptedFileIV = base642ByteArray(fileinforaw.encryptedFileIVBase64);

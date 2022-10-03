@@ -30,5 +30,4 @@ export const fileInfoMigrate = (plainFileInfo: string) => (
 
 export const fileInfoWithBlobMigrate = (
   fileInfo: FileInfo,
-  blob: { blob: Blob, beforeVersion: FileInfoVersions },
-) => upFile(fileInfo, blob);
+) => upFile(fileInfo);
