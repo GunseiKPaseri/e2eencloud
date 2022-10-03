@@ -10,7 +10,7 @@ import {
   decryptAESCTR,
 } from '../../../utils/crypto';
 import { byteArray2base64, base642ByteArray } from '../../../utils/uint8';
-import { setRSAKey } from '../../../encrypt';
+import { setRSAKey } from '../../../app/encrypt';
 import { buildFileTableAsync } from '../../file/thunk/buildFileTableAsync';
 
 import { AES_AUTH_KEY_LENGTH } from '../../../const';
