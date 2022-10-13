@@ -11,6 +11,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 
 import './index.css';
+import './features/language/init_i18n';
 
 import App from './App';
 import { store } from './app/store';
