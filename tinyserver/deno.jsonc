@@ -14,10 +14,10 @@
     }
   },
   "tasks": {
-    "server": "deno run --lock=lock.json --allow-env --allow-net --allow-read --unstable main.ts",
+    "server": "deno run --lock=lock.json --allow-env --allow-net=127.0.0.1:3001,localhost:13306 --allow-read --unstable main.ts",
     "test": "deno test --allow-env --allow-net --allow-read",
     "checkdependent": "deno cache --lock=lock.json --lock-write --unstable deps.ts",
-    "migrate": "deno run -A --unstable https://deno.land/x/nessie@2.0.6/cli.ts migrate",
-    "rollback": "deno run -A --unstable https://deno.land/x/nessie@2.0.6/cli.ts rollback"
+    "migrate": "deno run -A --unstable --allow-net=localhost:13306 https://deno.land/x/nessie@2.0.6/cli.ts migrate",
+    "rollback": "deno run -A --unstable --allow-net=localhost:13306 https://deno.land/x/nessie@2.0.6/cli.ts rollback"
   }
 }
