@@ -1,0 +1,11 @@
+auth:
+  login: Login
+  logout: Logout
+  email: Email
+  password: Password
+  twofactorauthtoken: Two-Factor Auth Token
+  youalreadyloggined: You are already logined in with {{email}}.
+language:
+  ja: Japanese
+  en: English
+  zh: Chinese
