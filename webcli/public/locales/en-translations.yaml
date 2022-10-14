@@ -1,3 +1,10 @@
+admin:
+  issue: Issue
+  IssueCoupon: Issue Coupon
+  ChangeSuccessful: Changed successful.
+  ChangeFailed: Change failed.
+  'on': 'On'
+  'off': 'Off'
 auth:
   login: Login
   logout: Logout
