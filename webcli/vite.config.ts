@@ -11,6 +11,7 @@ export default defineConfig({
     // root (= ./src) から見た相対パスで指定
     outDir: '../dist'
   },
+  publicDir: '../public',
   root: './src',
   define: {
     'process.browser': true,

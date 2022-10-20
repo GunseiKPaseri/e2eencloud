@@ -7,6 +7,8 @@ import { DateTimePicker } from '@mui/x-date-pickers';
 import Button from '@mui/material/Button';
 import { useState } from 'react';
 import addMonths from 'date-fns/addMonths';
+import type { ComputeMutation } from '../assets/EditableDataGrid';
+
 import { enqueueSnackbar } from '../../features/snackbar/snackbarSlice';
 import { useAppDispatch } from '../../app/hooks';
 import { appLocation } from '../../features/componentutils';
@@ -26,7 +28,7 @@ export type HookDataGridRowModel = GridRowModel<{
   expired_at: Date | null;
 }>;
 
-const computeMutation = (newRow: HookDataGridRowModel, oldRow: HookDataGridRowModel) => {
+const computeMutation: ComputeMutation<HookDataGridRowModel> = ({ newRow, oldRow }) => {
   if (newRow.name !== oldRow.name) {
     return `フック名：${oldRow.name} => ${newRow.name}`;
   } if ((

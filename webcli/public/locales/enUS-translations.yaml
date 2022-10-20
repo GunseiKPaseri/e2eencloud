@@ -1,0 +1,20 @@
+admin:
+  issue: Issue
+  IssueCoupon: Issue Coupon
+  ChangeSuccessful: Changed successful.
+  ChangeFailed: Change failed.
+  'on': 'On'
+  'off': 'Off'
+auth:
+  login: Login
+  logout: Logout
+  email: Email
+  password: Password
+  twofactorauthtoken: Two-Factor Auth Token
+  youalreadyloggined: You are already logined in with {{email}}.
+language:
+  jaJP: Japanese
+  enUS: English
+  zhCN: Chinese
+conf:
+  dateFnsLocale: enUS

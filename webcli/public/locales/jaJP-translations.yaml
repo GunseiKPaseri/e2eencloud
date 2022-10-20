@@ -1,0 +1,31 @@
+admin:
+  authority: 権限
+  capacity: 容量
+  cancel: キャンセル
+  ChangeSuccessful: 変更が正常に反映されました
+  ChangeFailed: 変更に失敗しました
+  delete: 削除
+  edit: 編集
+  issue: 発行
+  IssueCoupon: クーポンを発行
+  'on': オン
+  'off': オフ
+  usage: 使用量
+auth:
+  email: メールアドレス
+  login: ログイン
+  loginfailed:
+    ログインに失敗しました。
+    メールアドレス、パスワード、二要素認証トークン（登録している場合）に誤りが無いか確認してください。
+  logout: ログアウト
+  password: パスワード
+  registifyoudonothaveanaccount: アカウントが無ければ登録
+  twofactorauth: 二要素認証
+  twofactorauthtoken: 二要素認証トークン
+  youalreadyloggined: 既に{{email}}としてログイン済です
+language:
+  jaJP: 日本語
+  enUS: 英語
+  zhCN: 中国語
+conf:
+  dateFnsLocale: ja
