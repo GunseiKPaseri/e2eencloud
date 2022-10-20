@@ -13,6 +13,8 @@ auth:
   twofactorauthtoken: Two-Factor Auth Token
   youalreadyloggined: You are already logined in with {{email}}.
 language:
-  ja: Japanese
-  en: English
-  zh: Chinese
+  jaJP: Japanese
+  enUS: English
+  zhCN: Chinese
+conf:
+  dateFnsLocale: enUS

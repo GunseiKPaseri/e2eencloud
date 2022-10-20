@@ -1,5 +1,13 @@
-import { createAction } from '@reduxjs/toolkit';
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import { initI18NAsync } from '../language/languageSlice';
 
-const initAction = createAction('initialize');
+const initAction = createAsyncThunk<void, void>(
+  'init/caller',
+  async (_, { dispatch }) => {
+    await Promise.all([
+      dispatch(initI18NAsync()),
+    ]);
+  },
+);
 
 export default initAction;

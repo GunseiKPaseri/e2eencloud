@@ -24,6 +24,8 @@ auth:
   twofactorauthtoken: 二要素認証トークン
   youalreadyloggined: 既に{{email}}としてログイン済です
 language:
-  ja: 日本語
-  en: 英語
-  zh: 中国語
+  jaJP: 日本語
+  enUS: 英語
+  zhCN: 中国語
+conf:
+  dateFnsLocale: ja
