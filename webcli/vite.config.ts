@@ -17,6 +17,9 @@ export default defineConfig({
     port: 3000
   },
   test: {
+    coverage: {
+      provider: 'c8'
+    },
     globals: true,
     environment: 'happy-dom',
     setupFiles: './setup.ts',
