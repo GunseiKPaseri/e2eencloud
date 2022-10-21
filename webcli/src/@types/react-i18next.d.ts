@@ -24,6 +24,8 @@ declare module 'react-i18next' {
           usage: string
         }
         auth: {
+          delete: string
+          edit: string
           email: string
           login: string
           loginfailed: string
