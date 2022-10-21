@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest';
 import { serializeTags, deserializeTags } from './FileGrid';
 
 describe('serialize', () => {
