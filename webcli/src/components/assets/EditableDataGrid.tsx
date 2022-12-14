@@ -30,7 +30,7 @@ type GetListJSON<T> = {
   items: T[];
 };
 
-export type ComputeMutation<T extends GridValidRowModel, N extends Namespace<string> = 'translation', TKPrefix = undefined>
+export type ComputeMutation<T extends GridValidRowModel, N extends Namespace<'translations'> = 'translations', TKPrefix = undefined>
   = (params: { newRow: T, oldRow: T, t: TFunction<N, TKPrefix> }) => string | null;
 
 function EditableDataGrid<T extends GridValidRowModel>(
@@ -66,7 +66,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
   } = props;
   const pageSize = originProps.pageSize ?? 100;
   const { t } = useTranslation();
-  const [rows, setRows] = useState<GridRowsProp>([]);
+  const [rows, setRows] = useState<GridRowsProp<T>>([]);
   const [page, setPage] = useState(0);
   const [sortQuery, setSortQuery] = useState<GridSortItem[]>([]);
   const [filterQuery, setFilterQuery] = useState<GridFilterModel>({ items: [] });
@@ -100,7 +100,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
         sortQuery,
         filterQuery,
       });
-      const newRows:GridRowsProp = list.items;
+      const newRows:GridRowsProp<T> = list.items;
 
       if (!active) {
         return;

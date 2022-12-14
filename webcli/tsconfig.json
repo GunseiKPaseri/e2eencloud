@@ -15,8 +15,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "baseUrl": "./",
-    "types": ["jest"]
+    "baseUrl": "./"
   },
   "exclude": ["node_modules/**/*", "**/*.spec.ts", "**/*.test.ts"],
   "include": ["./src/**/*.tsx", "./src/**/*.ts"]

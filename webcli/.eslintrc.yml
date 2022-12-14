@@ -4,7 +4,6 @@ env:
 extends:
   - airbnb
   - airbnb-typescript
-  - plugin:jest/recommended
   - plugin:@typescript-eslint/recommended
   - plugin:@typescript-eslint/recommended-requiring-type-checking
 parser: '@typescript-eslint/parser'
@@ -17,13 +16,11 @@ parserOptions:
 settings:
   react:
     version: "18.1.0"
-  jest:
-    version: 26
 plugins:
   - react
   - react-hooks
   - '@typescript-eslint'
-  - jest
+  - vitest
 globals:
   React: true
   JSX: true

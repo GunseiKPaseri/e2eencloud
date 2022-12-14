@@ -1,9 +1,5 @@
-/// <reference types="vitest" />
-
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
-import reactJsx from 'vite-react-jsx'
-import manifestSRI from 'vite-plugin-manifest-sri'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -17,7 +13,13 @@ export default defineConfig({
     'process.browser': true,
     'process.env': {}
   },
+  server: {
+    port: 3000
+  },
   test: {
+    coverage: {
+      provider: 'c8'
+    },
     globals: true,
     environment: 'happy-dom',
     setupFiles: './setup.ts',
@@ -26,7 +28,6 @@ export default defineConfig({
     }
   },
   plugins: [
-    manifestSRI({ algorithms: ['sha384', 'sha512'] }),
-    reactJsx()
+    react()
   ]
 })
