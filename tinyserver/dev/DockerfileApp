@@ -24,9 +24,13 @@ COPY --from=node /usr/local/bin/ /usr/local/bin/
 
 RUN corepack disable && corepack enable
 
+## cert for db-prisma-proxy-https [TODO]
+
 COPY db-prisma-proxy-https/ssl-certs/db-prisma-proxy-https/local/signed.crt /usr/local/share/ca-certificates/extra/db-prisma-proxy-https.crt
 
 RUN apt-get update -y && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/* && update-ca-certificates
+
+## install git
 
 RUN apt-get update -y \
     && apt-get upgrade -y \
@@ -37,7 +41,16 @@ RUN apt-get update -y \
 
 RUN apt-get install -y git
 
-RUN addgroup --gid 1000 vscode \
-  && adduser --uid 1000 --disabled-password vscode --ingroup vscode \
-  && mkdir /deno-dir/ \
-  && chown vscode:vscode /deno-dir/
+## add user
+ARG USERNAME=vscode
+
+RUN addgroup --gid 1000 ${USERNAME} \
+    && adduser --uid 1000 --disabled-password vscode --ingroup ${USERNAME}
+
+## add history
+
+RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
+    && mkdir /commandhistory \
+    && touch /commandhistory/.bash_history \
+    && chown -R $USERNAME /commandhistory \
+    && echo "$SNIPPET" >> "/home/$USERNAME/.bashrc"

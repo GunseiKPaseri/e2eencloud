@@ -3,7 +3,7 @@ services:
     command: sleep infinity
     volumes:
       - ..:/workspace:cached
-      - e2ee-bashhistory:/home/vscode/.bash_history
+      - e2ee-bashhistory:/commandhistory
     ports:
       - 8084:5555
 
