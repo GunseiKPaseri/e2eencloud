@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "prisma": "npm:prisma@^4.7.1",
+    "prisma-cli": "./generated/client/deno/edge.ts"
+  }
+}

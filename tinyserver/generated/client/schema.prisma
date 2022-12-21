@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["deno"]
+  output          = "../generated/client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model User {
+  id                     String                   @id
+  email                  String                   @unique
+  is_email_confirmed     Boolean                  @default(false)
+  role                   Role                     @default(USER)
+  tfa_solutions          TFASolution[]
+  max_capacity           Int
+  file_usage             Int
+  /// client_random_value
+  /// encrypted_master_key
+  /// encrypted_master_key_iv
+  /// encrypted_rsa_private_key TEXT,
+  /// encrypted_rsa_private_key_iv VARCHAR(24),
+  /// hashed_authentication_key VARCHAR(44) NOT NULL,
+  encryption_data        String
+  rsa_public_key         String
+  created_at             DateTime                 @default(now()) @db.Timestamp(0)
+  updated_at             DateTime                 @default(now()) @updatedAt @db.Timestamp(0)
+  ConfirmingEmailAddress ConfirmingEmailAddress[]
+  Sessions               Sessions[]
+  Hooks                  Hooks[]
+  Files                  Files[]
+
+  @@index([email])
+}
+
+enum SolutionType {
+  TOTP
+  FIDO2
+  EMAIL
+}
+
+model TFASolution {
+  id         Int          @id @default(autoincrement())
+  type       SolutionType
+  value      String
+  user       User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id    String
+  available  Boolean      @default(false)
+  created_at DateTime     @default(now()) @db.Timestamp(0)
+  updated_at DateTime     @default(now()) @updatedAt @db.Timestamp(0)
+}
+
+model ConfirmingEmailAddress {
+  id         Int      @id @default(autoincrement())
+  email      String
+  token      String
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id    String
+  expired_at DateTime
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamp(0)
+
+  @@index([email])
+}
+
+model Sessions {
+  id          String   @id
+  session_key String   @unique
+  data        String
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id     String
+  expired_at  DateTime
+  created_at  DateTime @default(now()) @db.Timestamp(0)
+  updated_at  DateTime @default(now()) @updatedAt @db.Timestamp(0)
+}
+
+model Hooks {
+  id         String   @id
+  name       String
+  data       String
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id    String
+  expired_at DateTime
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamp(0)
+
+  @@index([user_id])
+}
+
+model Files {
+  id              String   @id
+  size            Int
+  createUser      User     @relation(fields: [created_by], references: [id], onDelete: Cascade)
+  created_by      String
+  created_at      DateTime @default(now()) @db.Timestamp(0)
+  updated_at      DateTime @default(now()) @updatedAt @db.Timestamp(0)
+  // iv, key,info,info_iv
+  encryption_data String
+
+  @@index([created_by])
+}
+
+model Coupons {
+  id         String   @id
+  data       String
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamp(0)
+}

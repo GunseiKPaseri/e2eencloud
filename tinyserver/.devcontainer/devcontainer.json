@@ -1,0 +1,37 @@
+{
+  "name": "e2eencloud dev",
+  "dockerComposeFile": ["../docker-compose.yml", "docker-compose.yml"],
+  "service": "app",
+  "workspaceFolder": "/workspace/tinyserver",
+  "extensions": [
+    "ms-azuretools.vscode-docker",
+    "denoland.vscode-deno",
+    "Prisma.prisma"
+  ],
+  "settings": {
+    "deno.enable": true,
+    "deno.suggest.imports.hosts": {
+      "https://deno.land": true
+    },
+    "deno.lint": true,
+    "deno.config": "deno.jsonc",
+    "[json]": {
+      "editor.defaultFormatter": "denoland.vscode-deno"
+    },
+    "[jsonc]": {
+      "editor.defaultFormatter": "denoland.vscode-deno"
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "denoland.vscode-deno"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "denoland.vscode-deno"
+    },
+    "[prisma]": {
+      "editor.defaultFormatter": "Prisma.prisma"
+    },
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "remoteUser": "vscode"
+}

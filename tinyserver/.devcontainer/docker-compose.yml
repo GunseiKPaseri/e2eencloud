@@ -1,0 +1,12 @@
+services:
+  app:
+    command: sleep infinity
+    volumes:
+      - ..:/workspace:cached
+      - e2ee-bashhistory:/home/vscode/.bash_history
+    ports:
+      - 8084:5555
+
+volumes:
+  e2ee-bashhistory:
+  volume-appcache:

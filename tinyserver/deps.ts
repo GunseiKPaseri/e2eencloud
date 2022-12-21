@@ -20,8 +20,8 @@ export const BUCKET_NAME = Deno.env.get('AWS_BUCKET') ?? '__NOTFOUND__';
 export const BUCKET_REGION = Deno.env.get('AWS_DEFAULT_REGION') ?? '__NOTFOUND__';
 export const BUCKET_ENDPOINT = Deno.env.get('AWS_URL') ?? '__NOTFOUND__';
 
-export { ClientMySQL } from 'https://deno.land/x/nessie@2.0.6/mod.ts';
-export type { NessieConfig } from 'https://deno.land/x/nessie@2.0.6/mod.ts';
+export { ClientMySQL } from 'https://deno.land/x/nessie@2.0.10/mod.ts';
+export type { NessieConfig } from 'https://deno.land/x/nessie@2.0.10/mod.ts';
 
 export { Application, Router, Status } from 'https://deno.land/x/oak@v10.5.1/mod.ts';
 
