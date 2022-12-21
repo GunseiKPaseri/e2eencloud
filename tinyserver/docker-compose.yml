@@ -127,6 +127,8 @@ services:
     environment:
       - DATABASE_URL=prisma://db-prisma-proxy-https?api_key=HOGE_HOGE
       - DATABASE_URL_LOCAL=mysql://${DB_USER}:${DB_PASS}@db:3306/${DB_NAME}?schema=public
+    volumes:
+      - volume-appcache:/home/vscode/.cache
   rproxy:
     image: traefik:v2.9.6
     container_name: rproxy
@@ -140,6 +142,7 @@ volumes:
   volume-mysql:
   volume-minio:
   volume-mailer:
+  volume-appcache:
 
 networks:
   network_cockroachdb:
