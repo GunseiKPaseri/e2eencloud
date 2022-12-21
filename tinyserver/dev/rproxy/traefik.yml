@@ -1,0 +1,30 @@
+## traefik.yml
+
+# https://docs.traefik.io/
+
+# Docker configuration backend
+providers:
+  docker:
+    exposedByDefault: false
+    defaultRule: "Host(`{{ index .Labels \"traefik.host\" }}.localhost`)"
+
+entryPoints:
+  http:
+    address: ":80"
+  # smtp:
+  #   address: ":25"
+  # pop3:
+  #   address: ":110"
+  # imap:
+  #   address: ":143"
+  # mysql:
+  #   address: ":3306"
+  # psql:
+  #   address: ":5432"
+  # mongo:
+  #   address: ":27017"
+
+# API and dashboard configuration
+api:
+  insecure: true
+  dashboard: true
