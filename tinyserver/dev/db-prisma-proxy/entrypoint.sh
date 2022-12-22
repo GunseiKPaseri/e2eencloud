@@ -7,13 +7,4 @@ chmod +x ./dist/server.js
 
 mkdir -p prisma
 
-cat ./prisma-original/schema.prisma \
-    | grep -v "previewFeatures" \
-    | grep -v "../generated/client" \
-    > ./prisma/schema.prisma
-
-yarn prisma generate
-
-yarn run build
-
-exec "$@"
+ls ./prisma-original/schema.prisma | entr -nr /onchange.sh "$@"

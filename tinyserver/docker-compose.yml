@@ -67,7 +67,7 @@ services:
     image: e2eencloud/pdpa
     working_dir: /app
     environment:
-      DATABASE_URL: mysql://${DB_USER}:${DB_PASS}@db:3306/${DB_NAME}?schema=public
+      DATABASE_URL: mysql://${DB_USER}:${DB_PASS}@db:3306/${DB_NAME}
       DATA_PROXY_API_KEY: HOGE_HOGE
       PORT: "3000"
     volumes:
@@ -154,7 +154,7 @@ services:
     command: sleep infinity
     environment:
       - DATABASE_URL=prisma://db-prisma-proxy-https?api_key=HOGE_HOGE
-      - DATABASE_URL_LOCAL=mysql://${DB_USER}:${DB_PASS}@db:3306/${DB_NAME}?schema=public
+      - SHADOW_DATABASE_URL=mysql://${DB_USER}:${DB_PASS}@db:3306/${DB_NAME}
     volumes:
       - volume-appcache:/home/vscode/.cache
     labels:
@@ -168,6 +168,7 @@ services:
       - database
       - mailnet
       - minionet
+      - prismanet
   rproxy:
     image: traefik:v2.9.6
     container_name: rproxy
