@@ -19,7 +19,7 @@
     "test": "deno test --allow-env --allow-net --allow-read",
     "checkdependent": "deno cache --lock=lock.json --lock-write --unstable deps.ts",
     "prisma:gen": "deno run --unstable -A npm:prisma@^4.7.1 generate",
-    "prisma:mgdev": "deno run --unstable -A npm:prisma@^4.7.1 migrate dev",
+    "prisma:mgdev": "./dblocalaccess.sh deno run --unstable -A npm:prisma@^4.7.1 db push",
     "prisma:seed": "deno run --allow-env --allow-net=db-prisma-proxy-https ./prisma/seed.ts"
     //    "migrate": "deno run -A --unstable --allow-net=localhost:13306 https://deno.land/x/nessie@2.0.10/cli.ts migrate",
     //    "rollback": "deno run -A --unstable --allow-net=localhost:13306 https://deno.land/x/nessie@2.0.10/cli.ts rollback"
