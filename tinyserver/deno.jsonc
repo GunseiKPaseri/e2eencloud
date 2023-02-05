@@ -6,6 +6,9 @@
       "indentWidth": 2,
       "singleQuote": true,
       "lineWidth": 120
+    },
+    "files": {
+      "exclude": ["./node_modules", "./generated"]
     }
   },
   "lint": {
