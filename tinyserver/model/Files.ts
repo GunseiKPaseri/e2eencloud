@@ -23,14 +23,14 @@ export class File {
   constructor(file: {
     id: string;
     encryption_data: EncryptionData | string;
-    size: bigint;
+    size: bigint | number;
     created_by: User | string;
   }) {
     this.id = file.id;
     this.encryption_data = typeof file.encryption_data === 'string'
       ? encryptionDataSchema.parse(JSON.parse(file.encryption_data))
       : file.encryption_data;
-    this.size = file.size;
+    this.size = BigInt(file.size);
     this.created_by = file.created_by;
   }
 
@@ -70,7 +70,7 @@ export const addFile = async (params: {
     const size = BigInt(params.bin?.length ?? 0 + encryption_data.length);
 
     if (
-      params.created_by.file_usage + size > params.created_by.max_capacity
+      params.created_by.file_usage + Number(size) > params.created_by.max_capacity
     ) {
       return null;
     }
@@ -80,7 +80,7 @@ export const addFile = async (params: {
 
     const data = {
       id: params.id,
-      size: size,
+      size: Number(size),
       created_by: params.created_by.id,
       encryption_data: encryption_data,
     };

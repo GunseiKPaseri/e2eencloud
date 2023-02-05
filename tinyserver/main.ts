@@ -4,17 +4,15 @@ import SessionsStore from './model/Sessions.ts';
 import { oakCors } from './deps.ts';
 import apiRouter from './router/api.ts';
 
-import { bold, yellow } from './deps.ts';
+import { bold, PORT, yellow } from './deps.ts';
 import { distDir } from './util.ts';
-
-const PORT = 3001;
 
 const app = new Application();
 
 // Enable CORS
 app.use(
   oakCors({
-    origin: [`http://localhost:${PORT}`, 'http://localhost:3000', 'http://app.localhost'],
+    origin: ['http://localhost:3000'],
     credentials: true,
   }),
 );

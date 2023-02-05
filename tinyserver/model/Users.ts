@@ -43,13 +43,18 @@ export class User {
   readonly encrypted_master_key_iv: string;
   readonly hashed_authentication_key: string;
   readonly is_email_confirmed: boolean;
-  #max_capacity: bigint;
-  #file_usage: bigint;
+  #max_capacity: number;
+  #file_usage: number;
   #rsa_public_key: string | null;
   #encrypted_rsa_private_key: string | null;
   #encrypted_rsa_private_key_iv: string | null;
   #role: DBEnumRole;
-  constructor(user: DBUser) {
+  constructor(
+    user: Omit<DBUser, 'max_capacity' | 'file_usage'> & {
+      max_capacity: string | bigint | number;
+      file_usage: string | bigint | number;
+    },
+  ) {
     this.id = user.id;
     this.email = user.email;
     this.client_random_value = user.client_random_value;
@@ -57,8 +62,8 @@ export class User {
     this.encrypted_master_key_iv = user.encrypted_master_key_iv;
     this.hashed_authentication_key = user.hashed_authentication_key;
     this.is_email_confirmed = user.is_email_confirmed;
-    this.#max_capacity = user.max_capacity;
-    this.#file_usage = user.file_usage;
+    this.#max_capacity = typeof user.max_capacity === 'number' ? user.max_capacity : Number(user.max_capacity);
+    this.#file_usage = typeof user.file_usage === 'number' ? user.file_usage : Number(user.file_usage);
     this.#rsa_public_key = user.rsa_public_key;
     this.#encrypted_rsa_private_key = user.encrypted_rsa_private_key;
     this.#encrypted_rsa_private_key_iv = user.encrypted_rsa_private_key_iv;
@@ -86,7 +91,7 @@ export class User {
   }
 
   async update() {
-    const u = await prisma.user.findFirst({
+    const u = await prisma.user.findUnique({
       select: {
         file_usage: true,
         role: true,
@@ -97,9 +102,9 @@ export class User {
       },
     });
     if (u === null) throw new Error('User deleted');
-    this.#file_usage = u.file_usage;
+    this.#file_usage = Number(u.file_usage);
     this.#role = u.role;
-    this.#max_capacity = u.max_capacity;
+    this.#max_capacity = Number(u.max_capacity);
     return this;
   }
 
@@ -113,7 +118,8 @@ export class User {
   //   };
   // }
 
-  async patchUsage(diffUsage: bigint) {
+  async patchUsage(diffUsageX: bigint | number) {
+    const diffUsage = Number(diffUsageX);
     try {
       await this.update();
       if (diffUsage > 0) {
@@ -122,7 +128,7 @@ export class User {
           prisma.user.update({
             where: { id: this.id },
             data: {
-              file_usage: this.#file_usage + diffUsage,
+              file_usage: Number(this.#file_usage + diffUsage),
             },
           });
         } else {
@@ -132,7 +138,7 @@ export class User {
         await prisma.user.update({
           where: { id: this.id },
           data: {
-            file_usage: this.#file_usage + diffUsage,
+            file_usage: Number(this.#file_usage + diffUsage),
           },
         });
       }
@@ -234,17 +240,20 @@ export class User {
   }
 
   async patch(params: {
-    max_capacity?: bigint;
+    max_capacity?: number | bigint;
   }) {
     // validation
-    if (typeof params.max_capacity === 'bigint' && params.max_capacity < 0) return false;
+    const max_capacity = typeof params.max_capacity === 'undefined' ? undefined : Number(params.max_capacity);
 
-    if (typeof params.max_capacity === 'bigint') this.#max_capacity = params.max_capacity;
+    if (typeof max_capacity === 'number' && max_capacity < 0) return false;
+
+    if (max_capacity !== undefined) this.#max_capacity = max_capacity;
+
     try {
       await prisma.user.update({
         where: { id: this.id },
         data: {
-          max_capacity: this.#max_capacity,
+          max_capacity: Number(this.#max_capacity),
         },
       });
       return true;
@@ -278,7 +287,7 @@ export const addUser = async (
           'hashed_authentication_key',
         ]),
         max_capacity: params.max_capacity ?? DEFAULT_MAX_CAPACITY,
-        file_usage: 0n,
+        file_usage: 0,
         is_email_confirmed: false,
         id: crypto.randomUUID(),
         rsa_public_key: '',
@@ -289,7 +298,7 @@ export const addUser = async (
   } catch (_) {
     // ユーザが既に存在する場合
     console.log(_);
-    const alreadyExistUser = await prisma.user.findFirst({
+    const alreadyExistUser = await prisma.user.findUnique({
       where: { email: params.email },
       select: { is_email_confirmed: true },
     });
@@ -343,19 +352,21 @@ export const userEmailConfirm = async (
 
 export const getUserById = async (id: string | null): Promise<User | null> => {
   if (!id) return null;
-  const user = await prisma.user.findFirst({ where: { id } });
+  const user = await prisma.user.findUnique({ where: { id } });
   if (!user) return null;
   return new User(user);
 };
 
 export const getUserByEmail = async (email: string): Promise<User | null> => {
-  const user = await prisma.user.findFirst({ where: { email } });
+  const user: DBUser | null = await prisma.user.findUnique({
+    where: { email },
+  });
   if (!user) return null;
   return new User(user);
 };
 
 export const getClientRandomSalt = async (email: string): Promise<string> => {
-  const user = await prisma.user.findFirst({ where: { email }, select: { client_random_value: true } });
+  const user = await prisma.user.findUnique({ where: { email }, select: { client_random_value: true } });
   const hashedClientRandomSalt = await createSalt(
     email,
     user?.client_random_value,

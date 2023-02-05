@@ -116,7 +116,7 @@ export class Coupon {
     this.#used = true;
     switch (this.#data.method) {
       case 'ADD_CAPACITY':
-        await user.patch({ max_capacity: user.max_capacity + this.#data.value });
+        await user.patch({ max_capacity: user.max_capacity + Number(this.#data.value) });
         break;
       case 'NONE':
         break;

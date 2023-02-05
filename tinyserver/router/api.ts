@@ -65,7 +65,7 @@ router.post('/signup', async (ctx) => {
     encrypted_master_key: data.encryptedMasterKeyBase64,
     encrypted_master_key_iv: data.encryptedMasterKeyIVBase64,
     hashed_authentication_key: data.hashedAuthenticationKeyBase64,
-    max_capacity: 5n * 1024n * 1024n, //5n * 1024n * 1024n * 1024n,
+    max_capacity: 5 * 1024 * 1024, //5n * 1024n * 1024n * 1024n,
   });
   console.log(issuccess);
   if (issuccess) {

@@ -10,6 +10,9 @@ export { assertType } from 'https://deno.land/std@0.168.0/testing/types.ts';
 
 // load dotenv
 import 'https://deno.land/std@0.136.0/dotenv/load.ts';
+// APP PORT
+export const PORT = parseInt(Deno.env.get('PORT') ?? '3001');
+
 // DB
 export const DB_HOSTNAME = Deno.env.get('DB_HOSTNAME') ?? '__NOTFOUND__';
 export const DB_PORT = parseInt(Deno.env.get('DB_PORT') ?? '__NOTFOUND__');
@@ -22,6 +25,8 @@ export const BUCKET_SECRET_KEY = Deno.env.get('L_MINIO_ROOT_PASSWORD') ?? '__NOT
 export const BUCKET_NAME = Deno.env.get('AWS_BUCKET') ?? '__NOTFOUND__';
 export const BUCKET_REGION = Deno.env.get('AWS_DEFAULT_REGION') ?? '__NOTFOUND__';
 export const BUCKET_ENDPOINT = Deno.env.get('AWS_URL') ?? '__NOTFOUND__';
+
+// load dependent package
 
 export { ClientMySQL } from 'https://deno.land/x/nessie@2.0.10/mod.ts';
 export type { NessieConfig } from 'https://deno.land/x/nessie@2.0.10/mod.ts';
@@ -57,6 +62,8 @@ import compareAsc from 'https://deno.land/x/date_fns@v2.22.1/compareAsc/index.ts
 export { compareAsc };
 
 import baseX from 'https://cdn.skypack.dev/base-x@4.0.0?dts';
+
+export { PrismaClient } from './generated/client/deno/edge.ts';
 
 const BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 

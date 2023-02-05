@@ -1,4 +1,4 @@
-import { PrismaClient } from './generated/client/deno/edge.ts';
+import { PrismaClient } from './deps.ts';
 export type {
   Coupons as DBCoupons,
   Files as DBFiles,
