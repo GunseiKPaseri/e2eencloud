@@ -347,25 +347,19 @@ Promise<{ server: FileCryptoInfoWithBin, local: ExpandServerDataResult }> => {
  */
 export const decryptoFileInfo = async (fileinforaw: GetfileinfoJSONRow)
 : Promise<FileCryptoInfo<FileInfo>> => {
-  console.log(fileinforaw);
   const encryptedFileKey = base642ByteArray(fileinforaw.encryptedFileKeyBase64);
   const encryptedFileInfo = base642ByteArray(fileinforaw.encryptedFileInfoBase64);
   const encryptedFileInfoIV = base642ByteArray(fileinforaw.encryptedFileInfoIVBase64);
 
-  console.log(encryptedFileKey);
-  console.log(await decryptByRSA(encryptedFileKey));
   const fileKeyRaw = new Uint8Array(await decryptByRSA(encryptedFileKey));
-  console.log(fileKeyRaw);
 
   const fileKey = await getAESGCMKey(fileKeyRaw);
-  console.log(fileKey);
   const fileKeyBin = Array.from(fileKeyRaw);
   const res = fileInfoMigrate(byteArray2string(
     await decryptAESGCM(encryptedFileInfo, fileKey, encryptedFileInfoIV),
   ));
   if (!res) throw new Error('UnSafeData');
   const { fileInfo, originalVersion } = res;
-  console.log(res);
 
   if (fileInfo.type === 'file') {
     if (!fileinforaw.encryptedFileIVBase64) throw new Error('取得情報が矛盾しています。fileにも関わらずencryptedFileIVが含まれていません');
