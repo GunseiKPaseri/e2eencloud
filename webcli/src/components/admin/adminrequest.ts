@@ -8,8 +8,8 @@ type GetUserListJSONRow = {
   users: {
     id: number;
     email: string;
-    max_capacity: number;
-    file_usage: number;
+    max_capacity: string;
+    file_usage: string;
     authority?: string;
     two_factor_authentication: boolean;
   }[]
@@ -40,6 +40,8 @@ export const getUserList = async (props: {
     total_number: result.data.number_of_user,
     items: result.data.users.map((x) => ({
       ...x,
+      max_capacity: Number(x.max_capacity),
+      file_usage: Number(x.file_usage),
       authority: x.authority ?? null,
     })),
   };
@@ -53,7 +55,7 @@ export const editUser = async (
   targetUser: UserDataGridRowModel,
   edited: Partial<UserDataGridRowModel>,
 ) => {
-  await axiosWithSession.patch(`${appLocation}/api/user/${targetUser.id}`, edited);
+  await axiosWithSession.patch(`${appLocation}/api/user/${targetUser.id}`, { ...edited, max_capacity: edited.max_capacity?.toString(), file_usage: edited.file_usage?.toString() });
   return {
     ...targetUser,
     max_capacity: typeof edited.max_capacity === 'undefined' ? targetUser.max_capacity : edited.max_capacity,
@@ -66,7 +68,7 @@ export const issuanceCoupon = async (num: number) => {
   AxiosResponse<{ coupons_id: string[] }>>(`${appLocation}/api/coupons`, {
     coupon: {
       method: 'ADD_CAPACITY',
-      value: 5 * 1024 * 1024 * 1024,
+      value: (5n * 1024n * 1024n * 1024n).toString(),
     },
     number: num,
   });

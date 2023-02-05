@@ -59,7 +59,7 @@ UserState, { email: string, password: string, token: string }>(
     const authenticationKeyBase64 = byteArray2base64(DerivedAuthenticationKey);
 
     type APILoginResopnse = {
-      authority: 'ADMIN' | null,
+      role: 'ADMIN' | 'USER',
       encryptedMasterKeyBase64: string,
       encryptedMasterKeyIVBase64: string,
       useTwoFactorAuth: boolean,
@@ -150,7 +150,7 @@ UserState, { email: string, password: string, token: string }>(
 
     dispatch(enqueueSnackbar({ message: 'ログインに成功しました', options: { variant: 'success' } }));
     return {
-      authority: result.data.authority,
+      authority: result.data.role === 'ADMIN' ? 'ADMIN' : null,
       email: userinfo.email,
       MasterKey: Array.from(MasterKeyRaw),
       useTwoFactorAuth: result.data.useTwoFactorAuth,

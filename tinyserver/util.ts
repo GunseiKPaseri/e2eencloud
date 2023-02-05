@@ -20,7 +20,7 @@ const saltStringMaxLength = 200;
 const ServerRandomValue = byteArray2base64(
   window.crypto.getRandomValues(new Uint8Array(16)),
 );
-export const createSalt = (email: string, ClientRandomValue: string | null) => {
+export const createSalt = (email: string, ClientRandomValue?: string) => {
   // 存在可否によらず類似した処理を行い，メルアド存在可否を不明に
   if (ClientRandomValue) {
     // "E2EEncloud” || “Padding” || Client Random Value

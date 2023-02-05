@@ -5,6 +5,9 @@ export {
 export { bold, yellow } from 'https://deno.land/std@0.136.0/fmt/colors.ts';
 export { v4 } from 'https://deno.land/std@0.136.0/uuid/mod.ts';
 
+export type { IsExact } from 'https://deno.land/std@0.168.0/testing/types.ts';
+export { assertType } from 'https://deno.land/std@0.168.0/testing/types.ts';
+
 // load dotenv
 import 'https://deno.land/std@0.136.0/dotenv/load.ts';
 // DB

@@ -1,32 +1,35 @@
-import client from '../dbclient.ts';
-import { Query, v4, Where } from '../deps.ts';
+import { prisma } from '../dbclient.ts';
+import type { DBFiles } from '../dbclient.ts';
+import { v4, z } from '../deps.ts';
 import { bucket } from '../s3client.ts';
 import { User } from './Users.ts';
 
 const validateFileId = (x: string) => x.indexOf('-') === -1 && v4.validate(x.replace(/_/g, '-'));
 
+const encryptionDataSchema = z.object({
+  iv: z.union([z.string(), z.null()]).optional(),
+  key: z.string(),
+  info_key: z.string(),
+  info_iv: z.string(),
+});
+
+type EncryptionData = z.infer<typeof encryptionDataSchema>;
+
 export class File {
   readonly id: string;
-  readonly encrypted_file_iv?: string;
-  readonly encrypted_file_key: string;
-  readonly encrypted_file_info: string;
-  readonly encrypted_file_info_iv: string;
-  readonly size: number;
-  readonly created_by: User | number;
+  readonly encryption_data: EncryptionData;
+  readonly size: bigint;
+  readonly created_by: User | string;
   constructor(file: {
     id: string;
-    encrypted_file_iv?: string | null;
-    encrypted_file_key: string;
-    encrypted_file_info: string;
-    encrypted_file_info_iv: string;
-    size: number;
-    created_by: User | number;
+    encryption_data: EncryptionData | string;
+    size: bigint;
+    created_by: User | string;
   }) {
     this.id = file.id;
-    this.encrypted_file_iv = file.encrypted_file_iv ?? undefined;
-    this.encrypted_file_info = file.encrypted_file_info;
-    this.encrypted_file_info_iv = file.encrypted_file_info_iv;
-    this.encrypted_file_key = file.encrypted_file_key;
+    this.encryption_data = typeof file.encryption_data === 'string'
+      ? encryptionDataSchema.parse(JSON.parse(file.encryption_data))
+      : file.encryption_data;
     this.size = file.size;
     this.created_by = file.created_by;
   }
@@ -38,11 +41,11 @@ export class File {
   toSendObj() {
     return {
       id: this.id,
-      encryptedFileIVBase64: this.encrypted_file_iv,
-      encryptedFileKeyBase64: this.encrypted_file_key,
-      encryptedFileInfoBase64: this.encrypted_file_info,
-      encryptedFileInfoIVBase64: this.encrypted_file_info_iv,
-      encryptedSize: this.size,
+      encryptedFileIVBase64: this.encryption_data.iv,
+      encryptedFileKeyBase64: this.encryption_data.key,
+      encryptedFileInfoBase64: this.encryption_data.info_key,
+      encryptedFileInfoIVBase64: this.encryption_data.info_iv,
+      encryptedSize: this.size.toString(),
     };
   }
 }
@@ -58,36 +61,32 @@ export const addFile = async (params: {
 }) => {
   if (!validateFileId(params.id)) return null;
   try {
+    const encryption_data = JSON.stringify({
+      iv: params.encrypted_file_iv ?? null,
+      key: params.encrypted_file_key,
+      info_iv: params.encrypted_file_info_iv,
+      info_key: params.encrypted_file_info,
+    });
+    const size = BigInt(params.bin?.length ?? 0 + encryption_data.length);
+
     if (
-      params.created_by.file_usage + (params.bin?.length ?? 0) + params.encrypted_file_info.length >
-        params.created_by.max_capacity
+      params.created_by.file_usage + size > params.created_by.max_capacity
     ) {
       return null;
     }
 
-    const patchUserResult = params.created_by.patchUsage((params.bin?.length ?? 0) + params.encrypted_file_info.length);
+    const patchUserResult = await params.created_by.patchUsage(size);
     if (patchUserResult === null) return null;
 
-    await client.execute(
-      `INSERT INTO files(
-        id,
-        encrypted_file_iv,
-        encrypted_file_key,
-        encrypted_file_info,
-        encrypted_file_info_iv,
-        size,
-        created_by) VALUES(?, ?, ?, ?, ?, ?, ?)`,
-      [
-        params.id,
-        params.encrypted_file_iv ?? null,
-        params.encrypted_file_key,
-        params.encrypted_file_info,
-        params.encrypted_file_info_iv,
-        params.bin?.length ?? 0,
-        params.created_by.id,
-      ],
-    );
-    const newfile = new File({ ...params, size: params.bin?.length ?? 0 });
+    const data = {
+      id: params.id,
+      size: size,
+      created_by: params.created_by.id,
+      encryption_data: encryption_data,
+    };
+    const created = await prisma.files.create({ data });
+
+    const newfile = new File(created);
     if (params.bin) await newfile.saveFile(params.bin);
     return newfile;
   } catch (e) {
@@ -97,58 +96,76 @@ export const addFile = async (params: {
 };
 
 export const getFileById = async (id: string) => {
-  const files = await client.query(`SELECT * FROM files WHERE id = ?`, [id]);
-  if (files.length !== 1) return null;
-  return new File(files[0]);
+  const files = await prisma.files.findUnique({
+    select: {
+      id: true,
+      encryption_data: true,
+      size: true,
+      created_at: true,
+      created_by: true,
+      updated_at: true,
+    },
+    where: { id },
+  });
+  return files === null ? null : new File(files);
 };
 
-interface ResultSelectFromFile {
-  id: string;
-  encrypted_file_iv: string | null;
-  encrypted_file_key: string;
-  encrypted_file_info: string;
-  encrypted_file_info_iv: string;
-  size: number;
-  created_by: number;
-  created_at: Date;
-  updated_at: Date;
-}
-
-export const getFileInfo = async (uid: number) => {
-  const files: ResultSelectFromFile[] = await client.query(`SELECT * FROM files WHERE created_by = ?`, [uid]);
+export const getFileInfo = async (uid: string) => {
+  const files: DBFiles[] = await prisma.files.findMany({
+    select: {
+      id: true,
+      encryption_data: true,
+      size: true,
+      created_at: true,
+      created_by: true,
+      updated_at: true,
+    },
+    where: {
+      created_by: uid,
+    },
+  });
   return files.map((x) => new File(x));
 };
 
 export const deleteFiles = async (user: User, fileIDs: string[]) => {
   const targetFileIDs = fileIDs.filter((id) => v4.validate(id.replaceAll('_', '-')));
 
-  const selectQuery = (new Query())
-    .table('files')
-    .where(Where.field('id').in(targetFileIDs))
-    .where(Where.field('created_by').eq(user.id))
-    .select('id')
-    .build();
-  const result: { id: string }[] = await client.query(selectQuery.trim());
+  const trueTargetFileIDs = (await prisma.files.findMany({
+    select: {
+      id: true,
+    },
+    where: {
+      id: {
+        in: targetFileIDs,
+      },
+      created_by: user.id,
+    },
+  })).map((file) => file.id);
 
-  const files = result.map((x) => x.id);
+  const newSize = (await prisma.files.aggregate({
+    where: {
+      id: {
+        in: trueTargetFileIDs,
+      },
+    },
+    _sum: {
+      size: true,
+    },
+  }))._sum.size ?? 0n;
 
-  const [sumResult]: [{ 'SUM(LENGTH(encrypted_file_info))+SUM(size)': number }] = await client.query(
-    `SELECT SUM(LENGTH(encrypted_file_info))+SUM(size) FROM files WHERE id in ? AND created_by = ?`,
-    [files, user.id],
-  );
-  const deletedItemSize = sumResult['SUM(LENGTH(encrypted_file_info))+SUM(size)'];
-
-  const fileDeleteSql = (new Query())
-    .table('files')
-    .where(Where.field('id').in(files))
-    .delete()
-    .build();
-  await client.execute(fileDeleteSql.trim());
+  const result = await prisma.files.deleteMany({
+    where: {
+      id: {
+        in: trueTargetFileIDs,
+      },
+      created_by: user.id,
+    },
+  });
 
   // DeleteFile
   // 存在しないファイルは無視
   await Promise.all(
-    files
+    trueTargetFileIDs
       .map((id) =>
         bucket.deleteObject(id).catch(() => {
           console.log(id, 'can\'t delete');
@@ -157,7 +174,8 @@ export const deleteFiles = async (user: User, fileIDs: string[]) => {
       ),
   );
 
-  await user.patchUsage(-deletedItemSize);
+  // [TODO sizeをrelationで連動させる]
+  await user.patchUsage(newSize);
 
-  return files;
+  return result.count;
 };

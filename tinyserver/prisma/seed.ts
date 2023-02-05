@@ -1,24 +1,21 @@
-import { PrismaClient } from '../generated/client/deno/edge.ts';
-import { Prisma } from '../generated/client/deno/edge.ts';
-
-const prisma = new PrismaClient();
+import { type Prisma, prisma } from '../dbclient.ts';
 
 const userData: Prisma.UserCreateInput[] = [
   // user: admin@example.com
   // pass: MyNameIsAdmin.
   {
+    id: crypto.randomUUID(),
     email: 'admin@example.com',
-    id: 'admin',
     is_email_confirmed: true,
     role: 'ADMIN',
-    max_capacity: 10485760,
+    max_capacity: 5242880,
     file_usage: 0,
-    encryption_data: JSON.stringify({
-      client_random_value: 'pHzUQIIyKNqXylNe4huAWA==',
-      encrypted_master_key: '4Uul0HgyTXt2hBMI+ceAyQ==',
-      encrypted_master_key_iv: 'gYOzUPc1tdkP6toSUFKTwQ==',
-      hashed_authentication_key: 'bTebDNGn+ysNDZ0LZWt9SLFzFWlKCG9Co0sbZ/AmlmA=',
-    }),
+    client_random_value: '88lXar7xkN+Ug4ICLBh+ag==',
+    encrypted_master_key: '1x1bXZHGOc5nnfEa2F6tHA==',
+    encrypted_master_key_iv: 'Wrb6TwXyrX+QZVuNCtN5CA==',
+    encrypted_rsa_private_key: '',
+    encrypted_rsa_private_key_iv: '',
+    hashed_authentication_key: '6SJfJ9eK8LzLoo1HpN3usZa7kvTdijMLyz7PFfbWjpI=',
     rsa_public_key: '',
   },
   // user: testuser+ddd@example.com
@@ -26,12 +23,17 @@ const userData: Prisma.UserCreateInput[] = [
   ...[...Array(100)].map((_, i): Prisma.UserCreateInput => (
     {
       email: `testuser+${i.toString().padStart(3, '0')}@example.com`,
-      id: `testuser${i.toString().padStart(3, '0')}`,
+      id: crypto.randomUUID(),
       is_email_confirmed: true,
       role: 'USER',
-      max_capacity: 10485760,
+      max_capacity: 5242880,
       file_usage: 0,
-      encryption_data: '{}',
+      client_random_value: 'Let8T41srNCj2cuF3I0ayw==',
+      encrypted_master_key: '4ocp1+LV0DkjbrgmecIKbw==',
+      encrypted_master_key_iv: 'RtH3NQAwY29xm3RUYqOy0Q==',
+      encrypted_rsa_private_key: '',
+      encrypted_rsa_private_key_iv: '',
+      hashed_authentication_key: 'UucYhXFqWuZ/+9kiNQWdoe0TyK1ijC3U9ZqpBLwBsLc=',
       rsa_public_key: '',
     }
   )),
@@ -40,17 +42,17 @@ const userData: Prisma.UserCreateInput[] = [
   ...[...Array(20)].map((_, i): Prisma.UserCreateInput => (
     {
       email: `baduser+${i.toString().padStart(3, '0')}@example.com`,
-      id: `baduser${i.toString().padStart(3, '0')}`,
+      id: crypto.randomUUID(),
       is_email_confirmed: false,
       role: 'USER',
       max_capacity: 10485760,
       file_usage: 0,
-      encryption_data: JSON.stringify({
-        client_random_value: 'OzN38sFE2X1LSi0BibW8nw==',
-        encrypted_master_key: 'DtIqXDtlUH7VWdTSoJAo6g==',
-        encrypted_master_key_iv: 'zLw6WwbqPir2gPwtzNUdMQ==',
-        hashed_authentication_key: 'p9dJ8Fc5clRV86T5iUaPTtyW4V/VJF9sIxWIHNeSglw=',
-      }),
+      client_random_value: '',
+      encrypted_master_key: '',
+      encrypted_master_key_iv: '',
+      encrypted_rsa_private_key: '',
+      encrypted_rsa_private_key_iv: '',
+      hashed_authentication_key: '',
       rsa_public_key: '',
     }
   )),
