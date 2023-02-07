@@ -62,6 +62,6 @@ app.addEventListener('listen', ({ hostname, port, serverType }) => {
   console.log('  using HTTP server: ' + yellow(serverType));
 });
 
-await app.listen({ hostname: '127.0.0.1', port: PORT });
+await app.listen({ hostname: 'localhost', port: PORT });
 
 console.log('finished...');

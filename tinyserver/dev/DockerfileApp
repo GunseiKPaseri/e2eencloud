@@ -24,10 +24,6 @@ COPY --from=node /usr/local/bin/ /usr/local/bin/
 
 RUN corepack disable && corepack enable
 
-## cert for db-prisma-proxy-https [TODO]
-
-COPY ./db-prisma-proxy-https/ssl-certs/db-prisma-proxy-https/local/signed.crt /etc/ssl/certs/db-prisma-proxy-https.crt
-
 RUN apt-get update -y && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/* && update-ca-certificates
 
 ## install git

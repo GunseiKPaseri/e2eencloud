@@ -21,7 +21,7 @@
     }
   },
   "tasks": {
-    "server": "deno run --allow-env --allow-net=127.0.0.1:3001,db-prisma-proxy-https,minio,mailer --allow-read --unsafely-ignore-certificate-errors=db-prisma-proxy-https --unstable main.ts",
+    "server": "deno run --allow-env --allow-net=localhost:3001,db-prisma-proxy-https,minio,mailer --allow-read --unsafely-ignore-certificate-errors=db-prisma-proxy-https --unstable main.ts",
     "test": "deno test --allow-env --allow-net --allow-read",
     "checkdependent": "deno cache --lock-write --unstable deps.ts",
     "prisma:gen": "deno run --unstable -A npm:prisma@^4.7.1 generate --data-proxy",
