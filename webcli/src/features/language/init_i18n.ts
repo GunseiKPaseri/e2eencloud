@@ -27,7 +27,7 @@ const initI18N = (): Promise<TFunction> => new Promise((resolve, reject) => {
       },
       backend: {
         loadPath: '/locales/{{lng}}-{{ns}}.yaml',
-        parse: (data) => (load(data) as { [key: string]: string }),
+        parse: (data:string) => (load(data) as { [key: string]: string }),
       },
     }, (err, t) => {
       if (err) reject(err);
