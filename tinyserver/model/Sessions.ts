@@ -1,6 +1,15 @@
+import { prisma } from '../dbclient.ts';
 import type { OakSessionStore } from '../deps.ts';
-import { Client, SessionData } from '../deps.ts';
-import client from '../dbclient.ts';
+import { SessionData } from '../deps.ts';
+import { omit } from '../utils/objSubset.ts';
+
+interface AppSessionData extends SessionData {
+  _flash: Record<string, unknown>;
+  _accessed: string | null;
+  _expire: string | null;
+  client_name?: string;
+  [key: string]: unknown;
+}
 
 interface ResultSelectIDDataFromSession {
   id: string;
@@ -13,109 +22,136 @@ interface ResultSelectIDDataUserIdFromSession {
   user_id: number;
 }
 
+const sessionStringify = (session: AppSessionData) => {
+  return {
+    id: session.id as string,
+    user_id: session.uid as string,
+    data: JSON.stringify(omit(session, ['id', 'uid'])),
+  };
+};
+
+const sessionParse = (input: {
+  id: string;
+  user_id: string | null;
+  data: string;
+}): AppSessionData => {
+  return {
+    id: input.id,
+    uid: input.user_id,
+    ...JSON.parse(input.data),
+  };
+};
+
 class SessionsStore implements OakSessionStore {
-  db: Client;
   tableName: string;
 
-  constructor(db: Client, tableName = 'sessions') {
-    this.db = db;
+  constructor(tableName = 'sessions') {
     this.tableName = tableName;
   }
 
   async sessionExists(sessionKey: string) {
-    const sessions = await this.db.query(
-      `SELECT session_key FROM ${this.tableName} WHERE session_key = ?`,
-      [sessionKey],
-    );
-    return sessions.length > 0 ? true : false;
+    const session = await prisma.sessions.findFirst({
+      select: {
+        id: true,
+      },
+      where: {
+        session_key: sessionKey,
+      },
+    });
+    return session !== null ? true : false;
   }
 
-  async getSessionById(sessionKey: string): Promise<SessionData | null> {
-    const sessions = await this.db.query(
-      `SELECT id, data, user_id FROM ${this.tableName} WHERE session_key = ?`,
-      [sessionKey],
-    );
-    if (sessions.length !== 1) return null;
-    const sessionData: SessionData = JSON.parse(sessions[0].data);
-    if (sessions[0].user_id) sessionData.uid = sessions[0].user_id;
-    sessionData.id = sessions[0].id;
-    return sessionData;
+  async getSessionById(sessionKey: string): Promise<AppSessionData | null> {
+    const session = await prisma.sessions.findUnique({
+      select: {
+        id: true,
+        data: true,
+        user_id: true,
+      },
+      where: {
+        session_key: sessionKey,
+      },
+    });
+    if (session === null) return null;
+    return sessionParse(session);
   }
 
-  async createSession(sessionKey: string, initialData: SessionData) {
-    const copied = { ...initialData };
-    const uid = copied.uid;
-    delete copied.uid;
-    delete copied.id;
-    await this.db.query(
-      `INSERT INTO ${this.tableName} (id, session_key, data, user_id) VALUES (?, ?, ?, ?)`,
-      [crypto.randomUUID(), sessionKey, JSON.stringify(copied), uid],
-    );
+  async createSession(sessionKey: string, initialData: AppSessionData) {
+    await prisma.sessions.create({
+      data: {
+        ...sessionStringify(initialData),
+        id: crypto.randomUUID(),
+        session_key: sessionKey,
+        // session expired_at tomorrow
+        expired_at: new Date(Date.now() + 86400),
+      },
+    });
   }
 
   async deleteSession(sessionKey: string) {
-    await this.db.query(`DELETE FROM ${this.tableName} WHERE session_key = ?`, [
-      sessionKey,
-    ]);
+    await prisma.sessions.delete({
+      where: {
+        session_key: sessionKey,
+      },
+    });
   }
 
-  async deleteSessionById(id: string, user_id: number) {
-    await this.db.query(`DELETE FROM ${this.tableName} WHERE id = ? AND user_id = ?`, [
-      id,
-      user_id,
-    ]);
+  async deleteSessionById(id: string, user_id: string) {
+    await prisma.sessions.deleteMany({
+      where: {
+        id,
+        user_id,
+      },
+    });
   }
 
-  async persistSessionData(sessionKey: string, sessionData: SessionData) {
-    const copied = { ...sessionData };
-    const uid = copied.uid;
-    delete copied.uid;
-    delete copied.id;
-    await this.db.query(`UPDATE ${this.tableName} SET data = ?, user_id = ? WHERE session_key = ?`, [
-      JSON.stringify(copied),
-      uid,
-      sessionKey,
-    ]);
+  async persistSessionData(sessionKey: string, sessionData: AppSessionData) {
+    await prisma.sessions.update({
+      where: {
+        session_key: sessionKey,
+      },
+      data: omit(sessionStringify(sessionData), ['id']),
+    });
   }
 
-  async persistSessionDataById(id: string, sessionData: SessionData) {
-    const copied = { ...sessionData };
-    const uid = copied.uid;
-    delete copied.uid;
-    delete copied.id;
-    console.log(copied, uid, id);
-    await this.db.query(`UPDATE ${this.tableName} SET data = ?, user_id = ? WHERE id = ?`, [
-      JSON.stringify(copied),
-      uid,
-      id,
-    ]);
-    console.log(await this.db.query(`SELECT * FROM ${this.tableName} WHERE id = ?`, [id]));
+  async persistSessionDataById(id: string, sessionData: AppSessionData) {
+    await prisma.sessions.update({
+      data: omit(sessionStringify(sessionData), ['id']),
+      where: {
+        id: id,
+      },
+    });
   }
 
-  async getSessionsByUserId(userId: number) {
-    const sessions: ResultSelectIDDataFromSession[] = await this.db.query(
-      `SELECT id, data FROM ${this.tableName} WHERE user_id = ?`,
-      [
-        userId,
-      ],
-    );
-    return sessions.map((x): { id: string; data: SessionData } => ({ id: x.id, data: JSON.parse(x.data) }));
+  async getSessionsByUserId(userId: string) {
+    const sessions = await prisma.sessions.findMany({
+      select: {
+        id: true,
+        data: true,
+        user_id: true,
+      },
+      where: {
+        user_id: userId,
+      },
+    });
+    return sessions.map((x) => sessionParse(x));
   }
 
   async getSessionByUniqueId(id: string) {
-    const sessions: ResultSelectIDDataUserIdFromSession[] = await this.db.query(
-      `SELECT id, data, user_id FROM ${this.tableName} WHERE id = ?`,
-      [
-        id,
-      ],
-    );
-    if (sessions.length !== 1) return null;
-    const sessionData: SessionData = JSON.parse(sessions[0].data);
-    if (sessions[0].user_id) sessionData.uid = sessions[0].user_id;
-    sessionData.id = sessions[0].id;
-    return sessionData;
+    const session = await prisma.sessions.findUnique({
+      select: {
+        id: true,
+        data: true,
+        user_id: true,
+      },
+      where: {
+        id: id,
+      },
+    });
+    if (session === null) return null;
+    return sessionParse(session);
   }
 }
 
-const sessionStore = new SessionsStore(client);
+const sessionStore = new SessionsStore();
 export default sessionStore;

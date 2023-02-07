@@ -9,12 +9,14 @@ import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Alert from '@mui/material/Alert';
+import { useTranslation } from 'react-i18next';
 import { correctEmailaddr } from '../../../util';
 import PasswordField from './PasswordField';
 import { type AuthState, loginAsync, logoutAsync } from '../authSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 
 export default function Login() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [token, setToken] = useState('');
@@ -41,23 +43,21 @@ export default function Login() {
         <LockOutlinedIcon />
       </Avatar>
       <Typography component="h1" variant="h5">
-        ログイン
+        {t('auth.login', 'ログイン')}
       </Typography>
       {
         selector.user !== null
           ? (
             <>
               <Typography component="p">
-                既に
-                {selector.user.email}
-                としてログイン済みです
+                {t('auth.youalreadyloggined', { defaultValue: '既に{{email}}としてログイン済です', email: selector.user.email })}
               </Typography>
               <Button
                 type="button"
                 variant="outlined"
                 onClick={logout}
               >
-                ログアウト
+                {t('auth.logout', 'ログアウト')}
               </Button>
             </>
           )
@@ -69,7 +69,7 @@ export default function Login() {
           required
           fullWidth
           id="email"
-          label="メールアドレス"
+          label={t('auth.email', 'メールアドレス')}
           name="email"
           autoComplete="email"
           autoFocus
@@ -80,7 +80,7 @@ export default function Login() {
         <PasswordField
           id="password"
           name="password"
-          label="パスワード"
+          label={t('auth.password', 'パスワード')}
           margin="normal"
           variant="outlined"
           fullWidth
@@ -93,7 +93,7 @@ export default function Login() {
           margin="normal"
           fullWidth
           name="token"
-          label="2要素認証トークン"
+          label={t('auth.twofactorauthtoken', '二要素認証トークン')}
           type="normal"
           id="token"
           value={token}
@@ -105,15 +105,13 @@ export default function Login() {
           variant="contained"
           sx={{ mt: 3, mb: 2 }}
         >
-          ログイン
+          {t('auth.login', 'ログイン')}
         </Button>
         {
           (selector.loginStatus
             ? (
               <Alert severity="error">
-                ログインに失敗しました。
-                <br />
-                メールアドレス、パスワード、二要素認証トークン（登録している場合）に誤りが無いか確認してください。
+                {t('auth.loginfailed', 'ログインに失敗しました。\nメールアドレス、パスワード、二要素認証トークン（登録している場合）に誤りが無いか確認してください。')}
               </Alert>
             )
             : <></>
@@ -122,7 +120,7 @@ export default function Login() {
         <Grid container>
           <Grid item>
             <Link to="/signup">
-              アカウントが無ければ登録
+              {t('auth.registifyoudonothaveanaccount', 'アカウントがなければ登録')}
             </Link>
           </Grid>
         </Grid>

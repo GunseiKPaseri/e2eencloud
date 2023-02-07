@@ -1,6 +1,6 @@
-import client from '../dbclient.ts';
+import { prisma } from '../dbclient.ts';
 
-export class EmailConfirmation {
+export class ConfirmingEmailAddress {
   readonly email: string;
   readonly email_confirmation_token: string;
   readonly expired_at: Date;
@@ -22,15 +22,15 @@ export const addEmailConfirmation = async (
   // 一時間後に無効化
   const expired_at = new Date(Date.now());
   expired_at.setHours(expired_at.getHours() + 1);
-  await client.execute(
-    `INSERT INTO email_confirmations(
-    email,
-    email_confirmation_token,
-    expired_at) values(?, ?, ?)`,
-    [email, email_confirmation_token, expired_at],
-  );
+  await prisma.confirmingEmailAddress.create({
+    data: {
+      email: email,
+      token: email_confirmation_token,
+      expired_at: expired_at,
+    },
+  });
 
-  const newEmailConfirmation = new EmailConfirmation(
+  const newEmailConfirmation = new ConfirmingEmailAddress(
     email,
     email_confirmation_token,
     expired_at,
@@ -42,19 +42,22 @@ export const isEmailConfirmSuccess = async (
   email: string,
   email_confirmation_token: string,
 ) => {
-  const emailConfirms = await client.query(
-    `SELECT email FROM email_confirmations
-    WHERE email = ?
-    AND email_confirmation_token = ?
-    AND expired_at > ?
-    LIMIT 1`,
-    [email, email_confirmation_token, new Date(Date.now())],
-  );
-  return emailConfirms.length > 0;
+  const emailConfirms = await prisma.confirmingEmailAddress.count({
+    where: {
+      email: email,
+      token: email_confirmation_token,
+      expired_at: {
+        gt: new Date(Date.now()),
+      },
+    },
+  });
+  return emailConfirms > 0;
 };
 
 export const deleteEmailConfirms = async (email: string) => {
-  await client.execute(`DELETE FROM email_confirmations WHERE email = ?`, [
-    email,
-  ]);
+  await prisma.confirmingEmailAddress.deleteMany({
+    where: {
+      email: email,
+    },
+  });
 };

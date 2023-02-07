@@ -1,3 +1,6 @@
+import * as z from 'zod';
+import schemaForType from './migrateUtil';
+
 /**
  * 差分情報
  */
@@ -5,6 +8,13 @@ export interface FileDifference {
   addtag?: string[],
   deltag?: string[]
 }
+
+const schemaFileDifference = schemaForType<FileDifference>()(
+  z.object({
+    addtag: z.string().array(),
+    deltag: z.string().array(),
+  }).partial(),
+);
 
 /**
  * サーバに保存するファイルに関する拡張情報
@@ -18,6 +28,17 @@ export interface ExpansionInfoImage {
   phash: string,
 }
 
+const schemaExpansionInfoImage = schemaForType<ExpansionInfoImage>()(
+  z.object({
+    type: z.literal('img'),
+    width: z.number(),
+    height: z.number(),
+    ahash: z.string(),
+    dhash: z.string(),
+    phash: z.string(),
+  }),
+);
+
 /**
  * サーバDBに保存する共通情報
  */
@@ -29,6 +50,18 @@ interface FileInfoCommon {
   parentId: string | null,
   prevId?: string,
 }
+
+const schemaFileInfoCommon = schemaForType<FileInfoCommon>()(
+  z.object({
+    id: z.string(),
+    name: z.string(),
+    createdAt: z.number(),
+    version: z.literal(202204081414),
+    parentId: z.string().nullable().default(null),
+    prevId: z.string().optional(),
+  }),
+);
+
 /**
  *  サーバDBに保存するファイルに関する情報
  */
@@ -40,6 +73,18 @@ export interface FileInfoFile extends FileInfoCommon {
   tag: string[],
   expansion?: ExpansionInfoImage
 }
+
+const schemaFileInfoFile = schemaForType<FileInfoFile>()(
+  z.object({
+    type: z.literal('file'),
+    sha256: z.string(),
+    mime: z.string(),
+    size: z.number().min(0),
+    tag: z.string().array(),
+    expansion: schemaExpansionInfoImage,
+  }).and(schemaFileInfoCommon),
+);
+
 /**
  *  サーバDBに保存するフォルダに関する情報
  */
@@ -47,6 +92,14 @@ export interface FileInfoFolder extends FileInfoCommon {
   type: 'folder',
   tag: string[],
 }
+
+const schemaFileInfoFolder = schemaForType<FileInfoFolder>()(
+  z.object({
+    type: z.literal('folder'),
+    tag: z.string().array(),
+  }).and(schemaFileInfoCommon),
+);
+
 /**
  *  サーバDBに保存する差分に関する情報
  */
@@ -55,109 +108,38 @@ export interface FileInfoDiffFile extends FileInfoCommon {
   diff: FileDifference
 }
 
+const schemaFileInfoDiffFile = schemaForType<FileInfoDiffFile>()(
+  z.object({
+    type: z.literal('diff'),
+    diff: schemaFileDifference,
+  }).and(schemaFileInfoCommon),
+);
+
 /**
  * サーバに保存する情報
  */
 export type FileInfo = FileInfoFile | FileInfoFolder | FileInfoDiffFile;
+
+const schemaFileInfo = z.union([
+  schemaFileInfoFile,
+  schemaFileInfoFolder,
+  schemaFileInfoDiffFile,
+]);
 
 /**
  * 古いバージョンも含むあらゆるFileInfo
  */
 export type OldFileInfo = FileInfo;
 
-type UpgradeFile = (oldfile: Partial<OldFileInfo>, blob?: { blob: Blob, beforeVersion: OldFileInfo['version'] }) => { fileInfo: FileInfo, originalVersion: OldFileInfo['version'] };
-
-const defaultFileInfoCommon: FileInfoCommon = {
-  id: 'unknownfile',
-  name: 'unknown',
-  createdAt: 0,
-  version: 202204081414,
-  parentId: null,
-};
-
-const defaultFileInfoFile: FileInfoFile = {
-  ...defaultFileInfoCommon,
-  type: 'file',
-  sha256: '',
-  mime: 'application/octet-stream',
-  size: 0,
-  tag: [],
-};
-
-const defaultFileInfoFolder: FileInfoFolder = {
-  ...defaultFileInfoCommon,
-  type: 'folder',
-  tag: [],
-};
-
-const defaultFileInfoDiffFile: FileInfoDiffFile = {
-  ...defaultFileInfoCommon,
-  type: 'diff',
-  diff: {},
-};
-
-const buildFileInfoFile = (file: Partial<FileInfoFile>):FileInfoFile => ({
-  type: 'file',
-  id: typeof file.id === 'string' ? file.id : defaultFileInfoFile.id,
-  name: typeof file.name === 'string' ? file.name : defaultFileInfoFile.name,
-  createdAt: typeof file.createdAt === 'number' ? file.createdAt : defaultFileInfoFile.createdAt,
-  version: typeof file.version === 'number' ? file.version : defaultFileInfoFile.version,
-  parentId: typeof file.parentId === 'string' ? file.parentId : defaultFileInfoFile.parentId,
-  sha256: typeof file.sha256 === 'string' ? file.sha256 : defaultFileInfoFile.sha256,
-  mime: typeof file.mime === 'string' ? file.mime : defaultFileInfoFile.mime,
-  size: typeof file.size === 'number' ? file.size : defaultFileInfoFile.size,
-  tag: Array.isArray(file.tag) ? file.tag.filter((x) => typeof x === 'string') : defaultFileInfoFile.tag,
-});
-
-const buildFileInfoFolder = (file: Partial<FileInfoFolder>):FileInfoFolder => ({
-  type: 'folder',
-  id: typeof file.id === 'string' ? file.id : defaultFileInfoFolder.id,
-  name: typeof file.name === 'string' ? file.name : defaultFileInfoFolder.name,
-  createdAt: typeof file.createdAt === 'number' ? file.createdAt : defaultFileInfoFolder.createdAt,
-  version: typeof file.version === 'number' ? file.version : defaultFileInfoFolder.version,
-  parentId: typeof file.parentId === 'string' ? file.parentId : defaultFileInfoFolder.parentId,
-  tag: Array.isArray(file.tag) ? file.tag.filter((x) => typeof x === 'string') : defaultFileInfoFolder.tag,
-});
-
-const buildDiff = (diff: Partial<FileDifference>):FileDifference => ({
-  addtag: Array.isArray(diff.addtag) ? diff.addtag.filter((x) => typeof x === 'string') : undefined,
-  deltag: Array.isArray(diff.deltag) ? diff.deltag.filter((x) => typeof x === 'string') : undefined,
-});
-
-const buildFileInfoDiffFile = (file: Partial<FileInfoDiffFile>):FileInfoDiffFile => ({
-  type: 'diff',
-  id: typeof file.id === 'string' ? file.id : defaultFileInfoDiffFile.id,
-  name: typeof file.name === 'string' ? file.name : defaultFileInfoDiffFile.name,
-  createdAt: typeof file.createdAt === 'number' ? file.createdAt : defaultFileInfoDiffFile.createdAt,
-  version: typeof file.version === 'number' ? file.version : defaultFileInfoDiffFile.version,
-  parentId: typeof file.parentId === 'string' ? file.parentId : defaultFileInfoDiffFile.parentId,
-  diff: typeof file.diff === 'object' ? buildDiff(file.diff) : defaultFileInfoDiffFile.diff,
-});
+type UpgradeFile = (oldfile: unknown) => { fileInfo: FileInfo, originalVersion: OldFileInfo['version'] } | null;
 
 /**
- * FileInfoのversionを202204081414まで上げる
+ * FileInfoがversionとして適切か検証、適切ならば現在のバージョンにmigrate
  * @param x
  * @returns
  */
-export const upFile:UpgradeFile = (oldfile, blob) => {
-  if (typeof oldfile !== 'object' || !(
-    oldfile.type === 'file'
-    || oldfile.type === 'folder'
-    || oldfile.type === 'diff')
-  ) {
-    return ({
-      fileInfo: blob ? defaultFileInfoFile : defaultFileInfoFolder,
-      originalVersion: 202204081414,
-    });
-  }
-  const fileInfo = (
-    oldfile.type === 'file'
-      ? buildFileInfoFile(oldfile)
-      : oldfile.type === 'folder'
-        ? buildFileInfoFolder(oldfile)
-        : oldfile.type === 'diff'
-          ? buildFileInfoDiffFile(oldfile)
-          : defaultFileInfoFolder
-  );
-  return { fileInfo, originalVersion: fileInfo.version };
+export const upFile:UpgradeFile = (oldfile) => {
+  const t = schemaFileInfo.safeParse(oldfile);
+  if (t.success) return { fileInfo: t.data, originalVersion: t.data.version };
+  return null;
 };

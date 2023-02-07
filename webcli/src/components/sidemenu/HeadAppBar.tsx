@@ -15,6 +15,7 @@ import { type ProgressState } from '../../features/progress/progressSlice';
 import UserIcon from './UserIcon';
 
 import { drawerWidth } from '../../util';
+import LangSelector from '../../features/language/LangSelector';
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
@@ -59,6 +60,7 @@ export default function HeadAppBar(
             </IconButton>
           </Box>
           <Box sx={{ flexGrow: 0 }}>
+            <LangSelector />
             <UserIcon />
           </Box>
         </Toolbar>

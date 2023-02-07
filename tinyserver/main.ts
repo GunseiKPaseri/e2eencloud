@@ -4,17 +4,15 @@ import SessionsStore from './model/Sessions.ts';
 import { oakCors } from './deps.ts';
 import apiRouter from './router/api.ts';
 
-import { bold, yellow } from './deps.ts';
+import { bold, PORT, yellow } from './deps.ts';
 import { distDir } from './util.ts';
-
-const PORT = 3001;
 
 const app = new Application();
 
 // Enable CORS
 app.use(
   oakCors({
-    origin: [`http://localhost:${PORT}`, 'http://localhost:3000'],
+    origin: ['http://localhost:3000'],
     credentials: true,
   }),
 );
@@ -64,6 +62,6 @@ app.addEventListener('listen', ({ hostname, port, serverType }) => {
   console.log('  using HTTP server: ' + yellow(serverType));
 });
 
-await app.listen({ hostname: '127.0.0.1', port: PORT });
+await app.listen({ hostname: 'localhost', port: PORT });
 
 console.log('finished...');

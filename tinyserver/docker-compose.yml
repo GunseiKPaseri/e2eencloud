@@ -1,19 +1,115 @@
 version: '3.7'
 services:
+#  db:
+#    container_name: db
+#    image: postgres:15.1
+#    restart: always
+#    environment:
+#      POSTGRES_USER: ${DB_USER}
+#      POSTGRES_PASSWORD: ${DB_PASS}
+#      POSTGRES_DB: ${DB_NAME}
+#      TZ: ${TZ}
+#    volumes:
+#      - volume-db:/var/lib/postgresql/data
+#  db-gui:
+#    image: dpage/pgadmin4:6.17
+#    container_name: db-gui
+#    restart: always
+#    volumes:
+#      - volume-pgadmin:/var/lib/pgadmin
+#      PGADMIN_DEFAULT_EMAIL: root@example.com
+#      PGADMIN_DEFAULT_PASSWORD: root
+#    hostname: db-gui
+#    ports:
+#      - "8081:80"
+#    depends_on:
+#      - db
   db:
     image: mysql:8
-    container_name: db-container
+    container_name: db
     environment:
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASS}
-      - MYSQL_ROOT_PASSWORD=${L_DB_ROOT_PASS}
       - TZ=${TZ}
-    ports:
-        - "${DB_PORT}:3306"
     volumes:
-      - db-volume:/var/lib/mysql
-      - ./mysql/conf:/etc/mysql/conf.d
+      - volume-mysql:/var/lib/mysql
+      - ./dev/db/mysql/conf:/etc/mysql/conf.d
+    networks:
+      - database
+  db-gui:
+    depends_on:
+      - db
+    image: phpmyadmin/phpmyadmin:5.2.0
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOSTS=db
+      - PMA_USER=${DB_USER}
+      - PMA_PASSWORD=${DB_PASS}
+    labels:
+      traefik.enable: true
+      traefik.host: phpmyadmin
+      traefik.http.routers.phpmyadmin.entrypoints: http
+      traefik.http.services.phpmyadmin.loadbalancer.server.port: 80
+      traefik.docker.network: traefik_web
+    networks:
+      - web
+      - database
+    volumes:
+      - ./dev/db-gui/phpmyadmin/sessions:/sessions
+  db-prisma-proxy:
+    depends_on:
+      - db
+    build:
+      context: ./dev/db-prisma-proxy
+      dockerfile: Dockerfile
+    image: e2eencloud/pdpa
+    working_dir: /app
+    environment:
+      DATABASE_URL: mysql://${DB_USER}:${DB_PASS}@db:3306/${DB_NAME}
+      DATA_PROXY_API_KEY: HOGE_HOGE
+      PORT: "3000"
+    volumes:
+      - ./prisma/:/app/prisma-original/:ro
+    user: "node:node"
+    networks:
+      - database
+      - prismanet
+  db-prisma-proxy-https:
+    depends_on:
+      - db-prisma-proxy
+    image: steveltn/https-portal:1
+    environment:
+      STAGE: local
+      DOMAINS: 'db-prisma-proxy-https -> http://db-prisma-proxy:3000'
+    volumes:
+      - ./dev/db-prisma-proxy-https/ssl-certs:/var/lib/https-portal
+    networks:
+      - prismanet
+  mailer:
+    container_name: mailer
+    image:  maildev/maildev:2.0.5
+    volumes:
+      - volume-mailer:/home/maildev
+    restart: always
+    environment:
+      - TZ=${TZ}
+      - MAILDEV_WEB_PORT=1080
+      - MAILDEV_SMTP_PORT=1025
+      - MAILDEV_MAIL_DIRECTORY=/home/maildev
+    labels:
+      traefik.enable: true
+      traefik.host: mailer
+      traefik.http.routers.mailer.entrypoints: http
+      traefik.http.services.mailer.loadbalancer.server.port: 1080
+      traefik.docker.network: traefik_web
+    networks:
+      - web
+      - mailnet
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
   minio:
     image: 'minio/minio'
     container_name: minio
@@ -24,15 +120,21 @@ services:
       - MINIO_SECRET_KEY=${AWS_SECRET_ACCESS_KEY}
     command: "server /data --console-address :9001"
     volumes:
-      - minio-volume:/data
-    ports:
-      - "${L_MINIO_PORT}:9000"
-      - "${L_MINIO_CONSOLE_PORT}:9001" 
+      - volume-minio:/data
+    labels:
+      traefik.enable: true
+      traefik.host: minio
+      traefik.http.routers.minio.entrypoints: http
+      traefik.http.services.minio.loadbalancer.server.port: 9001
+      traefik.docker.network: traefik_web
+    networks:
+      - web
+      - minionet
   createbuckets:
-    image: minio/mc
-    container_name: minio-createbucketd
     depends_on:
       - minio
+    image: minio/mc
+    container_name: minio-createbucketd
     entrypoint: >
       /bin/sh -c "
       until (/usr/bin/mc config host add myminio http://minio:9000 ${L_MINIO_ROOT_USER} ${L_MINIO_ROOT_PASSWORD}) do echo '...waiting...' && sleep 1; done;
@@ -40,7 +142,64 @@ services:
       /usr/bin/mc mb myminio/${AWS_BUCKET} --region=${AWS_DEFAULT_REGION};
       exit 0;
       "
-
+    networks:
+      - minionet
+  app:
+    build:
+      context: ./dev
+      dockerfile: DockerfileApp
+    image: e2eencloud/app
+    container_name: app
+    command: sleep infinity
+    environment:
+      - DATABASE_URL=prisma://db-prisma-proxy-https?api_key=HOGE_HOGE
+      - SHADOW_DATABASE_URL=mysql://${DB_USER}:${DB_PASS}@db:3306/${DB_NAME}
+    volumes:
+      - volume-appcache:/home/vscode/.cache
+    labels:
+      traefik.enable: true
+      traefik.host: app
+      traefik.http.routers.app.entrypoints: http
+      traefik.http.services.app.loadbalancer.server.port: 3001
+      traefik.docker.network: traefik_web
+    networks:
+      - web
+      - database
+      - mailnet
+      - minionet
+      - prismanet
+  rproxy:
+    image: traefik:v2.9.6
+    container_name: rproxy
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./dev/rproxy/traefik.yml:/etc/traefik/traefik.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - web
+    labels:
+      traefik.enable: true
+      traefik.host: dashboard
+      traefik.http.routers.dashboard.entrypoints: http
+      traefik.http.routers.dashboard.service: api@internal
+      traefik.docker.network: traefik_web
 volumes:
-  db-volume:
-  minio-volume:
+  volume-mysql:
+  volume-minio:
+  volume-mailer:
+  volume-appcache:
+
+networks:
+  web:
+    external:
+      name: traefik_web
+  database:
+    driver: bridge
+  minionet:
+    driver: bridge
+  mailnet:
+    driver: bridge
+  prismanet:
+    driver: bridge

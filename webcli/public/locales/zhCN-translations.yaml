@@ -1,0 +1,8 @@
+auth:
+  login: 登入
+language:
+  jaJP: 日文
+  enUS: 英文
+  zhCN: 汉文
+conf:
+  dateFnsLocale: zhCN

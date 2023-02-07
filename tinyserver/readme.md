@@ -11,7 +11,7 @@ Use _`.env` file_ OR _set environment variables_
 The following commands can be used to generate passwords.
 
 ```bash
-$ deno run .\gen_environment.ts > .env
+$ deno run ./gen_environment.ts > .env
 ```
 
 You may prepare your own configuration file as follows.
@@ -34,7 +34,7 @@ AWS_USE_PATH_STYLE_ENDPOINT = true
 # URL IN AppNetwork(like docker)
 AWS_ENDPOINT = http://minio:9000
 # URL IN EndPoint(like browser)
-AWS_URL = http://localhost:9000
+AWS_URL = http://minio:9000
 
 # For DockerCompose Admin
 L_DB_ROOT_PASS = bRxjUvpN6ZAxMc4VUuzJtCfgi
@@ -102,3 +102,11 @@ Add lock information when dependent packages are changed
 ```bash
 $ deno task checkdependent
 ```
+
+## devcontainer
+
+- [app.localhost] Deno app (main)
+- [mailer.localhost] MailDev Dashboard
+- [dashboard.localhost] Traefik Dashboard (reverse proxy)
+- [minio.localhost] MinIO Dashboard (S3 like)
+- [phpmyadmin.localhost] PHP MyAdmin (DB)

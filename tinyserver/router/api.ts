@@ -1,6 +1,6 @@
 import { base642ByteArray, byteArray2base64, compareAsc } from '../deps.ts';
 import { Router, Status } from '../deps.ts';
-import { addEmailConfirmation } from '../model/EmailConfirmations.ts';
+import { addEmailConfirmation } from '../model/ConfirmingEmailAddress.ts';
 import {
   addUser,
   deleteUserById,
@@ -25,8 +25,8 @@ import {
   getHooksList,
   getNumberOfHooks,
   HookData,
-  hookFieldValidate,
   hookScheme,
+  hooksColumnsSchema,
   parseHookFilterQuery,
 } from '../model/Hooks.ts';
 import { ExhaustiveError } from '../util.ts';
@@ -65,6 +65,7 @@ router.post('/signup', async (ctx) => {
     encrypted_master_key: data.encryptedMasterKeyBase64,
     encrypted_master_key_iv: data.encryptedMasterKeyIVBase64,
     hashed_authentication_key: data.hashedAuthenticationKeyBase64,
+    max_capacity: 5 * 1024 * 1024, //5n * 1024n * 1024n * 1024n,
   });
   console.log(issuccess);
   if (issuccess) {
@@ -170,19 +171,9 @@ router.post('/login', async (ctx) => {
     return ctx.response.status = Status.Unauthorized;
   }
   // use totp?
-  if (user.two_factor_authentication_secret_key) {
-    const totp = new OTPAuth.TOTP({
-      issuer: 'E2EEncloud',
-      label: `${user.email}`,
-      algorithm: 'SHA1',
-      digits: 6,
-      period: 30,
-      secret: user.two_factor_authentication_secret_key,
-    });
-    if (totp.validate({ token: data.token, window: 1 }) === null) {
-      return ctx.response.status = Status.Unauthorized;
-    }
-  }
+  const confirmTOTP = await user.confirmTOTP(data.token);
+  if (!confirmTOTP.success) return ctx.response.status = Status.Unauthorized;
+
   // login!!
   await ctx.state.session.set('uid', user.id);
 
@@ -203,8 +194,8 @@ router.post('/login', async (ctx) => {
   const result = {
     encryptedMasterKeyBase64: user.encrypted_master_key,
     encryptedMasterKeyIVBase64: user.encrypted_master_key_iv,
-    useTwoFactorAuth: user.two_factor_authentication_secret_key !== null,
-    authority: user.authority,
+    useTwoFactorAuth: confirmTOTP.useTOTP,
+    role: user.role,
   };
   const result_rsa_key = {
     encryptedRSAPrivateKeyBase64: user.encrypted_rsa_private_key,
@@ -218,7 +209,7 @@ router.post('/login', async (ctx) => {
 
 router.post('/logout', async (ctx) => {
   // auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.response.status = Status.NoContent;
 
@@ -236,7 +227,7 @@ const POSTAddTwoFactorSecretKeyScheme = z.object({
 
 router.put('/user/totp', async (ctx) => {
   // auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
 
@@ -266,32 +257,32 @@ router.put('/user/totp', async (ctx) => {
 
   if (result === null) return ctx.response.status = Status.BadRequest;
 
-  await user.addTwoFactorAuthSecretKey(data.secretKey);
+  await user.addTOTP(data.secretKey);
 
   return ctx.response.status = Status.NoContent;
 });
 
 router.delete('/user/totp', async (ctx) => {
   // auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
 
   // verify token
-  await user.addTwoFactorAuthSecretKey(null);
+  await user.deleteTOTP();
 
   return ctx.response.status = Status.NoContent;
 });
 
 // get capacity
 interface GETCapacityResultJSON {
-  usage: number;
-  max_capacity: number;
+  usage: string;
+  max_capacity: string;
 }
 
 router.get('/user/capacity', async (ctx) => {
   // auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
 
@@ -299,8 +290,8 @@ router.get('/user/capacity', async (ctx) => {
 
   // verify body
   const result: GETCapacityResultJSON = {
-    usage,
-    max_capacity: user.max_capacity,
+    usage: usage.toString(),
+    max_capacity: user.max_capacity.toString(),
   };
 
   ctx.response.status = Status.OK;
@@ -323,7 +314,7 @@ interface PATCHPasswordJSON {
 
 router.patch('/user/password', async (ctx) => {
   // auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
 
@@ -356,7 +347,7 @@ const PUTpubkeyScheme = z.object({
 });
 router.put('/user/pubkey', async (ctx) => {
   // auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
 
@@ -382,7 +373,7 @@ router.put('/user/pubkey', async (ctx) => {
 
 router.get('/user/files', async (ctx) => {
   // auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
   const files = (await getFileInfo(user.id)).map((x) => x.toSendObj());
@@ -394,7 +385,7 @@ router.get('/user/files', async (ctx) => {
 
 router.get('/user/sessions', async (ctx) => {
   // auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const me: string = await ctx.state.session.get('id');
   const user = await getUserById(uid);
   if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
@@ -402,8 +393,8 @@ router.get('/user/sessions', async (ctx) => {
     x,
   ) => ({
     id: x.id,
-    clientName: x.data.client_name,
-    accessed: x.data._accessed,
+    clientName: x.client_name,
+    accessed: x._accessed,
     isMe: x.id === me,
   }));
 
@@ -418,7 +409,7 @@ const PATCHSessionsScheme = z.object({
 
 router.patch('/user/sessions', async (ctx) => {
   // auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
 
   if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
@@ -438,7 +429,7 @@ router.patch('/user/sessions', async (ctx) => {
 
 router.delete('/user/sessions/:id', async (ctx) => {
   // auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
 
   if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
@@ -471,7 +462,7 @@ type POSTFilesForm = POSTFilesFormWithBin | POSTFilesFormWithoutBin;
 
 router.post('/files', async (ctx) => {
   // auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.response.status = Status.NoContent;
 
@@ -548,7 +539,7 @@ const POSTDeleteFilesScheme = z.object({
 
 router.post('/files/delete', async (ctx) => {
   // auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.throw(Status.Unauthorized, 'Unauthorized');
 
@@ -595,20 +586,20 @@ router.get('/files/:fileid/bin', async (ctx) => {
 interface GETuserlistJSON {
   number_of_user: number;
   users: {
-    id: number;
+    id: string;
     email: string;
-    max_capacity: number;
-    file_usage: number;
-    authority?: string;
+    max_capacity: string; // bigint
+    file_usage: string; // bigint
+    role?: string;
     two_factor_authentication: boolean;
   }[];
 }
 
 router.get('/users', async (ctx) => {
   // admin auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
-  if (!user || user.authority !== 'ADMIN') {
+  if (!user || user.role !== 'ADMIN') {
     return ctx.response.status = Status.Forbidden;
   }
 
@@ -633,10 +624,42 @@ router.get('/users', async (ctx) => {
 
   // get
   const number_of_users = getNumberOfUsers(queryFilter);
-  const list = (await getUsers({ offset, limit, orderBy, order, queryFilter }))
-    .map((
-      user,
-    ): GETuserlistJSON['users'][0] => user.value());
+  const list = (await getUsers({
+    offset,
+    limit,
+    orderBy,
+    order,
+    queryFilter,
+    select: {
+      id: true,
+      email: true,
+      max_capacity: true,
+      file_usage: true,
+      role: true,
+      tfa_solutions: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  }))
+    .flatMap((user): GETuserlistJSON['users'][0][] => ((
+        user.id !== undefined &&
+        user.email !== undefined &&
+        user.max_capacity !== undefined &&
+        user.file_usage !== undefined &&
+        user.role !== undefined
+      )
+      ? [{
+        id: user.id,
+        email: user.email,
+        max_capacity: user.max_capacity.toString(),
+        file_usage: user.file_usage.toString(),
+        role: user.role,
+        two_factor_authentication: user.tfa_solutions !== undefined && user.tfa_solutions.length !== 0,
+      }]
+      : [])
+    );
 
   const result: GETuserlistJSON = {
     number_of_user: await number_of_users,
@@ -649,13 +672,13 @@ router.get('/users', async (ctx) => {
 
 router.delete('/user/:id', async (ctx) => {
   // admin auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
-  if (!user || user.authority !== 'ADMIN') {
+  if (!user || user.role !== 'ADMIN') {
     return ctx.response.status = Status.Forbidden;
   }
 
-  const id = parseInt(ctx.params.id);
+  const id = ctx.params.id;
 
   // can't remove me
   if (user.id === id) return ctx.response.status = Status.BadRequest;
@@ -667,7 +690,10 @@ router.delete('/user/:id', async (ctx) => {
 });
 
 const PATCHUserScheme = z.object({
-  max_capacity: z.number(),
+  max_capacity: z.preprocess(
+    (v) => (typeof v === 'string' ? BigInt(v) : (typeof v === 'bigint' ? v : null)),
+    z.bigint(),
+  ),
   two_factor_authentication: z.boolean(),
 }).partial({
   max_capacity: true,
@@ -676,13 +702,13 @@ const PATCHUserScheme = z.object({
 
 router.patch('/user/:id', async (ctx) => {
   // admin auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
-  if (!user || user.authority !== 'ADMIN') {
+  if (!user || user.role !== 'ADMIN') {
     return ctx.response.status = Status.Forbidden;
   }
 
-  const id = parseInt(ctx.params.id);
+  const id = ctx.params.id;
 
   // validate request
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
@@ -717,7 +743,7 @@ interface POSThooksJSON {
 }
 
 router.post('/hooks', async (ctx) => {
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.response.status = Status.Forbidden;
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
@@ -743,7 +769,7 @@ router.post('/hooks', async (ctx) => {
 });
 
 router.get('/hooks', async (ctx) => {
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.response.status = Status.Forbidden;
   // validate
@@ -757,27 +783,44 @@ router.get('/hooks', async (ctx) => {
   );
   const offset = isNaN(prmoffset) ? 0 : prmoffset;
   const limit = isNaN(prmlimit) ? 10 : prmlimit;
-  const orderBy = hookFieldValidate(
-    ctx.request.url.searchParams.get('orderby'),
-  );
+  const orderBy = hooksColumnsSchema.default('name').parse(ctx.request.url.searchParams.get('orderby') ?? undefined);
+
   const order = ctx.request.url.searchParams.get('order') === 'desc' ? 'desc' : 'asc';
-  const queryFilter = parseHookFilterQuery(
-    ctx.request.url.searchParams.get('q') ?? '',
-  );
-
-  const list = getHooksList({
+  const queryFilter = {
+    ...parseHookFilterQuery(
+      ctx.request.url.searchParams.get('q') ?? '',
+    ),
     user_id: user.id,
-    offset,
-    limit,
-    order,
-    orderBy,
-    queryFilter,
-  });
-  const getSizeOfHooks = getNumberOfHooks(user.id, queryFilter);
+  };
 
+  const [list, getSizeOfHooks] = await Promise.all([
+    getHooksList({
+      user_id: user.id,
+      offset,
+      limit,
+      order,
+      orderBy,
+      queryFilter,
+      select: {
+        id: true,
+        created_at: true,
+        name: true,
+        data: true,
+        expired_at: true,
+      },
+    }),
+    getNumberOfHooks(queryFilter),
+  ]);
   const result = {
-    number_of_hook: await getSizeOfHooks,
-    hooks: (await list).map((hook) => hook.value()),
+    number_of_hook: getSizeOfHooks,
+    hooks: list.map((x) => {
+      const data = x.data as unknown;
+      if (typeof data === 'string') {
+        return { ...x, data: JSON.parse(data as string) };
+      } else {
+        return { ...x, data: { method: 'NONE' } };
+      }
+    }),
   };
 
   ctx.response.status = Status.OK;
@@ -798,7 +841,7 @@ router.post('/hook/:id', async (ctx) => {
   switch (hook.data.method) {
     case 'USER_DELETE': {
       const result = await deleteUserById(
-        typeof hook.user_id === 'number' ? hook.user_id : hook.user_id.id,
+        typeof hook.user_id === 'string' ? hook.user_id : hook.user_id.id,
       );
       if (!result.success) return ctx.response.status = Status.BadRequest;
       break;
@@ -828,7 +871,7 @@ router.patch('/hook/:id', async (ctx) => {
   const hook = await getHook(ctx.params.id);
   if (!hook) return ctx.response.status = Status.NotFound;
   // auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.response.status = Status.Unauthorized;
   if (user.id !== hook.user_id) return ctx.response.status = Status.Forbidden;
@@ -863,7 +906,7 @@ router.delete('/hook/:id', async (ctx) => {
   const hook = await getHook(ctx.params.id);
   if (!hook) return ctx.response.status = Status.NotFound;
   // auth
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.response.status = Status.Unauthorized;
   if (user.id !== hook.user_id) return ctx.response.status = Status.Forbidden;
@@ -882,9 +925,9 @@ const PUTCouponScheme = z.object({
 
 router.post('/coupons', async (ctx) => {
   // auth only admin
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
-  if (!user || user.authority !== 'ADMIN') {
+  if (!user || user.role !== 'ADMIN') {
     return ctx.response.status = Status.Forbidden;
   }
   // validate request
@@ -911,7 +954,7 @@ const CouponsUseScheme = z.object({
 
 router.post('/coupons/use', async (ctx) => {
   // auth only user
-  const uid: number | null = await ctx.state.session.get('uid');
+  const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.response.status = Status.Forbidden;
 

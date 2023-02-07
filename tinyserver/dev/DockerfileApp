@@ -1,0 +1,55 @@
+ARG DENO_VERSION=1.28.3
+ARG NODE_VERSION=18.12.1
+
+ARG DENO_BIN_IMAGE=denoland/deno:bin-${DENO_VERSION}
+
+
+FROM ${DENO_BIN_IMAGE} AS denobin
+
+FROM node:${NODE_VERSION}-slim AS node
+
+FROM ubuntu:focal-20221130 as base
+
+USER root
+
+RUN apt-get update \
+    && apt-get -qq install -y --no-install-recommends \
+    tini \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=denobin /deno /bin/deno
+COPY --from=node /usr/local/include/ /usr/local/include/
+COPY --from=node /usr/local/lib/ /usr/local/lib/
+COPY --from=node /usr/local/bin/ /usr/local/bin/
+
+RUN corepack disable && corepack enable
+
+RUN apt-get update -y && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/* && update-ca-certificates
+
+## install git
+
+RUN apt-get update -y \
+    && apt-get upgrade -y \
+    && apt-get autoremove -y \
+    && apt-get install -y software-properties-common \
+    && add-apt-repository ppa:git-core/ppa \
+    && apt-get update -y
+
+RUN apt-get install -y git
+
+## add user
+ARG USERNAME=vscode
+
+RUN addgroup --gid 1000 ${USERNAME} \
+    && adduser --uid 1000 --disabled-password vscode --ingroup ${USERNAME}
+
+## add history
+
+RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
+    && mkdir /commandhistory \
+    && touch /commandhistory/.bash_history \
+    && chown -R $USERNAME /commandhistory \
+    && echo "$SNIPPET" >> "/home/${USERNAME}/.bashrc"
+
+USER vscode
+RUN mkdir "/home/${USERNAME}/.cache"

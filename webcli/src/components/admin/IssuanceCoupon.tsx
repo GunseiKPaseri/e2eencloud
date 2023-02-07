@@ -8,6 +8,8 @@ import { useState, useReducer } from 'react';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
+import { useTranslation } from 'react-i18next';
+
 import { issuanceCoupon } from './adminrequest';
 
 type CouponState = { coupon: string[], isLoading: boolean };
@@ -23,6 +25,7 @@ const couponReducerFunc = (couponState: CouponState, action: CouponAction): Coup
 
 export default function BasicCard() {
   const [numOfCoupon, setNumOfCoupon] = useState(1);
+  const { t } = useTranslation();
   const [couponState, dispatch] = useReducer(couponReducerFunc, initialState);
   const handleIssue = async () => {
     dispatch('loading');
@@ -32,7 +35,7 @@ export default function BasicCard() {
     <Card sx={{ minWidth: 275 }}>
       <CardContent>
         <Typography variant="h5" component="div">
-          クーポンを発行
+          {t('admin.IssueCoupon', 'クーポンを発行')}
         </Typography>
 
         <TextField
@@ -67,7 +70,7 @@ export default function BasicCard() {
         </List>
       </CardContent>
       <CardActions>
-        <Button size="small" onClick={handleIssue}>発行</Button>
+        <Button size="small" onClick={handleIssue}>{t('admin.issue', '発行')}</Button>
       </CardActions>
     </Card>
   );

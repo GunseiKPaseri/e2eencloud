@@ -22,15 +22,20 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { Tooltip, Typography } from '@mui/material';
+import { useTranslation } from 'react-i18next';
+import type { Namespace, TFunction } from 'react-i18next';
 
 type GetListJSON<T> = {
   total_number: number;
   items: T[];
 };
 
+export type ComputeMutation<T extends GridValidRowModel, N extends Namespace<'translations'> = 'translations', TKPrefix = undefined>
+  = (params: { newRow: T, oldRow: T, t: TFunction<N, TKPrefix> }) => string | null;
+
 function EditableDataGrid<T extends GridValidRowModel>(
   props: Omit<DataGridProps<T>, 'rows'> & {
-    computeMutation: (newRow: T, oldRow: T) => string | null;
+    computeMutation: ComputeMutation<T>;
     getName: (params: GridRowParams<T>) => string,
     getList: (props:{
       offset: number,
@@ -60,7 +65,8 @@ function EditableDataGrid<T extends GridValidRowModel>(
     ...originProps
   } = props;
   const pageSize = originProps.pageSize ?? 100;
-  const [rows, setRows] = useState<GridRowsProp>([]);
+  const { t } = useTranslation();
+  const [rows, setRows] = useState<GridRowsProp<T>>([]);
   const [page, setPage] = useState(0);
   const [sortQuery, setSortQuery] = useState<GridSortItem[]>([]);
   const [filterQuery, setFilterQuery] = useState<GridFilterModel>({ items: [] });
@@ -94,7 +100,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
         sortQuery,
         filterQuery,
       });
-      const newRows:GridRowsProp = list.items;
+      const newRows:GridRowsProp<T> = list.items;
 
       if (!active) {
         return;
@@ -113,7 +119,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
   const processRowUpdate = useCallback(
     (newRow: T, oldRow: T) => (
       new Promise<T>((resolve, reject) => {
-        const mutation = computeMutation(newRow, oldRow);
+        const mutation = computeMutation({ newRow, oldRow, t });
         if (mutation) {
           // Save the arguments to resolve or reject the promise later
           setEditConfirmPromiseArguments({
@@ -171,7 +177,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
     }
 
     const { newRow, oldRow } = editConfirmPromiseArguments;
-    const mutation = computeMutation(newRow, oldRow);
+    const mutation = computeMutation({ newRow, oldRow, t });
     if (!mutation) return <></>;
 
     return (
@@ -186,9 +192,9 @@ function EditableDataGrid<T extends GridValidRowModel>(
         </DialogContent>
         <DialogActions>
           <Button ref={noButtonRef} onClick={handleEditConfirmNo}>
-            キャンセル
+            {t('admin.cancel', 'キャンセル')}
           </Button>
-          <Button onClick={handleEditConfirmYes}>編集</Button>
+          <Button onClick={handleEditConfirmYes}>{t('auth.edit', '編集')}</Button>
         </DialogActions>
       </Dialog>
     );
@@ -227,9 +233,9 @@ function EditableDataGrid<T extends GridValidRowModel>(
         </DialogContent>
         <DialogActions>
           <Button ref={noButtonRef} onClick={handleDeleteConfirmNo}>
-            キャンセル
+            {t('admin.cancel', 'キャンセル')}
           </Button>
-          <Button onClick={handleDeleteConfirmYes} color="error">削除</Button>
+          <Button onClick={handleDeleteConfirmYes} color="error">{t('auth.delete', '削除')}</Button>
         </DialogActions>
       </Dialog>
     );

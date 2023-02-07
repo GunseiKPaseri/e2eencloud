@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest';
 import { assertNotNull } from './assert';
 import { bs58CheckDecodeWithoutErr, bs58CheckEncode } from './bs58check';
 import { byteArray2hex, hex2bytearray } from './uint8';
