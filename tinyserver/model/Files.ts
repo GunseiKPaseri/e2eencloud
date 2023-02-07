@@ -1,41 +1,41 @@
-import { prisma } from '../dbclient.ts';
-import type { DBFiles } from '../dbclient.ts';
-import { v4, z } from '../deps.ts';
-import { bucket } from '../s3client.ts';
-import { User } from './Users.ts';
+import { prisma } from '../dbclient.ts'
+import type { DBFiles } from '../dbclient.ts'
+import { v4, z } from '../deps.ts'
+import { bucket } from '../s3client.ts'
+import { User } from './Users.ts'
 
-const validateFileId = (x: string) => x.indexOf('-') === -1 && v4.validate(x.replace(/_/g, '-'));
+const validateFileId = (x: string) => x.indexOf('-') === -1 && v4.validate(x.replace(/_/g, '-'))
 
 const encryptionDataSchema = z.object({
   iv: z.union([z.string(), z.null()]).optional(),
   key: z.string(),
   info_key: z.string(),
   info_iv: z.string(),
-});
+})
 
-type EncryptionData = z.infer<typeof encryptionDataSchema>;
+type EncryptionData = z.infer<typeof encryptionDataSchema>
 
 export class File {
-  readonly id: string;
-  readonly encryption_data: EncryptionData;
-  readonly size: bigint;
-  readonly created_by: User | string;
+  readonly id: string
+  readonly encryption_data: EncryptionData
+  readonly size: bigint
+  readonly created_by: User | string
   constructor(file: {
-    id: string;
-    encryption_data: EncryptionData | string;
-    size: bigint | number;
-    created_by: User | string;
+    id: string
+    encryption_data: EncryptionData | string
+    size: bigint | number
+    created_by: User | string
   }) {
-    this.id = file.id;
+    this.id = file.id
     this.encryption_data = typeof file.encryption_data === 'string'
       ? encryptionDataSchema.parse(JSON.parse(file.encryption_data))
-      : file.encryption_data;
-    this.size = BigInt(file.size);
-    this.created_by = file.created_by;
+      : file.encryption_data
+    this.size = BigInt(file.size)
+    this.created_by = file.created_by
   }
 
   async saveFile(file: Uint8Array) {
-    await bucket.putObject(this.id, file);
+    await bucket.putObject(this.id, file)
   }
 
   toSendObj() {
@@ -46,54 +46,54 @@ export class File {
       encryptedFileInfoBase64: this.encryption_data.info_key,
       encryptedFileInfoIVBase64: this.encryption_data.info_iv,
       encryptedSize: this.size.toString(),
-    };
+    }
   }
 }
 
 export const addFile = async (params: {
-  id: string;
-  encrypted_file_iv?: string;
-  encrypted_file_key: string;
-  encrypted_file_info: string;
-  encrypted_file_info_iv: string;
-  bin?: Uint8Array;
-  created_by: User;
+  id: string
+  encrypted_file_iv?: string
+  encrypted_file_key: string
+  encrypted_file_info: string
+  encrypted_file_info_iv: string
+  bin?: Uint8Array
+  created_by: User
 }) => {
-  if (!validateFileId(params.id)) return null;
+  if (!validateFileId(params.id)) return null
   try {
     const encryption_data = JSON.stringify({
       iv: params.encrypted_file_iv ?? null,
       key: params.encrypted_file_key,
       info_iv: params.encrypted_file_info_iv,
       info_key: params.encrypted_file_info,
-    });
-    const size = BigInt(params.bin?.length ?? 0 + encryption_data.length);
+    })
+    const size = BigInt(params.bin?.length ?? 0 + encryption_data.length)
 
     if (
       params.created_by.file_usage + Number(size) > params.created_by.max_capacity
     ) {
-      return null;
+      return null
     }
 
-    const patchUserResult = await params.created_by.patchUsage(size);
-    if (patchUserResult === null) return null;
+    const patchUserResult = await params.created_by.patchUsage(size)
+    if (patchUserResult === null) return null
 
     const data = {
       id: params.id,
       size: Number(size),
       created_by: params.created_by.id,
       encryption_data: encryption_data,
-    };
-    const created = await prisma.files.create({ data });
+    }
+    const created = await prisma.files.create({ data })
 
-    const newfile = new File(created);
-    if (params.bin) await newfile.saveFile(params.bin);
-    return newfile;
+    const newfile = new File(created)
+    if (params.bin) await newfile.saveFile(params.bin)
+    return newfile
   } catch (e) {
-    console.log(e);
-    return null;
+    console.log(e)
+    return null
   }
-};
+}
 
 export const getFileById = async (id: string) => {
   const files = await prisma.files.findUnique({
@@ -106,9 +106,9 @@ export const getFileById = async (id: string) => {
       updated_at: true,
     },
     where: { id },
-  });
-  return files === null ? null : new File(files);
-};
+  })
+  return files === null ? null : new File(files)
+}
 
 export const getFileInfo = async (uid: string) => {
   const files: DBFiles[] = await prisma.files.findMany({
@@ -123,12 +123,12 @@ export const getFileInfo = async (uid: string) => {
     where: {
       created_by: uid,
     },
-  });
-  return files.map((x) => new File(x));
-};
+  })
+  return files.map((x) => new File(x))
+}
 
 export const deleteFiles = async (user: User, fileIDs: string[]) => {
-  const targetFileIDs = fileIDs.filter((id) => v4.validate(id.replaceAll('_', '-')));
+  const targetFileIDs = fileIDs.filter((id) => v4.validate(id.replaceAll('_', '-')))
 
   const trueTargetFileIDs = (await prisma.files.findMany({
     select: {
@@ -140,7 +140,7 @@ export const deleteFiles = async (user: User, fileIDs: string[]) => {
       },
       created_by: user.id,
     },
-  })).map((file) => file.id);
+  })).map((file) => file.id)
 
   const newSize = (await prisma.files.aggregate({
     where: {
@@ -151,7 +151,7 @@ export const deleteFiles = async (user: User, fileIDs: string[]) => {
     _sum: {
       size: true,
     },
-  }))._sum.size ?? 0n;
+  }))._sum.size ?? 0n
 
   const result = await prisma.files.deleteMany({
     where: {
@@ -160,7 +160,7 @@ export const deleteFiles = async (user: User, fileIDs: string[]) => {
       },
       created_by: user.id,
     },
-  });
+  })
 
   // DeleteFile
   // 存在しないファイルは無視
@@ -168,14 +168,14 @@ export const deleteFiles = async (user: User, fileIDs: string[]) => {
     trueTargetFileIDs
       .map((id) =>
         bucket.deleteObject(id).catch(() => {
-          console.log(id, 'can\'t delete');
-          return Promise.resolve();
+          console.log(id, 'can\'t delete')
+          return Promise.resolve()
         })
       ),
-  );
+  )
 
   // [TODO sizeをrelationで連動させる]
-  await user.patchUsage(newSize);
+  await user.patchUsage(newSize)
 
-  return result.count;
-};
+  return result.count
+}

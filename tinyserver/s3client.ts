@@ -5,7 +5,7 @@ import {
   BUCKET_REGION,
   BUCKET_SECRET_KEY,
   S3Bucket,
-} from './deps.ts';
+} from './deps.ts'
 
 export const bucket = new S3Bucket({
   accessKeyID: BUCKET_ACCESS_KEY_ID,
@@ -13,4 +13,4 @@ export const bucket = new S3Bucket({
   bucket: BUCKET_NAME,
   region: BUCKET_REGION,
   endpointURL: BUCKET_ENDPOINT,
-});
+})

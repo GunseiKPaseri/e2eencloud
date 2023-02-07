@@ -1,22 +1,22 @@
-import { expect } from '../deps.ts';
-import { bs58CheckDecodeWithoutErr, bs58CheckEncode } from './bs58check.ts';
+import { expect } from '../deps.ts'
+import { bs58CheckDecodeWithoutErr, bs58CheckEncode } from './bs58check.ts'
 const byteArray2hex = (x: Uint8Array) =>
-  Array.from(new Uint8Array(x)).map((b) => b.toString(16).padStart(2, '0')).join('');
+  Array.from(new Uint8Array(x)).map((b) => b.toString(16).padStart(2, '0')).join('')
 
 const hex2bytearray = (hex: string) => {
-  const array = hex.match(/.{2}/g)?.map((x) => parseInt(x, 16));
-  if (!array) throw new Error('bad hex');
-  return new Uint8Array(array);
-};
+  const array = hex.match(/.{2}/g)?.map((x) => parseInt(x, 16))
+  if (!array) throw new Error('bad hex')
+  return new Uint8Array(array)
+}
 /**
  * 要素がnullでもundefinedでもないと確信
  */
 export const assertNotNull: <T>(x: T | null | undefined) => asserts x is T = (x) => {
   if (x === undefined || x === null) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    throw new Error(`This(${x}) is bad!!`);
+    throw new Error(`This(${x}) is bad!!`)
   }
-};
+}
 
 const testcase = [
   {
@@ -235,35 +235,35 @@ const testcase = [
     string: '#####',
     payload: null,
   },
-];
+]
 
 Deno.test('#bs58checkdecode 適切に変換可能', async () => {
   await Promise.all(
     testcase
       .filter((x): x is { string: string; payload: string } => !!x.payload).map(async (cs) => {
-        const result = await bs58CheckDecodeWithoutErr(cs.string);
-        expect(result).not.toBeNull();
-        assertNotNull(result);
-        expect(byteArray2hex(result)).toEqual(cs.payload);
+        const result = await bs58CheckDecodeWithoutErr(cs.string)
+        expect(result).not.toBeNull()
+        assertNotNull(result)
+        expect(byteArray2hex(result)).toEqual(cs.payload)
       }),
-  );
-});
+  )
+})
 Deno.test('#bs58checkdecode 適切に変換不能なものにnullを返す', async () => {
   await Promise.all(
     testcase
       .filter((x): x is { string: string; payload: null } => !x.payload).map(async (cs) => {
-        const result = await bs58CheckDecodeWithoutErr(cs.string);
-        expect(result).toBeNull();
+        const result = await bs58CheckDecodeWithoutErr(cs.string)
+        expect(result).toBeNull()
       }),
-  );
-});
+  )
+})
 
 Deno.test('#bs58checkencode 適切に変換可能', async () => {
   await Promise.all(
     testcase
       .filter((x): x is { string: string; payload: string } => !!x.payload).map(async (cs) => {
-        const result = await bs58CheckEncode(hex2bytearray(cs.payload));
-        expect(result).toEqual(cs.string);
+        const result = await bs58CheckEncode(hex2bytearray(cs.payload))
+        expect(result).toEqual(cs.string)
       }),
-  );
-});
+  )
+})

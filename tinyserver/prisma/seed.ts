@@ -1,4 +1,4 @@
-import { type Prisma, prisma } from '../dbclient.ts';
+import { type Prisma, prisma } from '../dbclient.ts'
 
 const userData: Prisma.UserCreateInput[] = [
   // user: admin@example.com
@@ -56,23 +56,23 @@ const userData: Prisma.UserCreateInput[] = [
       rsa_public_key: '',
     }
   )),
-];
+]
 
 try {
-  console.log('◭Delete...');
+  console.log('◭Delete...')
 
-  await prisma.user.deleteMany({});
+  await prisma.user.deleteMany({})
 
-  console.log('◭seeding...');
+  console.log('◭seeding...')
 
-  console.log('- Users');
+  console.log('- Users')
   await prisma.user.createMany({
     data: userData,
-  });
+  })
 
-  console.log('◭Seeding finished!');
+  console.log('◭Seeding finished!')
 } catch (e) {
-  console.error(e);
+  console.error(e)
 } finally {
-  await prisma.$disconnect();
+  await prisma.$disconnect()
 }

@@ -1,25 +1,25 @@
-import { prisma } from '../dbclient.ts';
-import type { OakSessionStore } from '../deps.ts';
-import { SessionData } from '../deps.ts';
-import { omit } from '../utils/objSubset.ts';
+import { prisma } from '../dbclient.ts'
+import type { OakSessionStore } from '../deps.ts'
+import { SessionData } from '../deps.ts'
+import { omit } from '../utils/objSubset.ts'
 
 interface AppSessionData extends SessionData {
-  _flash: Record<string, unknown>;
-  _accessed: string | null;
-  _expire: string | null;
-  client_name?: string;
-  [key: string]: unknown;
+  _flash: Record<string, unknown>
+  _accessed: string | null
+  _expire: string | null
+  client_name?: string
+  [key: string]: unknown
 }
 
 interface ResultSelectIDDataFromSession {
-  id: string;
-  data: string;
+  id: string
+  data: string
 }
 
 interface ResultSelectIDDataUserIdFromSession {
-  id: string;
-  data: string;
-  user_id: number;
+  id: string
+  data: string
+  user_id: number
 }
 
 const sessionStringify = (session: AppSessionData) => {
@@ -27,26 +27,26 @@ const sessionStringify = (session: AppSessionData) => {
     id: session.id as string,
     user_id: session.uid as string,
     data: JSON.stringify(omit(session, ['id', 'uid'])),
-  };
-};
+  }
+}
 
 const sessionParse = (input: {
-  id: string;
-  user_id: string | null;
-  data: string;
+  id: string
+  user_id: string | null
+  data: string
 }): AppSessionData => {
   return {
     id: input.id,
     uid: input.user_id,
     ...JSON.parse(input.data),
-  };
-};
+  }
+}
 
 class SessionsStore implements OakSessionStore {
-  tableName: string;
+  tableName: string
 
   constructor(tableName = 'sessions') {
-    this.tableName = tableName;
+    this.tableName = tableName
   }
 
   async sessionExists(sessionKey: string) {
@@ -57,8 +57,8 @@ class SessionsStore implements OakSessionStore {
       where: {
         session_key: sessionKey,
       },
-    });
-    return session !== null ? true : false;
+    })
+    return session !== null ? true : false
   }
 
   async getSessionById(sessionKey: string): Promise<AppSessionData | null> {
@@ -71,9 +71,9 @@ class SessionsStore implements OakSessionStore {
       where: {
         session_key: sessionKey,
       },
-    });
-    if (session === null) return null;
-    return sessionParse(session);
+    })
+    if (session === null) return null
+    return sessionParse(session)
   }
 
   async createSession(sessionKey: string, initialData: AppSessionData) {
@@ -85,7 +85,7 @@ class SessionsStore implements OakSessionStore {
         // session expired_at tomorrow
         expired_at: new Date(Date.now() + 86400),
       },
-    });
+    })
   }
 
   async deleteSession(sessionKey: string) {
@@ -93,7 +93,7 @@ class SessionsStore implements OakSessionStore {
       where: {
         session_key: sessionKey,
       },
-    });
+    })
   }
 
   async deleteSessionById(id: string, user_id: string) {
@@ -102,7 +102,7 @@ class SessionsStore implements OakSessionStore {
         id,
         user_id,
       },
-    });
+    })
   }
 
   async persistSessionData(sessionKey: string, sessionData: AppSessionData) {
@@ -111,7 +111,7 @@ class SessionsStore implements OakSessionStore {
         session_key: sessionKey,
       },
       data: omit(sessionStringify(sessionData), ['id']),
-    });
+    })
   }
 
   async persistSessionDataById(id: string, sessionData: AppSessionData) {
@@ -120,7 +120,7 @@ class SessionsStore implements OakSessionStore {
       where: {
         id: id,
       },
-    });
+    })
   }
 
   async getSessionsByUserId(userId: string) {
@@ -133,8 +133,8 @@ class SessionsStore implements OakSessionStore {
       where: {
         user_id: userId,
       },
-    });
-    return sessions.map((x) => sessionParse(x));
+    })
+    return sessions.map((x) => sessionParse(x))
   }
 
   async getSessionByUniqueId(id: string) {
@@ -147,11 +147,11 @@ class SessionsStore implements OakSessionStore {
       where: {
         id: id,
       },
-    });
-    if (session === null) return null;
-    return sessionParse(session);
+    })
+    if (session === null) return null
+    return sessionParse(session)
   }
 }
 
-const sessionStore = new SessionsStore();
-export default sessionStore;
+const sessionStore = new SessionsStore()
+export default sessionStore

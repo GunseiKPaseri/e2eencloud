@@ -1,9 +1,9 @@
 const parseJSONwithoutErr = (query: string): Record<string, unknown> => {
   try {
-    return JSON.parse(query);
+    return JSON.parse(query)
   } catch {
-    return {};
+    return {}
   }
-};
+}
 
-export default parseJSONwithoutErr;
+export default parseJSONwithoutErr
