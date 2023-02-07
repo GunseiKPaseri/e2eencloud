@@ -20,7 +20,6 @@ export default defineConfig({
     coverage: {
       provider: 'c8'
     },
-    globals: true,
     environment: 'happy-dom',
     setupFiles: './setup.ts',
     deps: {

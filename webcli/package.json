@@ -70,8 +70,8 @@
     "@types/zxcvbn": "^4.4.1",
     "@typescript-eslint/eslint-plugin": "^5.40.1",
     "@typescript-eslint/parser": "^5.40.1",
-    "@vitejs/plugin-react": "^2.1.0",
-    "@vitest/coverage-c8": "^0.24.3",
+    "@vitejs/plugin-react": "^3.1.0",
+    "@vitest/coverage-c8": "^0.28.4",
     "c8": "^7.12.0",
     "eslint": "^8.25.0",
     "eslint-config-airbnb": "^19.0.4",
@@ -80,12 +80,12 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.31.10",
-    "eslint-plugin-vitest": "^0.0.11",
+    "eslint-plugin-vitest": "^0.0.32",
     "happy-dom": "^7.6.0",
     "npm-run-all": "^4.1.5",
     "typescript": "^4.8.4",
     "util": "^0.12.5",
-    "vite": "^3.1.8",
-    "vitest": "^0.24.3"
+    "vite": "^4.1.1",
+    "vitest": "^0.28.4"
   }
 }
