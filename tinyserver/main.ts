@@ -1,6 +1,6 @@
 import { Application, Status } from './deps.ts';
 import { oakSession } from './deps.ts';
-import SessionsStore from './model/Sessions.ts';
+import sessionsStore from './model/Sessions.ts';
 import { oakCors } from './deps.ts';
 import apiRouter from './router/api.ts';
 
@@ -18,8 +18,7 @@ app.use(
 );
 
 // use Session
-const session = new oakSession(SessionsStore);
-app.use(session.initMiddleware());
+app.use(oakSession.initMiddleware(sessionsStore));
 
 // api router
 app.use(apiRouter.routes());

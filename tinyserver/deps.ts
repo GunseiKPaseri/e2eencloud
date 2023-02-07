@@ -1,15 +1,15 @@
 export {
   decode as base642ByteArray,
   encode as byteArray2base64,
-} from 'https://deno.land/std@0.136.0/encoding/base64.ts';
-export { bold, yellow } from 'https://deno.land/std@0.136.0/fmt/colors.ts';
-export { v4 } from 'https://deno.land/std@0.136.0/uuid/mod.ts';
+} from 'https://deno.land/std@0.177.0/encoding/base64.ts';
+export { bold, yellow } from 'https://deno.land/std@0.177.0/fmt/colors.ts';
+export { v4 } from 'https://deno.land/std@0.177.0/uuid/mod.ts';
 
-export type { IsExact } from 'https://deno.land/std@0.168.0/testing/types.ts';
-export { assertType } from 'https://deno.land/std@0.168.0/testing/types.ts';
+export type { IsExact } from 'https://deno.land/std@0.177.0/testing/types.ts';
+export { assertType } from 'https://deno.land/std@0.177.0/testing/types.ts';
 
 // load dotenv
-import 'https://deno.land/std@0.136.0/dotenv/load.ts';
+import 'https://deno.land/std@0.177.0/dotenv/load.ts';
 // APP PORT
 export const PORT = parseInt(Deno.env.get('PORT') ?? '3001');
 
@@ -28,40 +28,37 @@ export const BUCKET_ENDPOINT = Deno.env.get('AWS_URL') ?? '__NOTFOUND__';
 
 // load dependent package
 
-export { ClientMySQL } from 'https://deno.land/x/nessie@2.0.10/mod.ts';
-export type { NessieConfig } from 'https://deno.land/x/nessie@2.0.10/mod.ts';
+export { Application, Router, Status } from 'https://deno.land/x/oak@v11.1.0/mod.ts';
 
-export { Application, Router, Status } from 'https://deno.land/x/oak@v10.5.1/mod.ts';
-
-export { Session as oakSession } from 'https://deno.land/x/oak_sessions@v3.2.8/mod.ts';
-import OakSessionStore from 'https://deno.land/x/oak_sessions@v3.2.8/src/stores/Store.ts';
+export { Session as oakSession } from 'https://deno.land/x/oak_sessions@v4.1.0/mod.ts';
+import OakSessionStore from 'https://deno.land/x/oak_sessions@v4.1.0/src/stores/Store.ts';
 export type { OakSessionStore };
-export type { SessionData } from 'https://deno.land/x/oak_sessions@v3.2.8/src/Session.ts';
+export type { SessionData } from 'https://deno.land/x/oak_sessions@v4.1.0/src/Session.ts';
 
 export { oakCors } from 'https://deno.land/x/cors@v1.2.2/mod.ts';
 
-export { Client, configLogger } from 'https://deno.land/x/mysql@v2.10.2/mod.ts';
-export type { ClientConfig } from 'https://deno.land/x/mysql@v2.10.2/mod.ts';
-export { Order, Query, replaceParams, Where } from 'https://deno.land/x/sql_builder@v1.9.1/mod.ts';
+export { Client, configLogger } from 'https://deno.land/x/mysql@v2.11.0/mod.ts';
+export type { ClientConfig } from 'https://deno.land/x/mysql@v2.11.0/mod.ts';
+export { Order, Query, replaceParams, Where } from 'https://deno.land/x/sql_builder@v1.9.2/mod.ts';
 
-import * as z from 'https://deno.land/x/zod@v3.17.3/mod.ts';
+import * as z from 'https://deno.land/x/zod@v3.20.2/mod.ts';
 export { z };
 
-export { expect } from 'https://deno.land/x/expect@v0.2.9/mod.ts';
+export { expect } from 'https://deno.land/x/expect@v0.2.10/mod.ts';
 
-// @deno-types="https://deno.land/x/otpauth@v7.1.2/dist/otpauth.d.ts"
-export * as OTPAuth from 'https://deno.land/x/otpauth@v7.1.2/dist/otpauth.esm.js';
+// @deno-types="https://deno.land/x/otpauth@v9.0.2/dist/otpauth.d.ts"
+export * as OTPAuth from 'https://deno.land/x/otpauth@v9.0.2/dist/otpauth.esm.js';
 
-// @deno-types="https://cdn.skypack.dev/@types/ua-parser-js?dts"
-import uaparser from 'https://cdn.skypack.dev/ua-parser-js@1.0.2?dts';
+// @deno-types="npm:@types/ua-parser-js@0.7.36"
+import uaparser from 'npm:ua-parser-js@1.0.33';
 export { uaparser };
 
-export { S3Bucket } from 'https://deno.land/x/s3@0.1.0/mod.ts';
+export { S3Bucket } from 'https://deno.land/x/s3@0.5.0/mod.ts';
 
 import compareAsc from 'https://deno.land/x/date_fns@v2.22.1/compareAsc/index.ts';
 export { compareAsc };
 
-import baseX from 'https://cdn.skypack.dev/base-x@4.0.0?dts';
+import baseX from 'npm:base-x@4.0.0';
 
 export { PrismaClient } from './generated/client/deno/edge.ts';
 
