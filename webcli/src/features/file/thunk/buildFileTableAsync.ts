@@ -21,8 +21,8 @@ export const buildFileTableAsync = createAsyncThunk<BuildFileTableAsyncResult>(
     Record<string, never>, AxiosResponse<GetfileinfoJSONRow[]>>(
       `${appLocation}/api/user/files`,
       {
-        onDownloadProgress: (progressEvent: { loaded: number, total: number }) => {
-          dispatch(setProgress(progress(0, step, progressEvent.loaded / progressEvent.total)));
+        onDownloadProgress: (progressEvent) => {
+          dispatch(setProgress(progress(0, 1, progressEvent.loaded / (progressEvent.total ?? progressEvent.loaded))));
         },
       },
     );

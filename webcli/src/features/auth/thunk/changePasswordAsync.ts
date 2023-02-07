@@ -67,8 +67,8 @@ Record<string, never>, { newpassword: string }, { state: RootState }
       `${appLocation}/api/user/password`,
       sendData,
       {
-        onUploadProgress: (progressEvent: { loaded: number, total: number }) => {
-          dispatch(setProgress(progress(4, step, progressEvent.loaded / progressEvent.total)));
+        onUploadProgress: (progressEvent) => {
+          dispatch(setProgress(progress(0, 1, progressEvent.loaded / (progressEvent.total ?? progressEvent.loaded))));
         },
       },
     );

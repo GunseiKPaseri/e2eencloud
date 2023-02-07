@@ -12,8 +12,8 @@ export const addTOTPAsync = createAsyncThunk<void, { secretKey: string, token: s
       `${appLocation}/api/user/totp`,
       secretkey,
       {
-        onUploadProgress: (progressEvent: { loaded: number, total: number }) => {
-          dispatch(setProgress(progress(0, 1, progressEvent.loaded / progressEvent.total)));
+        onUploadProgress: (progressEvent) => {
+          dispatch(setProgress(progress(0, 1, progressEvent.loaded / (progressEvent.total ?? progressEvent.loaded))));
         },
       },
     );
