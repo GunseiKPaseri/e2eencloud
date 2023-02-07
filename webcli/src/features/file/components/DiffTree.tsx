@@ -16,7 +16,8 @@ import TagButton from './TagButton';
 /**
  * 差分情報から差分説明を作成
  */
-export const createDiffExpression = (before: FileInfo, after: FileInfo):JSX.Element => {
+export function CreateDiffExpression(params: { before: FileInfo, after: FileInfo }):JSX.Element {
+  const { before, after } = params;
   const result: JSX.Element[] = [];
   if (before.name !== after.name) {
     result.push(<React.Fragment key="0">{`ファイル名を"${after.name}"に変更`}</React.Fragment>);
@@ -34,7 +35,7 @@ export const createDiffExpression = (before: FileInfo, after: FileInfo):JSX.Elem
     }
   }
   return <>{[...result, <React.Fragment key="4">しました</React.Fragment>]}</>;
-};
+}
 
 export function DiffTree() {
   const { activeFile, fileTable } = useAppSelector<FileState>((state) => state.file);
@@ -66,10 +67,10 @@ export function DiffTree() {
             <TimelineContent>
               {
                 history.length - 1 !== i
-                  ? createDiffExpression(
-                    fileTable[history[i + 1]].origin.fileInfo,
-                    node.origin.fileInfo,
-                  )
+                  ? CreateDiffExpression({
+                    before: fileTable[history[i + 1]].origin.fileInfo,
+                    after: node.origin.fileInfo,
+                  })
                   : `${node.origin.fileInfo.name}をアップロードしました`
               }
             </TimelineContent>
