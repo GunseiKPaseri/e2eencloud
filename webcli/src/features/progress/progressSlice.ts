@@ -1,5 +1,6 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
+import type { AxiosProgressEvent } from 'axios';
 import type { WritableDraft } from 'immer/dist/internal';
 
 export interface ProgressState {
@@ -45,8 +46,14 @@ export const { setProgress, deleteProgress } = progressSlice.actions;
 export const progress = (
   numberator: number,
   denominator: number,
-  subprogress?: number,
+  subprogress?: number | AxiosProgressEvent,
 ) => ({
-  progress: (numberator + (subprogress ?? 0)) / denominator,
+  progress: (numberator + (
+    typeof subprogress === 'number'
+      ? subprogress
+      : typeof subprogress === 'undefined'
+        ? 0
+        : subprogress.loaded / (subprogress.total ?? subprogress.loaded)
+  )) / denominator,
   progressBuffer: (numberator + 1) / denominator,
 });

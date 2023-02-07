@@ -55,7 +55,7 @@ export const signupAsync = createAsyncThunk<{ success: boolean }, UserForm>(
         sendData,
         {
           onUploadProgress: (progressEvent) => {
-            dispatch(setProgress(progress(0, 1, progressEvent.loaded / (progressEvent.total ?? progressEvent.loaded))));
+            dispatch(setProgress(progress(0, 1, progressEvent)));
           },
         },
       );
