@@ -1,8 +1,8 @@
-const S = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-'
+const S = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-';
 
 const genPassword = (len: number) =>
   Array.from(crypto.getRandomValues(new Uint32Array(len)))
-    .map((n) => S[n % S.length]).join('')
+    .map((n) => S[n % S.length]).join('');
 
 console.log(`
 # Windows Conf
@@ -35,4 +35,4 @@ L_MINIO_PORT = 9000
 L_MINIO_CONSOLE_PORT = 9001
 L_MINIO_ROOT_USER = Admin
 L_MINIO_ROOT_PASSWORD = ${genPassword(25)}
-`)
+`);
