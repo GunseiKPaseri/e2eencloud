@@ -34,6 +34,7 @@ function ContextMenu() {
               const bintarget = fileState.fileTable[id];
               // console.log(id, bintarget);
               if ((bintarget.type === 'file' || bintarget.type === 'folder') && !bintarget.tag.includes('bin')) {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 dispatch(createDiffAsync({ targetId: id, newTags: { addtag: ['bin'] } }));
               }
             });
@@ -46,6 +47,7 @@ function ContextMenu() {
               const bintarget = fileState.fileTable[id];
               // console.log(id, bintarget);
               if ((bintarget.type === 'file' || bintarget.type === 'folder') && bintarget.tag.includes('bin')) {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 dispatch(createDiffAsync({ targetId: id, newTags: { deltag: ['bin'] } }));
               }
             });
@@ -75,6 +77,7 @@ function ContextMenu() {
         // Show or DL
 
         const handleMenuDecrypto = () => {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           dispatch(filedownloadAsync({ fileId: target.id, active: true }));
           dispatch(closeContextmenu());
         };
@@ -103,10 +106,12 @@ function ContextMenu() {
       // ADD Bin or Restore From Bin
 
       const handleMenuAddBin = () => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         dispatch(createDiffAsync({ targetId: target.id, newTags: [...target.tag, 'bin'] }));
         dispatch(closeContextmenu());
       };
       const handleMenuRestoreFromBin = () => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         dispatch(createDiffAsync({ targetId: target.id, newTags: target.tag.filter((x) => x !== 'bin') }));
         dispatch(closeContextmenu());
       };

@@ -22,12 +22,12 @@ globals:
   JSX: true
 rules:
   "@typescript-eslint/no-misused-promises": "off"
-  "@typescript-eslint/no-floating-promises": "off"
   "@typescript-eslint/no-use-before-define":
     - "error"
   "@typescript-eslint/consistent-type-imports":
     - "error"
   import/no-default-export: "off"
+  import/prefer-default-export: "off"
   jsx-a11y/label-has-associated-control: "off"
   no-nested-ternary: "off"
   no-use-before-define: "off"

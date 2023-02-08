@@ -36,6 +36,7 @@ function TagSetter() {
       onChange={(_event, newTagItems) => {
         const newTags = newTagItems.map((x) => (typeof x === 'string' ? x : x.addition));
         // console.log(newTags);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         dispatch(createDiffAsync({ targetId: targetNode.id, newTags }));
       }}
       filterOptions={(options, params) => {

@@ -50,7 +50,7 @@ UserState, { email: string, password: string, token: string }>(
 
     const salt = base642ByteArray(getSalt.data.salt);
 
-    const DerivedKey = await argon2encrypt(userinfo.password, salt);
+    const DerivedKey: Uint8Array = await argon2encrypt(userinfo.password, salt);
     dispatch(setProgress(progress(1, step)));
 
     const DerivedEncryptionKey = await getAESCTRKey(DerivedKey.slice(0, AES_AUTH_KEY_LENGTH));
@@ -141,10 +141,10 @@ UserState, { email: string, password: string, token: string }>(
       }
     }
     // file tree
-    dispatch(buildFileTableAsync());
-
-    // storage
-    dispatch(updateUsageAsync());
+    await Promise.all([
+      dispatch(buildFileTableAsync()), // file tree
+      dispatch(updateUsageAsync()), //    storage
+    ]);
 
     dispatch(deleteProgress());
 

@@ -66,7 +66,7 @@ Parameters<typeof createDiff>[0],
       dispatch(enqueueSnackbar({ message: 'ファイルを移動しました', options: { variant: 'success' } }));
     }
     // storage更新
-    dispatch(updateUsageAsync());
+    await dispatch(updateUsageAsync());
 
     return { uploaded: addObject, targetId: params.targetId };
   },

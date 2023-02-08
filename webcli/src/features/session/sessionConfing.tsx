@@ -9,6 +9,7 @@ function NameChanger({ id, name }:{ id: string, name: string }) {
   const [newName, setNewName] = useState(name);
   const dispatch = useAppDispatch();
   const handleClick = () => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     dispatch(changeClientNameAsync({ id, newClientName: newName }));
   };
 
@@ -30,6 +31,7 @@ function SessionConfig() {
   // const selector = useAppSelector<FileState>((state) => state.file)
 
   const getSession = () => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     dispatch(getSessionsAsync());
   };
 

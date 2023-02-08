@@ -16,7 +16,6 @@ import { setProgress, deleteProgress, progress } from '../../progress/progressSl
 
 import type { UserForm } from '../authSlice';
 // サインアップ処理
-// eslint-disable-next-line import/prefer-default-export
 export const signupAsync = createAsyncThunk<{ success: boolean }, UserForm>(
   'auth/signup',
   async (userinfo, { dispatch }) => {

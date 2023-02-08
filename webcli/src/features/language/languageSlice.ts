@@ -24,6 +24,7 @@ export const languageSlice = createSlice({
       state: WritableDraft<LanguageState>,
       action: PayloadAction<LanguageState['language']>,
     ) => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       i18n.changeLanguage(action.payload);
       state.language = action.payload;
     },

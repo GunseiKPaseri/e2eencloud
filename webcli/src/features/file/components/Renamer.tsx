@@ -16,6 +16,7 @@ function Renamer({ id, name }: { id: string, name: string }) {
   const dispatch = useAppDispatch();
   const handleChangeName: React.FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     dispatch(createDiffAsync({ targetId: id, newName }));
   };
 

@@ -62,7 +62,7 @@ BuildFileTableAsyncResult,
     dispatch(enqueueSnackbar({ message: `${itemsize}件のファイルを完全に削除しました`, options: { variant: 'success' } }));
 
     // storage更新
-    dispatch(updateUsageAsync());
+    await dispatch(updateUsageAsync());
 
     return result;
   },

@@ -92,6 +92,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
     let active = true;
 
     // GET USER TABLE
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       setLoading(true);
       const list = await getList({

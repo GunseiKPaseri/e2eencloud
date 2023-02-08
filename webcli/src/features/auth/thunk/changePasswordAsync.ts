@@ -18,7 +18,6 @@ import type { RootState } from '../../../app/store';
 import type { UserForm } from '../authSlice';
 
 // パスワード変更処理
-// eslint-disable-next-line import/prefer-default-export
 export const changePasswordAsync = createAsyncThunk<
 Record<string, never>, { newpassword: string }, { state: RootState }
 >(

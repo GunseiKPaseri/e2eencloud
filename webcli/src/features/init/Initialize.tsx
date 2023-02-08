@@ -11,6 +11,7 @@ export default function Initialize({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (didInitializedRef.current === false) {
       didInitializedRef.current = true;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       dispatch(initAction());
       setIsLoaded(true);
     }

@@ -9,29 +9,24 @@ import { defaultLanguage } from './languageState';
 
 const lngDetector = new LanguageDetector();
 
-const initI18N = (): Promise<TFunction> => new Promise((resolve, reject) => {
-  i18n.use(Backend)
-    .use(lngDetector)
-    .use(initReactI18next)
-    .init({
-      fallbackLng: defaultLanguage,
-      ns: ['translations'],
-      defaultNS: 'translations',
-      debug: true,
-      detection: {
-        order: ['querystring', 'cookie', 'localStorage', 'navigator', 'htmlTag'],
-      },
-      interpolation: {
-        escapeValue: false,
-      },
-      backend: {
-        loadPath: '/locales/{{lng}}-{{ns}}.yaml',
-        parse: (data:string) => (load(data) as { [key: string]: string }),
-      },
-    }, (err, t) => {
-      if (err) reject(err);
-      else resolve(t);
-    });
-});
+const initI18N = (): Promise<TFunction> => i18n.use(Backend)
+  .use(lngDetector)
+  .use(initReactI18next)
+  .init({
+    fallbackLng: defaultLanguage,
+    ns: ['translations'],
+    defaultNS: 'translations',
+    debug: true,
+    detection: {
+      order: ['querystring', 'cookie', 'localStorage', 'navigator', 'htmlTag'],
+    },
+    interpolation: {
+      escapeValue: false,
+    },
+    backend: {
+      loadPath: '/locales/{{lng}}-{{ns}}.yaml',
+      parse: (data:string) => (load(data) as { [key: string]: string }),
+    },
+  });
 
 export default initI18N;
