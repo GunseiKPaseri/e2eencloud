@@ -7,7 +7,7 @@ import type { AuthState } from '../authSlice';
 export const deleteTOTPAsync = createAsyncThunk<void, void>(
   'auth/delete_totp',
   async () => {
-    await axiosWithSession.delete(`${appLocation}/api/user/totp`);
+    await axiosWithSession.delete(`${appLocation}/api/my/totp`);
   },
 );
 

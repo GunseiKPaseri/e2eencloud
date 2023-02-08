@@ -19,7 +19,7 @@ export const buildFileTableAsync = createAsyncThunk<BuildFileTableAsyncResult>(
     // get all file info
     const rowfiles = await axiosWithSession.get<
     Record<string, never>, AxiosResponse<GetfileinfoJSONRow[]>>(
-      `${appLocation}/api/user/files`,
+      `${appLocation}/api/my/files`,
       {
         onDownloadProgress: (progressEvent) => {
           dispatch(setProgress(progress(0, step, progressEvent)));

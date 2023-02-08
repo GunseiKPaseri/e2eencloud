@@ -63,7 +63,7 @@ Record<string, never>, { newpassword: string }, { state: RootState }
     UserForm,
     AxiosResponse<{ success: boolean }>
     >(
-      `${appLocation}/api/user/password`,
+      `${appLocation}/api/my/password`,
       sendData,
       {
         onUploadProgress: (progressEvent) => {

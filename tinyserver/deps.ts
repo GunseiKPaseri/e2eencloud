@@ -37,10 +37,6 @@ export type { SessionData } from 'https://deno.land/x/oak_sessions@v4.1.0/src/Se
 
 export { oakCors } from 'https://deno.land/x/cors@v1.2.2/mod.ts';
 
-export { Client, configLogger } from 'https://deno.land/x/mysql@v2.11.0/mod.ts';
-export type { ClientConfig } from 'https://deno.land/x/mysql@v2.11.0/mod.ts';
-export { Order, Query, replaceParams, Where } from 'https://deno.land/x/sql_builder@v1.9.2/mod.ts';
-
 import * as z from 'https://deno.land/x/zod@v3.20.2/mod.ts';
 export { z };
 

@@ -13,7 +13,7 @@ export const updateUsageAsync = createAsyncThunk<StorageInfo>(
   async () => {
     // get all file info
     const capacity = await axiosWithSession.get<Record<string, never>, AxiosResponse<{ 'usage': string, 'max_capacity': string }>>(
-      `${appLocation}/api/user/capacity`,
+      `${appLocation}/api/my/capacity`,
     );
     const result: StorageInfo = {
       usage: Number(capacity.data.usage),
