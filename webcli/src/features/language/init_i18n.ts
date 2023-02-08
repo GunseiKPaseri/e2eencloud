@@ -5,8 +5,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 import { load } from 'js-yaml';
 
-// eslint-disable-next-line import/no-cycle
-import { defaultLanguage } from './languageSlice';
+import { defaultLanguage } from './languageState';
 
 const lngDetector = new LanguageDetector();
 
