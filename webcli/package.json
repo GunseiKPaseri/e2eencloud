@@ -54,7 +54,6 @@
     "redux": "^4.2.1",
     "redux-logger": "^3.0.6",
     "sha256-uint8array": "^0.10.3",
-    "testing-library": "^0.0.2",
     "uuid": "^9.0.0",
     "zod": "^3.20.2",
     "zxcvbn": "^4.4.2"
