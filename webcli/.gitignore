@@ -3,7 +3,10 @@ node_modules
 dist
 dist-ssr
 *.local
-# jest coverage
+# vitest coverage
 coverage/
+# only need file
 public/*
 !public/locales/
+# swc plugin
+.swc
