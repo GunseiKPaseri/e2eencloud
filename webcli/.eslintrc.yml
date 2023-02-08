@@ -1,42 +1,39 @@
 env:
   browser: true
-  es2021: true
+  es2022: true
 extends:
   - airbnb
   - airbnb-typescript
   - plugin:@typescript-eslint/recommended
   - plugin:@typescript-eslint/recommended-requiring-type-checking
-parser: '@typescript-eslint/parser'
 parserOptions:
-  ecmaFeatures:
-    jsx: true
-  ecmaVersion: 12
   project: './tsconfig.eslint.json'
-  sourceType: module
 settings:
   react:
     version: "18.1.0"
 plugins:
+  - '@typescript-eslint'
   - react
   - react-hooks
-  - '@typescript-eslint'
+  - react-refresh
   - vitest
 globals:
   React: true
   JSX: true
 rules:
-  no-nested-ternary: "off"
-  import/no-default-export: "off"
-  no-use-before-define: "off"
-  no-param-reassign: "off"
-  jsx-a11y/label-has-associated-control: "off"
-  react/jsx-props-no-spreading: "off"
-  react/jsx-no-useless-fragment: "off"
-  react/require-default-props: "off"
-  react/no-unused-prop-types: "off"
   "@typescript-eslint/no-misused-promises": "off"
-  "@typescript-eslint/no-floating-promises": "off"
   "@typescript-eslint/no-use-before-define":
     - "error"
   "@typescript-eslint/consistent-type-imports":
     - "error"
+  import/no-default-export: "off"
+  import/prefer-default-export: "off"
+  jsx-a11y/label-has-associated-control: "off"
+  no-nested-ternary: "off"
+  no-use-before-define: "off"
+  no-param-reassign: "off"
+  react/jsx-props-no-spreading: "off"
+  react/jsx-no-useless-fragment: "off"
+  react/no-unused-prop-types: "off"
+  react/require-default-props: "off"
+  react-refresh/only-export-components: "warn"

@@ -30,6 +30,7 @@ export default function PasswordChanger() {
 
   const changePass:React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     dispatch(changePasswordAsync({ newpassword: password }));
   };
 

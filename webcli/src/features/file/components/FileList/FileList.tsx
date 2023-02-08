@@ -104,6 +104,7 @@ function FileList() {
   }, []);
 
   const onSelectFile = useCallback((fileId: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     dispatch(filedownloadAsync({ fileId, active: true }));
   }, []);
 
@@ -127,6 +128,7 @@ function FileList() {
 
   const handleDeleteClick = () => {
     if (!activeFileGroup) return;
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     dispatch(fileDeleteAsync({ targetIds: activeFileGroup.files }));
   };
 
@@ -135,7 +137,7 @@ function FileList() {
       <ToggleButtonGroup
         value={viewStyle}
         exclusive
-        onChange={(e, nextView) => setViewStyle(nextView as React.SetStateAction<'list' | 'detaillist' | 'pic'>)}
+        onChange={(_: unknown, nextView: React.SetStateAction<'list' | 'detaillist' | 'pic'>) => setViewStyle(nextView)}
       >
         <ToggleButton value="list"><ViewListIcon /></ToggleButton>
         <ToggleButton value="detaillist"><ViewHeadlineIcon /></ToggleButton>

@@ -26,7 +26,6 @@ function ThemeWithLocalizeProvider({ children }: {
     MUIDataGridLocales[locale],
   ), [locale, theme]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const x = dateFnsLocale[t('conf.dateFnsLocale', 'ja')];
 
   return (

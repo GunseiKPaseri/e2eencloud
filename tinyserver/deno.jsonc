@@ -5,7 +5,8 @@
       "useTabs": false,
       "indentWidth": 2,
       "singleQuote": true,
-      "lineWidth": 120
+      "lineWidth": 120,
+      "semiColons": true
     },
     "files": {
       "exclude": ["./node_modules", "./generated"]

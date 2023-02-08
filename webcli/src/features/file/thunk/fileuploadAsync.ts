@@ -66,7 +66,7 @@ FileuploadAsyncResult, { files: File[], parentId: string }, { state: RootState }
       dispatch(enqueueSnackbar({ message: `${rejectedCnt}件のファイルのアップロードに失敗しました`, options: { variant: 'error' } }));
     }
     // storage更新
-    dispatch(updateUsageAsync());
+    await dispatch(updateUsageAsync());
 
     return { uploaded: loadedfile.flatMap((x) => (x !== null ? [x] : [])), parentId };
   },

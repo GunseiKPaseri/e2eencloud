@@ -57,7 +57,7 @@ CreateFolderAsyncResult,
 
     dispatch(enqueueSnackbar({ message: `${changedFolderName}ディレクトリを作成しました`, options: { variant: 'success' } }));
     // storage更新
-    dispatch(updateUsageAsync());
+    await dispatch(updateUsageAsync());
 
     return { uploaded: addFolder, parents: activeFileGroup.parents };
   },

@@ -23,7 +23,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { Tooltip, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import type { Namespace, TFunction } from 'react-i18next';
+import type { Namespace, TFunction } from 'i18next';
 
 type GetListJSON<T> = {
   total_number: number;
@@ -92,6 +92,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
     let active = true;
 
     // GET USER TABLE
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       setLoading(true);
       const list = await getList({

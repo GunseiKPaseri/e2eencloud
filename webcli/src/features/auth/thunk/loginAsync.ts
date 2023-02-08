@@ -37,8 +37,8 @@ UserState, { email: string, password: string, token: string }>(
         `${appLocation}/api/salt`,
         { email: userinfo.email },
         {
-          onUploadProgress: (progressEvent: { loaded: number, total: number }) => {
-            dispatch(setProgress(progress(0, step, progressEvent.loaded / progressEvent.total)));
+          onUploadProgress: (progressEvent) => {
+            dispatch(setProgress(progress(0, 1, progressEvent)));
           },
         },
       );
@@ -50,7 +50,7 @@ UserState, { email: string, password: string, token: string }>(
 
     const salt = base642ByteArray(getSalt.data.salt);
 
-    const DerivedKey = await argon2encrypt(userinfo.password, salt);
+    const DerivedKey: Uint8Array = await argon2encrypt(userinfo.password, salt);
     dispatch(setProgress(progress(1, step)));
 
     const DerivedEncryptionKey = await getAESCTRKey(DerivedKey.slice(0, AES_AUTH_KEY_LENGTH));
@@ -77,8 +77,8 @@ UserState, { email: string, password: string, token: string }>(
         `${appLocation}/api/login`,
         { email: userinfo.email, authenticationKeyBase64, token: userinfo.token },
         {
-          onUploadProgress: (progressEvent: { loaded: number, total: number }) => {
-            dispatch(setProgress(progress(2, step, progressEvent.loaded / progressEvent.total)));
+          onUploadProgress: (progressEvent) => {
+            dispatch(setProgress(progress(0, 1, progressEvent)));
           },
         },
       );
@@ -118,8 +118,8 @@ UserState, { email: string, password: string, token: string }>(
           RSAPublicKeyBase64: genKey.public_key,
         },
         {
-          onUploadProgress: (progressEvent: { loaded: number, total: number }) => {
-            dispatch(setProgress(progress(3, step, progressEvent.loaded / progressEvent.total)));
+          onUploadProgress: (progressEvent) => {
+            dispatch(setProgress(progress(0, step, progressEvent)));
           },
         },
       );
@@ -141,10 +141,10 @@ UserState, { email: string, password: string, token: string }>(
       }
     }
     // file tree
-    dispatch(buildFileTableAsync());
-
-    // storage
-    dispatch(updateUsageAsync());
+    await Promise.all([
+      dispatch(buildFileTableAsync()), // file tree
+      dispatch(updateUsageAsync()), //    storage
+    ]);
 
     dispatch(deleteProgress());
 

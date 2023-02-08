@@ -28,7 +28,7 @@ export const hookScheme = z.union([
 export type HookData = z.infer<typeof hookScheme>;
 
 export const parseHookData = (target: string | unknown): HookData | null => {
-  const object = (typeof target === 'string' ? parseJSONwithoutErr(target) : target);
+  const object = typeof target === 'string' ? parseJSONwithoutErr(target) : target;
   try {
     return hookScheme.parse(object);
   } catch (_) {

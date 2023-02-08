@@ -4,6 +4,7 @@ import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
+import type { SetStateAction } from 'react';
 import { useState } from 'react';
 import { bs58CheckDecodeWithoutErr } from '../../utils/bs58check';
 
@@ -46,7 +47,7 @@ export default function UseCoupon() {
           label="クーポン番号"
           placeholder="XXXXXXXXXXXXXXX"
           error={isError && couponId !== ''}
-          onChange={(e) => {
+          onChange={(e: { target: { value: SetStateAction<string>; }; }) => {
             setCouponId(e.target.value);
           }}
         />
@@ -55,8 +56,8 @@ export default function UseCoupon() {
         <Button
           size="small"
           disabled={isError}
-          onClick={() => {
-            useCoupon(couponId);
+          onClick={async () => {
+            await useCoupon(couponId);
           }}
         >
           適用

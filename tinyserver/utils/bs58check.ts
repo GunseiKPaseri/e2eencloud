@@ -33,7 +33,7 @@ const bs58CheckDecodeRaw = async (buffer: Uint8Array) => {
 };
 
 export const bs58CheckDecode = (rawbuffer: string | Uint8Array) => {
-  const buffer = (typeof rawbuffer === 'string' ? bs58.decode(rawbuffer) : rawbuffer);
+  const buffer = typeof rawbuffer === 'string' ? bs58.decode(rawbuffer) : rawbuffer;
   return bs58CheckDecodeRaw(buffer);
 };
 

@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { serializeTags, deserializeTags } from './FileGrid';
+import { serializeTags, deserializeTags } from './serializeTags';
 
 describe('serialize', () => {
   test('#serializeTags', () => {

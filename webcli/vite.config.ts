@@ -1,33 +1,35 @@
-import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
+/* eslint-disable import/no-extraneous-dependencies */
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react-swc';
+import eslintPlugin from '@nabla/vite-plugin-eslint';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
     // root (= ./src) から見た相対パスで指定
-    outDir: '../dist'
+    outDir: '../dist',
   },
   publicDir: '../public',
   root: './src',
   define: {
     'process.browser': true,
-    'process.env': {}
+    'process.env': {},
   },
   server: {
-    port: 3000
+    port: 3000,
   },
   test: {
     coverage: {
-      provider: 'c8'
+      provider: 'c8',
     },
-    globals: true,
     environment: 'happy-dom',
     setupFiles: './setup.ts',
     deps: {
-      external: ['**\/dist\/**']
-    }
+      external: ['**/dist/**'],
+    },
   },
   plugins: [
-    react()
-  ]
-})
+    react({ plugins: [['@swc/plugin-styled-components', {}]] }),
+    eslintPlugin(),
+  ],
+});

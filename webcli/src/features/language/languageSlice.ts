@@ -4,22 +4,9 @@ import type { WritableDraft } from 'immer/dist/internal';
 
 import i18n from 'i18next';
 
-// eslint-disable-next-line import/no-cycle
 import initI18N from './init_i18n';
 
-export const langSet = {
-  jaJP: '日本語',
-  enUS: 'English',
-  zhCN: '汉文',
-} as const;
-
-export interface LanguageState {
-  language: keyof typeof langSet,
-}
-
-const initialState: LanguageState = {
-  language: 'jaJP',
-};
+import { initialState, type LanguageState } from './languageState';
 
 export const initI18NAsync = createAsyncThunk<{ language: string }>(
   'language/init18n',
@@ -37,6 +24,7 @@ export const languageSlice = createSlice({
       state: WritableDraft<LanguageState>,
       action: PayloadAction<LanguageState['language']>,
     ) => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       i18n.changeLanguage(action.payload);
       state.language = action.payload;
     },
@@ -50,7 +38,5 @@ export const languageSlice = createSlice({
 });
 
 export default languageSlice.reducer;
-
-export const defaultLanguage = initialState.language;
 
 export const { changeLanguage } = languageSlice.actions;

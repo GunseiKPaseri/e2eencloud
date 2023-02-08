@@ -43,8 +43,8 @@ BuildFileTableAsyncResult,
       `${appLocation}/api/files/delete`,
       { files: deleteItems },
       {
-        onDownloadProgress: (progressEvent: { loaded: number, total: number }) => {
-          dispatch(setProgress(progress(0, step, progressEvent.loaded / progressEvent.total)));
+        onDownloadProgress: (progressEvent) => {
+          dispatch(setProgress(progress(0, step, progressEvent)));
         },
       },
     );
@@ -62,7 +62,7 @@ BuildFileTableAsyncResult,
     dispatch(enqueueSnackbar({ message: `${itemsize}件のファイルを完全に削除しました`, options: { variant: 'success' } }));
 
     // storage更新
-    dispatch(updateUsageAsync());
+    await dispatch(updateUsageAsync());
 
     return result;
   },

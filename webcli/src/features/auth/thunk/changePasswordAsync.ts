@@ -18,7 +18,6 @@ import type { RootState } from '../../../app/store';
 import type { UserForm } from '../authSlice';
 
 // パスワード変更処理
-// eslint-disable-next-line import/prefer-default-export
 export const changePasswordAsync = createAsyncThunk<
 Record<string, never>, { newpassword: string }, { state: RootState }
 >(
@@ -67,8 +66,8 @@ Record<string, never>, { newpassword: string }, { state: RootState }
       `${appLocation}/api/user/password`,
       sendData,
       {
-        onUploadProgress: (progressEvent: { loaded: number, total: number }) => {
-          dispatch(setProgress(progress(4, step, progressEvent.loaded / progressEvent.total)));
+        onUploadProgress: (progressEvent) => {
+          dispatch(setProgress(progress(4, step, progressEvent)));
         },
       },
     );

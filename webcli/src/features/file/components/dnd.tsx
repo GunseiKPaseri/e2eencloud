@@ -28,6 +28,7 @@ void,
     switch (props.type) {
       case APP_FILE_NODE:
         // オブジェクトなら親を移動する
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         dispatch(createDiffAsync({ targetId: props.id, newParentId: dirId }));
         break;
       default:
@@ -35,6 +36,7 @@ void,
         // avoid folder
         if (props.files.length > 0 && props.files.every((x) => x.type !== '')) {
           const acceptedFiles = props.files;
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           dispatch(fileuploadAsync({ files: acceptedFiles, parentId: dirId }));
           // console.log(acceptedFiles, dirId);
         }

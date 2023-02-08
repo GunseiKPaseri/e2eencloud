@@ -2,7 +2,8 @@ import MenuItem from '@mui/material/MenuItem';
 import Select, { type SelectChangeEvent } from '@mui/material/Select';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { changeLanguage, langSet } from './languageSlice';
+import { changeLanguage } from './languageSlice';
+import { langSet } from './languageState';
 
 const native = false;
 

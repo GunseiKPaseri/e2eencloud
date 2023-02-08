@@ -32,10 +32,12 @@ function GenTwoFactorAuth({ email }: { email: string }) {
     setSecretKey(genTOTP(email));
   };
   const sendKey = () => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     dispatch(addTOTPAsync({ secretKey: secretkey.secret.base32, token }));
   };
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       const qr = await genQR(secretkey);
       setQRLink(qr);
@@ -72,6 +74,7 @@ export default function TwoFactorAuth() {
   const selector = useAppSelector<AuthState>((state) => state.auth);
   const dispatch = useAppDispatch();
   const deleteKey = () => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     dispatch(deleteTOTPAsync());
   };
   return (

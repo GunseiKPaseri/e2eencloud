@@ -35,7 +35,7 @@ const couponStringify = (coupon: CouponData) => {
 };
 
 export const parseCouponData = (target: string | unknown): CouponData | null => {
-  const object = (typeof target === 'string' ? parseJSONwithoutErr(target) : target);
+  const object = typeof target === 'string' ? parseJSONwithoutErr(target) : target;
   try {
     return couponScheme.parse(object);
   } catch (_) {

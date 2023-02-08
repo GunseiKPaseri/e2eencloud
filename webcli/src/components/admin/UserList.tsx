@@ -70,8 +70,8 @@ function UserList() {
       rowsPerPageOptions={[PAGE_SIZE]}
       getList={getUserList}
       editItem={editUser}
-      onDelete={(params) => {
-        deleteUser(params.row.id);
+      onDelete={async (params) => {
+        await deleteUser(params.row.id);
       }}
       onEditSuccess={() => {
         dispatch(enqueueSnackbar({ message: t('admin.ChangeSuccessful', '変更が正常に反映されました'), options: { variant: 'success' } }));

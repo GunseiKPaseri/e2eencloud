@@ -3,7 +3,12 @@ node_modules
 dist
 dist-ssr
 *.local
-# jest coverage
+# vitest coverage
 coverage/
+# only need file
 public/*
 !public/locales/
+# eslint cache
+.eslintcache
+# swc plugin
+.swc

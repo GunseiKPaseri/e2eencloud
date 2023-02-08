@@ -24,8 +24,8 @@ export const confirmEmailAsync = createAsyncThunk<
       `${appLocation}/api/email_confirm`,
       sendData,
       {
-        onUploadProgress: (progressEvent: { loaded: number, total: number }) => {
-          dispatch(setProgress(progress(0, 1, progressEvent.loaded / progressEvent.total)));
+        onUploadProgress: (progressEvent) => {
+          dispatch(setProgress(progress(0, 1, progressEvent)));
         },
       },
     );

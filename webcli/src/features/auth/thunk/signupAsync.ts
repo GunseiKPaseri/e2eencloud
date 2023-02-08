@@ -16,7 +16,6 @@ import { setProgress, deleteProgress, progress } from '../../progress/progressSl
 
 import type { UserForm } from '../authSlice';
 // サインアップ処理
-// eslint-disable-next-line import/prefer-default-export
 export const signupAsync = createAsyncThunk<{ success: boolean }, UserForm>(
   'auth/signup',
   async (userinfo, { dispatch }) => {
@@ -54,8 +53,8 @@ export const signupAsync = createAsyncThunk<{ success: boolean }, UserForm>(
         `${appLocation}/api/signup`,
         sendData,
         {
-          onUploadProgress: (progressEvent: { loaded: number, total: number }) => {
-            dispatch(setProgress(progress(0, 1, progressEvent.loaded / progressEvent.total)));
+          onUploadProgress: (progressEvent) => {
+            dispatch(setProgress(progress(0, 1, progressEvent)));
           },
         },
       );

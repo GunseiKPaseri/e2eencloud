@@ -14,10 +14,7 @@ import { type FileState, changeSelection } from '../../fileSlice';
 import { assertNonFileNodeDiff } from '../../filetypeAssert';
 import TagButton from '../TagButton';
 import { assertArrayString } from '../../../../utils/assert';
-
-export const serializeTags = (tags: string[]) => tags.map((x) => x.replaceAll('|', '||')).join('|p');
-
-export const deserializeTags = (serialized: string) => serialized.split('|p').map((x) => x.replaceAll('||', '|'));
+import { serializeTags, deserializeTags } from '../../util/serializeTags';
 
 function FileGrid({
   sx,
