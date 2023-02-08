@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react-swc';
+import eslintPlugin from '@nabla/vite-plugin-eslint';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -29,5 +30,6 @@ export default defineConfig({
   },
   plugins: [
     react({ plugins: [['@swc/plugin-styled-components', {}]] }),
+    eslintPlugin(),
   ],
 });

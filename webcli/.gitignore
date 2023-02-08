@@ -8,5 +8,7 @@ coverage/
 # only need file
 public/*
 !public/locales/
+# eslint cache
+.eslintcache
 # swc plugin
 .swc
