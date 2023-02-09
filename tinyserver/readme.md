@@ -11,7 +11,7 @@ Use _`.env` file_ OR _set environment variables_
 The following commands can be used to generate passwords.
 
 ```bash
-$ deno run ./gen_environment.ts > .env
+$ deno task init
 ```
 
 You may prepare your own configuration file as follows.

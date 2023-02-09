@@ -1,4 +1,4 @@
-import { type Prisma, prisma } from '../dbclient.ts';
+import { type Prisma, prisma } from 'tinyserver/src/client/dbclient.ts';
 
 const userData: Prisma.UserCreateInput[] = [
   // user: admin@example.com

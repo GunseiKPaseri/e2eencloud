@@ -59,10 +59,13 @@ export { compareAsc };
 
 import baseX from 'npm:base-x@4.0.0';
 
-export { PrismaClient } from './generated/client/deno/edge.ts';
+export { PrismaClient } from 'prisma-cli';
 
 const BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
 const bs58 = baseX(BASE58);
 
 export { bs58 };
+
+// for
+import _prisma from 'prisma';
