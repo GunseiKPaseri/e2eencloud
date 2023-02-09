@@ -12,6 +12,7 @@ export { assertType } from 'https://deno.land/std@0.177.0/testing/types.ts';
 import 'https://deno.land/std@0.177.0/dotenv/load.ts';
 // APP PORT
 export const PORT = parseInt(Deno.env.get('PORT') ?? '3001');
+export const SERVER_HOSTNAME = Deno.env.get('SERVER_HOSTNAME') ?? 'localhost';
 
 // DB
 export const DB_HOSTNAME = Deno.env.get('DB_HOSTNAME') ?? '__NOTFOUND__';
@@ -36,6 +37,8 @@ export type { OakSessionStore };
 export type { SessionData } from 'https://deno.land/x/oak_sessions@v4.1.0/src/Session.ts';
 
 export { oakCors } from 'https://deno.land/x/cors@v1.2.2/mod.ts';
+
+export { SMTPClient } from 'https://deno.land/x/denomailer@1.5.3/mod.ts';
 
 import * as z from 'https://deno.land/x/zod@v3.20.2/mod.ts';
 export { z };

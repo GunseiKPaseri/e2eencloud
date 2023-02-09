@@ -1,4 +1,5 @@
 import { prisma } from '../dbclient.ts';
+import { sendMail } from '../mailclient.ts';
 
 export class ConfirmingEmailAddress {
   readonly email: string;
@@ -22,13 +23,23 @@ export const addEmailConfirmation = async (
   // 一時間後に無効化
   const expired_at = new Date(Date.now());
   expired_at.setHours(expired_at.getHours() + 1);
-  await prisma.confirmingEmailAddress.create({
-    data: {
-      email: email,
-      token: email_confirmation_token,
-      expired_at: expired_at,
-    },
-  });
+  await Promise.all([
+    //
+    await prisma.confirmingEmailAddress.create({
+      data: {
+        email: email,
+        token: email_confirmation_token,
+        expired_at: expired_at,
+      },
+    }),
+    // メール送信
+    await sendMail({
+      to: email,
+      subject: 'confirm address',
+      content: `/${email_confirmation_token}`,
+      html: `<a href='/${email_confirmation_token}'>confirm mail address</a>`,
+    }),
+  ]);
 
   const newEmailConfirmation = new ConfirmingEmailAddress(
     email,

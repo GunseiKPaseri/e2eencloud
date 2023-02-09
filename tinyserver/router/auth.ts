@@ -42,7 +42,6 @@ router.post('/signup', async (ctx) => {
     const email_confirmation_token = crypto.getRandomValues(new Uint8Array(16));
     const token = byteArray2base64(email_confirmation_token);
     await addEmailConfirmation(data.email, token);
-    console.log('SEND<', data.email, '> ', token);
   }
   // userがそのメールアドレスが登録済か知る必要はない
   ctx.response.status = Status.OK;
