@@ -24,7 +24,7 @@ router.post('/signup', async (ctx) => {
     return ctx.response.status = Status.BadRequest;
   }
 
-  const email = data.data.email;
+  const email = data.data.email.toLowerCase();
   const cnt = await prisma.user.count({ where: { email } });
   if (cnt === 0) {
     // remove await => queue
