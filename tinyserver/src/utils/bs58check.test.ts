@@ -1,5 +1,6 @@
-import { expect } from '../deps.ts';
+import { expect } from 'tinyserver/deps.ts';
 import { bs58CheckDecodeWithoutErr, bs58CheckEncode } from './bs58check.ts';
+
 const byteArray2hex = (x: Uint8Array) =>
   Array.from(new Uint8Array(x)).map((b) => b.toString(16).padStart(2, '0')).join('');
 

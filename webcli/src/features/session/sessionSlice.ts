@@ -23,7 +23,7 @@ const initialState: SessionsState = {
 export const getSessionsAsync = createAsyncThunk<SessionInfo[]>(
   'session/getSessions',
   async () => {
-    const rowfiles = await axiosWithSession.get<Record<string, never>, AxiosResponse<SessionInfo[]>>(`${appLocation}/api/user/sessions`);
+    const rowfiles = await axiosWithSession.get<Record<string, never>, AxiosResponse<SessionInfo[]>>(`${appLocation}/api/my/sessions`);
 
     return rowfiles.data;
   },
@@ -32,14 +32,14 @@ export const getSessionsAsync = createAsyncThunk<SessionInfo[]>(
 export const changeClientNameAsync = createAsyncThunk<void, { id:string, newClientName: string }>(
   'session/changeClientName',
   async (params) => {
-    await axiosWithSession.patch<{ clientName: string }>(`${appLocation}/api/user/sessions`, { clientName: params.newClientName });
+    await axiosWithSession.patch<{ clientName: string }>(`${appLocation}/api/my/sessions`, { clientName: params.newClientName });
   },
 );
 
 export const deleteSessionAsync = createAsyncThunk<void, { id: string }>(
   'session/changeClientName',
   async (params) => {
-    await axiosWithSession.delete<{ clientName: string }>(`${appLocation}/api/user/sessions/${params.id}`);
+    await axiosWithSession.delete<{ clientName: string }>(`${appLocation}/api/my/sessions/${params.id}`);
   },
 );
 

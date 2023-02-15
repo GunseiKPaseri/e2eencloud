@@ -11,7 +11,7 @@ Use _`.env` file_ OR _set environment variables_
 The following commands can be used to generate passwords.
 
 ```bash
-$ deno run ./gen_environment.ts > .env
+$ deno task init
 ```
 
 You may prepare your own configuration file as follows.
@@ -49,13 +49,13 @@ On windows, change character encoding to UTF-8.
 ### 2. initialize (first time only)
 
 _You should delete or change password `admin@example.com`,`testuser+XXX@example.com`,`baduser+XXX@example.com`_ ( See
-/db/seeds/users.ts )
+/prisma/seeds/users.ts )
 
 ```bash
 # ----First time only
 $ docker-compose up -d
-$ deno task migrate
-$ deno run -A --unstable https://deno.land/x/nessie@2.0.6/cli.ts seed
+$ deno task prisma:mgdev
+$ deno task prisma:seed
 ```
 
 ### 3. run server
@@ -69,17 +69,24 @@ $ deno task server
 
 ```bash
 $ deno lint
-Checked 17 files
+Checked 30 files
 ```
 
 ## format
 
 ```bash
 $ deno fmt
-Checked 20 files
+Checked 36 files
 ```
 
 ## DB
+
+### When Schema changed
+
+```
+$ deno task prisma:gen
+$ deno task prisma:mgdev
+```
 
 ### migrate
 

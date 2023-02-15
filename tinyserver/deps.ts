@@ -12,6 +12,8 @@ export { assertType } from 'https://deno.land/std@0.177.0/testing/types.ts';
 import 'https://deno.land/std@0.177.0/dotenv/load.ts';
 // APP PORT
 export const PORT = parseInt(Deno.env.get('PORT') ?? '3001');
+export const SERVER_HOSTNAME = Deno.env.get('SERVER_HOSTNAME') ?? 'localhost';
+export const SERVER_EMAIL_CONFIRM_URI = Deno.env.get('SERVER_EMAIL_CONFIRM_URI') ?? 'http://localhost';
 
 // DB
 export const DB_HOSTNAME = Deno.env.get('DB_HOSTNAME') ?? '__NOTFOUND__';
@@ -37,9 +39,7 @@ export type { SessionData } from 'https://deno.land/x/oak_sessions@v4.1.0/src/Se
 
 export { oakCors } from 'https://deno.land/x/cors@v1.2.2/mod.ts';
 
-export { Client, configLogger } from 'https://deno.land/x/mysql@v2.11.0/mod.ts';
-export type { ClientConfig } from 'https://deno.land/x/mysql@v2.11.0/mod.ts';
-export { Order, Query, replaceParams, Where } from 'https://deno.land/x/sql_builder@v1.9.2/mod.ts';
+export { SMTPClient } from 'https://deno.land/x/denomailer@1.5.3/mod.ts';
 
 import * as z from 'https://deno.land/x/zod@v3.20.2/mod.ts';
 export { z };
@@ -58,12 +58,19 @@ export { S3Bucket } from 'https://deno.land/x/s3@0.5.0/mod.ts';
 import compareAsc from 'https://deno.land/x/date_fns@v2.22.1/compareAsc/index.ts';
 export { compareAsc };
 
+import UUIDshort from 'npm:short-uuid';
+export { UUIDshort };
+export { uuidv7 } from 'npm:uuidv7';
+
+import * as bcrypt from 'https://deno.land/x/bcrypt@v0.4.1/mod.ts';
+export { bcrypt };
+
+export { PrismaClient } from 'prisma-cli';
+
 import baseX from 'npm:base-x@4.0.0';
-
-export { PrismaClient } from './generated/client/deno/edge.ts';
-
 const BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-
 const bs58 = baseX(BASE58);
-
 export { bs58 };
+
+// for
+import _prisma from 'prisma';

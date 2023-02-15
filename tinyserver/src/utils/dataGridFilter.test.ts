@@ -1,5 +1,5 @@
-import { assertType, z } from '../deps.ts';
-import type { IsExact } from '../deps.ts';
+import { assertType, z } from 'tinyserver/deps.ts';
+import type { IsExact } from 'tinyserver/deps.ts';
 
 import {
   filterBooleanItemSchema,

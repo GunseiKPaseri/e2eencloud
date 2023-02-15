@@ -1,11 +1,7 @@
-import { Application, Status } from './deps.ts';
-import { oakSession } from './deps.ts';
+import { Application, bold, oakCors, oakSession, PORT, Status, yellow } from 'tinyserver/deps.ts';
+import { distDir } from 'tinyserver/src/util.ts';
 import sessionsStore from './model/Sessions.ts';
-import { oakCors } from './deps.ts';
 import apiRouter from './router/api.ts';
-
-import { bold, PORT, yellow } from './deps.ts';
-import { distDir } from './util.ts';
 
 const app = new Application();
 

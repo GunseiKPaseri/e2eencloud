@@ -1,4 +1,4 @@
-import { expect } from 'https://deno.land/x/expect@v0.2.10/mod.ts';
+import { expect } from 'tinyserver/deps.ts';
 
 import { omit, pick } from './objSubset.ts';
 

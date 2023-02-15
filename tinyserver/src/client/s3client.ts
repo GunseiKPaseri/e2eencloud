@@ -5,7 +5,7 @@ import {
   BUCKET_REGION,
   BUCKET_SECRET_KEY,
   S3Bucket,
-} from './deps.ts';
+} from 'tinyserver/deps.ts';
 
 export const bucket = new S3Bucket({
   accessKeyID: BUCKET_ACCESS_KEY_ID,

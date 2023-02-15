@@ -1,7 +1,6 @@
-import { prisma } from '../dbclient.ts';
-import type { DBFiles } from '../dbclient.ts';
-import { v4, z } from '../deps.ts';
-import { bucket } from '../s3client.ts';
+import { type DBFiles, prisma } from 'tinyserver/src/client/dbclient.ts';
+import { v4, z } from 'tinyserver/deps.ts';
+import { bucket } from 'tinyserver/src/client/s3client.ts';
 import { User } from './Users.ts';
 
 const validateFileId = (x: string) => x.indexOf('-') === -1 && v4.validate(x.replace(/_/g, '-'));

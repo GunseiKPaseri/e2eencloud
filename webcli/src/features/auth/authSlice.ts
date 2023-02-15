@@ -22,9 +22,20 @@ export { loginAsync };
 export { logoutAsync };
 export { changePasswordAsync };
 
-export interface UserForm {
+export interface PostSignUp {
   email: string;
-  password: string;
+}
+
+export interface EmailConfirm {
+  type: 'ADD_USER',
+  token: string,
+  clientRandomValueBase64: string,
+  encryptedMasterKeyBase64: string,
+  encryptedMasterKeyIVBase64: string,
+  hashedAuthenticationKeyBase64: string,
+  encryptedRSAPrivateKeyBase64: string,
+  encryptedRSAPrivateKeyIVBase64: string,
+  RSAPublicKeyBase64: string
 }
 
 export interface UserState {
@@ -33,18 +44,21 @@ export interface UserState {
   MasterKey: number[];
   authority: 'ADMIN' | null;
 }
+
+type ConfirmState = 'LOADING' | 'ERROR' | 'SUCCESS';
+
 export interface AuthState {
   user: UserState | null;
   signupStatus: 'failed' | null;
   loginStatus: 'failed' | null;
-  confirmstate: 0 | 1;
+  confirmstate: Record<string, ConfirmState | undefined>;
 }
 
 const initialState: AuthState = {
   user: null,
   signupStatus: null,
   loginStatus: null,
-  confirmstate: 0,
+  confirmstate: {},
 };
 
 // Slice

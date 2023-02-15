@@ -8,7 +8,7 @@ import type {
   StorageInfo,
 } from './file.type';
 
-import { logoutAsync } from '../auth/authSlice';
+import { logoutAsync } from '../auth/thunk/logoutAsync';
 
 import {
   buildFileTableAsync,
@@ -46,7 +46,9 @@ import {
   afterChangeActiveFileGroupSearch,
   afterChangeSelection,
 } from './thunk/changeActiveFileGroup';
-import { afterUpdateUsageAsyncFullfilled, updateUsageAsync } from './thunk/updateUsageAsync';
+import {
+  afterUpdateUsage, afterUpdateUsageAsyncFullfilled, updateUsage, updateUsageAsync,
+} from './thunk/updateUsageAsync';
 
 export { buildFileTableAsync };
 export { createDiffAsync };
@@ -103,6 +105,7 @@ export const fileSlice = createSlice({
       .addCase(filedownloadAsync.fulfilled, afterFiledownloadAsyncFullfilled)
       .addCase(fileDeleteAsync.fulfilled, afterFileDeleteAsyncFullfilled)
       .addCase(updateUsageAsync.fulfilled, afterUpdateUsageAsyncFullfilled)
+      .addCase(updateUsage, afterUpdateUsage)
       .addCase(changeActiveFileGroupDir, afterChangeActiveFileGroupDir)
       .addCase(changeActiveFileGroupTag, afterChangeActiveFileGroupTag)
       .addCase(changeActiveFileGroupSearch, afterChangeActiveFileGroupSearch)

@@ -19,7 +19,6 @@ type UnwrapTuple<Tuple extends readonly unknown[]> = {
 export type User = {
   id: string
   email: string
-  is_email_confirmed: boolean
   role: Role
   max_capacity: number
   file_usage: number
@@ -53,9 +52,9 @@ export type TFASolution = {
  * 
  */
 export type ConfirmingEmailAddress = {
-  id: number
+  id: string
   email: string
-  token: string
+  hashedtoken: string
   user_id: string | null
   expired_at: Date
   created_at: Date
@@ -368,7 +367,7 @@ export namespace Prisma {
 
   /**
    * Prisma Client JS version: 4.7.1
-   * Query Engine version: ceb5c99003b99c9ee2c1d2e618e359c14aef2ea5
+   * Query Engine version: 272861e07ab64f234d3ffc4094e32bd61775599c
    */
   export type PrismaVersion = {
     client: string
@@ -1062,7 +1061,6 @@ export namespace Prisma {
   export type UserMinAggregateOutputType = {
     id: string | null
     email: string | null
-    is_email_confirmed: boolean | null
     role: Role | null
     max_capacity: number | null
     file_usage: number | null
@@ -1080,7 +1078,6 @@ export namespace Prisma {
   export type UserMaxAggregateOutputType = {
     id: string | null
     email: string | null
-    is_email_confirmed: boolean | null
     role: Role | null
     max_capacity: number | null
     file_usage: number | null
@@ -1098,7 +1095,6 @@ export namespace Prisma {
   export type UserCountAggregateOutputType = {
     id: number
     email: number
-    is_email_confirmed: number
     role: number
     max_capacity: number
     file_usage: number
@@ -1128,7 +1124,6 @@ export namespace Prisma {
   export type UserMinAggregateInputType = {
     id?: true
     email?: true
-    is_email_confirmed?: true
     role?: true
     max_capacity?: true
     file_usage?: true
@@ -1146,7 +1141,6 @@ export namespace Prisma {
   export type UserMaxAggregateInputType = {
     id?: true
     email?: true
-    is_email_confirmed?: true
     role?: true
     max_capacity?: true
     file_usage?: true
@@ -1164,7 +1158,6 @@ export namespace Prisma {
   export type UserCountAggregateInputType = {
     id?: true
     email?: true
-    is_email_confirmed?: true
     role?: true
     max_capacity?: true
     file_usage?: true
@@ -1275,7 +1268,6 @@ export namespace Prisma {
   export type UserGroupByOutputType = {
     id: string
     email: string
-    is_email_confirmed: boolean
     role: Role
     max_capacity: number
     file_usage: number
@@ -1312,7 +1304,6 @@ export namespace Prisma {
   export type UserSelect = {
     id?: boolean
     email?: boolean
-    is_email_confirmed?: boolean
     role?: boolean
     tfa_solutions?: boolean | TFASolutionFindManyArgs
     max_capacity?: boolean
@@ -3215,24 +3206,14 @@ export namespace Prisma {
 
   export type AggregateConfirmingEmailAddress = {
     _count: ConfirmingEmailAddressCountAggregateOutputType | null
-    _avg: ConfirmingEmailAddressAvgAggregateOutputType | null
-    _sum: ConfirmingEmailAddressSumAggregateOutputType | null
     _min: ConfirmingEmailAddressMinAggregateOutputType | null
     _max: ConfirmingEmailAddressMaxAggregateOutputType | null
   }
 
-  export type ConfirmingEmailAddressAvgAggregateOutputType = {
-    id: number | null
-  }
-
-  export type ConfirmingEmailAddressSumAggregateOutputType = {
-    id: number | null
-  }
-
   export type ConfirmingEmailAddressMinAggregateOutputType = {
-    id: number | null
+    id: string | null
     email: string | null
-    token: string | null
+    hashedtoken: string | null
     user_id: string | null
     expired_at: Date | null
     created_at: Date | null
@@ -3240,9 +3221,9 @@ export namespace Prisma {
   }
 
   export type ConfirmingEmailAddressMaxAggregateOutputType = {
-    id: number | null
+    id: string | null
     email: string | null
-    token: string | null
+    hashedtoken: string | null
     user_id: string | null
     expired_at: Date | null
     created_at: Date | null
@@ -3252,7 +3233,7 @@ export namespace Prisma {
   export type ConfirmingEmailAddressCountAggregateOutputType = {
     id: number
     email: number
-    token: number
+    hashedtoken: number
     user_id: number
     expired_at: number
     created_at: number
@@ -3261,18 +3242,10 @@ export namespace Prisma {
   }
 
 
-  export type ConfirmingEmailAddressAvgAggregateInputType = {
-    id?: true
-  }
-
-  export type ConfirmingEmailAddressSumAggregateInputType = {
-    id?: true
-  }
-
   export type ConfirmingEmailAddressMinAggregateInputType = {
     id?: true
     email?: true
-    token?: true
+    hashedtoken?: true
     user_id?: true
     expired_at?: true
     created_at?: true
@@ -3282,7 +3255,7 @@ export namespace Prisma {
   export type ConfirmingEmailAddressMaxAggregateInputType = {
     id?: true
     email?: true
-    token?: true
+    hashedtoken?: true
     user_id?: true
     expired_at?: true
     created_at?: true
@@ -3292,7 +3265,7 @@ export namespace Prisma {
   export type ConfirmingEmailAddressCountAggregateInputType = {
     id?: true
     email?: true
-    token?: true
+    hashedtoken?: true
     user_id?: true
     expired_at?: true
     created_at?: true
@@ -3343,18 +3316,6 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Select which fields to average
-    **/
-    _avg?: ConfirmingEmailAddressAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: ConfirmingEmailAddressSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
      * Select which fields to find the minimum value
     **/
     _min?: ConfirmingEmailAddressMinAggregateInputType
@@ -3385,24 +3346,20 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: ConfirmingEmailAddressCountAggregateInputType | true
-    _avg?: ConfirmingEmailAddressAvgAggregateInputType
-    _sum?: ConfirmingEmailAddressSumAggregateInputType
     _min?: ConfirmingEmailAddressMinAggregateInputType
     _max?: ConfirmingEmailAddressMaxAggregateInputType
   }
 
 
   export type ConfirmingEmailAddressGroupByOutputType = {
-    id: number
+    id: string
     email: string
-    token: string
+    hashedtoken: string
     user_id: string | null
     expired_at: Date
     created_at: Date
     updated_at: Date
     _count: ConfirmingEmailAddressCountAggregateOutputType | null
-    _avg: ConfirmingEmailAddressAvgAggregateOutputType | null
-    _sum: ConfirmingEmailAddressSumAggregateOutputType | null
     _min: ConfirmingEmailAddressMinAggregateOutputType | null
     _max: ConfirmingEmailAddressMaxAggregateOutputType | null
   }
@@ -3424,7 +3381,7 @@ export namespace Prisma {
   export type ConfirmingEmailAddressSelect = {
     id?: boolean
     email?: boolean
-    token?: boolean
+    hashedtoken?: boolean
     user?: boolean | UserArgs
     user_id?: boolean
     expired_at?: boolean
@@ -8223,7 +8180,7 @@ export namespace Prisma {
   export const ConfirmingEmailAddressScalarFieldEnum: {
     id: 'id',
     email: 'email',
-    token: 'token',
+    hashedtoken: 'hashedtoken',
     user_id: 'user_id',
     expired_at: 'expired_at',
     created_at: 'created_at',
@@ -8316,7 +8273,6 @@ export namespace Prisma {
   export const UserScalarFieldEnum: {
     id: 'id',
     email: 'email',
-    is_email_confirmed: 'is_email_confirmed',
     role: 'role',
     max_capacity: 'max_capacity',
     file_usage: 'file_usage',
@@ -8345,7 +8301,6 @@ export namespace Prisma {
     NOT?: Enumerable<UserWhereInput>
     id?: StringFilter | string
     email?: StringFilter | string
-    is_email_confirmed?: BoolFilter | boolean
     role?: EnumRoleFilter | Role
     tfa_solutions?: TFASolutionListRelationFilter
     max_capacity?: IntFilter | number
@@ -8368,7 +8323,6 @@ export namespace Prisma {
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
     email?: SortOrder
-    is_email_confirmed?: SortOrder
     role?: SortOrder
     tfa_solutions?: TFASolutionOrderByRelationAggregateInput
     max_capacity?: SortOrder
@@ -8396,7 +8350,6 @@ export namespace Prisma {
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
     email?: SortOrder
-    is_email_confirmed?: SortOrder
     role?: SortOrder
     max_capacity?: SortOrder
     file_usage?: SortOrder
@@ -8422,7 +8375,6 @@ export namespace Prisma {
     NOT?: Enumerable<UserScalarWhereWithAggregatesInput>
     id?: StringWithAggregatesFilter | string
     email?: StringWithAggregatesFilter | string
-    is_email_confirmed?: BoolWithAggregatesFilter | boolean
     role?: EnumRoleWithAggregatesFilter | Role
     max_capacity?: IntWithAggregatesFilter | number
     file_usage?: IntWithAggregatesFilter | number
@@ -8498,9 +8450,9 @@ export namespace Prisma {
     AND?: Enumerable<ConfirmingEmailAddressWhereInput>
     OR?: Enumerable<ConfirmingEmailAddressWhereInput>
     NOT?: Enumerable<ConfirmingEmailAddressWhereInput>
-    id?: IntFilter | number
+    id?: StringFilter | string
     email?: StringFilter | string
-    token?: StringFilter | string
+    hashedtoken?: StringFilter | string
     user?: XOR<UserRelationFilter, UserWhereInput> | null
     user_id?: StringNullableFilter | string | null
     expired_at?: DateTimeFilter | Date | string
@@ -8511,7 +8463,7 @@ export namespace Prisma {
   export type ConfirmingEmailAddressOrderByWithRelationInput = {
     id?: SortOrder
     email?: SortOrder
-    token?: SortOrder
+    hashedtoken?: SortOrder
     user?: UserOrderByWithRelationInput
     user_id?: SortOrder
     expired_at?: SortOrder
@@ -8520,31 +8472,29 @@ export namespace Prisma {
   }
 
   export type ConfirmingEmailAddressWhereUniqueInput = {
-    id?: number
+    id?: string
   }
 
   export type ConfirmingEmailAddressOrderByWithAggregationInput = {
     id?: SortOrder
     email?: SortOrder
-    token?: SortOrder
+    hashedtoken?: SortOrder
     user_id?: SortOrder
     expired_at?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: ConfirmingEmailAddressCountOrderByAggregateInput
-    _avg?: ConfirmingEmailAddressAvgOrderByAggregateInput
     _max?: ConfirmingEmailAddressMaxOrderByAggregateInput
     _min?: ConfirmingEmailAddressMinOrderByAggregateInput
-    _sum?: ConfirmingEmailAddressSumOrderByAggregateInput
   }
 
   export type ConfirmingEmailAddressScalarWhereWithAggregatesInput = {
     AND?: Enumerable<ConfirmingEmailAddressScalarWhereWithAggregatesInput>
     OR?: Enumerable<ConfirmingEmailAddressScalarWhereWithAggregatesInput>
     NOT?: Enumerable<ConfirmingEmailAddressScalarWhereWithAggregatesInput>
-    id?: IntWithAggregatesFilter | number
+    id?: StringWithAggregatesFilter | string
     email?: StringWithAggregatesFilter | string
-    token?: StringWithAggregatesFilter | string
+    hashedtoken?: StringWithAggregatesFilter | string
     user_id?: StringNullableWithAggregatesFilter | string | null
     expired_at?: DateTimeWithAggregatesFilter | Date | string
     created_at?: DateTimeWithAggregatesFilter | Date | string
@@ -8763,7 +8713,6 @@ export namespace Prisma {
   export type UserCreateInput = {
     id: string
     email: string
-    is_email_confirmed?: boolean
     role?: Role
     tfa_solutions?: TFASolutionCreateNestedManyWithoutUserInput
     max_capacity: number
@@ -8786,7 +8735,6 @@ export namespace Prisma {
   export type UserUncheckedCreateInput = {
     id: string
     email: string
-    is_email_confirmed?: boolean
     role?: Role
     tfa_solutions?: TFASolutionUncheckedCreateNestedManyWithoutUserInput
     max_capacity: number
@@ -8809,7 +8757,6 @@ export namespace Prisma {
   export type UserUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    is_email_confirmed?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumRoleFieldUpdateOperationsInput | Role
     tfa_solutions?: TFASolutionUpdateManyWithoutUserNestedInput
     max_capacity?: IntFieldUpdateOperationsInput | number
@@ -8832,7 +8779,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    is_email_confirmed?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumRoleFieldUpdateOperationsInput | Role
     tfa_solutions?: TFASolutionUncheckedUpdateManyWithoutUserNestedInput
     max_capacity?: IntFieldUpdateOperationsInput | number
@@ -8855,7 +8801,6 @@ export namespace Prisma {
   export type UserCreateManyInput = {
     id: string
     email: string
-    is_email_confirmed?: boolean
     role?: Role
     max_capacity: number
     file_usage: number
@@ -8873,7 +8818,6 @@ export namespace Prisma {
   export type UserUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    is_email_confirmed?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumRoleFieldUpdateOperationsInput | Role
     max_capacity?: IntFieldUpdateOperationsInput | number
     file_usage?: IntFieldUpdateOperationsInput | number
@@ -8891,7 +8835,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    is_email_confirmed?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumRoleFieldUpdateOperationsInput | Role
     max_capacity?: IntFieldUpdateOperationsInput | number
     file_usage?: IntFieldUpdateOperationsInput | number
@@ -8973,8 +8916,9 @@ export namespace Prisma {
   }
 
   export type ConfirmingEmailAddressCreateInput = {
+    id: string
     email: string
-    token: string
+    hashedtoken: string
     user?: UserCreateNestedOneWithoutConfirmingEmailAddressInput
     expired_at: Date | string
     created_at?: Date | string
@@ -8982,9 +8926,9 @@ export namespace Prisma {
   }
 
   export type ConfirmingEmailAddressUncheckedCreateInput = {
-    id?: number
+    id: string
     email: string
-    token: string
+    hashedtoken: string
     user_id?: string | null
     expired_at: Date | string
     created_at?: Date | string
@@ -8992,8 +8936,9 @@ export namespace Prisma {
   }
 
   export type ConfirmingEmailAddressUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    token?: StringFieldUpdateOperationsInput | string
+    hashedtoken?: StringFieldUpdateOperationsInput | string
     user?: UserUpdateOneWithoutConfirmingEmailAddressNestedInput
     expired_at?: DateTimeFieldUpdateOperationsInput | Date | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9001,9 +8946,9 @@ export namespace Prisma {
   }
 
   export type ConfirmingEmailAddressUncheckedUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    token?: StringFieldUpdateOperationsInput | string
+    hashedtoken?: StringFieldUpdateOperationsInput | string
     user_id?: NullableStringFieldUpdateOperationsInput | string | null
     expired_at?: DateTimeFieldUpdateOperationsInput | Date | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9011,9 +8956,9 @@ export namespace Prisma {
   }
 
   export type ConfirmingEmailAddressCreateManyInput = {
-    id?: number
+    id: string
     email: string
-    token: string
+    hashedtoken: string
     user_id?: string | null
     expired_at: Date | string
     created_at?: Date | string
@@ -9021,17 +8966,18 @@ export namespace Prisma {
   }
 
   export type ConfirmingEmailAddressUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    token?: StringFieldUpdateOperationsInput | string
+    hashedtoken?: StringFieldUpdateOperationsInput | string
     expired_at?: DateTimeFieldUpdateOperationsInput | Date | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ConfirmingEmailAddressUncheckedUpdateManyInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    token?: StringFieldUpdateOperationsInput | string
+    hashedtoken?: StringFieldUpdateOperationsInput | string
     user_id?: NullableStringFieldUpdateOperationsInput | string | null
     expired_at?: DateTimeFieldUpdateOperationsInput | Date | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9308,11 +9254,6 @@ export namespace Prisma {
     not?: NestedStringFilter | string
   }
 
-  export type BoolFilter = {
-    equals?: boolean
-    not?: NestedBoolFilter | boolean
-  }
-
   export type EnumRoleFilter = {
     equals?: Role
     in?: Enumerable<Role>
@@ -9395,7 +9336,6 @@ export namespace Prisma {
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
-    is_email_confirmed?: SortOrder
     role?: SortOrder
     max_capacity?: SortOrder
     file_usage?: SortOrder
@@ -9418,7 +9358,6 @@ export namespace Prisma {
   export type UserMaxOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
-    is_email_confirmed?: SortOrder
     role?: SortOrder
     max_capacity?: SortOrder
     file_usage?: SortOrder
@@ -9436,7 +9375,6 @@ export namespace Prisma {
   export type UserMinOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
-    is_email_confirmed?: SortOrder
     role?: SortOrder
     max_capacity?: SortOrder
     file_usage?: SortOrder
@@ -9471,14 +9409,6 @@ export namespace Prisma {
     _count?: NestedIntFilter
     _min?: NestedStringFilter
     _max?: NestedStringFilter
-  }
-
-  export type BoolWithAggregatesFilter = {
-    equals?: boolean
-    not?: NestedBoolWithAggregatesFilter | boolean
-    _count?: NestedIntFilter
-    _min?: NestedBoolFilter
-    _max?: NestedBoolFilter
   }
 
   export type EnumRoleWithAggregatesFilter = {
@@ -9533,6 +9463,11 @@ export namespace Prisma {
     isNot?: UserWhereInput | null
   }
 
+  export type BoolFilter = {
+    equals?: boolean
+    not?: NestedBoolFilter | boolean
+  }
+
   export type TFASolutionCountOrderByAggregateInput = {
     id?: SortOrder
     type?: SortOrder
@@ -9581,6 +9516,14 @@ export namespace Prisma {
     _max?: NestedEnumSolutionTypeFilter
   }
 
+  export type BoolWithAggregatesFilter = {
+    equals?: boolean
+    not?: NestedBoolWithAggregatesFilter | boolean
+    _count?: NestedIntFilter
+    _min?: NestedBoolFilter
+    _max?: NestedBoolFilter
+  }
+
   export type StringNullableFilter = {
     equals?: string | null
     in?: Enumerable<string> | null
@@ -9598,21 +9541,17 @@ export namespace Prisma {
   export type ConfirmingEmailAddressCountOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
-    token?: SortOrder
+    hashedtoken?: SortOrder
     user_id?: SortOrder
     expired_at?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
 
-  export type ConfirmingEmailAddressAvgOrderByAggregateInput = {
-    id?: SortOrder
-  }
-
   export type ConfirmingEmailAddressMaxOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
-    token?: SortOrder
+    hashedtoken?: SortOrder
     user_id?: SortOrder
     expired_at?: SortOrder
     created_at?: SortOrder
@@ -9622,15 +9561,11 @@ export namespace Prisma {
   export type ConfirmingEmailAddressMinOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
-    token?: SortOrder
+    hashedtoken?: SortOrder
     user_id?: SortOrder
     expired_at?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
-  }
-
-  export type ConfirmingEmailAddressSumOrderByAggregateInput = {
-    id?: SortOrder
   }
 
   export type StringNullableWithAggregatesFilter = {
@@ -9868,10 +9803,6 @@ export namespace Prisma {
     set?: string
   }
 
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
-  }
-
   export type EnumRoleFieldUpdateOperationsInput = {
     set?: Role
   }
@@ -10046,6 +9977,10 @@ export namespace Prisma {
     update?: XOR<UserUpdateWithoutTfa_solutionsInput, UserUncheckedUpdateWithoutTfa_solutionsInput>
   }
 
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
   export type UserCreateNestedOneWithoutConfirmingEmailAddressInput = {
     create?: XOR<UserCreateWithoutConfirmingEmailAddressInput, UserUncheckedCreateWithoutConfirmingEmailAddressInput>
     connectOrCreate?: UserCreateOrConnectWithoutConfirmingEmailAddressInput
@@ -10128,11 +10063,6 @@ export namespace Prisma {
     not?: NestedStringFilter | string
   }
 
-  export type NestedBoolFilter = {
-    equals?: boolean
-    not?: NestedBoolFilter | boolean
-  }
-
   export type NestedEnumRoleFilter = {
     equals?: Role
     in?: Enumerable<Role>
@@ -10177,14 +10107,6 @@ export namespace Prisma {
     _count?: NestedIntFilter
     _min?: NestedStringFilter
     _max?: NestedStringFilter
-  }
-
-  export type NestedBoolWithAggregatesFilter = {
-    equals?: boolean
-    not?: NestedBoolWithAggregatesFilter | boolean
-    _count?: NestedIntFilter
-    _min?: NestedBoolFilter
-    _max?: NestedBoolFilter
   }
 
   export type NestedEnumRoleWithAggregatesFilter = {
@@ -10245,6 +10167,11 @@ export namespace Prisma {
     not?: NestedEnumSolutionTypeFilter | SolutionType
   }
 
+  export type NestedBoolFilter = {
+    equals?: boolean
+    not?: NestedBoolFilter | boolean
+  }
+
   export type NestedEnumSolutionTypeWithAggregatesFilter = {
     equals?: SolutionType
     in?: Enumerable<SolutionType>
@@ -10253,6 +10180,14 @@ export namespace Prisma {
     _count?: NestedIntFilter
     _min?: NestedEnumSolutionTypeFilter
     _max?: NestedEnumSolutionTypeFilter
+  }
+
+  export type NestedBoolWithAggregatesFilter = {
+    equals?: boolean
+    not?: NestedBoolWithAggregatesFilter | boolean
+    _count?: NestedIntFilter
+    _min?: NestedBoolFilter
+    _max?: NestedBoolFilter
   }
 
   export type NestedStringNullableFilter = {
@@ -10350,17 +10285,18 @@ export namespace Prisma {
   }
 
   export type ConfirmingEmailAddressCreateWithoutUserInput = {
+    id: string
     email: string
-    token: string
+    hashedtoken: string
     expired_at: Date | string
     created_at?: Date | string
     updated_at?: Date | string
   }
 
   export type ConfirmingEmailAddressUncheckedCreateWithoutUserInput = {
-    id?: number
+    id: string
     email: string
-    token: string
+    hashedtoken: string
     expired_at: Date | string
     created_at?: Date | string
     updated_at?: Date | string
@@ -10507,9 +10443,9 @@ export namespace Prisma {
     AND?: Enumerable<ConfirmingEmailAddressScalarWhereInput>
     OR?: Enumerable<ConfirmingEmailAddressScalarWhereInput>
     NOT?: Enumerable<ConfirmingEmailAddressScalarWhereInput>
-    id?: IntFilter | number
+    id?: StringFilter | string
     email?: StringFilter | string
-    token?: StringFilter | string
+    hashedtoken?: StringFilter | string
     user_id?: StringNullableFilter | string | null
     expired_at?: DateTimeFilter | Date | string
     created_at?: DateTimeFilter | Date | string
@@ -10605,7 +10541,6 @@ export namespace Prisma {
   export type UserCreateWithoutTfa_solutionsInput = {
     id: string
     email: string
-    is_email_confirmed?: boolean
     role?: Role
     max_capacity: number
     file_usage: number
@@ -10627,7 +10562,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutTfa_solutionsInput = {
     id: string
     email: string
-    is_email_confirmed?: boolean
     role?: Role
     max_capacity: number
     file_usage: number
@@ -10659,7 +10593,6 @@ export namespace Prisma {
   export type UserUpdateWithoutTfa_solutionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    is_email_confirmed?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumRoleFieldUpdateOperationsInput | Role
     max_capacity?: IntFieldUpdateOperationsInput | number
     file_usage?: IntFieldUpdateOperationsInput | number
@@ -10681,7 +10614,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutTfa_solutionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    is_email_confirmed?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumRoleFieldUpdateOperationsInput | Role
     max_capacity?: IntFieldUpdateOperationsInput | number
     file_usage?: IntFieldUpdateOperationsInput | number
@@ -10703,7 +10635,6 @@ export namespace Prisma {
   export type UserCreateWithoutConfirmingEmailAddressInput = {
     id: string
     email: string
-    is_email_confirmed?: boolean
     role?: Role
     tfa_solutions?: TFASolutionCreateNestedManyWithoutUserInput
     max_capacity: number
@@ -10725,7 +10656,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutConfirmingEmailAddressInput = {
     id: string
     email: string
-    is_email_confirmed?: boolean
     role?: Role
     tfa_solutions?: TFASolutionUncheckedCreateNestedManyWithoutUserInput
     max_capacity: number
@@ -10757,7 +10687,6 @@ export namespace Prisma {
   export type UserUpdateWithoutConfirmingEmailAddressInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    is_email_confirmed?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumRoleFieldUpdateOperationsInput | Role
     tfa_solutions?: TFASolutionUpdateManyWithoutUserNestedInput
     max_capacity?: IntFieldUpdateOperationsInput | number
@@ -10779,7 +10708,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutConfirmingEmailAddressInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    is_email_confirmed?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumRoleFieldUpdateOperationsInput | Role
     tfa_solutions?: TFASolutionUncheckedUpdateManyWithoutUserNestedInput
     max_capacity?: IntFieldUpdateOperationsInput | number
@@ -10801,7 +10729,6 @@ export namespace Prisma {
   export type UserCreateWithoutSessionsInput = {
     id: string
     email: string
-    is_email_confirmed?: boolean
     role?: Role
     tfa_solutions?: TFASolutionCreateNestedManyWithoutUserInput
     max_capacity: number
@@ -10823,7 +10750,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutSessionsInput = {
     id: string
     email: string
-    is_email_confirmed?: boolean
     role?: Role
     tfa_solutions?: TFASolutionUncheckedCreateNestedManyWithoutUserInput
     max_capacity: number
@@ -10855,7 +10781,6 @@ export namespace Prisma {
   export type UserUpdateWithoutSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    is_email_confirmed?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumRoleFieldUpdateOperationsInput | Role
     tfa_solutions?: TFASolutionUpdateManyWithoutUserNestedInput
     max_capacity?: IntFieldUpdateOperationsInput | number
@@ -10877,7 +10802,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    is_email_confirmed?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumRoleFieldUpdateOperationsInput | Role
     tfa_solutions?: TFASolutionUncheckedUpdateManyWithoutUserNestedInput
     max_capacity?: IntFieldUpdateOperationsInput | number
@@ -10899,7 +10823,6 @@ export namespace Prisma {
   export type UserCreateWithoutHooksInput = {
     id: string
     email: string
-    is_email_confirmed?: boolean
     role?: Role
     tfa_solutions?: TFASolutionCreateNestedManyWithoutUserInput
     max_capacity: number
@@ -10921,7 +10844,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutHooksInput = {
     id: string
     email: string
-    is_email_confirmed?: boolean
     role?: Role
     tfa_solutions?: TFASolutionUncheckedCreateNestedManyWithoutUserInput
     max_capacity: number
@@ -10953,7 +10875,6 @@ export namespace Prisma {
   export type UserUpdateWithoutHooksInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    is_email_confirmed?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumRoleFieldUpdateOperationsInput | Role
     tfa_solutions?: TFASolutionUpdateManyWithoutUserNestedInput
     max_capacity?: IntFieldUpdateOperationsInput | number
@@ -10975,7 +10896,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutHooksInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    is_email_confirmed?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumRoleFieldUpdateOperationsInput | Role
     tfa_solutions?: TFASolutionUncheckedUpdateManyWithoutUserNestedInput
     max_capacity?: IntFieldUpdateOperationsInput | number
@@ -10997,7 +10917,6 @@ export namespace Prisma {
   export type UserCreateWithoutFilesInput = {
     id: string
     email: string
-    is_email_confirmed?: boolean
     role?: Role
     tfa_solutions?: TFASolutionCreateNestedManyWithoutUserInput
     max_capacity: number
@@ -11019,7 +10938,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutFilesInput = {
     id: string
     email: string
-    is_email_confirmed?: boolean
     role?: Role
     tfa_solutions?: TFASolutionUncheckedCreateNestedManyWithoutUserInput
     max_capacity: number
@@ -11051,7 +10969,6 @@ export namespace Prisma {
   export type UserUpdateWithoutFilesInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    is_email_confirmed?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumRoleFieldUpdateOperationsInput | Role
     tfa_solutions?: TFASolutionUpdateManyWithoutUserNestedInput
     max_capacity?: IntFieldUpdateOperationsInput | number
@@ -11073,7 +10990,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutFilesInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    is_email_confirmed?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumRoleFieldUpdateOperationsInput | Role
     tfa_solutions?: TFASolutionUncheckedUpdateManyWithoutUserNestedInput
     max_capacity?: IntFieldUpdateOperationsInput | number
@@ -11102,9 +11018,9 @@ export namespace Prisma {
   }
 
   export type ConfirmingEmailAddressCreateManyUserInput = {
-    id?: number
+    id: string
     email: string
-    token: string
+    hashedtoken: string
     expired_at: Date | string
     created_at?: Date | string
     updated_at?: Date | string
@@ -11163,26 +11079,27 @@ export namespace Prisma {
   }
 
   export type ConfirmingEmailAddressUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    token?: StringFieldUpdateOperationsInput | string
+    hashedtoken?: StringFieldUpdateOperationsInput | string
     expired_at?: DateTimeFieldUpdateOperationsInput | Date | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ConfirmingEmailAddressUncheckedUpdateWithoutUserInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    token?: StringFieldUpdateOperationsInput | string
+    hashedtoken?: StringFieldUpdateOperationsInput | string
     expired_at?: DateTimeFieldUpdateOperationsInput | Date | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ConfirmingEmailAddressUncheckedUpdateManyWithoutConfirmingEmailAddressInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    token?: StringFieldUpdateOperationsInput | string
+    hashedtoken?: StringFieldUpdateOperationsInput | string
     expired_at?: DateTimeFieldUpdateOperationsInput | Date | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string

@@ -1,4 +1,4 @@
-import { base642ByteArray, byteArray2base64 } from './deps.ts';
+import { base642ByteArray, byteArray2base64 } from 'tinyserver/deps.ts';
 const textencoder = new TextEncoder();
 
 export const distDir = `${Deno.cwd()}/../webcli/dist`;
@@ -44,10 +44,3 @@ export const createSalt = (email: string, ClientRandomValue?: string) => {
     );
   }
 };
-
-export class ExhaustiveError extends Error {
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  constructor(value: never, message = `Unsupported type: ${value}`) {
-    super(message);
-  }
-}

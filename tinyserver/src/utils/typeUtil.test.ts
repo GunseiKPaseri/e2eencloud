@@ -1,8 +1,4 @@
-import { expect } from 'https://deno.land/x/expect@v0.2.10/mod.ts';
-
-import { assertType } from '../deps.ts';
-import type { IsExact } from '../deps.ts';
-
+import { assertType, expect, type IsExact } from 'tinyserver/deps.ts';
 import type { Intersectionize } from './typeUtil.ts';
 import { recordUnion } from './typeUtil.ts';
 

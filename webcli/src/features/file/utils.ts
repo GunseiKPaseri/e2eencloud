@@ -247,7 +247,11 @@ export const submitFileInfoWithEncryption = async <T extends Exclude<FileInfo, F
   fileSendData.append('encryptedFileInfoBase64', encryptedFileInfoBase64);
   fileSendData.append('encryptedFileInfoIVBase64', encryptedFileInfoIVBase64);
   fileSendData.append('encryptedFileKeyBase64', encryptedFileKeyBase64);
-  await axiosWithSession.post(`${appLocation}/api/files`, fileSendData);
+  await axiosWithSession.post(`${appLocation}/api/files`, fileSendData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
 
   return { fileKeyBin: Array.from(fileKeyRaw), fileInfo, originalVersion: fileInfo.version };
 };
@@ -313,7 +317,11 @@ Promise<{ server: FileCryptoInfoWithBin, local: ExpandServerDataResult }> => {
   fileSendData.append('encryptedFileInfoBase64', encryptedFileInfoBase64);
   fileSendData.append('encryptedFileInfoIVBase64', encryptedFileInfoIVBase64);
   fileSendData.append('encryptedFileKeyBase64', encryptedFileKeyBase64);
-  await axiosWithSession.post(`${appLocation}/api/files`, fileSendData);
+  await axiosWithSession.post(`${appLocation}/api/files`, fileSendData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
 
   // memory file to indexedDB
   const encryptedFileIVBin = Array.from(encryptedFileIV);

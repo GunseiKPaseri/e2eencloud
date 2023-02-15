@@ -15,8 +15,6 @@ import { setProgress, deleteProgress, progress } from '../../progress/progressSl
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
 import type { RootState } from '../../../app/store';
 
-import type { UserForm } from '../authSlice';
-
 // パスワード変更処理
 export const changePasswordAsync = createAsyncThunk<
 Record<string, never>, { newpassword: string }, { state: RootState }
@@ -53,6 +51,12 @@ Record<string, never>, { newpassword: string }, { state: RootState }
 
     dispatch(setProgress(progress(3, step)));
 
+    type SendData = {
+      clientRandomValueBase64: string;
+      encryptedMasterKeyBase64: string;
+      encryptedMasterKeyIVBase64: string;
+      hashedAuthenticationKeyBase64: string;
+    };
     const sendData = {
       clientRandomValueBase64: byteArray2base64(ClientRandomValue),
       encryptedMasterKeyBase64: byteArray2base64(EncryptedMasterKey.encrypt),
@@ -60,10 +64,10 @@ Record<string, never>, { newpassword: string }, { state: RootState }
       hashedAuthenticationKeyBase64: byteArray2base64(HashedAuthenticationKey),
     };
     await axiosWithSession.patch<
-    UserForm,
+    SendData,
     AxiosResponse<{ success: boolean }>
     >(
-      `${appLocation}/api/user/password`,
+      `${appLocation}/api/my/password`,
       sendData,
       {
         onUploadProgress: (progressEvent) => {

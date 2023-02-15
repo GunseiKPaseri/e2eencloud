@@ -111,7 +111,7 @@ UserState, { email: string, password: string, token: string }>(
         encryptedRSAPrivateKeyIVBase64: string,
         RSAPublicKeyBase64: string
       }>(
-        `${appLocation}/api/user/pubkey`,
+        `${appLocation}/api/my/pubkey`,
         {
           encryptedRSAPrivateKeyBase64: genKey.encripted_private_key,
           encryptedRSAPrivateKeyIVBase64: genKey.encripted_private_key_iv,

@@ -14,11 +14,11 @@ exports.Prisma = Prisma
 
 /**
  * Prisma Client JS version: 4.7.1
- * Query Engine version: ceb5c99003b99c9ee2c1d2e618e359c14aef2ea5
+ * Query Engine version: 272861e07ab64f234d3ffc4094e32bd61775599c
  */
 Prisma.prismaVersion = {
   client: "4.7.1",
-  engine: "ceb5c99003b99c9ee2c1d2e618e359c14aef2ea5"
+  engine: "272861e07ab64f234d3ffc4094e32bd61775599c"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -92,7 +92,7 @@ function makeEnum(x) { return x; }
 exports.Prisma.ConfirmingEmailAddressScalarFieldEnum = makeEnum({
   id: 'id',
   email: 'email',
-  token: 'token',
+  hashedtoken: 'hashedtoken',
   user_id: 'user_id',
   expired_at: 'expired_at',
   created_at: 'created_at',
@@ -161,7 +161,6 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.UserScalarFieldEnum = makeEnum({
   id: 'id',
   email: 'email',
-  is_email_confirmed: 'is_email_confirmed',
   role: 'role',
   max_capacity: 'max_capacity',
   file_usage: 'file_usage',

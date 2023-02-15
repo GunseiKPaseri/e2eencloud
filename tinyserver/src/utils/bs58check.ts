@@ -1,5 +1,5 @@
 /* eslint-disable no-bitwise */
-import { bs58 } from '../deps.ts';
+import { bs58 } from 'tinyserver/deps.ts';
 
 const SHA256 = (payload: ArrayBuffer) => crypto.subtle.digest('SHA-256', payload);
 

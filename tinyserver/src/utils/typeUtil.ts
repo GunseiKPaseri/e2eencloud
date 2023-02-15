@@ -7,3 +7,10 @@ export type Intersectionize<T> = (T extends unknown ? (_: T) => void : never) ex
 // 配列で与えられる複数のRecordを一つに（修正が必要）
 export const recordUnion = <T extends (Record<string, unknown> | undefined | null)[]>(records: T) =>
   records.reduce((prev, cur) => ({ ...prev, ...cur }), {} as const) as Intersectionize<NonNullable<T[number]>>;
+
+export class ExhaustiveError extends Error {
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+  constructor(value: never, message = `Unsupported type: ${value}`) {
+    super(message);
+  }
+}

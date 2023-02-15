@@ -1,4 +1,4 @@
-import { type Prisma, prisma } from '../dbclient.ts';
+import { type Prisma, prisma } from 'tinyserver/src/client/dbclient.ts';
 
 const userData: Prisma.UserCreateInput[] = [
   // user: admin@example.com
@@ -6,7 +6,6 @@ const userData: Prisma.UserCreateInput[] = [
   {
     id: crypto.randomUUID(),
     email: 'admin@example.com',
-    is_email_confirmed: true,
     role: 'ADMIN',
     max_capacity: 5242880,
     file_usage: 0,
@@ -24,7 +23,6 @@ const userData: Prisma.UserCreateInput[] = [
     {
       email: `testuser+${i.toString().padStart(3, '0')}@example.com`,
       id: crypto.randomUUID(),
-      is_email_confirmed: true,
       role: 'USER',
       max_capacity: 5242880,
       file_usage: 0,
@@ -43,7 +41,6 @@ const userData: Prisma.UserCreateInput[] = [
     {
       email: `baduser+${i.toString().padStart(3, '0')}@example.com`,
       id: crypto.randomUUID(),
-      is_email_confirmed: false,
       role: 'USER',
       max_capacity: 10485760,
       file_usage: 0,

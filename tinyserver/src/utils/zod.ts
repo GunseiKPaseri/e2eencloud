@@ -1,4 +1,4 @@
-import { z } from '../deps.ts';
+import { z } from 'tinyserver/deps.ts';
 
 type MappedZodLiterals<T extends readonly z.Primitive[]> = {
   -readonly [K in keyof T]: z.ZodLiteral<T[K]>;

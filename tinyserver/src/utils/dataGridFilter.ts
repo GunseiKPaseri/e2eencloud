@@ -1,7 +1,7 @@
-import { z } from '../deps.ts';
-import { ExhaustiveError } from '../util.ts';
+import { z } from 'tinyserver/deps.ts';
+import { ExhaustiveError } from 'tinyserver/src/utils/typeUtil.ts';
 
-import type { Prisma } from '../dbclient.ts';
+import type { Prisma } from 'tinyserver/src/client/dbclient.ts';
 
 /*******
  *  Boolean Filter

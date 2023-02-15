@@ -1,5 +1,6 @@
-import { PrismaClient } from './deps.ts';
+import { PrismaClient } from 'tinyserver/deps.ts';
 export type {
+  ConfirmingEmailAddress as DBConfirmingEmailAddress,
   Coupons as DBCoupons,
   Files as DBFiles,
   Hooks as DBHooks,
@@ -7,6 +8,6 @@ export type {
   Role as DBEnumRole,
   Sessions as DBSessions,
   User as DBUser,
-} from './generated/client/deno/index.d.ts';
+} from 'tinyserver/generated/client/deno/index.d.ts';
 
 export const prisma = new PrismaClient();

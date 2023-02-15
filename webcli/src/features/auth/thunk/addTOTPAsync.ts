@@ -9,7 +9,7 @@ export const addTOTPAsync = createAsyncThunk<void, { secretKey: string, token: s
   'auth/add_totp',
   async (secretkey, { dispatch }) => {
     await axiosWithSession.put<{ secretKey: string, token: string }>(
-      `${appLocation}/api/user/totp`,
+      `${appLocation}/api/my/totp`,
       secretkey,
       {
         onUploadProgress: (progressEvent) => {
