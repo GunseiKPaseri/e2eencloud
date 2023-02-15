@@ -1,5 +1,5 @@
 import { z } from 'tinyserver/deps.ts';
-import { ExhaustiveError } from 'tinyserver/src/util.ts';
+import { ExhaustiveError } from 'tinyserver/src/utils/typeUtil.ts';
 
 import type { Prisma } from 'tinyserver/src/client/dbclient.ts';
 

@@ -8,7 +8,7 @@ import {
   type GridFilterModel,
   gridFilterToPrismaFilter,
 } from 'tinyserver/src/utils/dataGridFilter.ts';
-import { ExhaustiveError } from 'tinyserver/src/util.ts';
+import { ExhaustiveError } from 'tinyserver/src/utils/typeUtil.ts';
 import parseJSONwithoutErr from 'tinyserver/src/utils/parseJSONWithoutErr.ts';
 import { bs58CheckEncode } from 'tinyserver/src/utils/bs58check.ts';
 import { recordUnion } from 'tinyserver/src/utils/typeUtil.ts';

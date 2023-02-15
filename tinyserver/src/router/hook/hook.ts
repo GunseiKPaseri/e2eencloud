@@ -10,7 +10,7 @@ import {
   hooksColumnsSchema,
   parseHookFilterQuery,
 } from 'tinyserver/src/model/Hooks.ts';
-import { ExhaustiveError } from 'tinyserver/src/util.ts';
+import { ExhaustiveError } from 'tinyserver/src/utils/typeUtil.ts';
 
 const router = new Router();
 

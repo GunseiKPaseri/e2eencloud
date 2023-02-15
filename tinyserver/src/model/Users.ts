@@ -1,7 +1,8 @@
 import { DBEnumRole, DBUser, prisma } from 'tinyserver/src/client/dbclient.ts';
 import type { Prisma } from 'tinyserver/src/client/dbclient.ts';
 
-import { createSalt, ExhaustiveError } from 'tinyserver/src/util.ts';
+import { ExhaustiveError } from 'tinyserver/src/utils/typeUtil.ts';
+import { createSalt } from 'tinyserver/src/util.ts';
 import { byteArray2base64, OTPAuth, z } from 'tinyserver/deps.ts';
 import parseJSONwithoutErr from 'tinyserver/src/utils/parseJSONWithoutErr.ts';
 import {
