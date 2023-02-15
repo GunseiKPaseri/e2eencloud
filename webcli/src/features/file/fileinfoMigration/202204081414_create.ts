@@ -1,5 +1,5 @@
 import * as z from 'zod';
-import schemaForType from './migrateUtil';
+import schemaForType from './migrationUtil';
 
 /**
  * 差分情報
