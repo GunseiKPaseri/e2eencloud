@@ -13,6 +13,7 @@ import 'https://deno.land/std@0.177.0/dotenv/load.ts';
 // APP PORT
 export const PORT = parseInt(Deno.env.get('PORT') ?? '3001');
 export const SERVER_HOSTNAME = Deno.env.get('SERVER_HOSTNAME') ?? 'localhost';
+export const SERVER_EMAIL_CONFIRM_URI = Deno.env.get('SERVER_EMAIL_CONFIRM_URI') ?? 'http://localhost';
 
 // DB
 export const DB_HOSTNAME = Deno.env.get('DB_HOSTNAME') ?? '__NOTFOUND__';
@@ -57,14 +58,18 @@ export { S3Bucket } from 'https://deno.land/x/s3@0.5.0/mod.ts';
 import compareAsc from 'https://deno.land/x/date_fns@v2.22.1/compareAsc/index.ts';
 export { compareAsc };
 
-import baseX from 'npm:base-x@4.0.0';
+import UUIDshort from 'npm:short-uuid';
+export { UUIDshort };
+export { uuidv7 } from 'npm:uuidv7';
+
+import * as bcrypt from 'https://deno.land/x/bcrypt@v0.4.1/mod.ts';
+export { bcrypt };
 
 export { PrismaClient } from 'prisma-cli';
 
+import baseX from 'npm:base-x@4.0.0';
 const BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-
 const bs58 = baseX(BASE58);
-
 export { bs58 };
 
 // for

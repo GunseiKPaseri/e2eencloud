@@ -15,7 +15,7 @@ import {
 } from 'tinyserver/src/utils/dataGridFilter.ts';
 import { pick } from 'tinyserver/src/utils/objSubset.ts';
 import { recordUnion } from 'tinyserver/src/utils/typeUtil.ts';
-import { deleteEmailConfirms, isEmailConfirmSuccess } from './ConfirmingEmailAddress.ts';
+import { confirmEmail } from './ConfirmingEmailAddress.ts';
 
 const DEFAULT_MAX_CAPACITY = 10n * 1024n * 1024n; //10MiB
 /*
@@ -43,12 +43,11 @@ export class User {
   readonly encrypted_master_key: string;
   readonly encrypted_master_key_iv: string;
   readonly hashed_authentication_key: string;
-  readonly is_email_confirmed: boolean;
   #max_capacity: number;
   #file_usage: number;
-  #rsa_public_key: string | null;
-  #encrypted_rsa_private_key: string | null;
-  #encrypted_rsa_private_key_iv: string | null;
+  #rsa_public_key: string;
+  #encrypted_rsa_private_key: string;
+  #encrypted_rsa_private_key_iv: string;
   #role: DBEnumRole;
   constructor(
     user: Omit<DBUser, 'max_capacity' | 'file_usage'> & {
@@ -62,7 +61,6 @@ export class User {
     this.encrypted_master_key = user.encrypted_master_key;
     this.encrypted_master_key_iv = user.encrypted_master_key_iv;
     this.hashed_authentication_key = user.hashed_authentication_key;
-    this.is_email_confirmed = user.is_email_confirmed;
     this.#max_capacity = typeof user.max_capacity === 'number' ? user.max_capacity : Number(user.max_capacity);
     this.#file_usage = typeof user.file_usage === 'number' ? user.file_usage : Number(user.file_usage);
     this.#rsa_public_key = user.rsa_public_key;
@@ -274,11 +272,14 @@ export const addUser = async (
     | 'encrypted_master_key_iv'
     | 'hashed_authentication_key'
     | 'max_capacity'
+    | 'rsa_public_key'
+    | 'encrypted_rsa_private_key'
+    | 'encrypted_rsa_private_key_iv'
   >,
 ) => {
   try {
     console.log(params, 0n);
-    await prisma.user.create({
+    return await prisma.user.create({
       data: {
         ...pick(params, [
           'email',
@@ -286,41 +287,19 @@ export const addUser = async (
           'encrypted_master_key',
           'encrypted_master_key_iv',
           'hashed_authentication_key',
+          'rsa_public_key',
+          'encrypted_rsa_private_key',
+          'encrypted_rsa_private_key_iv',
         ]),
         max_capacity: params.max_capacity ?? DEFAULT_MAX_CAPACITY,
         file_usage: 0,
-        is_email_confirmed: false,
         id: crypto.randomUUID(),
-        rsa_public_key: '',
-        encrypted_rsa_private_key: '',
-        encrypted_rsa_private_key_iv: '',
       },
     });
   } catch (_) {
     // ユーザが既に存在する場合
-    console.log(_);
-    const alreadyExistUser = await prisma.user.findUnique({
-      where: { email: params.email },
-      select: { is_email_confirmed: true },
-    });
-    if (alreadyExistUser?.is_email_confirmed) {
-      // メールが確認状態ならば追加不可
-      return false;
-    }
-    // 未確認状態なら上書き
-    await prisma.user.update({
-      where: { email: params.email },
-      data: pick(params, [
-        'client_random_value',
-        'encrypted_master_key',
-        'encrypted_master_key_iv',
-        'hashed_authentication_key',
-      ]),
-    });
-    // これまでの確認メールに付属していたリンクは削除する
-    await deleteEmailConfirms(params.email);
+    return null;
   }
-  return true;
 };
 
 const userFields = ['id', 'email', 'max_capacity', 'file_usage', 'authority', 'two_factor_authentication'] as const;
@@ -332,19 +311,55 @@ export const userFieldValidate = (
   field: unknown,
 ): UserField => (typeof field === 'string' ? (isUserField(field) ? field : 'email') : 'email');
 
+export const emailConfirmScheme = z.union([
+  z.object({
+    type: z.literal('CHANGE_EMAIL'),
+    token: z.string(),
+  }),
+  z.object({
+    type: z.literal('ADD_USER'),
+    token: z.string(),
+    clientRandomValueBase64: z.string(),
+    encryptedMasterKeyBase64: z.string(),
+    encryptedMasterKeyIVBase64: z.string(),
+    hashedAuthenticationKeyBase64: z.string(),
+    encryptedRSAPrivateKeyBase64: z.string(),
+    encryptedRSAPrivateKeyIVBase64: z.string(),
+    RSAPublicKeyBase64: z.string(),
+  }),
+]);
+
 export const userEmailConfirm = async (
-  email: string,
-  email_confirmation_token: string,
+  obj: z.infer<typeof emailConfirmScheme>,
 ) => {
+  const [id, token] = obj.token.split(':');
+  if (typeof token === 'undefined') return false;
+
   try {
-    const confirmed = await isEmailConfirmSuccess(
-      email,
-      email_confirmation_token,
-    );
-    if (confirmed) {
-      await prisma.user.update({ where: { email }, data: { is_email_confirmed: true } });
+    const confirmed = await confirmEmail(id, token);
+    if (!confirmed.success) return false;
+
+    if (confirmed.user === null && obj.type === 'ADD_USER') {
+      // add new user
+      const user = await addUser({
+        email: confirmed.email,
+        client_random_value: obj.clientRandomValueBase64,
+        encrypted_master_key: obj.encryptedMasterKeyBase64,
+        encrypted_master_key_iv: obj.encryptedMasterKeyIVBase64,
+        hashed_authentication_key: obj.hashedAuthenticationKeyBase64,
+        encrypted_rsa_private_key: obj.encryptedRSAPrivateKeyBase64,
+        encrypted_rsa_private_key_iv: obj.encryptedRSAPrivateKeyIVBase64,
+        rsa_public_key: obj.RSAPublicKeyBase64,
+        max_capacity: 5 * 1024 * 1024, //5n * 1024n * 1024n * 1024n,
+      });
+      return user === null ? false : user;
+    } else if (confirmed.user !== null && obj.type === 'CHANGE_EMAIL') {
+      // change user email
+      await prisma.user.update({ where: { id: confirmed.user.id }, data: { email: confirmed.email } });
+      return true;
+    } else {
+      return false;
     }
-    return confirmed;
   } catch (_) {
     console.log(_);
     return false;

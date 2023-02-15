@@ -1,68 +1,83 @@
-import { prisma } from 'tinyserver/src/client/dbclient.ts';
+import { type DBConfirmingEmailAddress, type DBUser, prisma } from 'tinyserver/src/client/dbclient.ts';
 import { sendMail } from 'tinyserver/src/client/mailclient.ts';
+import { bcrypt, compareAsc, SERVER_EMAIL_CONFIRM_URI } from 'tinyserver/deps.ts';
+import { uniqueKey, uniqueSequentialKey } from 'tinyserver/src/utils/uniqueKey.ts';
 
 export class ConfirmingEmailAddress {
+  readonly id: string;
   readonly email: string;
-  readonly email_confirmation_token: string;
+  readonly hashedtoken: string;
   readonly expired_at: Date;
-  constructor(
-    email: string,
-    email_confirmation_token: string,
-    expired_at: Date,
-  ) {
-    this.email = email;
-    this.email_confirmation_token = email_confirmation_token;
-    this.expired_at = expired_at;
+  readonly user_id: string | null;
+  constructor(params: DBConfirmingEmailAddress) {
+    this.id = params.id;
+    this.email = params.email;
+    this.hashedtoken = params.hashedtoken;
+    this.expired_at = params.expired_at;
+    this.user_id = params.user_id;
   }
 }
 
 export const addEmailConfirmation = async (
   email: string,
-  email_confirmation_token: string,
 ) => {
   // 一時間後に無効化
   const expired_at = new Date(Date.now());
   expired_at.setHours(expired_at.getHours() + 1);
+  // トークン生成
+  const id = uniqueSequentialKey();
+  const token = uniqueKey();
+  const hashedToken = bcrypt.hash(token);
+
+  const confirmURLBuilder = new URL(SERVER_EMAIL_CONFIRM_URI);
+  confirmURLBuilder.searchParams.append('token', `${id}:${token}`);
+  confirmURLBuilder.searchParams.append('expired_at', expired_at.toJSON());
+  const confirmURL = confirmURLBuilder.toString();
   await Promise.all([
     //
     await prisma.confirmingEmailAddress.create({
       data: {
+        id,
         email: email,
-        token: email_confirmation_token,
+        hashedtoken: await hashedToken,
         expired_at: expired_at,
+        user_id: null,
       },
     }),
     // メール送信
     await sendMail({
       to: email,
       subject: 'confirm address',
-      content: `/${email_confirmation_token}`,
-      html: `<a href='/${email_confirmation_token}'>confirm mail address</a>`,
+      content: `access to ${confirmURL}`,
+      html: `<a href='${confirmURL}'>confirm mail address</a>`,
     }),
   ]);
 
-  const newEmailConfirmation = new ConfirmingEmailAddress(
-    email,
-    email_confirmation_token,
-    expired_at,
-  );
-  return newEmailConfirmation;
+  return { id, token };
 };
 
-export const isEmailConfirmSuccess = async (
-  email: string,
-  email_confirmation_token: string,
-) => {
-  const emailConfirms = await prisma.confirmingEmailAddress.count({
+export const confirmEmail = async (
+  id: string,
+  token: string,
+): Promise<{ success: true; email: string; user: DBUser | null } | { success: false }> => {
+  const emailConfirms = await prisma.confirmingEmailAddress.findUnique({
+    select: {
+      email: true,
+      hashedtoken: true,
+      expired_at: true,
+      user: true,
+    },
     where: {
-      email: email,
-      token: email_confirmation_token,
-      expired_at: {
-        gt: new Date(Date.now()),
-      },
+      id,
     },
   });
-  return emailConfirms > 0;
+  if (
+    emailConfirms !== null && compareAsc(new Date(Date.now()), emailConfirms.expired_at) <= 0 &&
+    await bcrypt.compare(token, emailConfirms.hashedtoken)
+  ) {
+    return { success: true, email: emailConfirms.email, user: emailConfirms.user };
+  }
+  return { success: false };
 };
 
 export const deleteEmailConfirms = async (email: string) => {

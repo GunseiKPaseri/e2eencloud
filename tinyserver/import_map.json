@@ -1,7 +1,7 @@
 {
   "imports": {
     "tinyserver/": "./",
-    "prisma": "npm:prisma@^4.7.1",
+    "prisma": "npm:prisma@4.7.1",
     "prisma-cli": "./generated/client/deno/edge.ts",
     "https://deno.land/std/hash/mod.ts": "https://deno.land/std@0.160.0/hash/mod.ts"
   }

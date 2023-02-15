@@ -81,6 +81,13 @@ Checked 36 files
 
 ## DB
 
+### When Schema changed
+
+```
+$ deno task prisma:gen
+$ deno task prisma:mgdev
+```
+
 ### migrate
 
 ```bash

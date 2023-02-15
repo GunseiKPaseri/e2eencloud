@@ -1,5 +1,6 @@
 import { PrismaClient } from 'tinyserver/deps.ts';
 export type {
+  ConfirmingEmailAddress as DBConfirmingEmailAddress,
   Coupons as DBCoupons,
   Files as DBFiles,
   Hooks as DBHooks,

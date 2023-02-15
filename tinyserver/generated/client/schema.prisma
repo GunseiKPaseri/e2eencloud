@@ -20,7 +20,6 @@ enum Role {
 model User {
   id                           String                   @id
   email                        String                   @unique
-  is_email_confirmed           Boolean                  @default(false)
   role                         Role                     @default(USER)
   tfa_solutions                TFASolution[]
   max_capacity                 Int
@@ -60,16 +59,14 @@ model TFASolution {
 }
 
 model ConfirmingEmailAddress {
-  id         Int      @id @default(autoincrement())
-  email      String
-  token      String
-  user       User?    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  user_id    String?
-  expired_at DateTime
-  created_at DateTime @default(now()) @db.Timestamp(0)
-  updated_at DateTime @default(now()) @updatedAt @db.Timestamp(0)
-
-  @@index([email])
+  id          String   @id
+  email       String
+  hashedtoken String
+  user        User?    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id     String?
+  expired_at  DateTime
+  created_at  DateTime @default(now()) @db.Timestamp(0)
+  updated_at  DateTime @default(now()) @updatedAt @db.Timestamp(0)
 }
 
 model Sessions {

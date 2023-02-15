@@ -1,64 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import zxcvbn from 'zxcvbn';
+import { useState, useEffect } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Grid from '@mui/material/Grid';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { correctEmailaddr } from '../../../util';
-import PasswordChecker from './PasswordChecker';
-import PasswordField from './PasswordField';
 import { signupAsync } from '../authSlice';
 import { useAppDispatch } from '../../../app/hooks';
-
-const steps = [
-  'ユーザ情報入力',
-  'パスワードの確認',
-  'メールアドレス受信確認',
-];
+import PutEmail from './signupsequence/PutEmail';
+import SendedEmail from './signupsequence/SendedEmail';
+import { sequence } from './signupsequence/sequence';
 
 export default function Signup() {
-  const [stepState, setStepState] = useState<0 | 1 | 2>(0);
+  const [stepState, setStepState] = useState<0 | 1>(0);
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [timer, setTimer] = useState(0); // 再送可能管理タイマー
-  const [confirmPassword, setConfirmPassword] = useState('');
   const dispatch = useAppDispatch();
-  // メールアドレスが適切なものか判定
-  const isGoodMailAddress = correctEmailaddr.test(email);
-  // 現在のパスワードをスコア化
-  const res = zxcvbn(password, [email]);
-  const passwordScore:0 | 1 | 2 | 3 | 4 = password.length < 8 ? 0 : res.score;
-
-  const tick = () => {
-    if (timer > 0) setTimer(timer - 1);
-  };
 
   useEffect(() => {
-    const timerId = setInterval(() => tick(), 1000);
+    const timerId = setInterval(() => {
+      if (timer > 0) setTimer(timer - 1);
+    }, 1000);
     return () => clearInterval(timerId);
   });
 
-  // 入力が受け入れられるものなら確認画面に遷移
-  const confirm = () => {
-    setStepState(1);
-  };
-  // 拒絶するときは初期画面に戻す
-  const cancel = () => {
-    setConfirmPassword('');
-    setStepState(0);
-  };
   // 確認が取れたらサインアップ
-  const signup:React.FormEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault();
-    setStepState(2);
-    setTimer(30);
-    await dispatch(signupAsync({ email, password }));
+  const sendMail = () => {
+    setStepState(1);
+    setTimer(30); // 30秒間メールを送信不能に
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    dispatch(signupAsync({ email }));
   };
 
   return (
@@ -71,7 +43,7 @@ export default function Signup() {
       }}
     >
       <Stepper activeStep={stepState} alternativeLabel>
-        {steps.map((label) => (
+        {sequence.map((label) => (
           <Step key={label}>
             <StepLabel>{label}</StepLabel>
           </Step>
@@ -81,133 +53,27 @@ export default function Signup() {
         <LockOutlinedIcon />
       </Avatar>
       <Typography component="h1" variant="h5">
-        アカウント登録
+        メールアドレス受信確認
       </Typography>
-      <Typography component="p">パスワードは絶対忘れないようにしてください</Typography>
-      <Box component="form" onSubmit={signup} noValidate sx={{ mt: 1 }}>
-        {
-        (stepState === 2
-          ? (
-            <>
-              <Typography component="p">
-                <Typography component="em">{email}</Typography>
-                にメールを送信しました。受信したメールに含まれる確認リンクにアクセスしてください。
-              </Typography>
-              <ul>
-                <li>メールアドレスが間違っていませんか？</li>
-                <li>迷惑メールに含まれていませんか？</li>
-                <li>既に登録済みではありませんか？</li>
-              </ul>
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Button
-                    type="button"
-                    fullWidth
-                    variant="outlined"
-                    sx={{ mt: 3, mb: 2 }}
-                    onClick={cancel}
-                  >
-                    戻る
-                  </Button>
-                </Grid>
-                <Grid item xs={6}>
-                  <Button
-                    type="submit"
-                    fullWidth
-                    variant="contained"
-                    sx={{ mt: 3, mb: 2 }}
-                    disabled={timer !== 0}
-                  >
-                    再送信
-                    {(timer > 0 ? `(${timer})` : '')}
-                  </Button>
-                </Grid>
-              </Grid>
-            </>
-          )
-
-          : (
-            <>
-              <TextField
-                margin="normal"
-                disabled={stepState === 1}
-                required
-                fullWidth
-                id="email"
-                label="メールアドレス"
-                name="email"
-                type="email"
-                autoComplete="email"
-                autoFocus={stepState === 0}
-                value={email}
-                error={!isGoodMailAddress}
-                helperText={isGoodMailAddress ? '' : '正しくないメールアドレスです'}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <PasswordField
-                margin="normal"
-                required
-                fullWidth
-                name="password"
-                label={stepState === 1 ? 'パスワード（確認のため再入力）' : 'パスワード'}
-                id="password"
-                autoComplete="current-password"
-                value={stepState === 1 ? confirmPassword : password}
-                onChange={(e) => (
-                  stepState === 1
-                    ? setConfirmPassword(e.target.value)
-                    : setPassword(e.target.value))}
-                error={stepState === 0 && passwordScore < 2}
-                helperText={stepState === 0 ? <PasswordChecker score={passwordScore} /> : '先程入力したものと同じものを入力してください'}
-              />
-              {
-                stepState === 1
-                  ? (
-                    <Grid container spacing={2}>
-                      <Grid item xs={6}>
-                        <Button
-                          type="button"
-                          fullWidth
-                          variant="outlined"
-                          sx={{ mt: 3, mb: 2 }}
-                          onClick={cancel}
-                        >
-                          戻る
-                        </Button>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Button
-                          type="submit"
-                          fullWidth
-                          variant="contained"
-                          sx={{ mt: 3, mb: 2 }}
-                          disabled={password !== confirmPassword || timer !== 0}
-                        >
-                          登録
-                          {(timer > 0 ? `(${timer})` : '')}
-                        </Button>
-                      </Grid>
-                    </Grid>
-                  )
-                  : (
-                    <Button
-                      type="button"
-                      fullWidth
-                      variant="contained"
-                      sx={{ mt: 3, mb: 2 }}
-                      disabled={!isGoodMailAddress || passwordScore < 2}
-                      onClick={confirm}
-                    >
-                      次へ
-                    </Button>
-                  )
-
-                }
-            </>
-          )
+      <Typography component="p">受信可能なメールアドレスを選択してください。</Typography>
+      {(stepState === 0
+        ? (
+          <PutEmail
+            timer={timer}
+            email={email}
+            onChangeEmail={setEmail}
+            onConfirm={sendMail}
+          />
         )
-      }
-      </Box>
+        : (
+          <SendedEmail
+            timer={timer}
+            email={email}
+            onCancel={() => setStepState(0)}
+            onResend={sendMail}
+          />
+        )
+        )}
     </Box>
   );
 }

@@ -1,64 +1,40 @@
 import { base642ByteArray, byteArray2base64, Router, Status, uaparser, z } from 'tinyserver/deps.ts';
 import { addEmailConfirmation } from 'tinyserver/src/model/ConfirmingEmailAddress.ts';
 import {
-  addUser,
+  emailConfirmScheme,
   getClientRandomSalt,
   getUserByEmail,
   getUserById,
   userEmailConfirm,
 } from 'tinyserver/src/model/Users.ts';
+import { prisma } from 'tinyserver/src/client/dbclient.ts';
 
 const router = new Router();
 
-interface POSTSignUpJSON {
-  email: string;
-  clientRandomValueBase64: string;
-  encryptedMasterKeyBase64: string;
-  encryptedMasterKeyIVBase64: string;
-  hashedAuthenticationKeyBase64: string;
-}
+const postSignUpScheme = z.object({
+  email: z.string().email(),
+});
 
 router.post('/signup', async (ctx) => {
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
-  const data: Partial<POSTSignUpJSON> = await body.value;
-  if (
-    !data ||
-    typeof data.email !== 'string' ||
-    typeof data.clientRandomValueBase64 !== 'string' ||
-    typeof data.encryptedMasterKeyBase64 !== 'string' ||
-    typeof data.encryptedMasterKeyIVBase64 !== 'string' ||
-    typeof data.hashedAuthenticationKeyBase64 !== 'string'
-  ) {
+  const data = postSignUpScheme.safeParse(await body.value);
+  if (!data.success) {
     return ctx.response.status = Status.BadRequest;
   }
 
-  const issuccess = await addUser({
-    email: data.email,
-    client_random_value: data.clientRandomValueBase64,
-    encrypted_master_key: data.encryptedMasterKeyBase64,
-    encrypted_master_key_iv: data.encryptedMasterKeyIVBase64,
-    hashed_authentication_key: data.hashedAuthenticationKeyBase64,
-    max_capacity: 5 * 1024 * 1024, //5n * 1024n * 1024n * 1024n,
-  });
-  console.log(issuccess);
-  if (issuccess) {
-    // 128 bit email confirmation token
-    const email_confirmation_token = crypto.getRandomValues(new Uint8Array(16));
-    const token = byteArray2base64(email_confirmation_token);
-    await addEmailConfirmation(data.email, token);
+  const email = data.data.email;
+  const cnt = await prisma.user.count({ where: { email } });
+  if (cnt === 0) {
+    // remove await => queue
+    await addEmailConfirmation(data.data.email);
   }
-  // userがそのメールアドレスが登録済か知る必要はない
+
   ctx.response.status = Status.OK;
   ctx.response.body = { success: true };
   ctx.response.type = 'json';
   return;
-});
-
-const POSTEmailConfirmScheme = z.object({
-  email: z.string().email(),
-  emailConfirmationToken: z.string(),
 });
 
 router.post('/email_confirm', async (ctx) => {
@@ -66,26 +42,43 @@ router.post('/email_confirm', async (ctx) => {
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
 
-  const parsed = POSTEmailConfirmScheme.safeParse(await body.value);
+  const parsed = emailConfirmScheme.safeParse(await body.value);
   if (!parsed.success) {
     return ctx.response.status = Status.BadRequest;
   }
   const data = parsed.data;
 
   // OK
-  const status = await userEmailConfirm(
-    data.email,
-    data.emailConfirmationToken,
-  );
+  const result = await userEmailConfirm(data);
 
-  // login
-  const user = await getUserByEmail(data.email);
-  if (!user) throw new Error('Why!!');
-  await ctx.state.session.set('uid', user.id);
-
-  ctx.response.status = Status.OK;
-  ctx.response.body = { success: status };
   ctx.response.type = 'json';
+  ctx.response.status = Status.OK;
+  console.log(result);
+
+  // if add user.. login
+  if (typeof result !== 'boolean') {
+    await ctx.state.session.set('uid', result.id);
+    // same as login
+    ctx.response.body = {
+      success: true,
+      user: {
+        email: result.email,
+        encryptedMasterKeyBase64: result.encrypted_master_key,
+        encryptedMasterKeyIVBase64: result.encrypted_master_key_iv,
+        useTwoFactorAuth: false,
+        role: result.role,
+        encryptedRSAPrivateKeyBase64: result.encrypted_rsa_private_key,
+        encryptedRSAPrivateKeyIVBase64: result.encrypted_rsa_private_key_iv,
+        RSAPublicKeyBase64: result.rsa_public_key,
+      },
+      storage: {
+        usage: '' + result.file_usage,
+        max_capacity: '' + result.max_capacity,
+      },
+    };
+  } else {
+    ctx.response.body = { success: result };
+  }
 });
 
 // client random salt
