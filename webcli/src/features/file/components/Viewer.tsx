@@ -8,7 +8,7 @@ import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
 import { assertFileNodeFile, assertFileNodeFileORUndefined } from '../filetypeAssert';
-import TagSetter from './TagSetter';
+import TagField from './TagField';
 import Renamer from './Renamer';
 import type { FileState } from '../fileSlice';
 import { filedownloadAsync } from '../fileSlice';
@@ -25,7 +25,7 @@ function Viewer() {
     activeNode && activeFile
       ? (
         <>
-          <TagSetter />
+          <TagField />
           <Renamer id={activeNode.id} name={activeNode.name} />
           <Box>
             <Tooltip title="ダウンロード">
