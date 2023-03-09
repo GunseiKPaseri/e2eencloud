@@ -2,6 +2,7 @@ import { z } from 'tinyserver/deps.ts';
 import { ExhaustiveError } from 'tinyserver/src/utils/typeUtil.ts';
 
 import type { Prisma } from 'tinyserver/src/client/dbclient.ts';
+import { createUnionSchema } from './zod.ts';
 
 /*******
  *  Boolean Filter
@@ -58,6 +59,86 @@ export const createFilterBooleanItemUnionSchema = (<T extends readonly [...strin
   }
   throw new Error('Array must have a length');
 }) as CreateFilterBooleanItemUnionSchema;
+
+/*******
+ *  Enum Filter
+ */
+
+export const filterEnumItemSchema = <T extends string, U extends readonly [string, string, ...string[]]>(
+  fieldname: T,
+  value: U,
+) => filterEnumItemSchemaCore(z.literal(fieldname), createUnionSchema(value));
+
+type FilterEnumItemSchema<T extends string, U extends readonly [string, string, ...string[]]> = ReturnType<
+  typeof filterEnumItemSchema<T, U>
+>;
+
+const filterEnumItemSchemaCore = <T extends z.ZodType, U extends z.ZodType>(schema: T, value: U) =>
+  z.union([
+    z.object({
+      columnField: schema,
+      value: value,
+      operatorValue: z.literal('equals'),
+    }),
+    z.object({
+      columnField: schema,
+      value: z.union([value, value.array()]),
+      operatorValue: z.union([z.literal('in'), z.literal('notIn')]),
+    }),
+  ]);
+
+export type FilterEnumItem<T extends string, U extends string> = {
+  columnField: T;
+  value: U;
+  operatorValue: 'equals';
+} | {
+  columnField: T;
+  value: U | U[];
+  operatorValue: 'in' | 'notIn';
+};
+
+// For Union
+type MappedFilterEnumItem<T extends readonly string[], U extends readonly [string, string, ...string[]]> = {
+  -readonly [K in keyof T]: FilterEnumItemSchema<T[K], U>;
+};
+
+export function createFilterEnumItemUnion<
+  A extends readonly [string, string, ...string[]],
+  U extends readonly [string, string, ...string[]],
+>(items: A, value: U) {
+  return z.union(
+    items.map((str) => filterEnumItemSchema(str, value)) as MappedFilterEnumItem<A, U>,
+  );
+}
+
+type CreateFilterEnumItemUnionSchema = {
+  <T extends readonly [], U extends readonly [string, string, ...string[]]>(items: T, value: U): z.ZodNever;
+  <T extends readonly [string], U extends readonly [string, string, ...string[]]>(
+    items: T,
+    value: U,
+  ): FilterEnumItemSchema<T[0], U>;
+  <T extends readonly [string, string, ...string[]], U extends readonly [string, string, ...string[]]>(
+    items: T,
+    value: U,
+  ): z.ZodUnion<MappedFilterEnumItem<T, U>>;
+};
+export const createFilterEnumItemUnionSchema =
+  (<T extends readonly [...string[]], U extends readonly [string, string, ...string[]]>(
+    items: T,
+    value: U,
+  ) => {
+    if (items.length > 1) {
+      return createFilterEnumItemUnion(
+        items as unknown as [string, string, ...string[]],
+        value,
+      );
+    } else if (items.length === 1) {
+      return filterEnumItemSchema(items[0], value) as FilterEnumItemSchema<T[0], U>;
+    } else if (items.length === 0) {
+      return z.never();
+    }
+    throw new Error('Array must have a length');
+  }) as CreateFilterEnumItemUnionSchema;
 
 /*****
  * Number filter
@@ -422,6 +503,43 @@ export const gridFilterToPrismaFilterDateTime = <T extends string>(
   return {
     [gf.columnField]: x,
   } as PrismaFilterReturn<T, Prisma.DateTimeFilter>;
+};
+
+const gf2pfsEnum = <T extends string, U extends readonly string[]>(
+  gf: FilterEnumItem<T, U[number]>,
+): EnumFilter<U[number]> => {
+  switch (gf.operatorValue) {
+    case 'equals':
+      return { equals: gf.value };
+    case 'in':
+      return { in: gf.value };
+    case 'notIn':
+      return { not: { in: gf.value } };
+    default:
+      throw new ExhaustiveError(gf);
+  }
+};
+
+type EnumFilter<Enum extends string> = {
+  equals?: Enum;
+  in?: Enum | Enum[];
+  notIn?: Enum | Enum[];
+  not?: NestedEnumFilter<Enum> | Enum;
+};
+type NestedEnumFilter<Enum extends string> = {
+  equals?: Enum;
+  in?: Enum | Enum[];
+  notIn?: Enum | Enum[];
+  not?: NestedEnumFilter<Enum> | Enum;
+};
+
+export const gridFilterToPrismaFilterEnum = <T extends string, U extends readonly string[]>(
+  gf: FilterEnumItem<T, U[number]>,
+): EnumFilter<U[number]> | null => {
+  const x: EnumFilter<U[number]> = gf2pfsEnum<T, U>(gf);
+  return {
+    [gf.columnField]: x,
+  } as PrismaFilterReturn<T, EnumFilter<U[number]>>;
 };
 
 export const gridFilterToPrismaFilter = <T extends string, U extends FilterType>(

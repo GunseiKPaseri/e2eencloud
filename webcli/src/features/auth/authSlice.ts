@@ -11,8 +11,19 @@ import {
   afterLoginAsyncRejected,
   loginAsync,
 } from './thunk/loginAsync';
+import {
+  loginSuccess,
+  afterLoginSuccessFullfilled,
+} from './thunk/loginSuccess';
+
 import { afterLogoutAsyncFullfilled, logoutAsync } from './thunk/logoutAsync';
 import { changePasswordAsync } from './thunk/changePasswordAsync';
+import {
+  afterTOTPLoginAsyncFullfilled,
+  afterTOTPLoginAsyncPending,
+  afterTOTPLoginAsyncRejected,
+  totpLoginAsync,
+} from './thunk/totpLoginAsync';
 
 export { signupAsync };
 export { confirmEmailAsync };
@@ -20,6 +31,7 @@ export { addTOTPAsync };
 export { deleteTOTPAsync };
 export { loginAsync };
 export { logoutAsync };
+export { totpLoginAsync };
 export { changePasswordAsync };
 
 export interface PostSignUp {
@@ -50,14 +62,14 @@ type ConfirmState = 'LOADING' | 'ERROR' | 'SUCCESS';
 export interface AuthState {
   user: UserState | null;
   signupStatus: 'failed' | null;
-  loginStatus: 'failed' | null;
+  loginStatus: { step: 'EmailAndPass', state: null | 'pending' | 'error' } | { step: 'TOTP', state: null | 'pending' | 'error' };
   confirmstate: Record<string, ConfirmState | undefined>;
 }
 
 const initialState: AuthState = {
   user: null,
   signupStatus: null,
-  loginStatus: null,
+  loginStatus: { step: 'EmailAndPass', state: null },
   confirmstate: {},
 };
 
@@ -74,6 +86,10 @@ export const authSlice = createSlice({
       .addCase(loginAsync.pending, afterLoginAsyncPending)
       .addCase(loginAsync.rejected, afterLoginAsyncRejected)
       .addCase(loginAsync.fulfilled, afterLoginAsyncFullfilled)
+      .addCase(loginSuccess.fulfilled, afterLoginSuccessFullfilled)
+      .addCase(totpLoginAsync.pending, afterTOTPLoginAsyncPending)
+      .addCase(totpLoginAsync.rejected, afterTOTPLoginAsyncRejected)
+      .addCase(totpLoginAsync.fulfilled, afterTOTPLoginAsyncFullfilled)
       .addCase(logoutAsync.fulfilled, afterLogoutAsyncFullfilled);
   },
 });

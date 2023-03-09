@@ -7,16 +7,21 @@ import { byteArray2base64, OTPAuth, z } from 'tinyserver/deps.ts';
 import parseJSONwithoutErr from 'tinyserver/src/utils/parseJSONWithoutErr.ts';
 import {
   anyFilterModelSchema,
+  FilterEnumItem,
+  filterEnumItemSchema,
   type FilterNumberItem,
   filterNumberItemSchema,
   type FilterStringItem,
   filterStringItemSchema,
   GridFilterModel,
   gridFilterToPrismaFilter,
+  gridFilterToPrismaFilterEnum,
 } from 'tinyserver/src/utils/dataGridFilter.ts';
 import { pick } from 'tinyserver/src/utils/objSubset.ts';
 import { recordUnion } from 'tinyserver/src/utils/typeUtil.ts';
 import { confirmEmail } from './ConfirmingEmailAddress.ts';
+import { uniqueSequentialKey } from '../utils/uniqueKey.ts';
+import { createUnionSchema } from '../utils/zod.ts';
 
 const DEFAULT_MAX_CAPACITY = 10n * 1024n * 1024n; //10MiB
 /*
@@ -158,6 +163,7 @@ export class User {
       where: {
         type: 'TOTP',
         user_id: this.id,
+        available: true,
       },
     });
     if (registedTOTPkey.length === 0) return { success: true, useTOTP: false };
@@ -178,18 +184,63 @@ export class User {
     };
   }
 
-  async addTOTP(key: string) {
-    await this.deleteTOTP();
-    await prisma.tFASolution.create({
-      data: {
+  async usingTFA() {
+    const usingTOTP = await prisma.tFASolution.findMany({
+      select: {
+        type: true,
+      },
+      where: {
         type: 'TOTP',
-        value: key,
         user_id: this.id,
+        available: true,
+      },
+    });
+    return [...new Set(usingTOTP.map((x) => x.type))];
+  }
+
+  async getTFAList(params: {
+    user_id: string;
+    offset: number;
+    limit: number;
+    orderBy: 'id' | 'type';
+    order: 'asc' | 'desc';
+    queryFilter: GridTFAFilterModel;
+    select: Prisma.TFASolutionSelect;
+  }) {
+    const x = await prisma.tFASolution.findMany({
+      select: params.select,
+      skip: params.offset,
+      take: params.limit,
+      orderBy: { [params.orderBy]: params.order },
+      where: {
+        ...tfaFilterQueryToPrismaQuery(params.queryFilter),
+        user_id: params.user_id,
+      },
+    });
+    return x;
+  }
+
+  async getNumberOfHooks(queryFilter?: GridTFAFilterModel): Promise<number> {
+    return await prisma.hooks.count({
+      where: {
+        ...(queryFilter ? tfaFilterQueryToPrismaQuery(queryFilter) : {}),
       },
     });
   }
 
-  async deleteTOTP() {
+  async addTOTP(key: string) {
+    await prisma.tFASolution.create({
+      data: {
+        id: uniqueSequentialKey(),
+        type: 'TOTP',
+        value: key,
+        user_id: this.id,
+        available: true,
+      },
+    });
+  }
+
+  async deleteTOTPAll() {
     await prisma.tFASolution.deleteMany({
       where: {
         type: 'TOTP',
@@ -241,6 +292,7 @@ export class User {
 
   async patch(params: {
     max_capacity?: number | bigint;
+    two_factor_authentication?: boolean;
   }) {
     // validation
     const max_capacity = typeof params.max_capacity === 'undefined' ? undefined : Number(params.max_capacity);
@@ -256,6 +308,18 @@ export class User {
           max_capacity: Number(this.#max_capacity),
         },
       });
+      console.log(params);
+      if (params.two_factor_authentication !== true) {
+        // 無効化のみ
+        await prisma.tFASolution.updateMany({
+          where: {
+            user_id: this.id,
+          },
+          data: {
+            available: false,
+          },
+        });
+      }
       return true;
     } catch (_) {
       console.log(_);
@@ -405,10 +469,35 @@ export const getUsers = async (
     skip: params.offset,
     take: params.limit,
     orderBy: { [params.orderBy]: params.order },
-    select: params.select,
-    where: userFilterQueryToPrismaQuery(params.queryFilter),
+    select: {
+      ...params.select,
+    },
+    where: {
+      ...userFilterQueryToPrismaQuery(params.queryFilter),
+    },
   });
-  return users;
+  console.log(users);
+  const users2 = await prisma.user.findMany({
+    skip: params.offset,
+    take: params.limit,
+    orderBy: { [params.orderBy]: params.order },
+    select: {
+      _count: {
+        select: {
+          tfa_solutions: {
+            where: {
+              available: true,
+            },
+          },
+        },
+      },
+    },
+    where: {
+      ...userFilterQueryToPrismaQuery(params.queryFilter),
+    },
+  });
+  console.log(users2);
+  return users.map(({ ...x }) => ({ ...x, two_factor_authentication: true })); //.map(x => );
 };
 
 export const getNumberOfUsers = async (queryFilter?: GridUserFilterModel): Promise<number> => {
@@ -476,6 +565,50 @@ const userFilterQueryToPrismaQuery = (gridFilter: GridUserFilterModel): Prisma.U
         case 'email':
         case 'authority':
           return gridFilterToPrismaFilter(x, 'String');
+        default:
+          console.log(new ExhaustiveError(x));
+      }
+    });
+  return recordUnion(t);
+};
+
+const tfaFilterStringColumn = ['id'] as const;
+const tfaFilterEnumTypeValue = ['TOTP', 'FIDO2', 'EMAIL'] as const;
+
+const tfaFilterColumns = [...tfaFilterStringColumn, 'type'] as const;
+
+export const tfaColumnsSchema = createUnionSchema(tfaFilterColumns);
+
+const tfaFilterItemSchema = z.union([
+  filterStringItemSchema('id'),
+  filterEnumItemSchema('type', tfaFilterEnumTypeValue),
+]);
+type GridTFAFilterItem = z.infer<typeof tfaFilterItemSchema>;
+
+type FixedGridTFAFilterItem =
+  | FilterStringItem<typeof tfaFilterStringColumn[number]>
+  | FilterEnumItem<'type', typeof tfaFilterEnumTypeValue[number]>;
+
+type GridTFAFilterModel = GridFilterModel<FixedGridTFAFilterItem>;
+
+/**
+ * parse as MUI DataGrid FilterModel
+ * @param query DataGrid FilterModel(for TFA)
+ * @returns
+ */
+export const parseTFAFilterQuery = (query: string): GridFilterModel<GridTFAFilterItem> => {
+  const parsed = anyFilterModelSchema(tfaFilterItemSchema, parseJSONwithoutErr(query));
+  return parsed;
+};
+
+const tfaFilterQueryToPrismaQuery = (gridFilter: GridTFAFilterModel): Prisma.TFASolutionWhereInput => {
+  const t = gridFilter.items
+    .map((x) => {
+      switch (x.columnField) {
+        case 'id':
+          return gridFilterToPrismaFilter(x, 'String');
+        case 'type':
+          return gridFilterToPrismaFilterEnum<'type', typeof tfaFilterEnumTypeValue>(x);
         default:
           console.log(new ExhaustiveError(x));
       }

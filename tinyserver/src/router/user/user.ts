@@ -65,11 +65,6 @@ router.get('/users', async (ctx) => {
       max_capacity: true,
       file_usage: true,
       role: true,
-      tfa_solutions: {
-        select: {
-          id: true,
-        },
-      },
     },
   }))
     .flatMap((user): GETuserlistJSON['users'][0][] => ((
@@ -85,7 +80,7 @@ router.get('/users', async (ctx) => {
         max_capacity: user.max_capacity.toString(),
         file_usage: user.file_usage.toString(),
         role: user.role,
-        two_factor_authentication: user.tfa_solutions !== undefined && user.tfa_solutions.length !== 0,
+        two_factor_authentication: user.two_factor_authentication,
       }]
       : [])
     );

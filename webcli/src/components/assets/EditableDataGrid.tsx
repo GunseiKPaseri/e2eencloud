@@ -43,9 +43,9 @@ function EditableDataGrid<T extends GridValidRowModel>(
       sortQuery: GridSortItem[],
       filterQuery: GridFilterModel,
     }) => Promise<GetListJSON<T>>;
-    editItem: (targetItem: T, edited: Partial<T>) => Promise<T>;
-    onEditSuccess: () => void;
-    onEditFailure: () => void;
+    editItem?: (targetItem: T, edited: Partial<T>) => Promise<T>;
+    onEditSuccess?: () => void;
+    onEditFailure?: () => void;
     onDelete: (props: GridRowParams<T>) => void;
     parentHeight: number,
     reloader?: symbol,
@@ -57,8 +57,8 @@ function EditableDataGrid<T extends GridValidRowModel>(
     getList,
     editItem,
     onDelete,
-    onEditSuccess,
-    onEditFailure,
+    onEditSuccess = () => undefined,
+    onEditFailure = () => undefined,
     parentHeight,
     columns,
     reloader,
@@ -143,7 +143,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
     setEditConfirmPromiseArguments(null);
   };
 
-  const handleEditConfirmYes = async () => {
+  const handleEditConfirmYes = editItem ? async () => {
     if (!editConfirmPromiseArguments) return;
     const {
       newRow,
@@ -163,7 +163,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
       resolve(oldRow);
       setEditConfirmPromiseArguments(null);
     }
-  };
+  } : () => Promise.resolve();
 
   const handleEditConfirmEntered = () => {
     // The `autoFocus` is not used because, if used, the same Enter that saves

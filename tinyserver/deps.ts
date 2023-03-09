@@ -13,7 +13,7 @@ import 'https://deno.land/std@0.177.0/dotenv/load.ts';
 // APP PORT
 export const PORT = parseInt(Deno.env.get('PORT') ?? '3001');
 export const SERVER_HOSTNAME = Deno.env.get('SERVER_HOSTNAME') ?? 'localhost';
-export const SERVER_EMAIL_CONFIRM_URI = Deno.env.get('SERVER_EMAIL_CONFIRM_URI') ?? 'http://localhost';
+export const SERVER_URI = Deno.env.get('SERVER_URI') ?? 'http://localhost';
 
 // DB
 export const DB_HOSTNAME = Deno.env.get('DB_HOSTNAME') ?? '__NOTFOUND__';
@@ -30,7 +30,13 @@ export const BUCKET_ENDPOINT = Deno.env.get('AWS_URL') ?? '__NOTFOUND__';
 
 // load dependent package
 
-export { Application, Router, Status } from 'https://deno.land/x/oak@v11.1.0/mod.ts';
+export {
+  Application,
+  type RouteParams,
+  Router,
+  type RouterContext,
+  Status,
+} from 'https://deno.land/x/oak@v11.1.0/mod.ts';
 
 export { Session as oakSession } from 'https://deno.land/x/oak_sessions@v4.1.0/mod.ts';
 import OakSessionStore from 'https://deno.land/x/oak_sessions@v4.1.0/src/stores/Store.ts';
@@ -57,6 +63,8 @@ export { S3Bucket } from 'https://deno.land/x/s3@0.5.0/mod.ts';
 
 import compareAsc from 'https://deno.land/x/date_fns@v2.22.1/compareAsc/index.ts';
 export { compareAsc };
+
+export { Fido2AssertionResult, Fido2Lib } from 'https://deno.land/x/fido2@3.3.5/dist/main.js';
 
 import UUIDshort from 'npm:short-uuid';
 export { UUIDshort };

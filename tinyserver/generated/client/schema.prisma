@@ -3,7 +3,7 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["deno"]
+  previewFeatures = ["deno", "filteredRelationCount"]
   output          = "../generated/client"
 }
 
@@ -48,7 +48,7 @@ enum SolutionType {
 }
 
 model TFASolution {
-  id         Int          @id @default(autoincrement())
+  id         String       @id
   type       SolutionType
   value      String
   user       User         @relation(fields: [user_id], references: [id], onDelete: Cascade)

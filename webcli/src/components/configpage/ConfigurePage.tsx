@@ -1,3 +1,4 @@
+import TFAList from '../../features/auth/components/TFAList';
 import PasswordChanger from '../../features/auth/components/PasswordChanger';
 import TwoFactorAuth from '../../features/auth/components/TwoFactorAuth';
 import { useAppSelector } from '../../app/hooks';
@@ -18,6 +19,7 @@ export default function ConfigurePage() {
           <SessionConfig />
           <UseCoupon />
           <StorageInfo />
+          <TFAList />
           <TwoFactorAuth />
           <PasswordChanger />
           <HookList />
