@@ -462,7 +462,7 @@ export const getUsers = async (
     orderBy: UserField;
     order: 'asc' | 'desc';
     queryFilter: GridUserFilterModel;
-    select: Prisma.UserSelect;
+    select: { id: true } & Prisma.UserSelect;
   },
 ) => {
   const users = await prisma.user.findMany({
@@ -476,7 +476,8 @@ export const getUsers = async (
       ...userFilterQueryToPrismaQuery(params.queryFilter),
     },
   });
-  console.log(users);
+  //console.log(users);
+  /*
   const users2 = await prisma.user.findMany({
     skip: params.offset,
     take: params.limit,
@@ -495,9 +496,17 @@ export const getUsers = async (
     where: {
       ...userFilterQueryToPrismaQuery(params.queryFilter),
     },
-  });
-  console.log(users2);
-  return users.map(({ ...x }) => ({ ...x, two_factor_authentication: true })); //.map(x => );
+  });*/
+  const users2 = await Promise.all(users.map((user) => {
+    return prisma.tFASolution.count({
+      where: {
+        user_id: user.id,
+        available: true,
+      },
+    }).then((x) => ({ ...user, two_factor_authentication: x > 0 }));
+  }));
+
+  return users2;
 };
 
 export const getNumberOfUsers = async (queryFilter?: GridUserFilterModel): Promise<number> => {

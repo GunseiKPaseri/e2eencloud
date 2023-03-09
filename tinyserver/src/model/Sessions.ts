@@ -50,7 +50,6 @@ class SessionsStore implements OakSessionStore {
   }
 
   async sessionExists(sessionKey: string) {
-    console.log('ex', sessionKey);
     const session = await prisma.sessions.findFirst({
       select: {
         id: true,
@@ -63,7 +62,6 @@ class SessionsStore implements OakSessionStore {
   }
 
   async getSessionById(sessionKey: string): Promise<AppSessionData | null> {
-    console.log('byid', sessionKey);
     const session = await prisma.sessions.findUnique({
       select: {
         id: true,
@@ -79,7 +77,6 @@ class SessionsStore implements OakSessionStore {
   }
 
   async createSession(sessionKey: string, initialData: AppSessionData) {
-    console.log('cr', sessionKey);
     await prisma.sessions.create({
       data: {
         ...sessionStringify(initialData),
@@ -92,7 +89,6 @@ class SessionsStore implements OakSessionStore {
   }
 
   async deleteSession(sessionKey: string) {
-    console.log('dl', sessionKey);
     await prisma.sessions.delete({
       where: {
         session_key: sessionKey,
@@ -101,7 +97,6 @@ class SessionsStore implements OakSessionStore {
   }
 
   async deleteSessionById(id: string, user_id: string) {
-    console.log('uid', id);
     await prisma.sessions.deleteMany({
       where: {
         id,
@@ -111,7 +106,6 @@ class SessionsStore implements OakSessionStore {
   }
 
   async persistSessionData(sessionKey: string, sessionData: AppSessionData) {
-    console.log('pe', sessionKey);
     await prisma.sessions.update({
       where: {
         session_key: sessionKey,
@@ -121,7 +115,6 @@ class SessionsStore implements OakSessionStore {
   }
 
   async persistSessionDataById(id: string, sessionData: AppSessionData) {
-    console.log('pe', id);
     await prisma.sessions.update({
       data: omit(sessionStringify(sessionData), ['id']),
       where: {
@@ -131,7 +124,6 @@ class SessionsStore implements OakSessionStore {
   }
 
   async getSessionsByUserId(userId: string) {
-    console.log('get', userId);
     const sessions = await prisma.sessions.findMany({
       select: {
         id: true,
@@ -146,7 +138,6 @@ class SessionsStore implements OakSessionStore {
   }
 
   async getSessionByUniqueId(id: string) {
-    console.log('id', id);
     const session = await prisma.sessions.findUnique({
       select: {
         id: true,

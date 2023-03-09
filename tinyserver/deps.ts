@@ -82,3 +82,6 @@ export { bs58 };
 
 // for
 import _prisma from 'prisma';
+
+import * as trpc from 'npm:@trpc/server@10.14.1';
+export { trpc };

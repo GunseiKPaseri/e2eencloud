@@ -11,5 +11,5 @@ export type {
 } from 'tinyserver/generated/client/deno/index.d.ts';
 
 export const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'],
+  //log: ['query', 'info', 'warn', 'error'],
 });
