@@ -7,4 +7,4 @@ export const axiosWithSession = axios.create({
   },
 });
 
-export const appLocation = 'http://localhost:3001';
+export const appLocation = `http://${window.location.hostname}:3001`;

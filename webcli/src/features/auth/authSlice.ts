@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 // Thunk
 import { signupAsync } from './thunk/signupAsync';
 import { confirmEmailAsync, afterConfirmEmailAsyncFullfilled } from './thunk/confirmEmailAsync';
+import { addFIDO2Async, afterAddFIDO2AsyncFullfilled } from './thunk/addFIDO2Async';
 import { addTOTPAsync, afterAddTOTPAsyncFullfilled } from './thunk/addTOTPAsync';
 import { deleteTOTPAsync, afterDeleteTOTPAsyncFullfilled } from './thunk/deleteTOTPAsync';
 import {
@@ -11,15 +12,28 @@ import {
   afterLoginAsyncRejected,
   loginAsync,
 } from './thunk/loginAsync';
+import {
+  loginSuccess,
+  afterLoginSuccessFullfilled,
+} from './thunk/loginSuccess';
+
 import { afterLogoutAsyncFullfilled, logoutAsync } from './thunk/logoutAsync';
 import { changePasswordAsync } from './thunk/changePasswordAsync';
+import {
+  afterTOTPLoginAsyncFullfilled,
+  afterTOTPLoginAsyncPending,
+  afterTOTPLoginAsyncRejected,
+  totpLoginAsync,
+} from './thunk/totpLoginAsync';
 
 export { signupAsync };
 export { confirmEmailAsync };
+export { addFIDO2Async };
 export { addTOTPAsync };
 export { deleteTOTPAsync };
 export { loginAsync };
 export { logoutAsync };
+export { totpLoginAsync };
 export { changePasswordAsync };
 
 export interface PostSignUp {
@@ -50,14 +64,14 @@ type ConfirmState = 'LOADING' | 'ERROR' | 'SUCCESS';
 export interface AuthState {
   user: UserState | null;
   signupStatus: 'failed' | null;
-  loginStatus: 'failed' | null;
+  loginStatus: { step: 'EmailAndPass', state: null | 'pending' | 'error' } | { step: 'TOTP', state: null | 'pending' | 'error' };
   confirmstate: Record<string, ConfirmState | undefined>;
 }
 
 const initialState: AuthState = {
   user: null,
   signupStatus: null,
-  loginStatus: null,
+  loginStatus: { step: 'EmailAndPass', state: null },
   confirmstate: {},
 };
 
@@ -70,10 +84,15 @@ export const authSlice = createSlice({
     builder
       .addCase(confirmEmailAsync.fulfilled, afterConfirmEmailAsyncFullfilled)
       .addCase(addTOTPAsync.fulfilled, afterAddTOTPAsyncFullfilled)
+      .addCase(addFIDO2Async.fulfilled, afterAddFIDO2AsyncFullfilled)
       .addCase(deleteTOTPAsync.fulfilled, afterDeleteTOTPAsyncFullfilled)
       .addCase(loginAsync.pending, afterLoginAsyncPending)
       .addCase(loginAsync.rejected, afterLoginAsyncRejected)
       .addCase(loginAsync.fulfilled, afterLoginAsyncFullfilled)
+      .addCase(loginSuccess.fulfilled, afterLoginSuccessFullfilled)
+      .addCase(totpLoginAsync.pending, afterTOTPLoginAsyncPending)
+      .addCase(totpLoginAsync.rejected, afterTOTPLoginAsyncRejected)
+      .addCase(totpLoginAsync.fulfilled, afterTOTPLoginAsyncFullfilled)
       .addCase(logoutAsync.fulfilled, afterLogoutAsyncFullfilled);
   },
 });

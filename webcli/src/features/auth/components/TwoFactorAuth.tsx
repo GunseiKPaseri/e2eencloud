@@ -85,13 +85,13 @@ export default function TwoFactorAuth() {
             (selector.user.useTwoFactorAuth)
               ? (
                 <>
-                  <p>二要素認証を利用しています</p>
-                  <button type="button" onClick={deleteKey}>二要素認証を停止</button>
+                  <p>TOTPを利用しています</p>
+                  <button type="button" onClick={deleteKey}>TOTPを停止</button>
                 </>
               )
               : (
                 <>
-                  <p>二要素認証を利用していません。新しく追加しましょう。</p>
+                  <p>TOTPを利用していません。新しく追加しましょう。</p>
                   <GenTwoFactorAuth email={selector.user.email} />
                 </>
               )

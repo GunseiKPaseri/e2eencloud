@@ -1,6 +1,6 @@
 import { type DBConfirmingEmailAddress, type DBUser, prisma } from 'tinyserver/src/client/dbclient.ts';
 import { sendMail } from 'tinyserver/src/client/mailclient.ts';
-import { bcrypt, compareAsc, SERVER_EMAIL_CONFIRM_URI } from 'tinyserver/deps.ts';
+import { bcrypt, compareAsc, SERVER_URI } from 'tinyserver/deps.ts';
 import { uniqueKey, uniqueSequentialKey } from 'tinyserver/src/utils/uniqueKey.ts';
 
 export class ConfirmingEmailAddress {
@@ -29,7 +29,7 @@ export const addEmailConfirmation = async (
   const token = uniqueKey();
   const hashedToken = bcrypt.hash(token);
 
-  const confirmURLBuilder = new URL(SERVER_EMAIL_CONFIRM_URI);
+  const confirmURLBuilder = new URL(`${SERVER_URI}/confirm`);
   confirmURLBuilder.searchParams.append('token', `${id}:${token}`);
   confirmURLBuilder.searchParams.append('expired_at', expired_at.toJSON());
   const confirmURL = confirmURLBuilder.toString();

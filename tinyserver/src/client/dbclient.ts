@@ -10,4 +10,6 @@ export type {
   User as DBUser,
 } from 'tinyserver/generated/client/deno/index.d.ts';
 
-export const prisma = new PrismaClient();
+export const prisma = new PrismaClient({
+  //log: ['query', 'info', 'warn', 'error'],
+});

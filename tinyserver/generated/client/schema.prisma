@@ -48,9 +48,9 @@ enum SolutionType {
 }
 
 model TFASolution {
-  id         Int          @id @default(autoincrement())
+  id         String       @id
   type       SolutionType
-  value      String
+  value      String       @db.Text
   user       User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id    String
   available  Boolean      @default(false)
