@@ -96,9 +96,11 @@ router.post('/attestation', async (ctx) => {
   const credId = byteArray2base64(regResult.authnrData?.get('credId'));
   const counter = regResult.authnrData?.get('counter');
 
+  const date = (new Date()).toLocaleString();
   const _re = await prisma.mFASolution.create({
     data: {
       id: credId,
+      name: `${date}に追加したセキュリティデバイス`,
       type: 'FIDO2',
       user_id: user.id,
       available: true,
@@ -158,7 +160,6 @@ router.post('/assertion/options', async (ctx) => {
   };
 
   await ctx.state.session.set('challenge', assertionOptions.challenge);
-  await ctx.state.session.set('challenge_uid', user.id);
   ctx.response.status = Status.OK;
   ctx.response.body = assertionOptions;
 });
@@ -179,8 +180,8 @@ router.post('/assertion/result', async (ctx) => {
   // use challenge
   const challenge: string | null = await ctx.state.session.get('challenge');
   if (typeof challenge !== 'string') return ctx.response.status = Status.Forbidden;
-  // use challenge_uid
-  const challengeUID: string | null = await ctx.state.session.get('challenge_uid');
+  // use mfa_uid
+  const challengeUID: string | null = await ctx.state.session.get('mfa_uid');
   if (typeof challengeUID !== 'string') return ctx.response.status = Status.Forbidden;
 
   // parse

@@ -184,7 +184,7 @@ export class User {
     user_id: string;
     offset: number;
     limit: number;
-    orderBy: 'id' | 'type';
+    orderBy: 'id' | 'type' | 'name';
     order: 'asc' | 'desc';
     queryFilter: GridMFAFilterModel;
     select: Prisma.MFASolutionSelect;
@@ -210,12 +210,13 @@ export class User {
     });
   }
 
-  async addTOTP(key: string) {
+  async addTOTP(params: { key: string; name: string }) {
     await prisma.mFASolution.create({
       data: {
         id: uniqueSequentialKey(),
+        name: `${params.name}`,
         type: 'TOTP',
-        value: key,
+        value: params.key,
         user_id: this.id,
         available: true,
       },
@@ -563,7 +564,7 @@ const userFilterQueryToPrismaQuery = (gridFilter: GridUserFilterModel): Prisma.U
   return recordUnion(t);
 };
 
-const mfaFilterStringColumn = ['id'] as const;
+const mfaFilterStringColumn = ['id', 'name'] as const;
 const mfaFilterEnumTypeValue = ['TOTP', 'FIDO2', 'EMAIL'] as const;
 
 const mfaFilterColumns = [...mfaFilterStringColumn, 'type'] as const;
@@ -572,6 +573,7 @@ export const mfaColumnsSchema = createUnionSchema(mfaFilterColumns);
 
 const mfaFilterItemSchema = z.union([
   filterStringItemSchema('id'),
+  filterStringItemSchema('name'),
   filterEnumItemSchema('type', mfaFilterEnumTypeValue),
 ]);
 type GridMFAFilterItem = z.infer<typeof mfaFilterItemSchema>;
@@ -597,6 +599,7 @@ const mfaFilterQueryToPrismaQuery = (gridFilter: GridMFAFilterModel): Prisma.MFA
     .map((x) => {
       switch (x.columnField) {
         case 'id':
+        case 'name':
           return gridFilterToPrismaFilter(x, 'String');
         case 'type':
           return gridFilterToPrismaFilterEnum<'type', typeof mfaFilterEnumTypeValue>(x);

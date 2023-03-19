@@ -10,7 +10,8 @@ type GetMFAListJSONRow = {
   number_of_mfa: number;
   mfa: {
     id: string;
-    type: 'EMAIL' | 'FIDO2' | 'TOTP'
+    name: string;
+    type: 'EMAIL' | 'FIDO2' | 'TOTP' | 'CODE'
     available: boolean;
   }[]
 };
@@ -20,6 +21,7 @@ const PAGE_SIZE = 10;
 export type MFADataGridRowModel = GridRowModel<{
   id: string;
   type: string;
+  name: string;
   available: boolean;
 }>;
 
@@ -54,7 +56,7 @@ const editMFA = async (
   targetMFA: MFADataGridRowModel,
   edited: Partial<MFADataGridRowModel>,
 ) => {
-  await axiosWithSession.patch(`${appLocation}/api/my/mfa/${targetMFA.id}`, { available: edited.available });
+  await axiosWithSession.patch(`${appLocation}/api/my/mfa/${targetMFA.id}`, { available: edited.available, name: edited.name });
   return {
     ...targetMFA,
     available: edited.available ?? false,
@@ -72,23 +74,30 @@ const deleteMFA = async (id: string) => {
 };
 
 const computeMutation: ComputeMutation<MFADataGridRowModel> = ({ newRow, oldRow, t }) => {
+  let str = '';
   if (newRow.available !== oldRow.available) {
-    return `${t('auth.multifactorauth', '多要素認証')}：${newRow.available ? t('admin.on', 'オン') : t('admin.off', 'オフ')}`;
+    str += `${t('auth.multifactorauth', '多要素認証')}：${newRow.available ? t('admin.on', 'オン') : t('admin.off', 'オフ')}`;
   }
-  return null;
+  if (newRow.name !== oldRow.name) {
+    str += `${str === '' ? '' : '\n'}名前：${newRow.name}`;
+  }
+  if (str === '') return null;
+
+  return str;
 };
 
-function MFAList() {
+function MFAList({ reloader }: { reloader: symbol }) {
   return (
     <EditableDataGrid <MFADataGridRowModel>
       computeMutation={computeMutation}
-      getName={(params) => `${params.row.id}`}
+      getName={(params) => `${params.row.name}`}
       columns={[
-        { field: 'id', minWidth: 300 },
+        { field: 'id', minWidth: 200 },
         { field: 'type', type: 'singleSelect', valueOptions: ['TOTP', 'FIDO2'] },
+        { field: 'name', minWidth: 300, editable: true },
         {
           field: 'available',
-          headerName: '利用状況',
+          headerName: '有効',
           type: 'boolean',
           editable: true,
         },
@@ -98,6 +107,7 @@ function MFAList() {
       rowsPerPageOptions={[PAGE_SIZE]}
       getList={getMFAList}
       editItem={editMFA}
+      reloader={reloader}
       onDelete={async (params) => {
         await deleteMFA(params.row.id);
       }}

@@ -56,7 +56,7 @@ LoginNextState, { email: string, password: string }>(
 
     const authenticationKeyBase64 = byteArray2base64(DerivedAuthenticationKey);
 
-    type APILoginResponse = APILoginSuccessResopnse | { success: false, suggestedSolution: ('TOTP' | 'FIDO2' | 'EMAIL')[] };
+    type APILoginResponse = APILoginSuccessResopnse | { success: false, suggestedSolution: ('CODE' | 'EMAIL' | 'FIDO2' | 'TOTP')[] };
 
     // login
     let result: AxiosResponse<APILoginResponse>;
@@ -85,63 +85,67 @@ LoginNextState, { email: string, password: string }>(
       return 'EmailAndPass';
     }
     if (result.data.suggestedSolution.includes('FIDO2')) {
-      type Res = Omit<PublicKeyCredentialRequestOptions, 'allowCredentials' | 'challenge'> & { allowCredentials?: (Omit<NonNullable<PublicKeyCredentialRequestOptions['allowCredentials']>[number], 'id'> & { id: string })[], challenge: string };
-      const resp = await axiosWithSession.post<Res>(`${appLocation}/api/fido2/assertion/options`);
-      const option = {
-        ...resp.data,
-        allowCredentials: resp.data.allowCredentials
-          ? resp.data.allowCredentials.map((x) => ({ ...x, id: base642ByteArray(x.id).buffer }))
-          : undefined,
-        challenge: base642ByteArray(resp.data.challenge).buffer,
-      };
-      const credential = await navigator.credentials.get({ publicKey: option });
-      if (credential !== null) {
-        const rawId = (credential as { rawId?: unknown })?.rawId;
-        const response = (credential as { response?: unknown })?.response;
-        if (typeof response !== 'object') throw new Error('responce is not object');
-
-        const authenticatorData = (
-          (response as { authenticatorData?: unknown })?.authenticatorData
-        );
-        const clientDataJSON = (response as { clientDataJSON?: unknown })?.clientDataJSON;
-        const signature = (response as { signature?: unknown })?.signature;
-        const userHandle = (response as { userHandle?: unknown })?.userHandle;
-
-        const credentialJSON = {
-          id: credential.id,
-          type: credential.type,
-          rawId: (
-            rawId instanceof ArrayBuffer ? byteArray2base64(new Uint8Array(rawId)) : undefined
-          ),
-          response: {
-            authenticatorData: (
-              authenticatorData instanceof ArrayBuffer
-                ? byteArray2base64(new Uint8Array(authenticatorData))
-                : undefined
-            ),
-            clientDataJSON: (
-              clientDataJSON instanceof ArrayBuffer
-                ? byteArray2base64(new Uint8Array(clientDataJSON))
-                : undefined
-            ),
-            signature: (
-              signature instanceof ArrayBuffer
-                ? byteArray2base64(new Uint8Array(signature))
-                : undefined
-            ),
-            userHandle: (
-              userHandle instanceof ArrayBuffer
-                ? byteArray2base64(new Uint8Array(userHandle))
-                : undefined
-            ),
-          },
+      try {
+        type Res = Omit<PublicKeyCredentialRequestOptions, 'allowCredentials' | 'challenge'> & { allowCredentials?: (Omit<NonNullable<PublicKeyCredentialRequestOptions['allowCredentials']>[number], 'id'> & { id: string })[], challenge: string };
+        const resp = await axiosWithSession.post<Res>(`${appLocation}/api/fido2/assertion/options`);
+        const option = {
+          ...resp.data,
+          allowCredentials: resp.data.allowCredentials
+            ? resp.data.allowCredentials.map((x) => ({ ...x, id: base642ByteArray(x.id).buffer }))
+            : undefined,
+          challenge: base642ByteArray(resp.data.challenge).buffer,
         };
+        const credential = await navigator.credentials.get({ publicKey: option });
+        if (credential !== null) {
+          const rawId = (credential as { rawId?: unknown })?.rawId;
+          const response = (credential as { response?: unknown })?.response;
+          if (typeof response !== 'object') throw new Error('responce is not object');
 
-        const result2 = await axiosWithSession.post<PublicKeyCredentialRequestOptions, AxiosResponse<APILoginSuccessResopnse>>(`${appLocation}/api/fido2/assertion/result`, credentialJSON);
-        if (result2.data.success) {
-          await dispatch(loginSuccess(result2.data));
-          return 'EmailAndPass';
+          const authenticatorData = (
+            (response as { authenticatorData?: unknown })?.authenticatorData
+          );
+          const clientDataJSON = (response as { clientDataJSON?: unknown })?.clientDataJSON;
+          const signature = (response as { signature?: unknown })?.signature;
+          const userHandle = (response as { userHandle?: unknown })?.userHandle;
+
+          const credentialJSON = {
+            id: credential.id,
+            type: credential.type,
+            rawId: (
+              rawId instanceof ArrayBuffer ? byteArray2base64(new Uint8Array(rawId)) : undefined
+            ),
+            response: {
+              authenticatorData: (
+                authenticatorData instanceof ArrayBuffer
+                  ? byteArray2base64(new Uint8Array(authenticatorData))
+                  : undefined
+              ),
+              clientDataJSON: (
+                clientDataJSON instanceof ArrayBuffer
+                  ? byteArray2base64(new Uint8Array(clientDataJSON))
+                  : undefined
+              ),
+              signature: (
+                signature instanceof ArrayBuffer
+                  ? byteArray2base64(new Uint8Array(signature))
+                  : undefined
+              ),
+              userHandle: (
+                userHandle instanceof ArrayBuffer
+                  ? byteArray2base64(new Uint8Array(userHandle))
+                  : undefined
+              ),
+            },
+          };
+
+          const result2 = await axiosWithSession.post<PublicKeyCredentialRequestOptions, AxiosResponse<APILoginSuccessResopnse>>(`${appLocation}/api/fido2/assertion/result`, credentialJSON);
+          if (result2.data.success) {
+            await dispatch(loginSuccess(result2.data));
+            return 'EmailAndPass';
+          }
         }
+      } catch (_e) {
+        if (result.data.suggestedSolution.length === 1) throw new Error('Nothing');
       }
     }
     return 'TOTP';

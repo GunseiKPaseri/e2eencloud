@@ -45,7 +45,8 @@ router.put('/totp', async (ctx) => {
 
   if (result === null) return ctx.response.status = Status.BadRequest;
 
-  await user.addTOTP(data.secretKey);
+  const date = (new Date()).toLocaleString();
+  await user.addTOTP({ key: data.secretKey, name: `${date}に追加したTOTPキー` });
 
   return ctx.response.status = Status.NoContent;
 });
@@ -266,6 +267,7 @@ router.get('/mfa', async (ctx) => {
       select: {
         id: true,
         type: true,
+        name: true,
         available: true,
       },
     }),
@@ -293,7 +295,7 @@ router.patch('/mfa/:id', async (ctx) => {
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
 
-  const parsed = z.object({ available: z.boolean() }).safeParse(await body.value);
+  const parsed = z.object({ available: z.boolean(), name: z.string() }).partial().safeParse(await body.value);
   if (!parsed.success) return ctx.response.status = Status.BadRequest;
 
   const id = ctx.params.id;
@@ -303,7 +305,8 @@ router.patch('/mfa/:id', async (ctx) => {
       id,
     },
     data: {
-      available: parsed.data.available ?? false,
+      available: parsed.data.available,
+      name: parsed.data.name,
     },
   });
   ctx.response.status = Status.NoContent;

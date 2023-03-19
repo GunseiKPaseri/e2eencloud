@@ -4,10 +4,11 @@ import Typography from '@mui/material/Typography';
 import { addFIDO2Async } from '../authSlice';
 import { useAppDispatch } from '../../../app/hooks';
 
-export default function FIDO2Register() {
+export default function FIDO2Register({ onSuccess }: { onSuccess: () => void }) {
   const dispatch = useAppDispatch();
   const handleRegister = async () => {
     await dispatch(addFIDO2Async());
+    onSuccess();
   };
   return (
     <Box>

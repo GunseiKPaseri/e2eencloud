@@ -42,13 +42,15 @@ model User {
 }
 
 enum MFASolutionType {
-  TOTP
-  FIDO2
+  CODE
   EMAIL
+  FIDO2
+  TOTP
 }
 
 model MFASolution {
   id         String          @id
+  name       String          @db.Text
   type       MFASolutionType
   value      String          @db.Text
   user       User            @relation(fields: [user_id], references: [id], onDelete: Cascade)

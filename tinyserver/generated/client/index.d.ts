@@ -3,7 +3,7 @@
  * Client
 **/
 
-import * as runtime from './runtime/data-proxy';
+import * as runtime from './runtime/library';
 type UnwrapPromise<P extends any> = P extends Promise<infer R> ? R : P
 type UnwrapTuple<Tuple extends readonly unknown[]> = {
   [K in keyof Tuple]: K extends `${number}` ? Tuple[K] extends Prisma.PrismaPromise<infer X> ? X : UnwrapPromise<Tuple[K]> : UnwrapPromise<Tuple[K]>
@@ -37,6 +37,7 @@ export type User = {
  */
 export type MFASolution = {
   id: string
+  name: string
   type: MFASolutionType
   value: string
   user_id: string
@@ -121,9 +122,10 @@ export type Coupons = {
 // https://github.com/microsoft/TypeScript/issues/3192#issuecomment-261720275
 
 export const MFASolutionType: {
-  TOTP: 'TOTP',
+  CODE: 'CODE',
+  EMAIL: 'EMAIL',
   FIDO2: 'FIDO2',
-  EMAIL: 'EMAIL'
+  TOTP: 'TOTP'
 };
 
 export type MFASolutionType = (typeof MFASolutionType)[keyof typeof MFASolutionType]
@@ -2201,6 +2203,7 @@ export namespace Prisma {
 
   export type MFASolutionMinAggregateOutputType = {
     id: string | null
+    name: string | null
     type: MFASolutionType | null
     value: string | null
     user_id: string | null
@@ -2211,6 +2214,7 @@ export namespace Prisma {
 
   export type MFASolutionMaxAggregateOutputType = {
     id: string | null
+    name: string | null
     type: MFASolutionType | null
     value: string | null
     user_id: string | null
@@ -2221,6 +2225,7 @@ export namespace Prisma {
 
   export type MFASolutionCountAggregateOutputType = {
     id: number
+    name: number
     type: number
     value: number
     user_id: number
@@ -2233,6 +2238,7 @@ export namespace Prisma {
 
   export type MFASolutionMinAggregateInputType = {
     id?: true
+    name?: true
     type?: true
     value?: true
     user_id?: true
@@ -2243,6 +2249,7 @@ export namespace Prisma {
 
   export type MFASolutionMaxAggregateInputType = {
     id?: true
+    name?: true
     type?: true
     value?: true
     user_id?: true
@@ -2253,6 +2260,7 @@ export namespace Prisma {
 
   export type MFASolutionCountAggregateInputType = {
     id?: true
+    name?: true
     type?: true
     value?: true
     user_id?: true
@@ -2337,6 +2345,7 @@ export namespace Prisma {
 
   export type MFASolutionGroupByOutputType = {
     id: string
+    name: string
     type: MFASolutionType
     value: string
     user_id: string
@@ -2364,6 +2373,7 @@ export namespace Prisma {
 
   export type MFASolutionSelect = {
     id?: boolean
+    name?: boolean
     type?: boolean
     value?: boolean
     user_id?: boolean
@@ -7889,6 +7899,7 @@ export namespace Prisma {
 
   export const MFASolutionScalarFieldEnum: {
     id: 'id',
+    name: 'name',
     type: 'type',
     value: 'value',
     user_id: 'user_id',
@@ -8055,6 +8066,7 @@ export namespace Prisma {
     OR?: Enumerable<MFASolutionWhereInput>
     NOT?: Enumerable<MFASolutionWhereInput>
     id?: StringFilter | string
+    name?: StringFilter | string
     type?: EnumMFASolutionTypeFilter | MFASolutionType
     value?: StringFilter | string
     user_id?: StringFilter | string
@@ -8066,6 +8078,7 @@ export namespace Prisma {
 
   export type MFASolutionOrderByWithRelationInput = {
     id?: SortOrder
+    name?: SortOrder
     type?: SortOrder
     value?: SortOrder
     user_id?: SortOrder
@@ -8081,6 +8094,7 @@ export namespace Prisma {
 
   export type MFASolutionOrderByWithAggregationInput = {
     id?: SortOrder
+    name?: SortOrder
     type?: SortOrder
     value?: SortOrder
     user_id?: SortOrder
@@ -8097,6 +8111,7 @@ export namespace Prisma {
     OR?: Enumerable<MFASolutionScalarWhereWithAggregatesInput>
     NOT?: Enumerable<MFASolutionScalarWhereWithAggregatesInput>
     id?: StringWithAggregatesFilter | string
+    name?: StringWithAggregatesFilter | string
     type?: EnumMFASolutionTypeWithAggregatesFilter | MFASolutionType
     value?: StringWithAggregatesFilter | string
     user_id?: StringWithAggregatesFilter | string
@@ -8510,6 +8525,7 @@ export namespace Prisma {
 
   export type MFASolutionCreateInput = {
     id: string
+    name: string
     type: MFASolutionType
     value: string
     available?: boolean
@@ -8520,6 +8536,7 @@ export namespace Prisma {
 
   export type MFASolutionUncheckedCreateInput = {
     id: string
+    name: string
     type: MFASolutionType
     value: string
     user_id: string
@@ -8530,6 +8547,7 @@ export namespace Prisma {
 
   export type MFASolutionUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     type?: EnumMFASolutionTypeFieldUpdateOperationsInput | MFASolutionType
     value?: StringFieldUpdateOperationsInput | string
     available?: BoolFieldUpdateOperationsInput | boolean
@@ -8540,6 +8558,7 @@ export namespace Prisma {
 
   export type MFASolutionUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     type?: EnumMFASolutionTypeFieldUpdateOperationsInput | MFASolutionType
     value?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
@@ -8550,6 +8569,7 @@ export namespace Prisma {
 
   export type MFASolutionCreateManyInput = {
     id: string
+    name: string
     type: MFASolutionType
     value: string
     user_id: string
@@ -8560,6 +8580,7 @@ export namespace Prisma {
 
   export type MFASolutionUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     type?: EnumMFASolutionTypeFieldUpdateOperationsInput | MFASolutionType
     value?: StringFieldUpdateOperationsInput | string
     available?: BoolFieldUpdateOperationsInput | boolean
@@ -8569,6 +8590,7 @@ export namespace Prisma {
 
   export type MFASolutionUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     type?: EnumMFASolutionTypeFieldUpdateOperationsInput | MFASolutionType
     value?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
@@ -9132,6 +9154,7 @@ export namespace Prisma {
 
   export type MFASolutionCountOrderByAggregateInput = {
     id?: SortOrder
+    name?: SortOrder
     type?: SortOrder
     value?: SortOrder
     user_id?: SortOrder
@@ -9142,6 +9165,7 @@ export namespace Prisma {
 
   export type MFASolutionMaxOrderByAggregateInput = {
     id?: SortOrder
+    name?: SortOrder
     type?: SortOrder
     value?: SortOrder
     user_id?: SortOrder
@@ -9152,6 +9176,7 @@ export namespace Prisma {
 
   export type MFASolutionMinOrderByAggregateInput = {
     id?: SortOrder
+    name?: SortOrder
     type?: SortOrder
     value?: SortOrder
     user_id?: SortOrder
@@ -9913,6 +9938,7 @@ export namespace Prisma {
 
   export type MFASolutionCreateWithoutUserInput = {
     id: string
+    name: string
     type: MFASolutionType
     value: string
     available?: boolean
@@ -9922,6 +9948,7 @@ export namespace Prisma {
 
   export type MFASolutionUncheckedCreateWithoutUserInput = {
     id: string
+    name: string
     type: MFASolutionType
     value: string
     available?: boolean
@@ -10070,6 +10097,7 @@ export namespace Prisma {
     OR?: Enumerable<MFASolutionScalarWhereInput>
     NOT?: Enumerable<MFASolutionScalarWhereInput>
     id?: StringFilter | string
+    name?: StringFilter | string
     type?: EnumMFASolutionTypeFilter | MFASolutionType
     value?: StringFilter | string
     user_id?: StringFilter | string
@@ -10665,6 +10693,7 @@ export namespace Prisma {
 
   export type MFASolutionCreateManyUserInput = {
     id: string
+    name: string
     type: MFASolutionType
     value: string
     available?: boolean
@@ -10709,6 +10738,7 @@ export namespace Prisma {
 
   export type MFASolutionUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     type?: EnumMFASolutionTypeFieldUpdateOperationsInput | MFASolutionType
     value?: StringFieldUpdateOperationsInput | string
     available?: BoolFieldUpdateOperationsInput | boolean
@@ -10718,6 +10748,7 @@ export namespace Prisma {
 
   export type MFASolutionUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     type?: EnumMFASolutionTypeFieldUpdateOperationsInput | MFASolutionType
     value?: StringFieldUpdateOperationsInput | string
     available?: BoolFieldUpdateOperationsInput | boolean
@@ -10727,6 +10758,7 @@ export namespace Prisma {
 
   export type MFASolutionUncheckedUpdateManyWithoutMfa_solutionsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
     type?: EnumMFASolutionTypeFieldUpdateOperationsInput | MFASolutionType
     value?: StringFieldUpdateOperationsInput | string
     available?: BoolFieldUpdateOperationsInput | boolean

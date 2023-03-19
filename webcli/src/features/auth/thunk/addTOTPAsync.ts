@@ -1,5 +1,6 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
 import { axiosWithSession, appLocation } from '../../componentutils';
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 
@@ -8,22 +9,25 @@ import type { AuthState } from '../authSlice';
 export const addTOTPAsync = createAsyncThunk<void, { secretKey: string, token: string }>(
   'auth/add_totp',
   async (secretkey, { dispatch }) => {
-    await axiosWithSession.put<{ secretKey: string, token: string }>(
-      `${appLocation}/api/my/totp`,
-      secretkey,
-      {
-        onUploadProgress: (progressEvent) => {
-          dispatch(setProgress(progress(0, 1, progressEvent)));
+    try {
+      await axiosWithSession.put<{ secretKey: string, token: string }>(
+        `${appLocation}/api/my/totp`,
+        secretkey,
+        {
+          onUploadProgress: (progressEvent) => {
+            dispatch(setProgress(progress(0, 1, progressEvent)));
+          },
         },
-      },
-    );
+      );
+      dispatch(enqueueSnackbar({ message: '正常に反映しました', options: { variant: 'success' } }));
+    } catch (_e) {
+      dispatch(enqueueSnackbar({ message: 'エラーが発生しました', options: { variant: 'success' } }));
+    }
     dispatch(deleteProgress());
   },
 );
 
 export const afterAddTOTPAsyncFullfilled:
 CaseReducer<AuthState, PayloadAction<void>> = (state) => {
-  if (state.user) {
-    state.user.useMultiFactorAuth = true;
-  }
+  //
 };

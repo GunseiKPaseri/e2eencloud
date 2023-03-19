@@ -54,7 +54,6 @@ export interface EmailConfirm {
 
 export interface UserState {
   email: string;
-  useTwoFactorAuth: boolean;
   MasterKey: number[];
   authority: 'ADMIN' | null;
 }

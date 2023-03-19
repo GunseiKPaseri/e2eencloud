@@ -128,6 +128,7 @@ exports.Prisma.HooksScalarFieldEnum = makeEnum({
 
 exports.Prisma.MFASolutionScalarFieldEnum = makeEnum({
   id: 'id',
+  name: 'name',
   type: 'type',
   value: 'value',
   user_id: 'user_id',
@@ -175,9 +176,10 @@ exports.Prisma.UserScalarFieldEnum = makeEnum({
   updated_at: 'updated_at'
 });
 exports.MFASolutionType = makeEnum({
-  TOTP: 'TOTP',
+  CODE: 'CODE',
+  EMAIL: 'EMAIL',
   FIDO2: 'FIDO2',
-  EMAIL: 'EMAIL'
+  TOTP: 'TOTP'
 });
 
 exports.Role = makeEnum({

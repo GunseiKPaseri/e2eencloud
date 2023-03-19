@@ -20,6 +20,7 @@ export default function TOTPSender() {
   return (
     <Box component="form" onSubmit={login} noValidate sx={{ mt: 1 }}>
       <TextField
+        autoComplete="one-time-code"
         margin="normal"
         fullWidth
         name="token"
