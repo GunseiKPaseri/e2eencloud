@@ -62,14 +62,11 @@ const editMFA = async (
 };
 
 const deleteMFA = async (id: string) => {
-  const result = await axiosWithSession.get<
+  const result = await axiosWithSession.delete<
   Record<string, never>,
   AxiosResponse<GetMFAListJSONRow>,
   { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(
     `${appLocation}/api/my/mfa/${id}`,
-    {
-      method: 'delete',
-    },
   );
   return result;
 };
