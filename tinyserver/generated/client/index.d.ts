@@ -973,11 +973,11 @@ export namespace Prisma {
   }
 
   export type UserCountOutputTypeSelect = {
-    tfa_solutions?: boolean | UserCountOutputTypeCountTfa_solutionsArgs
-    ConfirmingEmailAddress?: boolean | UserCountOutputTypeCountConfirmingEmailAddressArgs
-    Sessions?: boolean | UserCountOutputTypeCountSessionsArgs
-    Hooks?: boolean | UserCountOutputTypeCountHooksArgs
-    Files?: boolean | UserCountOutputTypeCountFilesArgs
+    tfa_solutions?: boolean
+    ConfirmingEmailAddress?: boolean
+    Sessions?: boolean
+    Hooks?: boolean
+    Files?: boolean
   }
 
   export type UserCountOutputTypeGetPayload<S extends boolean | null | undefined | UserCountOutputTypeArgs> =
@@ -1006,46 +1006,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the UserCountOutputType
      */
     select?: UserCountOutputTypeSelect | null
-  }
-
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountTfa_solutionsArgs = {
-    where?: TFASolutionWhereInput
-  }
-
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountConfirmingEmailAddressArgs = {
-    where?: ConfirmingEmailAddressWhereInput
-  }
-
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountSessionsArgs = {
-    where?: SessionsWhereInput
-  }
-
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountHooksArgs = {
-    where?: HooksWhereInput
-  }
-
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountFilesArgs = {
-    where?: FilesWhereInput
   }
 
 

@@ -10,6 +10,8 @@ import {
 import { prisma } from '../../client/dbclient.ts';
 import { getUserById } from '../../model/Users.ts';
 import { f2l, type FIDO2DB, FIDO2DBSchema } from '../../utils/fido2.ts';
+import parseJSONwithoutErr from '../../utils/parseJSONWithoutErr.ts';
+import { login } from '../auth.ts';
 
 const router = new Router({ prefix: '/fido2' });
 
@@ -31,10 +33,11 @@ router.get('/attestation', async (ctx) => {
     challenge: byteArray2base64(attestationOptionsOrigin.challenge),
     user: {
       id: user.id,
-      email: user.email,
+      displayName: user.email,
+      name: user.email,
     },
   };
-  console.log(attestationOptions);
+  //console.log(attestationOptions);
   // add challenge
   await ctx.state.session.set('challenge', attestationOptions.challenge);
   ctx.response.status = Status.OK;
@@ -44,6 +47,12 @@ router.get('/attestation', async (ctx) => {
 
 const FIDO2RegistSchema = z.object({
   id: z.string(),
+  rawId: z.string(),
+  type: z.string(),
+  response: z.object({
+    attestationObject: z.string(),
+    clientDataJSON: z.string(),
+  }).optional(),
 });
 
 // push regist
@@ -62,7 +71,16 @@ router.post('/attestation', async (ctx) => {
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
   const result = FIDO2RegistSchema.safeParse(await body.value);
   if (!result.success) return ctx.response.status = Status.BadRequest;
-  const request = result.data;
+  const request = {
+    ...result.data,
+    rawId: base642ByteArray(result.data.rawId).buffer,
+    response: result.data.response
+      ? {
+        attestationObject: base642ByteArray(result.data.response.attestationObject).buffer,
+        clientDataJSON: base642ByteArray(result.data.response.clientDataJSON).buffer,
+      }
+      : undefined,
+  };
 
   const attestationExpectations = {
     challenge,
@@ -71,11 +89,9 @@ router.post('/attestation', async (ctx) => {
   };
 
   const regResult = await f2l.attestationResult(
-    { ...request, rawId: base642ByteArray(request.id) },
+    request,
     attestationExpectations,
   );
-
-  console.log(regResult);
 
   const credId = byteArray2base64(regResult.authnrData?.get('credId'));
   const counter = regResult.authnrData?.get('counter');
@@ -101,41 +117,39 @@ router.post('/attestation', async (ctx) => {
 
 // test
 
-const FIDO2AssertionSchema = z.object({
-  id: z.string(),
-});
-
 router.post('/assertion/options', async (ctx) => {
-  // parse
-  if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
-  const body = ctx.request.body();
-  if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
-  const result = FIDO2AssertionSchema.safeParse(await body.value);
-  if (!result.success) return ctx.response.status = Status.BadRequest;
-  const request = result.data;
+  // // parse
+  // if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
+  // const body = ctx.request.body();
+  // if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
+  // const result = FIDO2AssertionSchema.safeParse(await body.value);
+  // if (!result.success) return ctx.response.status = Status.BadRequest;
+  // const request = result.data;
+  // use tfa_uid
+  const tfauid: string | null = await ctx.state.session.get('tfa_uid');
+  if (typeof tfauid !== 'string') return ctx.response.status = Status.Forbidden;
 
   // select user
-  const user = await getUserById(request.id);
+  const user = await getUserById(tfauid);
   if (!user) return ctx.response.status = Status.Forbidden;
 
   const assertionOptionsOrigin = await f2l.assertionOptions() as {
     extensions: Record<string, never>;
     challenge: ArrayBuffer;
   };
-  console.log(assertionOptionsOrigin);
-
   // select credential
-  const allowCredentials = (await prisma.tFASolution.findMany({
+  const allowCredentialsOrigin = await prisma.tFASolution.findMany({
     select: { id: true },
     where: {
       type: 'FIDO2',
       user_id: user.id,
       available: true,
     },
-  })).map((x) => ({
+  });
+  const allowCredentials = allowCredentialsOrigin.map((x: { id: string }) => ({
     type: 'public-key',
     id: x.id,
-    transports: ['usb', 'nfc', 'ble'] as const,
+    transports: ['usb', 'nfc', 'ble', 'internal'] as const,
   }));
   const assertionOptions = {
     ...assertionOptionsOrigin,
@@ -151,6 +165,14 @@ router.post('/assertion/options', async (ctx) => {
 
 const FIDO2AssertionResultSchema = z.object({
   id: z.string(),
+  rawId: z.string(),
+  type: z.literal('public-key'),
+  response: z.object({
+    authenticatorData: z.string(),
+    clientDataJSON: z.string(),
+    signature: z.string(),
+    userHandle: z.string(),
+  }),
 });
 
 router.post('/assertion/result', async (ctx) => {
@@ -169,37 +191,40 @@ router.post('/assertion/result', async (ctx) => {
   if (!result.success) return ctx.response.status = Status.BadRequest;
   const request = result.data;
 
+  console.log(challengeUID);
   const attestationOrigin = await prisma.tFASolution.findFirst({
     select: {
       id: true,
       value: true,
     },
     where: {
-      id: request.id,
+      id: request.rawId,
       user_id: challengeUID,
       type: 'FIDO2',
       available: true,
     },
   });
   if (!attestationOrigin) return ctx.response.status = Status.BadRequest;
-  const attestationValue = FIDO2DBSchema.safeParse(attestationOrigin.value);
+  const attestationValue = FIDO2DBSchema.safeParse(parseJSONwithoutErr(attestationOrigin.value));
   if (!attestationValue.success) return ctx.response.status = Status.BadRequest;
-  const attestation = { id: request.id, ...attestationValue.data };
-
+  const attestation = { id: base642ByteArray(request.rawId).buffer, ...attestationValue.data };
   const assertionExpectations = {
-    challenge,
+    challenge: challenge,
     origin: SERVER_URI,
     factor: 'either',
     publicKey: attestation.publicKey,
     prevCounter: attestation.counter,
-    userHandle: null,
+    userHandle: request.response.userHandle,
   };
 
   const authnResult = await f2l.assertionResult(
-    { ...request, rawId: base642ByteArray(request.id) },
+    {
+      id: request.id,
+      rawId: base642ByteArray(request.rawId).buffer,
+      response: request.response,
+    },
     assertionExpectations,
   );
-  console.log(authnResult);
 
   if (!(authnResult as Fido2AssertionResult & { audit?: { complete?: boolean } })?.audit?.complete) {
     return ctx.response.status = Status.BadRequest;
@@ -207,7 +232,7 @@ router.post('/assertion/result', async (ctx) => {
   const nextCounter = authnResult.authnrData?.get('counter');
   await prisma.tFASolution.update({
     where: {
-      id: request.id,
+      id: request.rawId,
     },
     data: {
       value: JSON.stringify(
@@ -218,8 +243,9 @@ router.post('/assertion/result', async (ctx) => {
       ),
     },
   });
-  ctx.response.status = Status.OK;
-  ctx.response.body = nextCounter;
+  const user = await getUserById(challengeUID);
+  if (user === null) return ctx.response.status = Status.BadRequest;
+  login({ ctx, user });
 });
 
 export default router;

@@ -222,7 +222,6 @@ const config = {
     },
     "binaryTargets": [],
     "previewFeatures": [
-      "filteredRelationCount",
       "deno"
     ],
     "isCustomOutput": true

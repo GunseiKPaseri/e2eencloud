@@ -126,7 +126,7 @@ const POSTloginScheme = z.object({
   authenticationKeyBase64: z.string(),
 });
 
-const login = async <R extends string>(props: {
+export const login = async <R extends string>(props: {
   ctx: RouterContext<R, RouteParams<R>, Record<string, any>>;
   user: User;
 }) => {

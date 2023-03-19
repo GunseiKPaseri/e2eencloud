@@ -190,7 +190,6 @@ export class User {
         type: true,
       },
       where: {
-        type: 'TOTP',
         user_id: this.id,
         available: true,
       },

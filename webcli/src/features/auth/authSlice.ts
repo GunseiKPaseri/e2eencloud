@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 // Thunk
 import { signupAsync } from './thunk/signupAsync';
 import { confirmEmailAsync, afterConfirmEmailAsyncFullfilled } from './thunk/confirmEmailAsync';
+import { addFIDO2Async, afterAddFIDO2AsyncFullfilled } from './thunk/addFIDO2Async';
 import { addTOTPAsync, afterAddTOTPAsyncFullfilled } from './thunk/addTOTPAsync';
 import { deleteTOTPAsync, afterDeleteTOTPAsyncFullfilled } from './thunk/deleteTOTPAsync';
 import {
@@ -27,6 +28,7 @@ import {
 
 export { signupAsync };
 export { confirmEmailAsync };
+export { addFIDO2Async };
 export { addTOTPAsync };
 export { deleteTOTPAsync };
 export { loginAsync };
@@ -82,6 +84,7 @@ export const authSlice = createSlice({
     builder
       .addCase(confirmEmailAsync.fulfilled, afterConfirmEmailAsyncFullfilled)
       .addCase(addTOTPAsync.fulfilled, afterAddTOTPAsyncFullfilled)
+      .addCase(addFIDO2Async.fulfilled, afterAddFIDO2AsyncFullfilled)
       .addCase(deleteTOTPAsync.fulfilled, afterDeleteTOTPAsyncFullfilled)
       .addCase(loginAsync.pending, afterLoginAsyncPending)
       .addCase(loginAsync.rejected, afterLoginAsyncRejected)
