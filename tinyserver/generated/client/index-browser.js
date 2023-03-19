@@ -126,6 +126,16 @@ exports.Prisma.HooksScalarFieldEnum = makeEnum({
   updated_at: 'updated_at'
 });
 
+exports.Prisma.MFASolutionScalarFieldEnum = makeEnum({
+  id: 'id',
+  type: 'type',
+  value: 'value',
+  user_id: 'user_id',
+  available: 'available',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+});
+
 exports.Prisma.SessionsScalarFieldEnum = makeEnum({
   id: 'id',
   session_key: 'session_key',
@@ -139,16 +149,6 @@ exports.Prisma.SessionsScalarFieldEnum = makeEnum({
 exports.Prisma.SortOrder = makeEnum({
   asc: 'asc',
   desc: 'desc'
-});
-
-exports.Prisma.TFASolutionScalarFieldEnum = makeEnum({
-  id: 'id',
-  type: 'type',
-  value: 'value',
-  user_id: 'user_id',
-  available: 'available',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
 });
 
 exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
@@ -174,20 +174,20 @@ exports.Prisma.UserScalarFieldEnum = makeEnum({
   created_at: 'created_at',
   updated_at: 'updated_at'
 });
-exports.Role = makeEnum({
-  ADMIN: 'ADMIN',
-  USER: 'USER'
-});
-
-exports.SolutionType = makeEnum({
+exports.MFASolutionType = makeEnum({
   TOTP: 'TOTP',
   FIDO2: 'FIDO2',
   EMAIL: 'EMAIL'
 });
 
+exports.Role = makeEnum({
+  ADMIN: 'ADMIN',
+  USER: 'USER'
+});
+
 exports.Prisma.ModelName = makeEnum({
   User: 'User',
-  TFASolution: 'TFASolution',
+  MFASolution: 'MFASolution',
   ConfirmingEmailAddress: 'ConfirmingEmailAddress',
   Sessions: 'Sessions',
   Hooks: 'Hooks',

@@ -32,8 +32,8 @@ declare module 'i18next' {
           logout: string
           password: string
           registifyoudonothaveanaccount: string
-          twofactorauth: string
-          twofactorauthtoken: string
+          multifactorauth: string
+          totptoken: string
           youalreadyloggined: string
         }
         language: {

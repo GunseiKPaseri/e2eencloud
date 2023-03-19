@@ -32,12 +32,12 @@ export type User = {
 }
 
 /**
- * Model TFASolution
+ * Model MFASolution
  * 
  */
-export type TFASolution = {
+export type MFASolution = {
   id: string
-  type: SolutionType
+  type: MFASolutionType
   value: string
   user_id: string
   available: boolean
@@ -120,21 +120,21 @@ export type Coupons = {
 // Based on
 // https://github.com/microsoft/TypeScript/issues/3192#issuecomment-261720275
 
+export const MFASolutionType: {
+  TOTP: 'TOTP',
+  FIDO2: 'FIDO2',
+  EMAIL: 'EMAIL'
+};
+
+export type MFASolutionType = (typeof MFASolutionType)[keyof typeof MFASolutionType]
+
+
 export const Role: {
   ADMIN: 'ADMIN',
   USER: 'USER'
 };
 
 export type Role = (typeof Role)[keyof typeof Role]
-
-
-export const SolutionType: {
-  TOTP: 'TOTP',
-  FIDO2: 'FIDO2',
-  EMAIL: 'EMAIL'
-};
-
-export type SolutionType = (typeof SolutionType)[keyof typeof SolutionType]
 
 
 /**
@@ -265,14 +265,14 @@ export class PrismaClient<
   get user(): Prisma.UserDelegate<GlobalReject>;
 
   /**
-   * `prisma.tFASolution`: Exposes CRUD operations for the **TFASolution** model.
+   * `prisma.mFASolution`: Exposes CRUD operations for the **MFASolution** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more TFASolutions
-    * const tFASolutions = await prisma.tFASolution.findMany()
+    * // Fetch zero or more MFASolutions
+    * const mFASolutions = await prisma.mFASolution.findMany()
     * ```
     */
-  get tFASolution(): Prisma.TFASolutionDelegate<GlobalReject>;
+  get mFASolution(): Prisma.MFASolutionDelegate<GlobalReject>;
 
   /**
    * `prisma.confirmingEmailAddress`: Exposes CRUD operations for the **ConfirmingEmailAddress** model.
@@ -793,7 +793,7 @@ export namespace Prisma {
 
   export const ModelName: {
     User: 'User',
-    TFASolution: 'TFASolution',
+    MFASolution: 'MFASolution',
     ConfirmingEmailAddress: 'ConfirmingEmailAddress',
     Sessions: 'Sessions',
     Hooks: 'Hooks',
@@ -965,7 +965,7 @@ export namespace Prisma {
 
 
   export type UserCountOutputType = {
-    tfa_solutions: number
+    mfa_solutions: number
     ConfirmingEmailAddress: number
     Sessions: number
     Hooks: number
@@ -973,7 +973,7 @@ export namespace Prisma {
   }
 
   export type UserCountOutputTypeSelect = {
-    tfa_solutions?: boolean
+    mfa_solutions?: boolean
     ConfirmingEmailAddress?: boolean
     Sessions?: boolean
     Hooks?: boolean
@@ -1290,7 +1290,7 @@ export namespace Prisma {
     rsa_public_key?: boolean
     created_at?: boolean
     updated_at?: boolean
-    tfa_solutions?: boolean | User$tfa_solutionsArgs
+    mfa_solutions?: boolean | User$mfa_solutionsArgs
     ConfirmingEmailAddress?: boolean | User$ConfirmingEmailAddressArgs
     Sessions?: boolean | User$SessionsArgs
     Hooks?: boolean | User$HooksArgs
@@ -1300,7 +1300,7 @@ export namespace Prisma {
 
 
   export type UserInclude = {
-    tfa_solutions?: boolean | User$tfa_solutionsArgs
+    mfa_solutions?: boolean | User$mfa_solutionsArgs
     ConfirmingEmailAddress?: boolean | User$ConfirmingEmailAddressArgs
     Sessions?: boolean | User$SessionsArgs
     Hooks?: boolean | User$HooksArgs
@@ -1315,7 +1315,7 @@ export namespace Prisma {
     S extends { include: any } & (UserArgs | UserFindManyArgs)
     ? User  & {
     [P in TruthyKeys<S['include']>]:
-        P extends 'tfa_solutions' ? Array < TFASolutionGetPayload<S['include'][P]>>  :
+        P extends 'mfa_solutions' ? Array < MFASolutionGetPayload<S['include'][P]>>  :
         P extends 'ConfirmingEmailAddress' ? Array < ConfirmingEmailAddressGetPayload<S['include'][P]>>  :
         P extends 'Sessions' ? Array < SessionsGetPayload<S['include'][P]>>  :
         P extends 'Hooks' ? Array < HooksGetPayload<S['include'][P]>>  :
@@ -1325,7 +1325,7 @@ export namespace Prisma {
     : S extends { select: any } & (UserArgs | UserFindManyArgs)
       ? {
     [P in TruthyKeys<S['select']>]:
-        P extends 'tfa_solutions' ? Array < TFASolutionGetPayload<S['select'][P]>>  :
+        P extends 'mfa_solutions' ? Array < MFASolutionGetPayload<S['select'][P]>>  :
         P extends 'ConfirmingEmailAddress' ? Array < ConfirmingEmailAddressGetPayload<S['select'][P]>>  :
         P extends 'Sessions' ? Array < SessionsGetPayload<S['select'][P]>>  :
         P extends 'Hooks' ? Array < HooksGetPayload<S['select'][P]>>  :
@@ -1702,7 +1702,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     constructor(_dmmf: runtime.DMMFClass, _queryType: 'query' | 'mutation', _rootField: string, _clientMethod: string, _args: any, _dataPath: string[], _errorFormat: ErrorFormat, _measurePerformance?: boolean | undefined, _isList?: boolean);
 
-    tfa_solutions<T extends User$tfa_solutionsArgs= {}>(args?: Subset<T, User$tfa_solutionsArgs>): Prisma.PrismaPromise<Array<TFASolutionGetPayload<T>>| Null>;
+    mfa_solutions<T extends User$mfa_solutionsArgs= {}>(args?: Subset<T, User$mfa_solutionsArgs>): Prisma.PrismaPromise<Array<MFASolutionGetPayload<T>>| Null>;
 
     ConfirmingEmailAddress<T extends User$ConfirmingEmailAddressArgs= {}>(args?: Subset<T, User$ConfirmingEmailAddressArgs>): Prisma.PrismaPromise<Array<ConfirmingEmailAddressGetPayload<T>>| Null>;
 
@@ -2068,23 +2068,23 @@ export namespace Prisma {
 
 
   /**
-   * User.tfa_solutions
+   * User.mfa_solutions
    */
-  export type User$tfa_solutionsArgs = {
+  export type User$mfa_solutionsArgs = {
     /**
-     * Select specific fields to fetch from the TFASolution
+     * Select specific fields to fetch from the MFASolution
      */
-    select?: TFASolutionSelect | null
+    select?: MFASolutionSelect | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: TFASolutionInclude | null
-    where?: TFASolutionWhereInput
-    orderBy?: Enumerable<TFASolutionOrderByWithRelationInput>
-    cursor?: TFASolutionWhereUniqueInput
+    include?: MFASolutionInclude | null
+    where?: MFASolutionWhereInput
+    orderBy?: Enumerable<MFASolutionOrderByWithRelationInput>
+    cursor?: MFASolutionWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: Enumerable<TFASolutionScalarFieldEnum>
+    distinct?: Enumerable<MFASolutionScalarFieldEnum>
   }
 
 
@@ -2189,19 +2189,19 @@ export namespace Prisma {
 
 
   /**
-   * Model TFASolution
+   * Model MFASolution
    */
 
 
-  export type AggregateTFASolution = {
-    _count: TFASolutionCountAggregateOutputType | null
-    _min: TFASolutionMinAggregateOutputType | null
-    _max: TFASolutionMaxAggregateOutputType | null
+  export type AggregateMFASolution = {
+    _count: MFASolutionCountAggregateOutputType | null
+    _min: MFASolutionMinAggregateOutputType | null
+    _max: MFASolutionMaxAggregateOutputType | null
   }
 
-  export type TFASolutionMinAggregateOutputType = {
+  export type MFASolutionMinAggregateOutputType = {
     id: string | null
-    type: SolutionType | null
+    type: MFASolutionType | null
     value: string | null
     user_id: string | null
     available: boolean | null
@@ -2209,9 +2209,9 @@ export namespace Prisma {
     updated_at: Date | null
   }
 
-  export type TFASolutionMaxAggregateOutputType = {
+  export type MFASolutionMaxAggregateOutputType = {
     id: string | null
-    type: SolutionType | null
+    type: MFASolutionType | null
     value: string | null
     user_id: string | null
     available: boolean | null
@@ -2219,7 +2219,7 @@ export namespace Prisma {
     updated_at: Date | null
   }
 
-  export type TFASolutionCountAggregateOutputType = {
+  export type MFASolutionCountAggregateOutputType = {
     id: number
     type: number
     value: number
@@ -2231,7 +2231,7 @@ export namespace Prisma {
   }
 
 
-  export type TFASolutionMinAggregateInputType = {
+  export type MFASolutionMinAggregateInputType = {
     id?: true
     type?: true
     value?: true
@@ -2241,7 +2241,7 @@ export namespace Prisma {
     updated_at?: true
   }
 
-  export type TFASolutionMaxAggregateInputType = {
+  export type MFASolutionMaxAggregateInputType = {
     id?: true
     type?: true
     value?: true
@@ -2251,7 +2251,7 @@ export namespace Prisma {
     updated_at?: true
   }
 
-  export type TFASolutionCountAggregateInputType = {
+  export type MFASolutionCountAggregateInputType = {
     id?: true
     type?: true
     value?: true
@@ -2262,107 +2262,107 @@ export namespace Prisma {
     _all?: true
   }
 
-  export type TFASolutionAggregateArgs = {
+  export type MFASolutionAggregateArgs = {
     /**
-     * Filter which TFASolution to aggregate.
+     * Filter which MFASolution to aggregate.
      */
-    where?: TFASolutionWhereInput
+    where?: MFASolutionWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of TFASolutions to fetch.
+     * Determine the order of MFASolutions to fetch.
      */
-    orderBy?: Enumerable<TFASolutionOrderByWithRelationInput>
+    orderBy?: Enumerable<MFASolutionOrderByWithRelationInput>
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: TFASolutionWhereUniqueInput
+    cursor?: MFASolutionWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` TFASolutions from the position of the cursor.
+     * Take `±n` MFASolutions from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` TFASolutions.
+     * Skip the first `n` MFASolutions.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned TFASolutions
+     * Count returned MFASolutions
     **/
-    _count?: true | TFASolutionCountAggregateInputType
+    _count?: true | MFASolutionCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: TFASolutionMinAggregateInputType
+    _min?: MFASolutionMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: TFASolutionMaxAggregateInputType
+    _max?: MFASolutionMaxAggregateInputType
   }
 
-  export type GetTFASolutionAggregateType<T extends TFASolutionAggregateArgs> = {
-        [P in keyof T & keyof AggregateTFASolution]: P extends '_count' | 'count'
+  export type GetMFASolutionAggregateType<T extends MFASolutionAggregateArgs> = {
+        [P in keyof T & keyof AggregateMFASolution]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateTFASolution[P]>
-      : GetScalarType<T[P], AggregateTFASolution[P]>
+        : GetScalarType<T[P], AggregateMFASolution[P]>
+      : GetScalarType<T[P], AggregateMFASolution[P]>
   }
 
 
 
 
-  export type TFASolutionGroupByArgs = {
-    where?: TFASolutionWhereInput
-    orderBy?: Enumerable<TFASolutionOrderByWithAggregationInput>
-    by: TFASolutionScalarFieldEnum[]
-    having?: TFASolutionScalarWhereWithAggregatesInput
+  export type MFASolutionGroupByArgs = {
+    where?: MFASolutionWhereInput
+    orderBy?: Enumerable<MFASolutionOrderByWithAggregationInput>
+    by: MFASolutionScalarFieldEnum[]
+    having?: MFASolutionScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: TFASolutionCountAggregateInputType | true
-    _min?: TFASolutionMinAggregateInputType
-    _max?: TFASolutionMaxAggregateInputType
+    _count?: MFASolutionCountAggregateInputType | true
+    _min?: MFASolutionMinAggregateInputType
+    _max?: MFASolutionMaxAggregateInputType
   }
 
 
-  export type TFASolutionGroupByOutputType = {
+  export type MFASolutionGroupByOutputType = {
     id: string
-    type: SolutionType
+    type: MFASolutionType
     value: string
     user_id: string
     available: boolean
     created_at: Date
     updated_at: Date
-    _count: TFASolutionCountAggregateOutputType | null
-    _min: TFASolutionMinAggregateOutputType | null
-    _max: TFASolutionMaxAggregateOutputType | null
+    _count: MFASolutionCountAggregateOutputType | null
+    _min: MFASolutionMinAggregateOutputType | null
+    _max: MFASolutionMaxAggregateOutputType | null
   }
 
-  type GetTFASolutionGroupByPayload<T extends TFASolutionGroupByArgs> = Prisma.PrismaPromise<
+  type GetMFASolutionGroupByPayload<T extends MFASolutionGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickArray<TFASolutionGroupByOutputType, T['by']> &
+      PickArray<MFASolutionGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof TFASolutionGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof MFASolutionGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], TFASolutionGroupByOutputType[P]>
-            : GetScalarType<T[P], TFASolutionGroupByOutputType[P]>
+              : GetScalarType<T[P], MFASolutionGroupByOutputType[P]>
+            : GetScalarType<T[P], MFASolutionGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type TFASolutionSelect = {
+  export type MFASolutionSelect = {
     id?: boolean
     type?: boolean
     value?: boolean
@@ -2374,174 +2374,174 @@ export namespace Prisma {
   }
 
 
-  export type TFASolutionInclude = {
+  export type MFASolutionInclude = {
     user?: boolean | UserArgs
   }
 
-  export type TFASolutionGetPayload<S extends boolean | null | undefined | TFASolutionArgs> =
+  export type MFASolutionGetPayload<S extends boolean | null | undefined | MFASolutionArgs> =
     S extends { select: any, include: any } ? 'Please either choose `select` or `include`' :
-    S extends true ? TFASolution :
+    S extends true ? MFASolution :
     S extends undefined ? never :
-    S extends { include: any } & (TFASolutionArgs | TFASolutionFindManyArgs)
-    ? TFASolution  & {
+    S extends { include: any } & (MFASolutionArgs | MFASolutionFindManyArgs)
+    ? MFASolution  & {
     [P in TruthyKeys<S['include']>]:
         P extends 'user' ? UserGetPayload<S['include'][P]> :  never
   } 
-    : S extends { select: any } & (TFASolutionArgs | TFASolutionFindManyArgs)
+    : S extends { select: any } & (MFASolutionArgs | MFASolutionFindManyArgs)
       ? {
     [P in TruthyKeys<S['select']>]:
-        P extends 'user' ? UserGetPayload<S['select'][P]> :  P extends keyof TFASolution ? TFASolution[P] : never
+        P extends 'user' ? UserGetPayload<S['select'][P]> :  P extends keyof MFASolution ? MFASolution[P] : never
   } 
-      : TFASolution
+      : MFASolution
 
 
-  type TFASolutionCountArgs = 
-    Omit<TFASolutionFindManyArgs, 'select' | 'include'> & {
-      select?: TFASolutionCountAggregateInputType | true
+  type MFASolutionCountArgs = 
+    Omit<MFASolutionFindManyArgs, 'select' | 'include'> & {
+      select?: MFASolutionCountAggregateInputType | true
     }
 
-  export interface TFASolutionDelegate<GlobalRejectSettings extends Prisma.RejectOnNotFound | Prisma.RejectPerOperation | false | undefined> {
+  export interface MFASolutionDelegate<GlobalRejectSettings extends Prisma.RejectOnNotFound | Prisma.RejectPerOperation | false | undefined> {
 
     /**
-     * Find zero or one TFASolution that matches the filter.
-     * @param {TFASolutionFindUniqueArgs} args - Arguments to find a TFASolution
+     * Find zero or one MFASolution that matches the filter.
+     * @param {MFASolutionFindUniqueArgs} args - Arguments to find a MFASolution
      * @example
-     * // Get one TFASolution
-     * const tFASolution = await prisma.tFASolution.findUnique({
+     * // Get one MFASolution
+     * const mFASolution = await prisma.mFASolution.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
     **/
-    findUnique<T extends TFASolutionFindUniqueArgs,  LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
-      args: SelectSubset<T, TFASolutionFindUniqueArgs>
-    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findUnique', 'TFASolution'> extends True ? Prisma__TFASolutionClient<TFASolutionGetPayload<T>> : Prisma__TFASolutionClient<TFASolutionGetPayload<T> | null, null>
+    findUnique<T extends MFASolutionFindUniqueArgs,  LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
+      args: SelectSubset<T, MFASolutionFindUniqueArgs>
+    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findUnique', 'MFASolution'> extends True ? Prisma__MFASolutionClient<MFASolutionGetPayload<T>> : Prisma__MFASolutionClient<MFASolutionGetPayload<T> | null, null>
 
     /**
-     * Find one TFASolution that matches the filter or throw an error  with `error.code='P2025'` 
+     * Find one MFASolution that matches the filter or throw an error  with `error.code='P2025'` 
      *     if no matches were found.
-     * @param {TFASolutionFindUniqueOrThrowArgs} args - Arguments to find a TFASolution
+     * @param {MFASolutionFindUniqueOrThrowArgs} args - Arguments to find a MFASolution
      * @example
-     * // Get one TFASolution
-     * const tFASolution = await prisma.tFASolution.findUniqueOrThrow({
+     * // Get one MFASolution
+     * const mFASolution = await prisma.mFASolution.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
     **/
-    findUniqueOrThrow<T extends TFASolutionFindUniqueOrThrowArgs>(
-      args?: SelectSubset<T, TFASolutionFindUniqueOrThrowArgs>
-    ): Prisma__TFASolutionClient<TFASolutionGetPayload<T>>
+    findUniqueOrThrow<T extends MFASolutionFindUniqueOrThrowArgs>(
+      args?: SelectSubset<T, MFASolutionFindUniqueOrThrowArgs>
+    ): Prisma__MFASolutionClient<MFASolutionGetPayload<T>>
 
     /**
-     * Find the first TFASolution that matches the filter.
+     * Find the first MFASolution that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TFASolutionFindFirstArgs} args - Arguments to find a TFASolution
+     * @param {MFASolutionFindFirstArgs} args - Arguments to find a MFASolution
      * @example
-     * // Get one TFASolution
-     * const tFASolution = await prisma.tFASolution.findFirst({
+     * // Get one MFASolution
+     * const mFASolution = await prisma.mFASolution.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
     **/
-    findFirst<T extends TFASolutionFindFirstArgs,  LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
-      args?: SelectSubset<T, TFASolutionFindFirstArgs>
-    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findFirst', 'TFASolution'> extends True ? Prisma__TFASolutionClient<TFASolutionGetPayload<T>> : Prisma__TFASolutionClient<TFASolutionGetPayload<T> | null, null>
+    findFirst<T extends MFASolutionFindFirstArgs,  LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
+      args?: SelectSubset<T, MFASolutionFindFirstArgs>
+    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findFirst', 'MFASolution'> extends True ? Prisma__MFASolutionClient<MFASolutionGetPayload<T>> : Prisma__MFASolutionClient<MFASolutionGetPayload<T> | null, null>
 
     /**
-     * Find the first TFASolution that matches the filter or
+     * Find the first MFASolution that matches the filter or
      * throw `NotFoundError` if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TFASolutionFindFirstOrThrowArgs} args - Arguments to find a TFASolution
+     * @param {MFASolutionFindFirstOrThrowArgs} args - Arguments to find a MFASolution
      * @example
-     * // Get one TFASolution
-     * const tFASolution = await prisma.tFASolution.findFirstOrThrow({
+     * // Get one MFASolution
+     * const mFASolution = await prisma.mFASolution.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
     **/
-    findFirstOrThrow<T extends TFASolutionFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, TFASolutionFindFirstOrThrowArgs>
-    ): Prisma__TFASolutionClient<TFASolutionGetPayload<T>>
+    findFirstOrThrow<T extends MFASolutionFindFirstOrThrowArgs>(
+      args?: SelectSubset<T, MFASolutionFindFirstOrThrowArgs>
+    ): Prisma__MFASolutionClient<MFASolutionGetPayload<T>>
 
     /**
-     * Find zero or more TFASolutions that matches the filter.
+     * Find zero or more MFASolutions that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TFASolutionFindManyArgs=} args - Arguments to filter and select certain fields only.
+     * @param {MFASolutionFindManyArgs=} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all TFASolutions
-     * const tFASolutions = await prisma.tFASolution.findMany()
+     * // Get all MFASolutions
+     * const mFASolutions = await prisma.mFASolution.findMany()
      * 
-     * // Get first 10 TFASolutions
-     * const tFASolutions = await prisma.tFASolution.findMany({ take: 10 })
+     * // Get first 10 MFASolutions
+     * const mFASolutions = await prisma.mFASolution.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const tFASolutionWithIdOnly = await prisma.tFASolution.findMany({ select: { id: true } })
+     * const mFASolutionWithIdOnly = await prisma.mFASolution.findMany({ select: { id: true } })
      * 
     **/
-    findMany<T extends TFASolutionFindManyArgs>(
-      args?: SelectSubset<T, TFASolutionFindManyArgs>
-    ): Prisma.PrismaPromise<Array<TFASolutionGetPayload<T>>>
+    findMany<T extends MFASolutionFindManyArgs>(
+      args?: SelectSubset<T, MFASolutionFindManyArgs>
+    ): Prisma.PrismaPromise<Array<MFASolutionGetPayload<T>>>
 
     /**
-     * Create a TFASolution.
-     * @param {TFASolutionCreateArgs} args - Arguments to create a TFASolution.
+     * Create a MFASolution.
+     * @param {MFASolutionCreateArgs} args - Arguments to create a MFASolution.
      * @example
-     * // Create one TFASolution
-     * const TFASolution = await prisma.tFASolution.create({
+     * // Create one MFASolution
+     * const MFASolution = await prisma.mFASolution.create({
      *   data: {
-     *     // ... data to create a TFASolution
+     *     // ... data to create a MFASolution
      *   }
      * })
      * 
     **/
-    create<T extends TFASolutionCreateArgs>(
-      args: SelectSubset<T, TFASolutionCreateArgs>
-    ): Prisma__TFASolutionClient<TFASolutionGetPayload<T>>
+    create<T extends MFASolutionCreateArgs>(
+      args: SelectSubset<T, MFASolutionCreateArgs>
+    ): Prisma__MFASolutionClient<MFASolutionGetPayload<T>>
 
     /**
-     * Create many TFASolutions.
-     *     @param {TFASolutionCreateManyArgs} args - Arguments to create many TFASolutions.
+     * Create many MFASolutions.
+     *     @param {MFASolutionCreateManyArgs} args - Arguments to create many MFASolutions.
      *     @example
-     *     // Create many TFASolutions
-     *     const tFASolution = await prisma.tFASolution.createMany({
+     *     // Create many MFASolutions
+     *     const mFASolution = await prisma.mFASolution.createMany({
      *       data: {
      *         // ... provide data here
      *       }
      *     })
      *     
     **/
-    createMany<T extends TFASolutionCreateManyArgs>(
-      args?: SelectSubset<T, TFASolutionCreateManyArgs>
+    createMany<T extends MFASolutionCreateManyArgs>(
+      args?: SelectSubset<T, MFASolutionCreateManyArgs>
     ): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Delete a TFASolution.
-     * @param {TFASolutionDeleteArgs} args - Arguments to delete one TFASolution.
+     * Delete a MFASolution.
+     * @param {MFASolutionDeleteArgs} args - Arguments to delete one MFASolution.
      * @example
-     * // Delete one TFASolution
-     * const TFASolution = await prisma.tFASolution.delete({
+     * // Delete one MFASolution
+     * const MFASolution = await prisma.mFASolution.delete({
      *   where: {
-     *     // ... filter to delete one TFASolution
+     *     // ... filter to delete one MFASolution
      *   }
      * })
      * 
     **/
-    delete<T extends TFASolutionDeleteArgs>(
-      args: SelectSubset<T, TFASolutionDeleteArgs>
-    ): Prisma__TFASolutionClient<TFASolutionGetPayload<T>>
+    delete<T extends MFASolutionDeleteArgs>(
+      args: SelectSubset<T, MFASolutionDeleteArgs>
+    ): Prisma__MFASolutionClient<MFASolutionGetPayload<T>>
 
     /**
-     * Update one TFASolution.
-     * @param {TFASolutionUpdateArgs} args - Arguments to update one TFASolution.
+     * Update one MFASolution.
+     * @param {MFASolutionUpdateArgs} args - Arguments to update one MFASolution.
      * @example
-     * // Update one TFASolution
-     * const tFASolution = await prisma.tFASolution.update({
+     * // Update one MFASolution
+     * const mFASolution = await prisma.mFASolution.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -2551,34 +2551,34 @@ export namespace Prisma {
      * })
      * 
     **/
-    update<T extends TFASolutionUpdateArgs>(
-      args: SelectSubset<T, TFASolutionUpdateArgs>
-    ): Prisma__TFASolutionClient<TFASolutionGetPayload<T>>
+    update<T extends MFASolutionUpdateArgs>(
+      args: SelectSubset<T, MFASolutionUpdateArgs>
+    ): Prisma__MFASolutionClient<MFASolutionGetPayload<T>>
 
     /**
-     * Delete zero or more TFASolutions.
-     * @param {TFASolutionDeleteManyArgs} args - Arguments to filter TFASolutions to delete.
+     * Delete zero or more MFASolutions.
+     * @param {MFASolutionDeleteManyArgs} args - Arguments to filter MFASolutions to delete.
      * @example
-     * // Delete a few TFASolutions
-     * const { count } = await prisma.tFASolution.deleteMany({
+     * // Delete a few MFASolutions
+     * const { count } = await prisma.mFASolution.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
     **/
-    deleteMany<T extends TFASolutionDeleteManyArgs>(
-      args?: SelectSubset<T, TFASolutionDeleteManyArgs>
+    deleteMany<T extends MFASolutionDeleteManyArgs>(
+      args?: SelectSubset<T, MFASolutionDeleteManyArgs>
     ): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more TFASolutions.
+     * Update zero or more MFASolutions.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TFASolutionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {MFASolutionUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many TFASolutions
-     * const tFASolution = await prisma.tFASolution.updateMany({
+     * // Update many MFASolutions
+     * const mFASolution = await prisma.mFASolution.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -2588,59 +2588,59 @@ export namespace Prisma {
      * })
      * 
     **/
-    updateMany<T extends TFASolutionUpdateManyArgs>(
-      args: SelectSubset<T, TFASolutionUpdateManyArgs>
+    updateMany<T extends MFASolutionUpdateManyArgs>(
+      args: SelectSubset<T, MFASolutionUpdateManyArgs>
     ): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create or update one TFASolution.
-     * @param {TFASolutionUpsertArgs} args - Arguments to update or create a TFASolution.
+     * Create or update one MFASolution.
+     * @param {MFASolutionUpsertArgs} args - Arguments to update or create a MFASolution.
      * @example
-     * // Update or create a TFASolution
-     * const tFASolution = await prisma.tFASolution.upsert({
+     * // Update or create a MFASolution
+     * const mFASolution = await prisma.mFASolution.upsert({
      *   create: {
-     *     // ... data to create a TFASolution
+     *     // ... data to create a MFASolution
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the TFASolution we want to update
+     *     // ... the filter for the MFASolution we want to update
      *   }
      * })
     **/
-    upsert<T extends TFASolutionUpsertArgs>(
-      args: SelectSubset<T, TFASolutionUpsertArgs>
-    ): Prisma__TFASolutionClient<TFASolutionGetPayload<T>>
+    upsert<T extends MFASolutionUpsertArgs>(
+      args: SelectSubset<T, MFASolutionUpsertArgs>
+    ): Prisma__MFASolutionClient<MFASolutionGetPayload<T>>
 
     /**
-     * Count the number of TFASolutions.
+     * Count the number of MFASolutions.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TFASolutionCountArgs} args - Arguments to filter TFASolutions to count.
+     * @param {MFASolutionCountArgs} args - Arguments to filter MFASolutions to count.
      * @example
-     * // Count the number of TFASolutions
-     * const count = await prisma.tFASolution.count({
+     * // Count the number of MFASolutions
+     * const count = await prisma.mFASolution.count({
      *   where: {
-     *     // ... the filter for the TFASolutions we want to count
+     *     // ... the filter for the MFASolutions we want to count
      *   }
      * })
     **/
-    count<T extends TFASolutionCountArgs>(
-      args?: Subset<T, TFASolutionCountArgs>,
+    count<T extends MFASolutionCountArgs>(
+      args?: Subset<T, MFASolutionCountArgs>,
     ): Prisma.PrismaPromise<
       T extends _Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], TFASolutionCountAggregateOutputType>
+          : GetScalarType<T['select'], MFASolutionCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a TFASolution.
+     * Allows you to perform aggregations operations on a MFASolution.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TFASolutionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {MFASolutionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -2660,13 +2660,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends TFASolutionAggregateArgs>(args: Subset<T, TFASolutionAggregateArgs>): Prisma.PrismaPromise<GetTFASolutionAggregateType<T>>
+    aggregate<T extends MFASolutionAggregateArgs>(args: Subset<T, MFASolutionAggregateArgs>): Prisma.PrismaPromise<GetMFASolutionAggregateType<T>>
 
     /**
-     * Group by TFASolution.
+     * Group by MFASolution.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TFASolutionGroupByArgs} args - Group by arguments.
+     * @param {MFASolutionGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -2681,14 +2681,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends TFASolutionGroupByArgs,
+      T extends MFASolutionGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: TFASolutionGroupByArgs['orderBy'] }
-        : { orderBy?: TFASolutionGroupByArgs['orderBy'] },
+        ? { orderBy: MFASolutionGroupByArgs['orderBy'] }
+        : { orderBy?: MFASolutionGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends TupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -2737,17 +2737,17 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, TFASolutionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTFASolutionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, MFASolutionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMFASolutionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
 
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for TFASolution.
+   * The delegate class that acts as a "Promise-like" for MFASolution.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export class Prisma__TFASolutionClient<T, Null = never> implements Prisma.PrismaPromise<T> {
+  export class Prisma__MFASolutionClient<T, Null = never> implements Prisma.PrismaPromise<T> {
     private readonly _dmmf;
     private readonly _queryType;
     private readonly _rootField;
@@ -2792,27 +2792,27 @@ export namespace Prisma {
   // Custom InputTypes
 
   /**
-   * TFASolution base type for findUnique actions
+   * MFASolution base type for findUnique actions
    */
-  export type TFASolutionFindUniqueArgsBase = {
+  export type MFASolutionFindUniqueArgsBase = {
     /**
-     * Select specific fields to fetch from the TFASolution
+     * Select specific fields to fetch from the MFASolution
      */
-    select?: TFASolutionSelect | null
+    select?: MFASolutionSelect | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: TFASolutionInclude | null
+    include?: MFASolutionInclude | null
     /**
-     * Filter, which TFASolution to fetch.
+     * Filter, which MFASolution to fetch.
      */
-    where: TFASolutionWhereUniqueInput
+    where: MFASolutionWhereUniqueInput
   }
 
   /**
-   * TFASolution findUnique
+   * MFASolution findUnique
    */
-  export interface TFASolutionFindUniqueArgs extends TFASolutionFindUniqueArgsBase {
+  export interface MFASolutionFindUniqueArgs extends MFASolutionFindUniqueArgsBase {
    /**
     * Throw an Error if query returns no results
     * @deprecated since 4.0.0: use `findUniqueOrThrow` method instead
@@ -2822,76 +2822,76 @@ export namespace Prisma {
       
 
   /**
-   * TFASolution findUniqueOrThrow
+   * MFASolution findUniqueOrThrow
    */
-  export type TFASolutionFindUniqueOrThrowArgs = {
+  export type MFASolutionFindUniqueOrThrowArgs = {
     /**
-     * Select specific fields to fetch from the TFASolution
+     * Select specific fields to fetch from the MFASolution
      */
-    select?: TFASolutionSelect | null
+    select?: MFASolutionSelect | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: TFASolutionInclude | null
+    include?: MFASolutionInclude | null
     /**
-     * Filter, which TFASolution to fetch.
+     * Filter, which MFASolution to fetch.
      */
-    where: TFASolutionWhereUniqueInput
+    where: MFASolutionWhereUniqueInput
   }
 
 
   /**
-   * TFASolution base type for findFirst actions
+   * MFASolution base type for findFirst actions
    */
-  export type TFASolutionFindFirstArgsBase = {
+  export type MFASolutionFindFirstArgsBase = {
     /**
-     * Select specific fields to fetch from the TFASolution
+     * Select specific fields to fetch from the MFASolution
      */
-    select?: TFASolutionSelect | null
+    select?: MFASolutionSelect | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: TFASolutionInclude | null
+    include?: MFASolutionInclude | null
     /**
-     * Filter, which TFASolution to fetch.
+     * Filter, which MFASolution to fetch.
      */
-    where?: TFASolutionWhereInput
+    where?: MFASolutionWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of TFASolutions to fetch.
+     * Determine the order of MFASolutions to fetch.
      */
-    orderBy?: Enumerable<TFASolutionOrderByWithRelationInput>
+    orderBy?: Enumerable<MFASolutionOrderByWithRelationInput>
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for TFASolutions.
+     * Sets the position for searching for MFASolutions.
      */
-    cursor?: TFASolutionWhereUniqueInput
+    cursor?: MFASolutionWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` TFASolutions from the position of the cursor.
+     * Take `±n` MFASolutions from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` TFASolutions.
+     * Skip the first `n` MFASolutions.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of TFASolutions.
+     * Filter by unique combinations of MFASolutions.
      */
-    distinct?: Enumerable<TFASolutionScalarFieldEnum>
+    distinct?: Enumerable<MFASolutionScalarFieldEnum>
   }
 
   /**
-   * TFASolution findFirst
+   * MFASolution findFirst
    */
-  export interface TFASolutionFindFirstArgs extends TFASolutionFindFirstArgsBase {
+  export interface MFASolutionFindFirstArgs extends MFASolutionFindFirstArgsBase {
    /**
     * Throw an Error if query returns no results
     * @deprecated since 4.0.0: use `findFirstOrThrow` method instead
@@ -2901,236 +2901,236 @@ export namespace Prisma {
       
 
   /**
-   * TFASolution findFirstOrThrow
+   * MFASolution findFirstOrThrow
    */
-  export type TFASolutionFindFirstOrThrowArgs = {
+  export type MFASolutionFindFirstOrThrowArgs = {
     /**
-     * Select specific fields to fetch from the TFASolution
+     * Select specific fields to fetch from the MFASolution
      */
-    select?: TFASolutionSelect | null
+    select?: MFASolutionSelect | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: TFASolutionInclude | null
+    include?: MFASolutionInclude | null
     /**
-     * Filter, which TFASolution to fetch.
+     * Filter, which MFASolution to fetch.
      */
-    where?: TFASolutionWhereInput
+    where?: MFASolutionWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of TFASolutions to fetch.
+     * Determine the order of MFASolutions to fetch.
      */
-    orderBy?: Enumerable<TFASolutionOrderByWithRelationInput>
+    orderBy?: Enumerable<MFASolutionOrderByWithRelationInput>
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for TFASolutions.
+     * Sets the position for searching for MFASolutions.
      */
-    cursor?: TFASolutionWhereUniqueInput
+    cursor?: MFASolutionWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` TFASolutions from the position of the cursor.
+     * Take `±n` MFASolutions from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` TFASolutions.
+     * Skip the first `n` MFASolutions.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of TFASolutions.
+     * Filter by unique combinations of MFASolutions.
      */
-    distinct?: Enumerable<TFASolutionScalarFieldEnum>
+    distinct?: Enumerable<MFASolutionScalarFieldEnum>
   }
 
 
   /**
-   * TFASolution findMany
+   * MFASolution findMany
    */
-  export type TFASolutionFindManyArgs = {
+  export type MFASolutionFindManyArgs = {
     /**
-     * Select specific fields to fetch from the TFASolution
+     * Select specific fields to fetch from the MFASolution
      */
-    select?: TFASolutionSelect | null
+    select?: MFASolutionSelect | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: TFASolutionInclude | null
+    include?: MFASolutionInclude | null
     /**
-     * Filter, which TFASolutions to fetch.
+     * Filter, which MFASolutions to fetch.
      */
-    where?: TFASolutionWhereInput
+    where?: MFASolutionWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of TFASolutions to fetch.
+     * Determine the order of MFASolutions to fetch.
      */
-    orderBy?: Enumerable<TFASolutionOrderByWithRelationInput>
+    orderBy?: Enumerable<MFASolutionOrderByWithRelationInput>
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing TFASolutions.
+     * Sets the position for listing MFASolutions.
      */
-    cursor?: TFASolutionWhereUniqueInput
+    cursor?: MFASolutionWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` TFASolutions from the position of the cursor.
+     * Take `±n` MFASolutions from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` TFASolutions.
+     * Skip the first `n` MFASolutions.
      */
     skip?: number
-    distinct?: Enumerable<TFASolutionScalarFieldEnum>
+    distinct?: Enumerable<MFASolutionScalarFieldEnum>
   }
 
 
   /**
-   * TFASolution create
+   * MFASolution create
    */
-  export type TFASolutionCreateArgs = {
+  export type MFASolutionCreateArgs = {
     /**
-     * Select specific fields to fetch from the TFASolution
+     * Select specific fields to fetch from the MFASolution
      */
-    select?: TFASolutionSelect | null
+    select?: MFASolutionSelect | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: TFASolutionInclude | null
+    include?: MFASolutionInclude | null
     /**
-     * The data needed to create a TFASolution.
+     * The data needed to create a MFASolution.
      */
-    data: XOR<TFASolutionCreateInput, TFASolutionUncheckedCreateInput>
+    data: XOR<MFASolutionCreateInput, MFASolutionUncheckedCreateInput>
   }
 
 
   /**
-   * TFASolution createMany
+   * MFASolution createMany
    */
-  export type TFASolutionCreateManyArgs = {
+  export type MFASolutionCreateManyArgs = {
     /**
-     * The data used to create many TFASolutions.
+     * The data used to create many MFASolutions.
      */
-    data: Enumerable<TFASolutionCreateManyInput>
+    data: Enumerable<MFASolutionCreateManyInput>
     skipDuplicates?: boolean
   }
 
 
   /**
-   * TFASolution update
+   * MFASolution update
    */
-  export type TFASolutionUpdateArgs = {
+  export type MFASolutionUpdateArgs = {
     /**
-     * Select specific fields to fetch from the TFASolution
+     * Select specific fields to fetch from the MFASolution
      */
-    select?: TFASolutionSelect | null
+    select?: MFASolutionSelect | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: TFASolutionInclude | null
+    include?: MFASolutionInclude | null
     /**
-     * The data needed to update a TFASolution.
+     * The data needed to update a MFASolution.
      */
-    data: XOR<TFASolutionUpdateInput, TFASolutionUncheckedUpdateInput>
+    data: XOR<MFASolutionUpdateInput, MFASolutionUncheckedUpdateInput>
     /**
-     * Choose, which TFASolution to update.
+     * Choose, which MFASolution to update.
      */
-    where: TFASolutionWhereUniqueInput
+    where: MFASolutionWhereUniqueInput
   }
 
 
   /**
-   * TFASolution updateMany
+   * MFASolution updateMany
    */
-  export type TFASolutionUpdateManyArgs = {
+  export type MFASolutionUpdateManyArgs = {
     /**
-     * The data used to update TFASolutions.
+     * The data used to update MFASolutions.
      */
-    data: XOR<TFASolutionUpdateManyMutationInput, TFASolutionUncheckedUpdateManyInput>
+    data: XOR<MFASolutionUpdateManyMutationInput, MFASolutionUncheckedUpdateManyInput>
     /**
-     * Filter which TFASolutions to update
+     * Filter which MFASolutions to update
      */
-    where?: TFASolutionWhereInput
+    where?: MFASolutionWhereInput
   }
 
 
   /**
-   * TFASolution upsert
+   * MFASolution upsert
    */
-  export type TFASolutionUpsertArgs = {
+  export type MFASolutionUpsertArgs = {
     /**
-     * Select specific fields to fetch from the TFASolution
+     * Select specific fields to fetch from the MFASolution
      */
-    select?: TFASolutionSelect | null
+    select?: MFASolutionSelect | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: TFASolutionInclude | null
+    include?: MFASolutionInclude | null
     /**
-     * The filter to search for the TFASolution to update in case it exists.
+     * The filter to search for the MFASolution to update in case it exists.
      */
-    where: TFASolutionWhereUniqueInput
+    where: MFASolutionWhereUniqueInput
     /**
-     * In case the TFASolution found by the `where` argument doesn't exist, create a new TFASolution with this data.
+     * In case the MFASolution found by the `where` argument doesn't exist, create a new MFASolution with this data.
      */
-    create: XOR<TFASolutionCreateInput, TFASolutionUncheckedCreateInput>
+    create: XOR<MFASolutionCreateInput, MFASolutionUncheckedCreateInput>
     /**
-     * In case the TFASolution was found with the provided `where` argument, update it with this data.
+     * In case the MFASolution was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<TFASolutionUpdateInput, TFASolutionUncheckedUpdateInput>
+    update: XOR<MFASolutionUpdateInput, MFASolutionUncheckedUpdateInput>
   }
 
 
   /**
-   * TFASolution delete
+   * MFASolution delete
    */
-  export type TFASolutionDeleteArgs = {
+  export type MFASolutionDeleteArgs = {
     /**
-     * Select specific fields to fetch from the TFASolution
+     * Select specific fields to fetch from the MFASolution
      */
-    select?: TFASolutionSelect | null
+    select?: MFASolutionSelect | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: TFASolutionInclude | null
+    include?: MFASolutionInclude | null
     /**
-     * Filter which TFASolution to delete.
+     * Filter which MFASolution to delete.
      */
-    where: TFASolutionWhereUniqueInput
+    where: MFASolutionWhereUniqueInput
   }
 
 
   /**
-   * TFASolution deleteMany
+   * MFASolution deleteMany
    */
-  export type TFASolutionDeleteManyArgs = {
+  export type MFASolutionDeleteManyArgs = {
     /**
-     * Filter which TFASolutions to delete
+     * Filter which MFASolutions to delete
      */
-    where?: TFASolutionWhereInput
+    where?: MFASolutionWhereInput
   }
 
 
   /**
-   * TFASolution without action
+   * MFASolution without action
    */
-  export type TFASolutionArgs = {
+  export type MFASolutionArgs = {
     /**
-     * Select specific fields to fetch from the TFASolution
+     * Select specific fields to fetch from the MFASolution
      */
-    select?: TFASolutionSelect | null
+    select?: MFASolutionSelect | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: TFASolutionInclude | null
+    include?: MFASolutionInclude | null
   }
 
 
@@ -7887,6 +7887,19 @@ export namespace Prisma {
   export type HooksScalarFieldEnum = (typeof HooksScalarFieldEnum)[keyof typeof HooksScalarFieldEnum]
 
 
+  export const MFASolutionScalarFieldEnum: {
+    id: 'id',
+    type: 'type',
+    value: 'value',
+    user_id: 'user_id',
+    available: 'available',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type MFASolutionScalarFieldEnum = (typeof MFASolutionScalarFieldEnum)[keyof typeof MFASolutionScalarFieldEnum]
+
+
   export const SessionsScalarFieldEnum: {
     id: 'id',
     session_key: 'session_key',
@@ -7906,19 +7919,6 @@ export namespace Prisma {
   };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
-
-
-  export const TFASolutionScalarFieldEnum: {
-    id: 'id',
-    type: 'type',
-    value: 'value',
-    user_id: 'user_id',
-    available: 'available',
-    created_at: 'created_at',
-    updated_at: 'updated_at'
-  };
-
-  export type TFASolutionScalarFieldEnum = (typeof TFASolutionScalarFieldEnum)[keyof typeof TFASolutionScalarFieldEnum]
 
 
   export const TransactionIsolationLevel: {
@@ -7974,7 +7974,7 @@ export namespace Prisma {
     rsa_public_key?: StringFilter | string
     created_at?: DateTimeFilter | Date | string
     updated_at?: DateTimeFilter | Date | string
-    tfa_solutions?: TFASolutionListRelationFilter
+    mfa_solutions?: MFASolutionListRelationFilter
     ConfirmingEmailAddress?: ConfirmingEmailAddressListRelationFilter
     Sessions?: SessionsListRelationFilter
     Hooks?: HooksListRelationFilter
@@ -7996,7 +7996,7 @@ export namespace Prisma {
     rsa_public_key?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
-    tfa_solutions?: TFASolutionOrderByRelationAggregateInput
+    mfa_solutions?: MFASolutionOrderByRelationAggregateInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressOrderByRelationAggregateInput
     Sessions?: SessionsOrderByRelationAggregateInput
     Hooks?: HooksOrderByRelationAggregateInput
@@ -8050,12 +8050,12 @@ export namespace Prisma {
     updated_at?: DateTimeWithAggregatesFilter | Date | string
   }
 
-  export type TFASolutionWhereInput = {
-    AND?: Enumerable<TFASolutionWhereInput>
-    OR?: Enumerable<TFASolutionWhereInput>
-    NOT?: Enumerable<TFASolutionWhereInput>
+  export type MFASolutionWhereInput = {
+    AND?: Enumerable<MFASolutionWhereInput>
+    OR?: Enumerable<MFASolutionWhereInput>
+    NOT?: Enumerable<MFASolutionWhereInput>
     id?: StringFilter | string
-    type?: EnumSolutionTypeFilter | SolutionType
+    type?: EnumMFASolutionTypeFilter | MFASolutionType
     value?: StringFilter | string
     user_id?: StringFilter | string
     available?: BoolFilter | boolean
@@ -8064,7 +8064,7 @@ export namespace Prisma {
     user?: XOR<UserRelationFilter, UserWhereInput>
   }
 
-  export type TFASolutionOrderByWithRelationInput = {
+  export type MFASolutionOrderByWithRelationInput = {
     id?: SortOrder
     type?: SortOrder
     value?: SortOrder
@@ -8075,11 +8075,11 @@ export namespace Prisma {
     user?: UserOrderByWithRelationInput
   }
 
-  export type TFASolutionWhereUniqueInput = {
+  export type MFASolutionWhereUniqueInput = {
     id?: string
   }
 
-  export type TFASolutionOrderByWithAggregationInput = {
+  export type MFASolutionOrderByWithAggregationInput = {
     id?: SortOrder
     type?: SortOrder
     value?: SortOrder
@@ -8087,17 +8087,17 @@ export namespace Prisma {
     available?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
-    _count?: TFASolutionCountOrderByAggregateInput
-    _max?: TFASolutionMaxOrderByAggregateInput
-    _min?: TFASolutionMinOrderByAggregateInput
+    _count?: MFASolutionCountOrderByAggregateInput
+    _max?: MFASolutionMaxOrderByAggregateInput
+    _min?: MFASolutionMinOrderByAggregateInput
   }
 
-  export type TFASolutionScalarWhereWithAggregatesInput = {
-    AND?: Enumerable<TFASolutionScalarWhereWithAggregatesInput>
-    OR?: Enumerable<TFASolutionScalarWhereWithAggregatesInput>
-    NOT?: Enumerable<TFASolutionScalarWhereWithAggregatesInput>
+  export type MFASolutionScalarWhereWithAggregatesInput = {
+    AND?: Enumerable<MFASolutionScalarWhereWithAggregatesInput>
+    OR?: Enumerable<MFASolutionScalarWhereWithAggregatesInput>
+    NOT?: Enumerable<MFASolutionScalarWhereWithAggregatesInput>
     id?: StringWithAggregatesFilter | string
-    type?: EnumSolutionTypeWithAggregatesFilter | SolutionType
+    type?: EnumMFASolutionTypeWithAggregatesFilter | MFASolutionType
     value?: StringWithAggregatesFilter | string
     user_id?: StringWithAggregatesFilter | string
     available?: BoolWithAggregatesFilter | boolean
@@ -8384,7 +8384,7 @@ export namespace Prisma {
     rsa_public_key: string
     created_at?: Date | string
     updated_at?: Date | string
-    tfa_solutions?: TFASolutionCreateNestedManyWithoutUserInput
+    mfa_solutions?: MFASolutionCreateNestedManyWithoutUserInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressCreateNestedManyWithoutUserInput
     Sessions?: SessionsCreateNestedManyWithoutUserInput
     Hooks?: HooksCreateNestedManyWithoutUserInput
@@ -8406,7 +8406,7 @@ export namespace Prisma {
     rsa_public_key: string
     created_at?: Date | string
     updated_at?: Date | string
-    tfa_solutions?: TFASolutionUncheckedCreateNestedManyWithoutUserInput
+    mfa_solutions?: MFASolutionUncheckedCreateNestedManyWithoutUserInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressUncheckedCreateNestedManyWithoutUserInput
     Sessions?: SessionsUncheckedCreateNestedManyWithoutUserInput
     Hooks?: HooksUncheckedCreateNestedManyWithoutUserInput
@@ -8428,7 +8428,7 @@ export namespace Prisma {
     rsa_public_key?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    tfa_solutions?: TFASolutionUpdateManyWithoutUserNestedInput
+    mfa_solutions?: MFASolutionUpdateManyWithoutUserNestedInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressUpdateManyWithoutUserNestedInput
     Sessions?: SessionsUpdateManyWithoutUserNestedInput
     Hooks?: HooksUpdateManyWithoutUserNestedInput
@@ -8450,7 +8450,7 @@ export namespace Prisma {
     rsa_public_key?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    tfa_solutions?: TFASolutionUncheckedUpdateManyWithoutUserNestedInput
+    mfa_solutions?: MFASolutionUncheckedUpdateManyWithoutUserNestedInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressUncheckedUpdateManyWithoutUserNestedInput
     Sessions?: SessionsUncheckedUpdateManyWithoutUserNestedInput
     Hooks?: HooksUncheckedUpdateManyWithoutUserNestedInput
@@ -8508,19 +8508,19 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type TFASolutionCreateInput = {
+  export type MFASolutionCreateInput = {
     id: string
-    type: SolutionType
+    type: MFASolutionType
     value: string
     available?: boolean
     created_at?: Date | string
     updated_at?: Date | string
-    user: UserCreateNestedOneWithoutTfa_solutionsInput
+    user: UserCreateNestedOneWithoutMfa_solutionsInput
   }
 
-  export type TFASolutionUncheckedCreateInput = {
+  export type MFASolutionUncheckedCreateInput = {
     id: string
-    type: SolutionType
+    type: MFASolutionType
     value: string
     user_id: string
     available?: boolean
@@ -8528,19 +8528,19 @@ export namespace Prisma {
     updated_at?: Date | string
   }
 
-  export type TFASolutionUpdateInput = {
+  export type MFASolutionUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    type?: EnumSolutionTypeFieldUpdateOperationsInput | SolutionType
+    type?: EnumMFASolutionTypeFieldUpdateOperationsInput | MFASolutionType
     value?: StringFieldUpdateOperationsInput | string
     available?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutTfa_solutionsNestedInput
+    user?: UserUpdateOneRequiredWithoutMfa_solutionsNestedInput
   }
 
-  export type TFASolutionUncheckedUpdateInput = {
+  export type MFASolutionUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    type?: EnumSolutionTypeFieldUpdateOperationsInput | SolutionType
+    type?: EnumMFASolutionTypeFieldUpdateOperationsInput | MFASolutionType
     value?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     available?: BoolFieldUpdateOperationsInput | boolean
@@ -8548,9 +8548,9 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type TFASolutionCreateManyInput = {
+  export type MFASolutionCreateManyInput = {
     id: string
-    type: SolutionType
+    type: MFASolutionType
     value: string
     user_id: string
     available?: boolean
@@ -8558,18 +8558,18 @@ export namespace Prisma {
     updated_at?: Date | string
   }
 
-  export type TFASolutionUpdateManyMutationInput = {
+  export type MFASolutionUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    type?: EnumSolutionTypeFieldUpdateOperationsInput | SolutionType
+    type?: EnumMFASolutionTypeFieldUpdateOperationsInput | MFASolutionType
     value?: StringFieldUpdateOperationsInput | string
     available?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type TFASolutionUncheckedUpdateManyInput = {
+  export type MFASolutionUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    type?: EnumSolutionTypeFieldUpdateOperationsInput | SolutionType
+    type?: EnumMFASolutionTypeFieldUpdateOperationsInput | MFASolutionType
     value?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     available?: BoolFieldUpdateOperationsInput | boolean
@@ -8945,10 +8945,10 @@ export namespace Prisma {
     not?: NestedDateTimeFilter | Date | string
   }
 
-  export type TFASolutionListRelationFilter = {
-    every?: TFASolutionWhereInput
-    some?: TFASolutionWhereInput
-    none?: TFASolutionWhereInput
+  export type MFASolutionListRelationFilter = {
+    every?: MFASolutionWhereInput
+    some?: MFASolutionWhereInput
+    none?: MFASolutionWhereInput
   }
 
   export type ConfirmingEmailAddressListRelationFilter = {
@@ -8975,7 +8975,7 @@ export namespace Prisma {
     none?: FilesWhereInput
   }
 
-  export type TFASolutionOrderByRelationAggregateInput = {
+  export type MFASolutionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -9113,11 +9113,11 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter
   }
 
-  export type EnumSolutionTypeFilter = {
-    equals?: SolutionType
-    in?: Enumerable<SolutionType>
-    notIn?: Enumerable<SolutionType>
-    not?: NestedEnumSolutionTypeFilter | SolutionType
+  export type EnumMFASolutionTypeFilter = {
+    equals?: MFASolutionType
+    in?: Enumerable<MFASolutionType>
+    notIn?: Enumerable<MFASolutionType>
+    not?: NestedEnumMFASolutionTypeFilter | MFASolutionType
   }
 
   export type BoolFilter = {
@@ -9130,7 +9130,7 @@ export namespace Prisma {
     isNot?: UserWhereInput | null
   }
 
-  export type TFASolutionCountOrderByAggregateInput = {
+  export type MFASolutionCountOrderByAggregateInput = {
     id?: SortOrder
     type?: SortOrder
     value?: SortOrder
@@ -9140,7 +9140,7 @@ export namespace Prisma {
     updated_at?: SortOrder
   }
 
-  export type TFASolutionMaxOrderByAggregateInput = {
+  export type MFASolutionMaxOrderByAggregateInput = {
     id?: SortOrder
     type?: SortOrder
     value?: SortOrder
@@ -9150,7 +9150,7 @@ export namespace Prisma {
     updated_at?: SortOrder
   }
 
-  export type TFASolutionMinOrderByAggregateInput = {
+  export type MFASolutionMinOrderByAggregateInput = {
     id?: SortOrder
     type?: SortOrder
     value?: SortOrder
@@ -9160,14 +9160,14 @@ export namespace Prisma {
     updated_at?: SortOrder
   }
 
-  export type EnumSolutionTypeWithAggregatesFilter = {
-    equals?: SolutionType
-    in?: Enumerable<SolutionType>
-    notIn?: Enumerable<SolutionType>
-    not?: NestedEnumSolutionTypeWithAggregatesFilter | SolutionType
+  export type EnumMFASolutionTypeWithAggregatesFilter = {
+    equals?: MFASolutionType
+    in?: Enumerable<MFASolutionType>
+    notIn?: Enumerable<MFASolutionType>
+    not?: NestedEnumMFASolutionTypeWithAggregatesFilter | MFASolutionType
     _count?: NestedIntFilter
-    _min?: NestedEnumSolutionTypeFilter
-    _max?: NestedEnumSolutionTypeFilter
+    _min?: NestedEnumMFASolutionTypeFilter
+    _max?: NestedEnumMFASolutionTypeFilter
   }
 
   export type BoolWithAggregatesFilter = {
@@ -9383,11 +9383,11 @@ export namespace Prisma {
     updated_at?: SortOrder
   }
 
-  export type TFASolutionCreateNestedManyWithoutUserInput = {
-    create?: XOR<Enumerable<TFASolutionCreateWithoutUserInput>, Enumerable<TFASolutionUncheckedCreateWithoutUserInput>>
-    connectOrCreate?: Enumerable<TFASolutionCreateOrConnectWithoutUserInput>
-    createMany?: TFASolutionCreateManyUserInputEnvelope
-    connect?: Enumerable<TFASolutionWhereUniqueInput>
+  export type MFASolutionCreateNestedManyWithoutUserInput = {
+    create?: XOR<Enumerable<MFASolutionCreateWithoutUserInput>, Enumerable<MFASolutionUncheckedCreateWithoutUserInput>>
+    connectOrCreate?: Enumerable<MFASolutionCreateOrConnectWithoutUserInput>
+    createMany?: MFASolutionCreateManyUserInputEnvelope
+    connect?: Enumerable<MFASolutionWhereUniqueInput>
   }
 
   export type ConfirmingEmailAddressCreateNestedManyWithoutUserInput = {
@@ -9418,11 +9418,11 @@ export namespace Prisma {
     connect?: Enumerable<FilesWhereUniqueInput>
   }
 
-  export type TFASolutionUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<Enumerable<TFASolutionCreateWithoutUserInput>, Enumerable<TFASolutionUncheckedCreateWithoutUserInput>>
-    connectOrCreate?: Enumerable<TFASolutionCreateOrConnectWithoutUserInput>
-    createMany?: TFASolutionCreateManyUserInputEnvelope
-    connect?: Enumerable<TFASolutionWhereUniqueInput>
+  export type MFASolutionUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<Enumerable<MFASolutionCreateWithoutUserInput>, Enumerable<MFASolutionUncheckedCreateWithoutUserInput>>
+    connectOrCreate?: Enumerable<MFASolutionCreateOrConnectWithoutUserInput>
+    createMany?: MFASolutionCreateManyUserInputEnvelope
+    connect?: Enumerable<MFASolutionWhereUniqueInput>
   }
 
   export type ConfirmingEmailAddressUncheckedCreateNestedManyWithoutUserInput = {
@@ -9473,18 +9473,18 @@ export namespace Prisma {
     set?: Date | string
   }
 
-  export type TFASolutionUpdateManyWithoutUserNestedInput = {
-    create?: XOR<Enumerable<TFASolutionCreateWithoutUserInput>, Enumerable<TFASolutionUncheckedCreateWithoutUserInput>>
-    connectOrCreate?: Enumerable<TFASolutionCreateOrConnectWithoutUserInput>
-    upsert?: Enumerable<TFASolutionUpsertWithWhereUniqueWithoutUserInput>
-    createMany?: TFASolutionCreateManyUserInputEnvelope
-    set?: Enumerable<TFASolutionWhereUniqueInput>
-    disconnect?: Enumerable<TFASolutionWhereUniqueInput>
-    delete?: Enumerable<TFASolutionWhereUniqueInput>
-    connect?: Enumerable<TFASolutionWhereUniqueInput>
-    update?: Enumerable<TFASolutionUpdateWithWhereUniqueWithoutUserInput>
-    updateMany?: Enumerable<TFASolutionUpdateManyWithWhereWithoutUserInput>
-    deleteMany?: Enumerable<TFASolutionScalarWhereInput>
+  export type MFASolutionUpdateManyWithoutUserNestedInput = {
+    create?: XOR<Enumerable<MFASolutionCreateWithoutUserInput>, Enumerable<MFASolutionUncheckedCreateWithoutUserInput>>
+    connectOrCreate?: Enumerable<MFASolutionCreateOrConnectWithoutUserInput>
+    upsert?: Enumerable<MFASolutionUpsertWithWhereUniqueWithoutUserInput>
+    createMany?: MFASolutionCreateManyUserInputEnvelope
+    set?: Enumerable<MFASolutionWhereUniqueInput>
+    disconnect?: Enumerable<MFASolutionWhereUniqueInput>
+    delete?: Enumerable<MFASolutionWhereUniqueInput>
+    connect?: Enumerable<MFASolutionWhereUniqueInput>
+    update?: Enumerable<MFASolutionUpdateWithWhereUniqueWithoutUserInput>
+    updateMany?: Enumerable<MFASolutionUpdateManyWithWhereWithoutUserInput>
+    deleteMany?: Enumerable<MFASolutionScalarWhereInput>
   }
 
   export type ConfirmingEmailAddressUpdateManyWithoutUserNestedInput = {
@@ -9543,18 +9543,18 @@ export namespace Prisma {
     deleteMany?: Enumerable<FilesScalarWhereInput>
   }
 
-  export type TFASolutionUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<Enumerable<TFASolutionCreateWithoutUserInput>, Enumerable<TFASolutionUncheckedCreateWithoutUserInput>>
-    connectOrCreate?: Enumerable<TFASolutionCreateOrConnectWithoutUserInput>
-    upsert?: Enumerable<TFASolutionUpsertWithWhereUniqueWithoutUserInput>
-    createMany?: TFASolutionCreateManyUserInputEnvelope
-    set?: Enumerable<TFASolutionWhereUniqueInput>
-    disconnect?: Enumerable<TFASolutionWhereUniqueInput>
-    delete?: Enumerable<TFASolutionWhereUniqueInput>
-    connect?: Enumerable<TFASolutionWhereUniqueInput>
-    update?: Enumerable<TFASolutionUpdateWithWhereUniqueWithoutUserInput>
-    updateMany?: Enumerable<TFASolutionUpdateManyWithWhereWithoutUserInput>
-    deleteMany?: Enumerable<TFASolutionScalarWhereInput>
+  export type MFASolutionUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<Enumerable<MFASolutionCreateWithoutUserInput>, Enumerable<MFASolutionUncheckedCreateWithoutUserInput>>
+    connectOrCreate?: Enumerable<MFASolutionCreateOrConnectWithoutUserInput>
+    upsert?: Enumerable<MFASolutionUpsertWithWhereUniqueWithoutUserInput>
+    createMany?: MFASolutionCreateManyUserInputEnvelope
+    set?: Enumerable<MFASolutionWhereUniqueInput>
+    disconnect?: Enumerable<MFASolutionWhereUniqueInput>
+    delete?: Enumerable<MFASolutionWhereUniqueInput>
+    connect?: Enumerable<MFASolutionWhereUniqueInput>
+    update?: Enumerable<MFASolutionUpdateWithWhereUniqueWithoutUserInput>
+    updateMany?: Enumerable<MFASolutionUpdateManyWithWhereWithoutUserInput>
+    deleteMany?: Enumerable<MFASolutionScalarWhereInput>
   }
 
   export type ConfirmingEmailAddressUncheckedUpdateManyWithoutUserNestedInput = {
@@ -9613,26 +9613,26 @@ export namespace Prisma {
     deleteMany?: Enumerable<FilesScalarWhereInput>
   }
 
-  export type UserCreateNestedOneWithoutTfa_solutionsInput = {
-    create?: XOR<UserCreateWithoutTfa_solutionsInput, UserUncheckedCreateWithoutTfa_solutionsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutTfa_solutionsInput
+  export type UserCreateNestedOneWithoutMfa_solutionsInput = {
+    create?: XOR<UserCreateWithoutMfa_solutionsInput, UserUncheckedCreateWithoutMfa_solutionsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMfa_solutionsInput
     connect?: UserWhereUniqueInput
   }
 
-  export type EnumSolutionTypeFieldUpdateOperationsInput = {
-    set?: SolutionType
+  export type EnumMFASolutionTypeFieldUpdateOperationsInput = {
+    set?: MFASolutionType
   }
 
   export type BoolFieldUpdateOperationsInput = {
     set?: boolean
   }
 
-  export type UserUpdateOneRequiredWithoutTfa_solutionsNestedInput = {
-    create?: XOR<UserCreateWithoutTfa_solutionsInput, UserUncheckedCreateWithoutTfa_solutionsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutTfa_solutionsInput
-    upsert?: UserUpsertWithoutTfa_solutionsInput
+  export type UserUpdateOneRequiredWithoutMfa_solutionsNestedInput = {
+    create?: XOR<UserCreateWithoutMfa_solutionsInput, UserUncheckedCreateWithoutMfa_solutionsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMfa_solutionsInput
+    upsert?: UserUpsertWithoutMfa_solutionsInput
     connect?: UserWhereUniqueInput
-    update?: XOR<UserUpdateWithoutTfa_solutionsInput, UserUncheckedUpdateWithoutTfa_solutionsInput>
+    update?: XOR<UserUpdateWithoutMfa_solutionsInput, UserUncheckedUpdateWithoutMfa_solutionsInput>
   }
 
   export type UserCreateNestedOneWithoutConfirmingEmailAddressInput = {
@@ -9814,11 +9814,11 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter
   }
 
-  export type NestedEnumSolutionTypeFilter = {
-    equals?: SolutionType
-    in?: Enumerable<SolutionType>
-    notIn?: Enumerable<SolutionType>
-    not?: NestedEnumSolutionTypeFilter | SolutionType
+  export type NestedEnumMFASolutionTypeFilter = {
+    equals?: MFASolutionType
+    in?: Enumerable<MFASolutionType>
+    notIn?: Enumerable<MFASolutionType>
+    not?: NestedEnumMFASolutionTypeFilter | MFASolutionType
   }
 
   export type NestedBoolFilter = {
@@ -9826,14 +9826,14 @@ export namespace Prisma {
     not?: NestedBoolFilter | boolean
   }
 
-  export type NestedEnumSolutionTypeWithAggregatesFilter = {
-    equals?: SolutionType
-    in?: Enumerable<SolutionType>
-    notIn?: Enumerable<SolutionType>
-    not?: NestedEnumSolutionTypeWithAggregatesFilter | SolutionType
+  export type NestedEnumMFASolutionTypeWithAggregatesFilter = {
+    equals?: MFASolutionType
+    in?: Enumerable<MFASolutionType>
+    notIn?: Enumerable<MFASolutionType>
+    not?: NestedEnumMFASolutionTypeWithAggregatesFilter | MFASolutionType
     _count?: NestedIntFilter
-    _min?: NestedEnumSolutionTypeFilter
-    _max?: NestedEnumSolutionTypeFilter
+    _min?: NestedEnumMFASolutionTypeFilter
+    _max?: NestedEnumMFASolutionTypeFilter
   }
 
   export type NestedBoolWithAggregatesFilter = {
@@ -9911,31 +9911,31 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter
   }
 
-  export type TFASolutionCreateWithoutUserInput = {
+  export type MFASolutionCreateWithoutUserInput = {
     id: string
-    type: SolutionType
+    type: MFASolutionType
     value: string
     available?: boolean
     created_at?: Date | string
     updated_at?: Date | string
   }
 
-  export type TFASolutionUncheckedCreateWithoutUserInput = {
+  export type MFASolutionUncheckedCreateWithoutUserInput = {
     id: string
-    type: SolutionType
+    type: MFASolutionType
     value: string
     available?: boolean
     created_at?: Date | string
     updated_at?: Date | string
   }
 
-  export type TFASolutionCreateOrConnectWithoutUserInput = {
-    where: TFASolutionWhereUniqueInput
-    create: XOR<TFASolutionCreateWithoutUserInput, TFASolutionUncheckedCreateWithoutUserInput>
+  export type MFASolutionCreateOrConnectWithoutUserInput = {
+    where: MFASolutionWhereUniqueInput
+    create: XOR<MFASolutionCreateWithoutUserInput, MFASolutionUncheckedCreateWithoutUserInput>
   }
 
-  export type TFASolutionCreateManyUserInputEnvelope = {
-    data: Enumerable<TFASolutionCreateManyUserInput>
+  export type MFASolutionCreateManyUserInputEnvelope = {
+    data: Enumerable<MFASolutionCreateManyUserInput>
     skipDuplicates?: boolean
   }
 
@@ -10049,28 +10049,28 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type TFASolutionUpsertWithWhereUniqueWithoutUserInput = {
-    where: TFASolutionWhereUniqueInput
-    update: XOR<TFASolutionUpdateWithoutUserInput, TFASolutionUncheckedUpdateWithoutUserInput>
-    create: XOR<TFASolutionCreateWithoutUserInput, TFASolutionUncheckedCreateWithoutUserInput>
+  export type MFASolutionUpsertWithWhereUniqueWithoutUserInput = {
+    where: MFASolutionWhereUniqueInput
+    update: XOR<MFASolutionUpdateWithoutUserInput, MFASolutionUncheckedUpdateWithoutUserInput>
+    create: XOR<MFASolutionCreateWithoutUserInput, MFASolutionUncheckedCreateWithoutUserInput>
   }
 
-  export type TFASolutionUpdateWithWhereUniqueWithoutUserInput = {
-    where: TFASolutionWhereUniqueInput
-    data: XOR<TFASolutionUpdateWithoutUserInput, TFASolutionUncheckedUpdateWithoutUserInput>
+  export type MFASolutionUpdateWithWhereUniqueWithoutUserInput = {
+    where: MFASolutionWhereUniqueInput
+    data: XOR<MFASolutionUpdateWithoutUserInput, MFASolutionUncheckedUpdateWithoutUserInput>
   }
 
-  export type TFASolutionUpdateManyWithWhereWithoutUserInput = {
-    where: TFASolutionScalarWhereInput
-    data: XOR<TFASolutionUpdateManyMutationInput, TFASolutionUncheckedUpdateManyWithoutTfa_solutionsInput>
+  export type MFASolutionUpdateManyWithWhereWithoutUserInput = {
+    where: MFASolutionScalarWhereInput
+    data: XOR<MFASolutionUpdateManyMutationInput, MFASolutionUncheckedUpdateManyWithoutMfa_solutionsInput>
   }
 
-  export type TFASolutionScalarWhereInput = {
-    AND?: Enumerable<TFASolutionScalarWhereInput>
-    OR?: Enumerable<TFASolutionScalarWhereInput>
-    NOT?: Enumerable<TFASolutionScalarWhereInput>
+  export type MFASolutionScalarWhereInput = {
+    AND?: Enumerable<MFASolutionScalarWhereInput>
+    OR?: Enumerable<MFASolutionScalarWhereInput>
+    NOT?: Enumerable<MFASolutionScalarWhereInput>
     id?: StringFilter | string
-    type?: EnumSolutionTypeFilter | SolutionType
+    type?: EnumMFASolutionTypeFilter | MFASolutionType
     value?: StringFilter | string
     user_id?: StringFilter | string
     available?: BoolFilter | boolean
@@ -10193,7 +10193,7 @@ export namespace Prisma {
     encryption_data?: StringFilter | string
   }
 
-  export type UserCreateWithoutTfa_solutionsInput = {
+  export type UserCreateWithoutMfa_solutionsInput = {
     id: string
     email: string
     role?: Role
@@ -10214,7 +10214,7 @@ export namespace Prisma {
     Files?: FilesCreateNestedManyWithoutCreateUserInput
   }
 
-  export type UserUncheckedCreateWithoutTfa_solutionsInput = {
+  export type UserUncheckedCreateWithoutMfa_solutionsInput = {
     id: string
     email: string
     role?: Role
@@ -10235,17 +10235,17 @@ export namespace Prisma {
     Files?: FilesUncheckedCreateNestedManyWithoutCreateUserInput
   }
 
-  export type UserCreateOrConnectWithoutTfa_solutionsInput = {
+  export type UserCreateOrConnectWithoutMfa_solutionsInput = {
     where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutTfa_solutionsInput, UserUncheckedCreateWithoutTfa_solutionsInput>
+    create: XOR<UserCreateWithoutMfa_solutionsInput, UserUncheckedCreateWithoutMfa_solutionsInput>
   }
 
-  export type UserUpsertWithoutTfa_solutionsInput = {
-    update: XOR<UserUpdateWithoutTfa_solutionsInput, UserUncheckedUpdateWithoutTfa_solutionsInput>
-    create: XOR<UserCreateWithoutTfa_solutionsInput, UserUncheckedCreateWithoutTfa_solutionsInput>
+  export type UserUpsertWithoutMfa_solutionsInput = {
+    update: XOR<UserUpdateWithoutMfa_solutionsInput, UserUncheckedUpdateWithoutMfa_solutionsInput>
+    create: XOR<UserCreateWithoutMfa_solutionsInput, UserUncheckedCreateWithoutMfa_solutionsInput>
   }
 
-  export type UserUpdateWithoutTfa_solutionsInput = {
+  export type UserUpdateWithoutMfa_solutionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | Role
@@ -10266,7 +10266,7 @@ export namespace Prisma {
     Files?: FilesUpdateManyWithoutCreateUserNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutTfa_solutionsInput = {
+  export type UserUncheckedUpdateWithoutMfa_solutionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | Role
@@ -10302,7 +10302,7 @@ export namespace Prisma {
     rsa_public_key: string
     created_at?: Date | string
     updated_at?: Date | string
-    tfa_solutions?: TFASolutionCreateNestedManyWithoutUserInput
+    mfa_solutions?: MFASolutionCreateNestedManyWithoutUserInput
     Sessions?: SessionsCreateNestedManyWithoutUserInput
     Hooks?: HooksCreateNestedManyWithoutUserInput
     Files?: FilesCreateNestedManyWithoutCreateUserInput
@@ -10323,7 +10323,7 @@ export namespace Prisma {
     rsa_public_key: string
     created_at?: Date | string
     updated_at?: Date | string
-    tfa_solutions?: TFASolutionUncheckedCreateNestedManyWithoutUserInput
+    mfa_solutions?: MFASolutionUncheckedCreateNestedManyWithoutUserInput
     Sessions?: SessionsUncheckedCreateNestedManyWithoutUserInput
     Hooks?: HooksUncheckedCreateNestedManyWithoutUserInput
     Files?: FilesUncheckedCreateNestedManyWithoutCreateUserInput
@@ -10354,7 +10354,7 @@ export namespace Prisma {
     rsa_public_key?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    tfa_solutions?: TFASolutionUpdateManyWithoutUserNestedInput
+    mfa_solutions?: MFASolutionUpdateManyWithoutUserNestedInput
     Sessions?: SessionsUpdateManyWithoutUserNestedInput
     Hooks?: HooksUpdateManyWithoutUserNestedInput
     Files?: FilesUpdateManyWithoutCreateUserNestedInput
@@ -10375,7 +10375,7 @@ export namespace Prisma {
     rsa_public_key?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    tfa_solutions?: TFASolutionUncheckedUpdateManyWithoutUserNestedInput
+    mfa_solutions?: MFASolutionUncheckedUpdateManyWithoutUserNestedInput
     Sessions?: SessionsUncheckedUpdateManyWithoutUserNestedInput
     Hooks?: HooksUncheckedUpdateManyWithoutUserNestedInput
     Files?: FilesUncheckedUpdateManyWithoutCreateUserNestedInput
@@ -10396,7 +10396,7 @@ export namespace Prisma {
     rsa_public_key: string
     created_at?: Date | string
     updated_at?: Date | string
-    tfa_solutions?: TFASolutionCreateNestedManyWithoutUserInput
+    mfa_solutions?: MFASolutionCreateNestedManyWithoutUserInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressCreateNestedManyWithoutUserInput
     Hooks?: HooksCreateNestedManyWithoutUserInput
     Files?: FilesCreateNestedManyWithoutCreateUserInput
@@ -10417,7 +10417,7 @@ export namespace Prisma {
     rsa_public_key: string
     created_at?: Date | string
     updated_at?: Date | string
-    tfa_solutions?: TFASolutionUncheckedCreateNestedManyWithoutUserInput
+    mfa_solutions?: MFASolutionUncheckedCreateNestedManyWithoutUserInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressUncheckedCreateNestedManyWithoutUserInput
     Hooks?: HooksUncheckedCreateNestedManyWithoutUserInput
     Files?: FilesUncheckedCreateNestedManyWithoutCreateUserInput
@@ -10448,7 +10448,7 @@ export namespace Prisma {
     rsa_public_key?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    tfa_solutions?: TFASolutionUpdateManyWithoutUserNestedInput
+    mfa_solutions?: MFASolutionUpdateManyWithoutUserNestedInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressUpdateManyWithoutUserNestedInput
     Hooks?: HooksUpdateManyWithoutUserNestedInput
     Files?: FilesUpdateManyWithoutCreateUserNestedInput
@@ -10469,7 +10469,7 @@ export namespace Prisma {
     rsa_public_key?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    tfa_solutions?: TFASolutionUncheckedUpdateManyWithoutUserNestedInput
+    mfa_solutions?: MFASolutionUncheckedUpdateManyWithoutUserNestedInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressUncheckedUpdateManyWithoutUserNestedInput
     Hooks?: HooksUncheckedUpdateManyWithoutUserNestedInput
     Files?: FilesUncheckedUpdateManyWithoutCreateUserNestedInput
@@ -10490,7 +10490,7 @@ export namespace Prisma {
     rsa_public_key: string
     created_at?: Date | string
     updated_at?: Date | string
-    tfa_solutions?: TFASolutionCreateNestedManyWithoutUserInput
+    mfa_solutions?: MFASolutionCreateNestedManyWithoutUserInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressCreateNestedManyWithoutUserInput
     Sessions?: SessionsCreateNestedManyWithoutUserInput
     Files?: FilesCreateNestedManyWithoutCreateUserInput
@@ -10511,7 +10511,7 @@ export namespace Prisma {
     rsa_public_key: string
     created_at?: Date | string
     updated_at?: Date | string
-    tfa_solutions?: TFASolutionUncheckedCreateNestedManyWithoutUserInput
+    mfa_solutions?: MFASolutionUncheckedCreateNestedManyWithoutUserInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressUncheckedCreateNestedManyWithoutUserInput
     Sessions?: SessionsUncheckedCreateNestedManyWithoutUserInput
     Files?: FilesUncheckedCreateNestedManyWithoutCreateUserInput
@@ -10542,7 +10542,7 @@ export namespace Prisma {
     rsa_public_key?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    tfa_solutions?: TFASolutionUpdateManyWithoutUserNestedInput
+    mfa_solutions?: MFASolutionUpdateManyWithoutUserNestedInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressUpdateManyWithoutUserNestedInput
     Sessions?: SessionsUpdateManyWithoutUserNestedInput
     Files?: FilesUpdateManyWithoutCreateUserNestedInput
@@ -10563,7 +10563,7 @@ export namespace Prisma {
     rsa_public_key?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    tfa_solutions?: TFASolutionUncheckedUpdateManyWithoutUserNestedInput
+    mfa_solutions?: MFASolutionUncheckedUpdateManyWithoutUserNestedInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressUncheckedUpdateManyWithoutUserNestedInput
     Sessions?: SessionsUncheckedUpdateManyWithoutUserNestedInput
     Files?: FilesUncheckedUpdateManyWithoutCreateUserNestedInput
@@ -10584,7 +10584,7 @@ export namespace Prisma {
     rsa_public_key: string
     created_at?: Date | string
     updated_at?: Date | string
-    tfa_solutions?: TFASolutionCreateNestedManyWithoutUserInput
+    mfa_solutions?: MFASolutionCreateNestedManyWithoutUserInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressCreateNestedManyWithoutUserInput
     Sessions?: SessionsCreateNestedManyWithoutUserInput
     Hooks?: HooksCreateNestedManyWithoutUserInput
@@ -10605,7 +10605,7 @@ export namespace Prisma {
     rsa_public_key: string
     created_at?: Date | string
     updated_at?: Date | string
-    tfa_solutions?: TFASolutionUncheckedCreateNestedManyWithoutUserInput
+    mfa_solutions?: MFASolutionUncheckedCreateNestedManyWithoutUserInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressUncheckedCreateNestedManyWithoutUserInput
     Sessions?: SessionsUncheckedCreateNestedManyWithoutUserInput
     Hooks?: HooksUncheckedCreateNestedManyWithoutUserInput
@@ -10636,7 +10636,7 @@ export namespace Prisma {
     rsa_public_key?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    tfa_solutions?: TFASolutionUpdateManyWithoutUserNestedInput
+    mfa_solutions?: MFASolutionUpdateManyWithoutUserNestedInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressUpdateManyWithoutUserNestedInput
     Sessions?: SessionsUpdateManyWithoutUserNestedInput
     Hooks?: HooksUpdateManyWithoutUserNestedInput
@@ -10657,15 +10657,15 @@ export namespace Prisma {
     rsa_public_key?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    tfa_solutions?: TFASolutionUncheckedUpdateManyWithoutUserNestedInput
+    mfa_solutions?: MFASolutionUncheckedUpdateManyWithoutUserNestedInput
     ConfirmingEmailAddress?: ConfirmingEmailAddressUncheckedUpdateManyWithoutUserNestedInput
     Sessions?: SessionsUncheckedUpdateManyWithoutUserNestedInput
     Hooks?: HooksUncheckedUpdateManyWithoutUserNestedInput
   }
 
-  export type TFASolutionCreateManyUserInput = {
+  export type MFASolutionCreateManyUserInput = {
     id: string
-    type: SolutionType
+    type: MFASolutionType
     value: string
     available?: boolean
     created_at?: Date | string
@@ -10707,27 +10707,27 @@ export namespace Prisma {
     encryption_data: string
   }
 
-  export type TFASolutionUpdateWithoutUserInput = {
+  export type MFASolutionUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    type?: EnumSolutionTypeFieldUpdateOperationsInput | SolutionType
+    type?: EnumMFASolutionTypeFieldUpdateOperationsInput | MFASolutionType
     value?: StringFieldUpdateOperationsInput | string
     available?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type TFASolutionUncheckedUpdateWithoutUserInput = {
+  export type MFASolutionUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    type?: EnumSolutionTypeFieldUpdateOperationsInput | SolutionType
+    type?: EnumMFASolutionTypeFieldUpdateOperationsInput | MFASolutionType
     value?: StringFieldUpdateOperationsInput | string
     available?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type TFASolutionUncheckedUpdateManyWithoutTfa_solutionsInput = {
+  export type MFASolutionUncheckedUpdateManyWithoutMfa_solutionsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    type?: EnumSolutionTypeFieldUpdateOperationsInput | SolutionType
+    type?: EnumMFASolutionTypeFieldUpdateOperationsInput | MFASolutionType
     value?: StringFieldUpdateOperationsInput | string
     available?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string

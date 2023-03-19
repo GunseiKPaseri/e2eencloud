@@ -24,23 +24,6 @@ import { uniqueSequentialKey } from '../utils/uniqueKey.ts';
 import { createUnionSchema } from '../utils/zod.ts';
 
 const DEFAULT_MAX_CAPACITY = 10n * 1024n * 1024n; //10MiB
-/*
-interface SQLTableUser {
-  id: string;
-  email: string;
-  client_random_value: string;
-  encrypted_master_key: string;
-  encrypted_master_key_iv: string;
-  hashed_authentication_key: string;
-  is_email_confirmed: boolean;
-  max_capacity: number;
-  file_usage: number;
-  two_factor_authentication_secret_key: string | null;
-  rsa_public_key: string | null;
-  encrypted_rsa_private_key: string | null;
-  encrypted_rsa_private_key_iv: string | null;
-  authority: string | null;
-}*/
 
 export class User {
   readonly id: string;
@@ -156,7 +139,7 @@ export class User {
   }
 
   async confirmTOTP(token: string): Promise<{ success: boolean; useTOTP: boolean }> {
-    const registedTOTPkey = await prisma.tFASolution.findMany({
+    const registedTOTPkey = await prisma.mFASolution.findMany({
       select: {
         value: true,
       },
@@ -184,8 +167,8 @@ export class User {
     };
   }
 
-  async usingTFA() {
-    const usingTOTP = await prisma.tFASolution.findMany({
+  async usingMFA() {
+    const usingTOTP = await prisma.mFASolution.findMany({
       select: {
         type: true,
       },
@@ -197,38 +180,38 @@ export class User {
     return [...new Set(usingTOTP.map((x) => x.type))];
   }
 
-  async getTFAList(params: {
+  async getMFAList(params: {
     user_id: string;
     offset: number;
     limit: number;
     orderBy: 'id' | 'type';
     order: 'asc' | 'desc';
-    queryFilter: GridTFAFilterModel;
-    select: Prisma.TFASolutionSelect;
+    queryFilter: GridMFAFilterModel;
+    select: Prisma.MFASolutionSelect;
   }) {
-    const x = await prisma.tFASolution.findMany({
+    const x = await prisma.mFASolution.findMany({
       select: params.select,
       skip: params.offset,
       take: params.limit,
       orderBy: { [params.orderBy]: params.order },
       where: {
-        ...tfaFilterQueryToPrismaQuery(params.queryFilter),
+        ...mfaFilterQueryToPrismaQuery(params.queryFilter),
         user_id: params.user_id,
       },
     });
     return x;
   }
 
-  async getNumberOfHooks(queryFilter?: GridTFAFilterModel): Promise<number> {
+  async getNumberOfHooks(queryFilter?: GridMFAFilterModel): Promise<number> {
     return await prisma.hooks.count({
       where: {
-        ...(queryFilter ? tfaFilterQueryToPrismaQuery(queryFilter) : {}),
+        ...(queryFilter ? mfaFilterQueryToPrismaQuery(queryFilter) : {}),
       },
     });
   }
 
   async addTOTP(key: string) {
-    await prisma.tFASolution.create({
+    await prisma.mFASolution.create({
       data: {
         id: uniqueSequentialKey(),
         type: 'TOTP',
@@ -240,7 +223,7 @@ export class User {
   }
 
   async deleteTOTPAll() {
-    await prisma.tFASolution.deleteMany({
+    await prisma.mFASolution.deleteMany({
       where: {
         type: 'TOTP',
         user_id: this.id,
@@ -291,7 +274,7 @@ export class User {
 
   async patch(params: {
     max_capacity?: number | bigint;
-    two_factor_authentication?: boolean;
+    multi_factor_authentication?: boolean;
   }) {
     // validation
     const max_capacity = typeof params.max_capacity === 'undefined' ? undefined : Number(params.max_capacity);
@@ -308,9 +291,9 @@ export class User {
         },
       });
       console.log(params);
-      if (params.two_factor_authentication !== true) {
+      if (params.multi_factor_authentication !== true) {
         // 無効化のみ
-        await prisma.tFASolution.updateMany({
+        await prisma.mFASolution.updateMany({
           where: {
             user_id: this.id,
           },
@@ -366,7 +349,7 @@ export const addUser = async (
   }
 };
 
-const userFields = ['id', 'email', 'max_capacity', 'file_usage', 'authority', 'two_factor_authentication'] as const;
+const userFields = ['id', 'email', 'max_capacity', 'file_usage', 'authority', 'multi_factor_authentication'] as const;
 type UserField = typeof userFields[number];
 const isUserField = (field: string): field is UserField => {
   return userFields.some((value) => value === field);
@@ -484,7 +467,7 @@ export const getUsers = async (
     select: {
       _count: {
         select: {
-          tfa_solutions: {
+          mfa_solutions: {
             where: {
               available: true,
             },
@@ -497,12 +480,12 @@ export const getUsers = async (
     },
   });*/
   const users2 = await Promise.all(users.map((user) => {
-    return prisma.tFASolution.count({
+    return prisma.mFASolution.count({
       where: {
         user_id: user.id,
         available: true,
       },
-    }).then((x) => ({ ...user, two_factor_authentication: x > 0 }));
+    }).then((x) => ({ ...user, multi_factor_authentication: x > 0 }));
   }));
 
   return users2;
@@ -580,43 +563,43 @@ const userFilterQueryToPrismaQuery = (gridFilter: GridUserFilterModel): Prisma.U
   return recordUnion(t);
 };
 
-const tfaFilterStringColumn = ['id'] as const;
-const tfaFilterEnumTypeValue = ['TOTP', 'FIDO2', 'EMAIL'] as const;
+const mfaFilterStringColumn = ['id'] as const;
+const mfaFilterEnumTypeValue = ['TOTP', 'FIDO2', 'EMAIL'] as const;
 
-const tfaFilterColumns = [...tfaFilterStringColumn, 'type'] as const;
+const mfaFilterColumns = [...mfaFilterStringColumn, 'type'] as const;
 
-export const tfaColumnsSchema = createUnionSchema(tfaFilterColumns);
+export const mfaColumnsSchema = createUnionSchema(mfaFilterColumns);
 
-const tfaFilterItemSchema = z.union([
+const mfaFilterItemSchema = z.union([
   filterStringItemSchema('id'),
-  filterEnumItemSchema('type', tfaFilterEnumTypeValue),
+  filterEnumItemSchema('type', mfaFilterEnumTypeValue),
 ]);
-type GridTFAFilterItem = z.infer<typeof tfaFilterItemSchema>;
+type GridMFAFilterItem = z.infer<typeof mfaFilterItemSchema>;
 
-type FixedGridTFAFilterItem =
-  | FilterStringItem<typeof tfaFilterStringColumn[number]>
-  | FilterEnumItem<'type', typeof tfaFilterEnumTypeValue[number]>;
+type FixedGridMFAFilterItem =
+  | FilterStringItem<typeof mfaFilterStringColumn[number]>
+  | FilterEnumItem<'type', typeof mfaFilterEnumTypeValue[number]>;
 
-type GridTFAFilterModel = GridFilterModel<FixedGridTFAFilterItem>;
+type GridMFAFilterModel = GridFilterModel<FixedGridMFAFilterItem>;
 
 /**
  * parse as MUI DataGrid FilterModel
- * @param query DataGrid FilterModel(for TFA)
+ * @param query DataGrid FilterModel(for MFA)
  * @returns
  */
-export const parseTFAFilterQuery = (query: string): GridFilterModel<GridTFAFilterItem> => {
-  const parsed = anyFilterModelSchema(tfaFilterItemSchema, parseJSONwithoutErr(query));
+export const parseMFAFilterQuery = (query: string): GridFilterModel<GridMFAFilterItem> => {
+  const parsed = anyFilterModelSchema(mfaFilterItemSchema, parseJSONwithoutErr(query));
   return parsed;
 };
 
-const tfaFilterQueryToPrismaQuery = (gridFilter: GridTFAFilterModel): Prisma.TFASolutionWhereInput => {
+const mfaFilterQueryToPrismaQuery = (gridFilter: GridMFAFilterModel): Prisma.MFASolutionWhereInput => {
   const t = gridFilter.items
     .map((x) => {
       switch (x.columnField) {
         case 'id':
           return gridFilterToPrismaFilter(x, 'String');
         case 'type':
-          return gridFilterToPrismaFilterEnum<'type', typeof tfaFilterEnumTypeValue>(x);
+          return gridFilterToPrismaFilterEnum<'type', typeof mfaFilterEnumTypeValue>(x);
         default:
           console.log(new ExhaustiveError(x));
       }

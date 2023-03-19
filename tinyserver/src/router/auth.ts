@@ -76,7 +76,7 @@ router.post('/email_confirm', async (ctx) => {
         email: result.email,
         encryptedMasterKeyBase64: result.encrypted_master_key,
         encryptedMasterKeyIVBase64: result.encrypted_master_key_iv,
-        useTwoFactorAuth: false,
+        useMultiFactorAuth: false,
         role: result.role,
         encryptedRSAPrivateKeyBase64: result.encrypted_rsa_private_key,
         encryptedRSAPrivateKeyIVBase64: result.encrypted_rsa_private_key_iv,
@@ -153,7 +153,7 @@ export const login = async <R extends string>(props: {
     email: user.email,
     encryptedMasterKeyBase64: user.encrypted_master_key,
     encryptedMasterKeyIVBase64: user.encrypted_master_key_iv,
-    useTwoFactorAuth: false,
+    useMultiFactorAuth: false,
     role: user.role,
     encryptedRSAPrivateKeyBase64: user.encrypted_rsa_private_key,
     encryptedRSAPrivateKeyIVBase64: user.encrypted_rsa_private_key_iv,
@@ -187,14 +187,14 @@ router.post('/login', async (ctx) => {
   if (!user || user.hashed_authentication_key !== hashed_authentication_key) {
     return ctx.response.status = Status.Unauthorized;
   }
-  // use tfa?
-  const usingTFA = await user.usingTFA();
-  if (usingTFA.length > 0) {
-    await ctx.state.session.set('tfa_uid', user.id);
+  // use mfa?
+  const usingMFA = await user.usingMFA();
+  if (usingMFA.length > 0) {
+    await ctx.state.session.set('mfa_uid', user.id);
     ctx.response.status = Status.OK;
     ctx.response.body = {
       success: false,
-      suggestedSolution: usingTFA,
+      suggestedSolution: usingMFA,
     };
     ctx.response.type = 'json';
     return;
@@ -217,11 +217,11 @@ router.post('/totplogin', async (ctx) => {
   }
   const data = parsed.data;
 
-  // use tfa_uid
-  const tfauid: string | null = await ctx.state.session.get('tfa_uid');
-  if (typeof tfauid !== 'string') return ctx.response.status = Status.Forbidden;
+  // use mfa_uid
+  const mfauid: string | null = await ctx.state.session.get('mfa_uid');
+  if (typeof mfauid !== 'string') return ctx.response.status = Status.Forbidden;
 
-  const user = await getUserById(tfauid);
+  const user = await getUserById(mfauid);
   if (user === null) return ctx.response.status = Status.Forbidden;
 
   const confirmTOTP = await user.confirmTOTP(data.token);

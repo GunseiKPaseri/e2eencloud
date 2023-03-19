@@ -20,7 +20,7 @@ interface GETuserlistJSON {
     max_capacity: string; // bigint
     file_usage: string; // bigint
     role?: string;
-    two_factor_authentication: boolean;
+    multi_factor_authentication: boolean;
   }[];
 }
 
@@ -80,7 +80,7 @@ router.get('/users', async (ctx) => {
         max_capacity: user.max_capacity.toString(),
         file_usage: user.file_usage.toString(),
         role: user.role,
-        two_factor_authentication: user.two_factor_authentication,
+        multi_factor_authentication: user.multi_factor_authentication,
       }]
       : [])
     );
@@ -120,10 +120,10 @@ const PATCHUserScheme = z.object({
     (v) => (typeof v === 'string' ? BigInt(v) : (typeof v === 'bigint' ? v : null)),
     z.bigint(),
   ),
-  two_factor_authentication: z.boolean(),
+  multi_factor_authentication: z.boolean(),
 }).partial({
   max_capacity: true,
-  two_factor_authentication: true,
+  multi_factor_authentication: true,
 });
 
 router.patch('/user/:id', async (ctx) => {

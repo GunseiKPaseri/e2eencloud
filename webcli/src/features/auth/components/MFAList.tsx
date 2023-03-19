@@ -6,9 +6,9 @@ import type { AxiosResponse } from 'axios';
 import { appLocation, axiosWithSession } from '../../componentutils';
 import EditableDataGrid, { type ComputeMutation } from '../../../components/assets/EditableDataGrid';
 
-type GetTFAListJSONRow = {
-  number_of_tfa: number;
-  tfa: {
+type GetMFAListJSONRow = {
+  number_of_mfa: number;
+  mfa: {
     id: string;
     type: 'EMAIL' | 'FIDO2' | 'TOTP'
     available: boolean;
@@ -17,13 +17,13 @@ type GetTFAListJSONRow = {
 
 const PAGE_SIZE = 10;
 
-export type TFADataGridRowModel = GridRowModel<{
+export type MFADataGridRowModel = GridRowModel<{
   id: string;
   type: string;
   available: boolean;
 }>;
 
-const getTFAList = async (props: {
+const getMFAList = async (props: {
   offset: number,
   limit: number,
   sortQuery: GridSortItem[],
@@ -31,9 +31,9 @@ const getTFAList = async (props: {
 }) => {
   const result = await axiosWithSession.get<
   Record<string, never>,
-  AxiosResponse<GetTFAListJSONRow>,
+  AxiosResponse<GetMFAListJSONRow>,
   { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(
-    `${appLocation}/api/my/tfa`,
+    `${appLocation}/api/my/mfa`,
     {
       params: {
         offset: props.offset,
@@ -45,28 +45,28 @@ const getTFAList = async (props: {
     },
   );
   return {
-    total_number: result.data.number_of_tfa,
-    items: result.data.tfa,
+    total_number: result.data.number_of_mfa,
+    items: result.data.mfa,
   };
 };
 
-const editTFA = async (
-  targetTFA: TFADataGridRowModel,
-  edited: Partial<TFADataGridRowModel>,
+const editMFA = async (
+  targetMFA: MFADataGridRowModel,
+  edited: Partial<MFADataGridRowModel>,
 ) => {
-  await axiosWithSession.patch(`${appLocation}/api/my/tfa/${targetTFA.id}`, { available: edited.available });
+  await axiosWithSession.patch(`${appLocation}/api/my/mfa/${targetMFA.id}`, { available: edited.available });
   return {
-    ...targetTFA,
+    ...targetMFA,
     available: edited.available ?? false,
   };
 };
 
-const deleteTFA = async (id: string) => {
+const deleteMFA = async (id: string) => {
   const result = await axiosWithSession.get<
   Record<string, never>,
-  AxiosResponse<GetTFAListJSONRow>,
+  AxiosResponse<GetMFAListJSONRow>,
   { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(
-    `${appLocation}/api/my/tfa/${id}`,
+    `${appLocation}/api/my/mfa/${id}`,
     {
       method: 'delete',
     },
@@ -74,16 +74,16 @@ const deleteTFA = async (id: string) => {
   return result;
 };
 
-const computeMutation: ComputeMutation<TFADataGridRowModel> = ({ newRow, oldRow, t }) => {
+const computeMutation: ComputeMutation<MFADataGridRowModel> = ({ newRow, oldRow, t }) => {
   if (newRow.available !== oldRow.available) {
-    return `${t('auth.twofactorauth', '二要素認証')}：${newRow.available ? t('admin.on', 'オン') : t('admin.off', 'オフ')}`;
+    return `${t('auth.multifactorauth', '多要素認証')}：${newRow.available ? t('admin.on', 'オン') : t('admin.off', 'オフ')}`;
   }
   return null;
 };
 
-function TFAList() {
+function MFAList() {
   return (
-    <EditableDataGrid <TFADataGridRowModel>
+    <EditableDataGrid <MFADataGridRowModel>
       computeMutation={computeMutation}
       getName={(params) => `${params.row.id}`}
       columns={[
@@ -99,13 +99,13 @@ function TFAList() {
       parentHeight={400}
       pageSize={PAGE_SIZE}
       rowsPerPageOptions={[PAGE_SIZE]}
-      getList={getTFAList}
-      editItem={editTFA}
+      getList={getMFAList}
+      editItem={editMFA}
       onDelete={async (params) => {
-        await deleteTFA(params.row.id);
+        await deleteMFA(params.row.id);
       }}
     />
   );
 }
 
-export default TFAList;
+export default MFAList;

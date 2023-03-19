@@ -24,6 +24,6 @@ export const addTOTPAsync = createAsyncThunk<void, { secretKey: string, token: s
 export const afterAddTOTPAsyncFullfilled:
 CaseReducer<AuthState, PayloadAction<void>> = (state) => {
   if (state.user) {
-    state.user.useTwoFactorAuth = true;
+    state.user.useMultiFactorAuth = true;
   }
 };

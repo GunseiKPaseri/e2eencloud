@@ -96,7 +96,7 @@ router.post('/attestation', async (ctx) => {
   const credId = byteArray2base64(regResult.authnrData?.get('credId'));
   const counter = regResult.authnrData?.get('counter');
 
-  const _re = await prisma.tFASolution.create({
+  const _re = await prisma.mFASolution.create({
     data: {
       id: credId,
       type: 'FIDO2',
@@ -125,12 +125,12 @@ router.post('/assertion/options', async (ctx) => {
   // const result = FIDO2AssertionSchema.safeParse(await body.value);
   // if (!result.success) return ctx.response.status = Status.BadRequest;
   // const request = result.data;
-  // use tfa_uid
-  const tfauid: string | null = await ctx.state.session.get('tfa_uid');
-  if (typeof tfauid !== 'string') return ctx.response.status = Status.Forbidden;
+  // use mfa_uid
+  const mfauid: string | null = await ctx.state.session.get('mfa_uid');
+  if (typeof mfauid !== 'string') return ctx.response.status = Status.Forbidden;
 
   // select user
-  const user = await getUserById(tfauid);
+  const user = await getUserById(mfauid);
   if (!user) return ctx.response.status = Status.Forbidden;
 
   const assertionOptionsOrigin = await f2l.assertionOptions() as {
@@ -138,7 +138,7 @@ router.post('/assertion/options', async (ctx) => {
     challenge: ArrayBuffer;
   };
   // select credential
-  const allowCredentialsOrigin = await prisma.tFASolution.findMany({
+  const allowCredentialsOrigin = await prisma.mFASolution.findMany({
     select: { id: true },
     where: {
       type: 'FIDO2',
@@ -192,7 +192,7 @@ router.post('/assertion/result', async (ctx) => {
   const request = result.data;
 
   console.log(challengeUID);
-  const attestationOrigin = await prisma.tFASolution.findFirst({
+  const attestationOrigin = await prisma.mFASolution.findFirst({
     select: {
       id: true,
       value: true,
@@ -230,7 +230,7 @@ router.post('/assertion/result', async (ctx) => {
     return ctx.response.status = Status.BadRequest;
   }
   const nextCounter = authnResult.authnrData?.get('counter');
-  await prisma.tFASolution.update({
+  await prisma.mFASolution.update({
     where: {
       id: request.rawId,
     },

@@ -19,7 +19,7 @@ type LoginSuccess = {
   email: string,
   encryptedMasterKeyBase64: string,
   encryptedMasterKeyIVBase64: string,
-  useTwoFactorAuth: boolean,
+  useMultiFactorAuth: boolean,
   encryptedRSAPrivateKeyBase64: string,
   encryptedRSAPrivateKeyIVBase64: string,
   RSAPublicKeyBase64: string,
@@ -31,7 +31,7 @@ export type APILoginSuccessResopnse = {
   role: 'ADMIN' | 'USER',
   encryptedMasterKeyBase64: string,
   encryptedMasterKeyIVBase64: string,
-  useTwoFactorAuth: boolean,
+  useMultiFactorAuth: boolean,
   encryptedRSAPrivateKeyBase64: string,
   encryptedRSAPrivateKeyIVBase64: string,
   RSAPublicKeyBase64: string,
@@ -81,7 +81,7 @@ UserState, LoginSuccess>(
       authority: result.role === 'ADMIN' ? 'ADMIN' : null,
       email: result.email,
       MasterKey: Array.from(MasterKeyRaw),
-      useTwoFactorAuth: result.useTwoFactorAuth,
+      useMultiFactorAuth: result.useMultiFactorAuth,
     };
   },
 );

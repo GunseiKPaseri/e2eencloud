@@ -19,8 +19,7 @@ auth:
   logout: ログアウト
   password: パスワード
   registifyoudonothaveanaccount: アカウントが無ければ登録
-  twofactorauth: 二要素認証
-  twofactorauthtoken: 二要素認証トークン
+  multifactorauth: 多要素認証
   youalreadyloggined: 既に{{email}}としてログイン済です
 language:
   jaJP: 日本語

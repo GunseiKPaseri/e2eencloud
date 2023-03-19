@@ -1,6 +1,6 @@
-import TFAList from '../../features/auth/components/TFAList';
+import MFAList from '../../features/auth/components/MFAList';
 import PasswordChanger from '../../features/auth/components/PasswordChanger';
-import TwoFactorAuth from '../../features/auth/components/TwoFactorAuth';
+import MultiFactorAuth from '../../features/auth/components/MultiFactorAuth';
 import { useAppSelector } from '../../app/hooks';
 import SessionConfig from '../../features/session/sessionConfing';
 import UserList from '../admin/UserList';
@@ -20,8 +20,8 @@ export default function ConfigurePage() {
           <SessionConfig />
           <UseCoupon />
           <StorageInfo />
-          <TFAList />
-          <TwoFactorAuth />
+          <MFAList />
+          <MultiFactorAuth />
           <FIDO2Register />
           <PasswordChanger />
           <HookList />

@@ -12,7 +12,7 @@ import { loginSuccess, type APILoginSuccessResopnse } from './loginSuccess';
 // ログイン処理
 export const totpLoginAsync = createAsyncThunk<
 boolean, { token: string }>(
-  'auth/tfaLogin',
+  'auth/mfaLogin',
   async (info, { dispatch }) => {
     type APITOTPLoginResponse = APILoginSuccessResopnse | { success: false };
 

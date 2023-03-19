@@ -10,7 +10,7 @@ auth:
   logout: Logout
   email: Email
   password: Password
-  twofactorauthtoken: Two-Factor Auth Token
+  multifactorauthtoken: Multi-Factor Auth Token
   youalreadyloggined: You are already logined in with {{email}}.
 language:
   jaJP: Japanese

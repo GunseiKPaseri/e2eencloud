@@ -28,7 +28,7 @@ type APIEmailConfirmResopnse = {
     role: 'ADMIN' | 'USER',
     encryptedMasterKeyBase64: string,
     encryptedMasterKeyIVBase64: string,
-    useTwoFactorAuth: boolean,
+    useMultiFactorAuth: boolean,
     encryptedRSAPrivateKeyBase64: string,
     encryptedRSAPrivateKeyIVBase64: string,
     RSAPublicKeyBase64: string,

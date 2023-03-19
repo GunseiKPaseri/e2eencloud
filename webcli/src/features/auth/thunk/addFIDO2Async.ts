@@ -64,6 +64,6 @@ export const addFIDO2Async = createAsyncThunk<void, void>(
 export const afterAddFIDO2AsyncFullfilled:
 CaseReducer<AuthState, PayloadAction<void>> = (state) => {
   if (state.user) {
-    state.user.useTwoFactorAuth = true;
+    state.user.useMultiFactorAuth = true;
   }
 };

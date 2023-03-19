@@ -14,7 +14,7 @@ const PAGE_SIZE = 10;
 export type UserDataGridRowModel = GridRowModel<{
   id: number;
   email: string;
-  two_factor_authentication: boolean;
+  multi_factor_authentication: boolean;
   max_capacity: number;
   file_usage: number;
   authority: string | null;
@@ -23,8 +23,8 @@ export type UserDataGridRowModel = GridRowModel<{
 const computeMutation: ComputeMutation<UserDataGridRowModel> = ({ newRow, oldRow, t }) => {
   if (newRow.max_capacity !== oldRow.max_capacity) {
     return `${t('admin.capacity', '容量')}：${oldRow.max_capacity}=>${newRow.max_capacity} (${(oldRow.max_capacity > newRow.max_capacity ? `-${oldRow.max_capacity - newRow.max_capacity}` : `+${newRow.max_capacity - oldRow.max_capacity}`)})`;
-  } if (newRow.two_factor_authentication !== oldRow.two_factor_authentication) {
-    return `${t('auth.twofactorauth', '二要素認証')}：${newRow.two_factor_authentication ? t('admin.on', 'オン') : t('admin.off', 'オフ')}`;
+  } if (newRow.multi_factor_authentication !== oldRow.multi_factor_authentication) {
+    return `${t('auth.multifactorauth', '多要素認証')}：${newRow.multi_factor_authentication ? t('admin.on', 'オン') : t('admin.off', 'オフ')}`;
   }
   return null;
 };
@@ -40,8 +40,8 @@ function UserList() {
         { field: 'id', hide: true },
         { field: 'email', headerName: t('auth.login', 'ログイン'), width: 200 },
         {
-          field: 'two_factor_authentication',
-          headerName: t('auth.twofactorauth', '二要素認証'),
+          field: 'multi_factor_authentication',
+          headerName: t('auth.multifactorauth', '多要素認証'),
           type: 'boolean',
           editable: true,
           width: 100,

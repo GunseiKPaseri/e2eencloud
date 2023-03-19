@@ -21,7 +21,7 @@ const genTOTP = (email: string) => new OTPAuth.TOTP({
   secret: new OTPAuth.Secret(),
 });
 
-function GenTwoFactorAuth({ email }: { email: string }) {
+function GenTOTPToken({ email }: { email: string }) {
   const [secretkey, setSecretKey] = useState(genTOTP(email));
   const [qrlink, setQRLink] = useState('');
   const [token, setToken] = useState('');
@@ -55,7 +55,7 @@ function GenTwoFactorAuth({ email }: { email: string }) {
   }, [secretkey, token]);
   return (
     <>
-      <img alt="二段階認証用QRコード" src={qrlink} />
+      <img alt="TOTP用QRコード" src={qrlink} />
       <br />
       <input value={secretkey.toString()} readOnly />
       <br />
@@ -70,7 +70,7 @@ function GenTwoFactorAuth({ email }: { email: string }) {
   );
 }
 
-export default function TwoFactorAuth() {
+export default function MultiFactorAuth() {
   const selector = useAppSelector<AuthState>((state) => state.auth);
   const dispatch = useAppDispatch();
   const deleteKey = () => {
@@ -82,7 +82,7 @@ export default function TwoFactorAuth() {
       {
         selector.user
           && (
-            (selector.user.useTwoFactorAuth)
+            (selector.user.useMultiFactorAuth)
               ? (
                 <>
                   <p>TOTPを利用しています</p>
@@ -92,7 +92,7 @@ export default function TwoFactorAuth() {
               : (
                 <>
                   <p>TOTPを利用していません。新しく追加しましょう。</p>
-                  <GenTwoFactorAuth email={selector.user.email} />
+                  <GenTOTPToken email={selector.user.email} />
                 </>
               )
           )

@@ -23,7 +23,7 @@ export default function TOTPSender() {
         margin="normal"
         fullWidth
         name="token"
-        label={t('auth.twofactorauthtoken', '二要素認証トークン')}
+        label={t('auth.totptoken', 'TOTPトークン')}
         type="normal"
         id="token"
         value={token}

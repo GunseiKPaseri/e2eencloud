@@ -1,5 +1,5 @@
 import { OTPAuth, Router, Status, z } from 'tinyserver/deps.ts';
-import { getUserById, parseTFAFilterQuery, tfaColumnsSchema } from 'tinyserver/src/model/Users.ts';
+import { getUserById, mfaColumnsSchema, parseMFAFilterQuery } from 'tinyserver/src/model/Users.ts';
 import { getFileInfo } from 'tinyserver/src/model/Files.ts';
 import SessionsStore from 'tinyserver/src/model/Sessions.ts';
 import { prisma } from '../../client/dbclient.ts';
@@ -8,7 +8,7 @@ const router = new Router({ prefix: '/my' });
 
 // each user
 
-const POSTAddTwoFactorSecretKeyScheme = z.object({
+const POSTAddTOTPSecretKeyScheme = z.object({
   secretKey: z.string(),
   token: z.string(),
 });
@@ -23,7 +23,7 @@ router.put('/totp', async (ctx) => {
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
-  const parsed = POSTAddTwoFactorSecretKeyScheme.safeParse(await body.value);
+  const parsed = POSTAddTOTPSecretKeyScheme.safeParse(await body.value);
   if (!parsed.success) {
     return ctx.response.status = Status.BadRequest;
   }
@@ -230,7 +230,7 @@ router.delete('/sessions/:id', async (ctx) => {
   ctx.response.type = 'json';
 });
 
-router.get('/tfa', async (ctx) => {
+router.get('/mfa', async (ctx) => {
   const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
   if (!user) return ctx.response.status = Status.Forbidden;
@@ -245,18 +245,18 @@ router.get('/tfa', async (ctx) => {
   );
   const offset = isNaN(prmoffset) ? 0 : prmoffset;
   const limit = isNaN(prmlimit) ? 10 : prmlimit;
-  const orderBy = tfaColumnsSchema.default('id').parse(ctx.request.url.searchParams.get('orderby') ?? undefined);
+  const orderBy = mfaColumnsSchema.default('id').parse(ctx.request.url.searchParams.get('orderby') ?? undefined);
 
   const order = ctx.request.url.searchParams.get('order') === 'desc' ? 'desc' : 'asc';
   const queryFilter = {
-    ...parseTFAFilterQuery(
+    ...parseMFAFilterQuery(
       ctx.request.url.searchParams.get('q') ?? '',
     ),
     user_id: user.id,
   };
 
   const [list, getSizeOfHooks] = await Promise.all([
-    user.getTFAList({
+    user.getMFAList({
       user_id: user.id,
       offset,
       limit,
@@ -272,8 +272,8 @@ router.get('/tfa', async (ctx) => {
     user.getNumberOfHooks(queryFilter),
   ]);
   const result = {
-    number_of_tfa: getSizeOfHooks,
-    tfa: list,
+    number_of_mfa: getSizeOfHooks,
+    mfa: list,
   };
 
   ctx.response.status = Status.OK;
@@ -281,7 +281,7 @@ router.get('/tfa', async (ctx) => {
   ctx.response.type = 'json';
 });
 
-router.patch('/tfa/:id', async (ctx) => {
+router.patch('/mfa/:id', async (ctx) => {
   // auth
   const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
@@ -298,7 +298,7 @@ router.patch('/tfa/:id', async (ctx) => {
 
   const id = ctx.params.id;
 
-  await prisma.tFASolution.update({
+  await prisma.mFASolution.update({
     where: {
       id,
     },
@@ -309,7 +309,7 @@ router.patch('/tfa/:id', async (ctx) => {
   ctx.response.status = Status.NoContent;
 });
 
-router.delete('/tfa/:id', async (ctx) => {
+router.delete('/mfa/:id', async (ctx) => {
   // auth
   const uid: string | null = await ctx.state.session.get('uid');
   const user = await getUserById(uid);
@@ -318,7 +318,7 @@ router.delete('/tfa/:id', async (ctx) => {
 
   const id = ctx.params.id;
 
-  await prisma.tFASolution.delete({
+  await prisma.mFASolution.delete({
     where: {
       id,
     },
