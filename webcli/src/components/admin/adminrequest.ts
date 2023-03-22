@@ -11,7 +11,7 @@ type GetUserListJSONRow = {
     max_capacity: string;
     file_usage: string;
     authority?: string;
-    two_factor_authentication: boolean;
+    multi_factor_authentication: boolean;
   }[]
 };
 

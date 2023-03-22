@@ -4,26 +4,24 @@ import type { AxiosResponse } from 'axios';
 import { axiosWithSession, appLocation } from '../../componentutils';
 import {
   argon2encrypt,
-  generateRSAKey,
-  importRSAKey,
   getAESCTRKey,
-  decryptAESCTR,
 } from '../../../utils/crypto';
 import { byteArray2base64, base642ByteArray } from '../../../utils/uint8';
-import { setRSAKey } from '../../../app/encrypt';
-import { buildFileTableAsync } from '../../file/thunk/buildFileTableAsync';
+import { setDerivedEncryptionKey } from '../../../app/encrypt';
 
 import { AES_AUTH_KEY_LENGTH } from '../../../const';
 
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
-import { updateUsageAsync } from '../../file/thunk/updateUsageAsync';
 
-import type { AuthState, UserState } from '../authSlice';
+import type { AuthState } from '../authSlice';
+import { type APILoginSuccessResopnse, loginSuccess } from './loginSuccess';
+
+type LoginNextState = AuthState['loginStatus']['step'];
 
 // ログイン処理
 export const loginAsync = createAsyncThunk<
-UserState, { email: string, password: string, token: string }>(
+LoginNextState, { email: string, password: string }>(
   'auth/login',
   async (userinfo, { dispatch }) => {
     const step = 4;
@@ -53,29 +51,22 @@ UserState, { email: string, password: string, token: string }>(
     const DerivedKey: Uint8Array = await argon2encrypt(userinfo.password, salt);
     dispatch(setProgress(progress(1, step)));
 
-    const DerivedEncryptionKey = await getAESCTRKey(DerivedKey.slice(0, AES_AUTH_KEY_LENGTH));
+    setDerivedEncryptionKey(await getAESCTRKey(DerivedKey.slice(0, AES_AUTH_KEY_LENGTH)));
     const DerivedAuthenticationKey = DerivedKey.slice(AES_AUTH_KEY_LENGTH, AES_AUTH_KEY_LENGTH * 2);
 
     const authenticationKeyBase64 = byteArray2base64(DerivedAuthenticationKey);
 
-    type APILoginResopnse = {
-      role: 'ADMIN' | 'USER',
-      encryptedMasterKeyBase64: string,
-      encryptedMasterKeyIVBase64: string,
-      useTwoFactorAuth: boolean,
-      encryptedRSAPrivateKeyBase64?: string,
-      encryptedRSAPrivateKeyIVBase64?: string,
-      RSAPublicKeyBase64?: string,
-    };
+    type APILoginResponse = APILoginSuccessResopnse | { success: false, suggestedSolution: ('CODE' | 'EMAIL' | 'FIDO2' | 'TOTP')[] };
+
     // login
-    let result: AxiosResponse<APILoginResopnse>;
+    let result: AxiosResponse<APILoginResponse>;
     try {
       result = await axiosWithSession.post<
       { email: string, authenticationKey: string, token: string },
-      AxiosResponse<APILoginResopnse>
+      AxiosResponse<APILoginResponse>
       >(
         `${appLocation}/api/login`,
-        { email: userinfo.email, authenticationKeyBase64, token: userinfo.token },
+        { email: userinfo.email, authenticationKeyBase64 },
         {
           onUploadProgress: (progressEvent) => {
             dispatch(setProgress(progress(0, 1, progressEvent)));
@@ -88,85 +79,89 @@ UserState, { email: string, password: string, token: string }>(
       dispatch(enqueueSnackbar({ message: 'ログインに失敗しました', options: { variant: 'error' } }));
       throw e;
     }
-    const EncryptedMasterKey = base642ByteArray(result.data.encryptedMasterKeyBase64);
-    // console.log(result.data.encryptedMasterKeyIVBase64);
 
-    const MasterKeyRaw = await decryptAESCTR(
-      EncryptedMasterKey,
-      DerivedEncryptionKey,
-      base642ByteArray(result.data.encryptedMasterKeyIVBase64),
-    );
-    // console.log(MasterKeyRaw);
-    const MasterKey = await getAESCTRKey(MasterKeyRaw);
-    // console.log(result.data);
-    // encrypt key
-    if (!result.data.RSAPublicKeyBase64
-        || !result.data.encryptedRSAPrivateKeyBase64
-        || !result.data.encryptedRSAPrivateKeyIVBase64) {
-      // add key
-      // console.log(MasterKey);
-      const genKey = await generateRSAKey(MasterKey);
-      await axiosWithSession.put<{
-        encryptedRSAPrivateKeyBase64: string,
-        encryptedRSAPrivateKeyIVBase64: string,
-        RSAPublicKeyBase64: string
-      }>(
-        `${appLocation}/api/my/pubkey`,
-        {
-          encryptedRSAPrivateKeyBase64: genKey.encripted_private_key,
-          encryptedRSAPrivateKeyIVBase64: genKey.encripted_private_key_iv,
-          RSAPublicKeyBase64: genKey.public_key,
-        },
-        {
-          onUploadProgress: (progressEvent) => {
-            dispatch(setProgress(progress(0, step, progressEvent)));
-          },
-        },
-      );
-      setRSAKey({ rsaPrivateKey: genKey.privateKey, rsaPublicKey: genKey.publicKey });
-    } else {
+    if (result.data.success) {
+      await dispatch(loginSuccess(result.data));
+      return 'EmailAndPass';
+    }
+    if (result.data.suggestedSolution.includes('FIDO2')) {
       try {
-        dispatch(setProgress(progress(3, step, 0)));
-        const importKey = await importRSAKey({
-          masterkey: MasterKey,
-          encryptedPrivateKeyBase64: result.data.encryptedRSAPrivateKeyBase64,
-          encryptedPrivateKeyIVBase64: result.data.encryptedRSAPrivateKeyIVBase64,
-          publicKeyBase64: result.data.RSAPublicKeyBase64,
-        });
-        setRSAKey({ rsaPublicKey: importKey.publicKey, rsaPrivateKey: importKey.privateKey });
-      } catch (e) {
-        dispatch(deleteProgress());
-        dispatch(enqueueSnackbar({ message: '暗号鍵の復元に失敗しました', options: { variant: 'error' } }));
-        throw e;
+        type Res = Omit<PublicKeyCredentialRequestOptions, 'allowCredentials' | 'challenge'> & { allowCredentials?: (Omit<NonNullable<PublicKeyCredentialRequestOptions['allowCredentials']>[number], 'id'> & { id: string })[], challenge: string };
+        const resp = await axiosWithSession.post<Res>(`${appLocation}/api/fido2/assertion/options`);
+        const option = {
+          ...resp.data,
+          allowCredentials: resp.data.allowCredentials
+            ? resp.data.allowCredentials.map((x) => ({ ...x, id: base642ByteArray(x.id).buffer }))
+            : undefined,
+          challenge: base642ByteArray(resp.data.challenge).buffer,
+        };
+        const credential = await navigator.credentials.get({ publicKey: option });
+        if (credential !== null) {
+          const rawId = (credential as { rawId?: unknown })?.rawId;
+          const response = (credential as { response?: unknown })?.response;
+          if (typeof response !== 'object') throw new Error('responce is not object');
+
+          const authenticatorData = (
+            (response as { authenticatorData?: unknown })?.authenticatorData
+          );
+          const clientDataJSON = (response as { clientDataJSON?: unknown })?.clientDataJSON;
+          const signature = (response as { signature?: unknown })?.signature;
+          const userHandle = (response as { userHandle?: unknown })?.userHandle;
+
+          const credentialJSON = {
+            id: credential.id,
+            type: credential.type,
+            rawId: (
+              rawId instanceof ArrayBuffer ? byteArray2base64(new Uint8Array(rawId)) : undefined
+            ),
+            response: {
+              authenticatorData: (
+                authenticatorData instanceof ArrayBuffer
+                  ? byteArray2base64(new Uint8Array(authenticatorData))
+                  : undefined
+              ),
+              clientDataJSON: (
+                clientDataJSON instanceof ArrayBuffer
+                  ? byteArray2base64(new Uint8Array(clientDataJSON))
+                  : undefined
+              ),
+              signature: (
+                signature instanceof ArrayBuffer
+                  ? byteArray2base64(new Uint8Array(signature))
+                  : undefined
+              ),
+              userHandle: (
+                userHandle instanceof ArrayBuffer
+                  ? byteArray2base64(new Uint8Array(userHandle))
+                  : undefined
+              ),
+            },
+          };
+
+          const result2 = await axiosWithSession.post<PublicKeyCredentialRequestOptions, AxiosResponse<APILoginSuccessResopnse>>(`${appLocation}/api/fido2/assertion/result`, credentialJSON);
+          if (result2.data.success) {
+            await dispatch(loginSuccess(result2.data));
+            return 'EmailAndPass';
+          }
+        }
+      } catch (_e) {
+        if (result.data.suggestedSolution.length === 1) throw new Error('Nothing');
       }
     }
-    // file tree
-    await Promise.all([
-      dispatch(buildFileTableAsync()), // file tree
-      dispatch(updateUsageAsync()), //    storage
-    ]);
-
-    dispatch(deleteProgress());
-
-    dispatch(enqueueSnackbar({ message: 'ログインに成功しました', options: { variant: 'success' } }));
-    return {
-      authority: result.data.role === 'ADMIN' ? 'ADMIN' : null,
-      email: userinfo.email,
-      MasterKey: Array.from(MasterKeyRaw),
-      useTwoFactorAuth: result.data.useTwoFactorAuth,
-    };
+    return 'TOTP';
   },
 );
 
 export const afterLoginAsyncPending = (state: AuthState) => {
-  state.loginStatus = null;
+  state.loginStatus = { step: 'EmailAndPass', state: 'pending' };
 };
 
 export const afterLoginAsyncRejected = (state: AuthState) => {
-  state.loginStatus = 'failed';
+  state.loginStatus = { step: 'EmailAndPass', state: 'error' };
+  state.user = null;
 };
 
 export const afterLoginAsyncFullfilled:
-CaseReducer<AuthState, PayloadAction<UserState>> = (state, action) => {
-  state.user = action.payload;
+CaseReducer<AuthState, PayloadAction<LoginNextState>> = (state, action) => {
+  state.loginStatus = { step: action.payload, state: null };
 };

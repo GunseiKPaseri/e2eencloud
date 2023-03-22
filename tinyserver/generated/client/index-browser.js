@@ -13,12 +13,12 @@ const Prisma = {}
 exports.Prisma = Prisma
 
 /**
- * Prisma Client JS version: 4.7.1
- * Query Engine version: 272861e07ab64f234d3ffc4094e32bd61775599c
+ * Prisma Client JS version: 4.11.0
+ * Query Engine version: 8fde8fef4033376662cad983758335009d522acb
  */
 Prisma.prismaVersion = {
-  client: "4.7.1",
-  engine: "272861e07ab64f234d3ffc4094e32bd61775599c"
+  client: "4.11.0",
+  engine: "8fde8fef4033376662cad983758335009d522acb"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -126,6 +126,17 @@ exports.Prisma.HooksScalarFieldEnum = makeEnum({
   updated_at: 'updated_at'
 });
 
+exports.Prisma.MFASolutionScalarFieldEnum = makeEnum({
+  id: 'id',
+  name: 'name',
+  type: 'type',
+  value: 'value',
+  user_id: 'user_id',
+  available: 'available',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+});
+
 exports.Prisma.SessionsScalarFieldEnum = makeEnum({
   id: 'id',
   session_key: 'session_key',
@@ -139,16 +150,6 @@ exports.Prisma.SessionsScalarFieldEnum = makeEnum({
 exports.Prisma.SortOrder = makeEnum({
   asc: 'asc',
   desc: 'desc'
-});
-
-exports.Prisma.TFASolutionScalarFieldEnum = makeEnum({
-  id: 'id',
-  type: 'type',
-  value: 'value',
-  user_id: 'user_id',
-  available: 'available',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
 });
 
 exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
@@ -174,20 +175,21 @@ exports.Prisma.UserScalarFieldEnum = makeEnum({
   created_at: 'created_at',
   updated_at: 'updated_at'
 });
+exports.MFASolutionType = makeEnum({
+  CODE: 'CODE',
+  EMAIL: 'EMAIL',
+  FIDO2: 'FIDO2',
+  TOTP: 'TOTP'
+});
+
 exports.Role = makeEnum({
   ADMIN: 'ADMIN',
   USER: 'USER'
 });
 
-exports.SolutionType = makeEnum({
-  TOTP: 'TOTP',
-  FIDO2: 'FIDO2',
-  EMAIL: 'EMAIL'
-});
-
 exports.Prisma.ModelName = makeEnum({
   User: 'User',
-  TFASolution: 'TFASolution',
+  MFASolution: 'MFASolution',
   ConfirmingEmailAddress: 'ConfirmingEmailAddress',
   Sessions: 'Sessions',
   Hooks: 'Hooks',

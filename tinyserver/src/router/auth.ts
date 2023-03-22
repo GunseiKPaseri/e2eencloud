@@ -1,10 +1,20 @@
-import { base642ByteArray, byteArray2base64, Router, Status, uaparser, z } from 'tinyserver/deps.ts';
+import {
+  base642ByteArray,
+  byteArray2base64,
+  RouteParams,
+  Router,
+  RouterContext,
+  Status,
+  uaparser,
+  z,
+} from 'tinyserver/deps.ts';
 import { addEmailConfirmation } from 'tinyserver/src/model/ConfirmingEmailAddress.ts';
 import {
   emailConfirmScheme,
   getClientRandomSalt,
   getUserByEmail,
   getUserById,
+  User,
   userEmailConfirm,
 } from 'tinyserver/src/model/Users.ts';
 import { prisma } from 'tinyserver/src/client/dbclient.ts';
@@ -27,6 +37,7 @@ router.post('/signup', async (ctx) => {
   const email = data.data.email.toLowerCase();
   const cnt = await prisma.user.count({ where: { email } });
   if (cnt === 0) {
+    console.log('send mail to ' + data.data.email);
     // remove await => queue
     await addEmailConfirmation(data.data.email);
   }
@@ -65,7 +76,7 @@ router.post('/email_confirm', async (ctx) => {
         email: result.email,
         encryptedMasterKeyBase64: result.encrypted_master_key,
         encryptedMasterKeyIVBase64: result.encrypted_master_key_iv,
-        useTwoFactorAuth: false,
+        useMultiFactorAuth: false,
         role: result.role,
         encryptedRSAPrivateKeyBase64: result.encrypted_rsa_private_key,
         encryptedRSAPrivateKeyIVBase64: result.encrypted_rsa_private_key_iv,
@@ -89,11 +100,13 @@ const GETSaltScheme = z.object({
 
 // GETではBODYに格納するのが困難
 router.post('/salt', async (ctx) => {
+  console.log('aaa');
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
 
   const parsed = GETSaltScheme.safeParse(await body.value);
+  console.log('aaa', parsed);
   if (!parsed.success) {
     return ctx.response.status = Status.BadRequest;
   }
@@ -110,9 +123,46 @@ router.post('/salt', async (ctx) => {
 // login
 const POSTloginScheme = z.object({
   email: z.string().email(),
-  token: z.string(),
   authenticationKeyBase64: z.string(),
 });
+
+export const login = async <R extends string>(props: {
+  ctx: RouterContext<R, RouteParams<R>, Record<string, any>>;
+  user: User;
+}) => {
+  const { ctx, user } = props;
+  // login!!
+  await ctx.state.session.set('uid', user.id);
+
+  // add clientname
+  if (!await ctx.state.session.get('client_name')) {
+    const ua = ctx.request.headers.get('user-agent');
+    if (ua) {
+      const userEnv = uaparser(ua);
+      await ctx.state.session.set(
+        'client_name',
+        `${userEnv.os.name}${userEnv.os.version} ${userEnv.browser.name}`,
+      );
+    } else {
+      await ctx.state.session.set('client_name', `unknown`);
+    }
+  }
+
+  const result = {
+    success: true,
+    email: user.email,
+    encryptedMasterKeyBase64: user.encrypted_master_key,
+    encryptedMasterKeyIVBase64: user.encrypted_master_key_iv,
+    useMultiFactorAuth: false,
+    role: user.role,
+    encryptedRSAPrivateKeyBase64: user.encrypted_rsa_private_key,
+    encryptedRSAPrivateKeyIVBase64: user.encrypted_rsa_private_key_iv,
+    RSAPublicKeyBase64: user.rsa_public_key,
+  };
+  ctx.response.status = Status.OK;
+  ctx.response.body = result;
+  ctx.response.type = 'json';
+};
 
 router.post('/login', async (ctx) => {
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
@@ -137,41 +187,47 @@ router.post('/login', async (ctx) => {
   if (!user || user.hashed_authentication_key !== hashed_authentication_key) {
     return ctx.response.status = Status.Unauthorized;
   }
-  // use totp?
+  // use mfa?
+  const usingMFA = await user.usingMFA();
+  if (usingMFA.length > 0) {
+    await ctx.state.session.set('mfa_uid', user.id);
+    ctx.response.status = Status.OK;
+    ctx.response.body = {
+      success: false,
+      suggestedSolution: usingMFA,
+    };
+    ctx.response.type = 'json';
+    return;
+  }
+  login({ ctx, user });
+});
+
+// login
+const POSTtotploginScheme = z.object({
+  token: z.string(),
+});
+
+router.post('/totplogin', async (ctx) => {
+  if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
+  const body = ctx.request.body();
+  if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
+  const parsed = POSTtotploginScheme.safeParse(await body.value);
+  if (!parsed.success) {
+    return ctx.response.status = Status.BadRequest;
+  }
+  const data = parsed.data;
+
+  // use mfa_uid
+  const mfauid: string | null = await ctx.state.session.get('mfa_uid');
+  if (typeof mfauid !== 'string') return ctx.response.status = Status.Forbidden;
+
+  const user = await getUserById(mfauid);
+  if (user === null) return ctx.response.status = Status.Forbidden;
+
   const confirmTOTP = await user.confirmTOTP(data.token);
   if (!confirmTOTP.success) return ctx.response.status = Status.Unauthorized;
 
-  // login!!
-  await ctx.state.session.set('uid', user.id);
-
-  // add clientname
-  if (!await ctx.state.session.get('client_name')) {
-    const ua = ctx.request.headers.get('user-agent');
-    if (ua) {
-      const userEnv = uaparser(ua);
-      await ctx.state.session.set(
-        'client_name',
-        `${userEnv.os.name}${userEnv.os.version} ${userEnv.browser.name}`,
-      );
-    } else {
-      await ctx.state.session.set('client_name', `unknown`);
-    }
-  }
-
-  const result = {
-    encryptedMasterKeyBase64: user.encrypted_master_key,
-    encryptedMasterKeyIVBase64: user.encrypted_master_key_iv,
-    useTwoFactorAuth: confirmTOTP.useTOTP,
-    role: user.role,
-  };
-  const result_rsa_key = {
-    encryptedRSAPrivateKeyBase64: user.encrypted_rsa_private_key,
-    encryptedRSAPrivateKeyIVBase64: user.encrypted_rsa_private_key_iv,
-    RSAPublicKeyBase64: user.rsa_public_key,
-  };
-  ctx.response.status = Status.OK;
-  ctx.response.body = result_rsa_key.RSAPublicKeyBase64 ? { ...result, ...result_rsa_key } : result;
-  ctx.response.type = 'json';
+  login({ ctx, user });
 });
 
 router.post('/logout', async (ctx) => {

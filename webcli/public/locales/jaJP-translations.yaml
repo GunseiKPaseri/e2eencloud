@@ -16,12 +16,10 @@ auth:
   login: ログイン
   loginfailed:
     ログインに失敗しました。
-    メールアドレス、パスワード、二要素認証トークン（登録している場合）に誤りが無いか確認してください。
   logout: ログアウト
   password: パスワード
   registifyoudonothaveanaccount: アカウントが無ければ登録
-  twofactorauth: 二要素認証
-  twofactorauthtoken: 二要素認証トークン
+  multifactorauth: 多要素認証
   youalreadyloggined: 既に{{email}}としてログイン済です
 language:
   jaJP: 日本語

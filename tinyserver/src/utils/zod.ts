@@ -35,3 +35,27 @@ export function createUnionSchema<T extends readonly z.Primitive[]>(values: T) {
   }
   throw new Error('Array must have a length');
 }
+
+function createManyTuple<
+  A extends Readonly<[z.Primitive, ...z.Primitive[]]>,
+>(literals: A) {
+  return z.tuple(
+    literals.map((value) => z.literal(value)) as MappedZodLiterals<A>,
+  );
+}
+/**
+ * Create Zod Schema from readonly tuple
+ * @param values readonly tuple
+ */
+
+export function createTupleSchema<
+  T extends readonly [z.Primitive, ...z.Primitive[]],
+>(values: T): z.ZodTuple<MappedZodLiterals<T>>;
+export function createTupleSchema<T extends readonly z.Primitive[]>(values: T) {
+  if (values.length >= 1) {
+    return createManyTuple(
+      values as typeof values & [z.Primitive, ...z.Primitive[]],
+    );
+  }
+  throw new Error('Array must have a length');
+}
