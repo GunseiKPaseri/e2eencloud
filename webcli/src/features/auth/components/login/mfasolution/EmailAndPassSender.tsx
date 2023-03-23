@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { useTranslation } from 'react-i18next';
 import Alert from '@mui/material/Alert';
-import { correctEmailaddr } from '../../../../../util';
+import { isEmailCorrect } from '../../../../../utils/emailAddressCheck';
 import PasswordField from '../../PasswordField';
 import { loginAsync } from '../../../authSlice';
 import { useAppDispatch } from '../../../../../lib/react-redux';
@@ -13,7 +13,7 @@ export default function EmailAndPassSender({ state }: { state: 'pending' | 'erro
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const isGoodMailAddress = correctEmailaddr.test(email);
+  const isGoodMailAddress = isEmailCorrect(email);
   const dispatch = useAppDispatch();
   const login = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

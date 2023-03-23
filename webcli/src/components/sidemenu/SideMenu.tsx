@@ -16,7 +16,7 @@ import HomeIcon from '@mui/icons-material/Home';
 
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { useNavigate } from 'react-router-dom';
-import { drawerWidth } from '../../util';
+import { SIDEBAR_WIDTH } from '../../const';
 
 import HeadAppBar from './HeadAppBar';
 
@@ -25,7 +25,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
     '& .MuiDrawer-paper': {
       position: 'relative',
       whiteSpace: 'nowrap',
-      width: drawerWidth,
+      width: SIDEBAR_WIDTH,
       transition: theme.transitions.create('width', {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.enteringScreen,

@@ -14,7 +14,7 @@ import { type ProgressState } from '../../features/progress/progressSlice';
 
 import UserIcon from './UserIcon';
 
-import { drawerWidth } from '../../util';
+import { SIDEBAR_WIDTH } from '../../const';
 import LangSelector from '../../features/language/LangSelector';
 
 interface AppBarProps extends MuiAppBarProps {
@@ -30,8 +30,8 @@ const AppBar = styled(MuiAppBar, {
     duration: theme.transitions.duration.leavingScreen,
   }),
   ...(open && {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
+    marginLeft: SIDEBAR_WIDTH,
+    width: `calc(100% - ${SIDEBAR_WIDTH}px)`,
     transition: theme.transitions.create(['width', 'margin'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
