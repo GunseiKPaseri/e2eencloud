@@ -13,8 +13,6 @@ export const deleteTOTPAsync = createAsyncThunk<void, void>(
 );
 
 export const afterDeleteTOTPAsyncFullfilled:
-CaseReducer<AuthState, PayloadAction<void>> = (state) => {
-  if (state.user) {
-    state.user.useMultiFactorAuth = false;
-  }
+CaseReducer<AuthState, PayloadAction<void>> = () => {
+
 };
