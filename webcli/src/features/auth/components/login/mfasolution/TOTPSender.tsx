@@ -5,7 +5,7 @@ import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import { useTranslation } from 'react-i18next';
 import { totpLoginAsync } from '../../../authSlice';
-import { useAppDispatch } from '../../../../../app/hooks';
+import { useAppDispatch } from '../../../../../lib/react-redux';
 
 export default function TOTPSender({ state }: { state: 'pending' | 'error' | null }) {
   const { t } = useTranslation();

@@ -4,7 +4,7 @@ import type {
 import { useTranslation } from 'react-i18next';
 
 import { deleteUser, editUser, getUserList } from './adminrequest';
-import { useAppDispatch } from '../../app/hooks';
+import { useAppDispatch } from '../../lib/react-redux';
 import { enqueueSnackbar } from '../../features/snackbar/snackbarSlice';
 import EditableDataGrid from '../assets/EditableDataGrid';
 import type { ComputeMutation } from '../assets/EditableDataGrid';

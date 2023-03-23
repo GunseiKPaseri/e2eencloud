@@ -7,7 +7,7 @@ import Alert from '@mui/material/Alert';
 import { correctEmailaddr } from '../../../../../util';
 import PasswordField from '../../PasswordField';
 import { loginAsync } from '../../../authSlice';
-import { useAppDispatch } from '../../../../../app/hooks';
+import { useAppDispatch } from '../../../../../lib/react-redux';
 
 export default function EmailAndPassSender({ state }: { state: 'pending' | 'error' | null }) {
   const { t } = useTranslation();

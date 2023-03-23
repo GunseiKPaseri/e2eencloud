@@ -6,7 +6,7 @@ import Alert from '@mui/material/Alert';
 import { useTranslation } from 'react-i18next';
 import { bs58CheckDecodeWithoutErr } from '../../../../../utils/bs58check';
 import { mfacodeLoginAsync } from '../../../authSlice';
-import { useAppDispatch } from '../../../../../app/hooks';
+import { useAppDispatch } from '../../../../../lib/react-redux';
 
 export default function CODESender({ state }: { state: 'error' | 'pending' | null }) {
   const { t } = useTranslation();

@@ -8,7 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 
 import MenuIcon from '@mui/icons-material/Menu';
-import { useAppSelector } from '../../app/hooks';
+import { useAppSelector } from '../../lib/react-redux';
 
 import { type ProgressState } from '../../features/progress/progressSlice';
 

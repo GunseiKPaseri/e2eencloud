@@ -20,7 +20,7 @@ import { genUseDropReturn, genUseDragReturn } from '../dnd';
 
 import PngIcon from '../../../../components/assets/PngIcon';
 
-import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
+import { useAppSelector, useAppDispatch } from '../../../../lib/react-redux';
 import type { FileNode, FileInfoFile, FileInfoFolder } from '../../file.type';
 import type { FileState } from '../../fileSlice';
 import { assertNonFileNodeDiff } from '../../filetypeAssert';

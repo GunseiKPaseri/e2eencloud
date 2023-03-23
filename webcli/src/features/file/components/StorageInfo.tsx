@@ -3,7 +3,7 @@ import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import LinearProgress from '@mui/material/LinearProgress';
 import { Typography } from '@mui/material';
-import { useAppSelector } from '../../../app/hooks';
+import { useAppSelector } from '../../../lib/react-redux';
 import { explainByte } from '../utils';
 
 function StorageInfo() {

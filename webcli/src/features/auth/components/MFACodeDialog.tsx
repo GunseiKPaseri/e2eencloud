@@ -2,7 +2,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
-import { useAppDispatch, useAppSelector } from '../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../lib/react-redux';
 import { removeMFACode, type AuthState } from '../authSlice';
 
 export default function MFACodeDialog() {

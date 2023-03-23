@@ -3,7 +3,7 @@ import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { openContextmenu } from '../../../contextmenu/contextmenuSlice';
-import { useAppDispatch, useAppSelector } from '../../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../lib/react-redux';
 import type { FileState } from '../../fileSlice';
 import { assertNonFileNodeDiff } from '../../filetypeAssert';
 

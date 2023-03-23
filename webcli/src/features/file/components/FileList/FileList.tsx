@@ -27,7 +27,7 @@ import type { FileState } from '../../fileSlice';
 import {
   changeActiveFileGroupDir, fileDeleteAsync, filedownloadAsync,
 } from '../../fileSlice';
-import { useAppDispatch, useAppSelector } from '../../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../lib/react-redux';
 import { genUseDropReturn } from '../dnd';
 import FileSimpleList from './FileSimpleList';
 import FileGrid from './FileGrid';

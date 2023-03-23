@@ -9,7 +9,7 @@ import TimelineSeparator from '@mui/lab/TimelineSeparator';
 import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
 import type { FileState } from '../fileSlice';
 import { assertNonFileNodeDiff } from '../filetypeAssert';
-import { useAppSelector } from '../../../app/hooks';
+import { useAppSelector } from '../../../lib/react-redux';
 import type { FileInfo } from '../file.type';
 import TagButton from './TagButton';
 

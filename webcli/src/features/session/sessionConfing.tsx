@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../lib/react-redux';
 import type { SessionsState } from './sessionSlice';
 import {
   changeClientNameAsync, deleteSessionAsync, getSessionsAsync,

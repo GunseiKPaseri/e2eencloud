@@ -13,7 +13,7 @@ import { useDrop } from 'react-dnd';
 import type { FileNode, FileInfoFile, FileInfoFolder } from '../file.type';
 import StyledTreeItem from '../../../components/assets/StyledTreeItem';
 import { type FileState, changeActiveFileGroupDir, filedownloadAsync } from '../fileSlice';
-import { useAppDispatch, useAppSelector } from '../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../lib/react-redux';
 
 import { genUseDropReturn } from './dnd';
 

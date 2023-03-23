@@ -12,7 +12,7 @@ import TagField from './TagField';
 import Renamer from './Renamer';
 import type { FileState } from '../fileSlice';
 import { filedownloadAsync } from '../fileSlice';
-import { useAppDispatch, useAppSelector } from '../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../lib/react-redux';
 import { openContextmenu } from '../../contextmenu/contextmenuSlice';
 
 function Viewer() {

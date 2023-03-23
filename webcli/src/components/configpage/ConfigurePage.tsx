@@ -1,5 +1,5 @@
 import PasswordChanger from '../../features/auth/components/PasswordChanger';
-import { useAppSelector } from '../../app/hooks';
+import { useAppSelector } from '../../lib/react-redux';
 import SessionConfig from '../../features/session/sessionConfing';
 import UserList from '../admin/UserList';
 import StorageInfo from '../../features/file/components/StorageInfo';

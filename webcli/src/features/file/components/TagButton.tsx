@@ -1,7 +1,7 @@
 import React from 'react';
 import Chip from '@mui/material/Chip';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useAppDispatch } from '../../../app/hooks';
+import { useAppDispatch } from '../../../lib/react-redux';
 import { changeActiveFileGroupTag } from '../fileSlice';
 
 const TAGICON: Record<string, { icon: JSX.Element, text: string } | undefined> = {

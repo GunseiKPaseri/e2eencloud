@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import { createDiffAsync } from '../fileSlice';
-import { useAppDispatch } from '../../../app/hooks';
+import { useAppDispatch } from '../../../lib/react-redux';
 import { isDiffExt } from '../utils';
 
 function Renamer({ id, name }: { id: string, name: string }) {

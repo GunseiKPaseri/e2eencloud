@@ -7,7 +7,7 @@ import { useState } from 'react';
 import zxcvbn from 'zxcvbn';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import { useAppDispatch, useAppSelector } from '../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../lib/react-redux';
 import PasswordChecker from './PasswordChecker';
 import PasswordField from './PasswordField';
 import { changePasswordAsync } from '../authSlice';

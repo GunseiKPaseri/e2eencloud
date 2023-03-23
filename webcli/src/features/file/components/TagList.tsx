@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import { useAppSelector } from '../../../app/hooks';
+import { useAppSelector } from '../../../lib/react-redux';
 import type { FileState } from '../fileSlice';
 import { assertFileNodeFile } from '../filetypeAssert';
 import TagButton from './TagButton';

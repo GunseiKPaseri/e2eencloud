@@ -10,7 +10,7 @@ import addMonths from 'date-fns/addMonths';
 import type { ComputeMutation } from '../assets/EditableDataGrid';
 
 import { enqueueSnackbar } from '../../features/snackbar/snackbarSlice';
-import { useAppDispatch } from '../../app/hooks';
+import { useAppDispatch } from '../../lib/react-redux';
 import { APP_LOCATION } from '../../const';
 import {
   addHock,

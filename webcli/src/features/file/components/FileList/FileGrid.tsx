@@ -9,7 +9,7 @@ import type {
   GridRenderCellParams, GridRowsProp, GridSelectionModel,
 } from '@mui/x-data-grid';
 
-import { useAppDispatch, useAppSelector } from '../../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../lib/react-redux';
 import { type FileState, changeSelection } from '../../fileSlice';
 import { assertNonFileNodeDiff } from '../../filetypeAssert';
 import TagButton from '../TagButton';

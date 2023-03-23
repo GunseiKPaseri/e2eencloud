@@ -9,7 +9,7 @@ import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useTranslation } from 'react-i18next';
 import { type AuthState, logoutAsync, selectMFASolution } from '../../authSlice';
-import { useAppDispatch, useAppSelector } from '../../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../lib/react-redux';
 import SolutionSelector from './SolutionSelector';
 
 function OtherStepGuide() {

@@ -3,7 +3,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Link from '@mui/material/Link';
 import React from 'react';
 import Divider from '@mui/material/Divider';
-import { useAppSelector, useAppDispatch } from '../../app/hooks';
+import { useAppSelector, useAppDispatch } from '../../lib/react-redux';
 import { changeActiveFileGroupDir, createDiffAsync, filedownloadAsync } from '../file/fileSlice';
 import { closeContextmenu } from './contextmenuSlice';
 import { string2ByteArray } from '../../utils/uint8';

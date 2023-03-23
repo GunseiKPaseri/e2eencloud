@@ -11,7 +11,7 @@ import { bs58CheckDecodeWithoutErr } from '../../utils/bs58check';
 import { axiosWithSession } from '../../lib/axios';
 import { APP_LOCATION } from '../../const';
 
-import { useAppDispatch } from '../../app/hooks';
+import { useAppDispatch } from '../../lib/react-redux';
 import { updateUsageAsync } from '../../features/file/fileSlice';
 import { enqueueSnackbar } from '../../features/snackbar/snackbarSlice';
 

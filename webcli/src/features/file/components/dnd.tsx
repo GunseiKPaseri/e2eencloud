@@ -1,6 +1,6 @@
 import { NativeTypes } from 'react-dnd-html5-backend';
 import type { DragSourceHookSpec, DropTargetHookSpec } from 'react-dnd';
-import type { useAppDispatch } from '../../../app/hooks';
+import type { useAppDispatch } from '../../../lib/react-redux';
 import { fileuploadAsync, createDiffAsync } from '../fileSlice';
 
 // https://github.com/react-dnd/react-dnd/blob/9b002d24d51ecb671d049fc44679372b818f9630/packages/backend-html5/src/NativeDragSources/nativeTypesConfig.ts#L19

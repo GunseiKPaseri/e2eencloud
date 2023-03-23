@@ -4,7 +4,7 @@ import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { type FileState, createFolderAsync } from '../fileSlice';
-import { useAppDispatch, useAppSelector } from '../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../lib/react-redux';
 
 export function AddFolder() {
   const [name, setName] = useState<string>('');

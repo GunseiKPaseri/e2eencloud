@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import StepLabel from '@mui/material/StepLabel';
-import { useAppDispatch, useAppSelector } from '../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../lib/react-redux';
 import { type AuthState, confirmEmailAsync } from '../authSlice';
 import PutPassword from './signupsequence/PutPassword';
 import ConfirmPassword from './signupsequence/ConfirmPassword';

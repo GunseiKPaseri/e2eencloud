@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import CopyableField from '../../../components/assets/CopyableField';
-import { useAppDispatch, useAppSelector } from '../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../lib/react-redux';
 import { addTOTPAsync, type AuthState } from '../authSlice';
 
 const genQR = (totp: OTPAuth.TOTP) => new Promise<string>((resolve, reject) => {

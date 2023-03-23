@@ -7,7 +7,7 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { signupAsync } from '../authSlice';
-import { useAppDispatch } from '../../../app/hooks';
+import { useAppDispatch } from '../../../lib/react-redux';
 import PutEmail from './signupsequence/PutEmail';
 import SendedEmail from './signupsequence/SendedEmail';
 import { sequence } from './signupsequence/sequence';
