@@ -9,7 +9,7 @@ import {
   getAESCTRKey,
 } from '../../../utils/crypto';
 import { byteArray2base64 } from '../../../utils/uint8';
-import { appLocation, AES_AUTH_KEY_LENGTH } from '../../../const';
+import { APP_LOCATION, AES_AUTH_KEY_LENGTH } from '../../../const';
 
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
@@ -67,7 +67,7 @@ Record<string, never>, { newpassword: string }, { state: RootState }
     SendData,
     AxiosResponse<{ success: boolean }>
     >(
-      `${appLocation}/api/my/password`,
+      `${APP_LOCATION}/api/my/password`,
       sendData,
       {
         onUploadProgress: (progressEvent) => {

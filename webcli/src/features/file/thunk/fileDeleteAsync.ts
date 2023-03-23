@@ -14,7 +14,7 @@ import type { RootState } from '../../../app/store';
 import type { FileState } from '../fileSlice';
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
 import { axiosWithSession } from '../../../lib/axios';
-import { appLocation } from '../../../const';
+import { APP_LOCATION } from '../../../const';
 import { updateUsageAsync } from './updateUsageAsync';
 
 /**
@@ -41,7 +41,7 @@ BuildFileTableAsyncResult,
     { files: string[] },
     AxiosResponse<{ deleted: string[] }>
     >(
-      `${appLocation}/api/files/delete`,
+      `${APP_LOCATION}/api/files/delete`,
       { files: deleteItems },
       {
         onDownloadProgress: (progressEvent) => {

@@ -2,7 +2,7 @@ import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
 import { axiosWithSession } from '../../../lib/axios';
-import { appLocation } from '../../../const';
+import { APP_LOCATION } from '../../../const';
 
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
@@ -24,7 +24,7 @@ boolean, { token: string }>(
       { token: string },
       AxiosResponse<APITOTPLoginResponse>
       >(
-        `${appLocation}/api/totplogin`,
+        `${APP_LOCATION}/api/totplogin`,
         { token: info.token },
         {
           onUploadProgress: (progressEvent) => {

@@ -33,7 +33,7 @@ import {
 import { getAESGCMKey, AESGCM, decryptAESGCM } from '../../utils/crypto';
 import { axiosWithSession } from '../../lib/axios';
 
-import { AES_FILE_KEY_LENGTH, appLocation } from '../../const';
+import { AES_FILE_KEY_LENGTH, APP_LOCATION } from '../../const';
 import { getPreview } from '../../utils/img';
 import { fileInfoMigrate, latestVersion } from './fileinfoMigration/fileinfo';
 
@@ -247,7 +247,7 @@ export const submitFileInfoWithEncryption = async <T extends Exclude<FileInfo, F
   fileSendData.append('encryptedFileInfoBase64', encryptedFileInfoBase64);
   fileSendData.append('encryptedFileInfoIVBase64', encryptedFileInfoIVBase64);
   fileSendData.append('encryptedFileKeyBase64', encryptedFileKeyBase64);
-  await axiosWithSession.post(`${appLocation}/api/files`, fileSendData, {
+  await axiosWithSession.post(`${APP_LOCATION}/api/files`, fileSendData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -317,7 +317,7 @@ Promise<{ server: FileCryptoInfoWithBin, local: ExpandServerDataResult }> => {
   fileSendData.append('encryptedFileInfoBase64', encryptedFileInfoBase64);
   fileSendData.append('encryptedFileInfoIVBase64', encryptedFileInfoIVBase64);
   fileSendData.append('encryptedFileKeyBase64', encryptedFileKeyBase64);
-  await axiosWithSession.post(`${appLocation}/api/files`, fileSendData, {
+  await axiosWithSession.post(`${APP_LOCATION}/api/files`, fileSendData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -385,7 +385,7 @@ export const decryptoFileInfo = async (fileinforaw: GetfileinfoJSONRow)
  * 対象ファイルの生データを取得
  */
 export const getEncryptedFileRaw = async (fileId: string) => {
-  const encryptedFileRowDL = await axiosWithSession.get<Record<string, never>, AxiosResponse<ArrayBuffer>>(`${appLocation}/api/files/${fileId}/bin`, { responseType: 'arraybuffer' });
+  const encryptedFileRowDL = await axiosWithSession.get<Record<string, never>, AxiosResponse<ArrayBuffer>>(`${APP_LOCATION}/api/files/${fileId}/bin`, { responseType: 'arraybuffer' });
   return encryptedFileRowDL.data;
 };
 

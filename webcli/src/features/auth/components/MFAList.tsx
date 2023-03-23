@@ -4,7 +4,7 @@ import type {
 } from '@mui/x-data-grid';
 import type { AxiosResponse } from 'axios';
 import { axiosWithSession } from '../../../lib/axios';
-import { appLocation } from '../../../const';
+import { APP_LOCATION } from '../../../const';
 import EditableDataGrid, { type ComputeMutation } from '../../../components/assets/EditableDataGrid';
 
 type GetMFAListJSONRow = {
@@ -36,7 +36,7 @@ const getMFAList = async (props: {
   Record<string, never>,
   AxiosResponse<GetMFAListJSONRow>,
   { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(
-    `${appLocation}/api/my/mfa`,
+    `${APP_LOCATION}/api/my/mfa`,
     {
       params: {
         offset: props.offset,
@@ -57,7 +57,7 @@ const editMFA = async (
   targetMFA: MFADataGridRowModel,
   edited: Partial<MFADataGridRowModel>,
 ) => {
-  await axiosWithSession.patch(`${appLocation}/api/my/mfa/${targetMFA.id}`, { available: edited.available, name: edited.name });
+  await axiosWithSession.patch(`${APP_LOCATION}/api/my/mfa/${targetMFA.id}`, { available: edited.available, name: edited.name });
   return {
     ...targetMFA,
     available: edited.available ?? false,
@@ -69,7 +69,7 @@ const deleteMFA = async (id: string) => {
   Record<string, never>,
   AxiosResponse<GetMFAListJSONRow>,
   { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(
-    `${appLocation}/api/my/mfa/${id}`,
+    `${APP_LOCATION}/api/my/mfa/${id}`,
   );
   return result;
 };

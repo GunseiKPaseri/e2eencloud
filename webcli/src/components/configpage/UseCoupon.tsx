@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { bs58CheckDecodeWithoutErr } from '../../utils/bs58check';
 
 import { axiosWithSession } from '../../lib/axios';
-import { appLocation } from '../../const';
+import { APP_LOCATION } from '../../const';
 
 import { useAppDispatch } from '../../app/hooks';
 import { updateUsageAsync } from '../../features/file/fileSlice';
@@ -25,7 +25,7 @@ export default function UseCoupon() {
   const useCoupon = async (couponid: string) => {
     try {
       const posted = await axiosWithSession.post<{ couponid: string }>(
-        `${appLocation}/api/coupons/use`,
+        `${APP_LOCATION}/api/coupons/use`,
         { couponid },
       );
       if (posted.status !== 204) throw new Error('');

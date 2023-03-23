@@ -3,7 +3,7 @@ import { createAction, createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
 import type { StorageInfo } from '../file.type';
 import { axiosWithSession } from '../../../lib/axios';
-import { appLocation } from '../../../const';
+import { APP_LOCATION } from '../../../const';
 import type { FileState } from '../fileSlice';
 
 /**
@@ -14,7 +14,7 @@ export const updateUsageAsync = createAsyncThunk<StorageInfo>(
   async () => {
     // get all file info
     const capacity = await axiosWithSession.get<Record<string, never>, AxiosResponse<{ 'usage': string, 'max_capacity': string }>>(
-      `${appLocation}/api/my/capacity`,
+      `${APP_LOCATION}/api/my/capacity`,
     );
     const result: StorageInfo = {
       usage: Number(capacity.data.usage),

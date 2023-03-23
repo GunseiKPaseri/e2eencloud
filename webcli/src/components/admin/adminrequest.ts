@@ -1,6 +1,6 @@
 import type { GridFilterModel, GridSortItem } from '@mui/x-data-grid';
 import { type AxiosResponse } from 'axios';
-import { appLocation } from '../../const';
+import { APP_LOCATION } from '../../const';
 import { axiosWithSession } from '../../lib/axios';
 import type { UserDataGridRowModel } from './UserList';
 
@@ -26,7 +26,7 @@ export const getUserList = async (props: {
   Record<string, never>,
   AxiosResponse<GetUserListJSONRow>,
   { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(
-    `${appLocation}/api/users`,
+    `${APP_LOCATION}/api/users`,
     {
       params: {
         offset: props.offset,
@@ -49,14 +49,14 @@ export const getUserList = async (props: {
 };
 
 export const deleteUser = async (id: number) => {
-  await axiosWithSession.delete(`${appLocation}/api/user/${id}`);
+  await axiosWithSession.delete(`${APP_LOCATION}/api/user/${id}`);
 };
 
 export const editUser = async (
   targetUser: UserDataGridRowModel,
   edited: Partial<UserDataGridRowModel>,
 ) => {
-  await axiosWithSession.patch(`${appLocation}/api/user/${targetUser.id}`, { ...edited, max_capacity: edited.max_capacity?.toString(), file_usage: edited.file_usage?.toString() });
+  await axiosWithSession.patch(`${APP_LOCATION}/api/user/${targetUser.id}`, { ...edited, max_capacity: edited.max_capacity?.toString(), file_usage: edited.file_usage?.toString() });
   return {
     ...targetUser,
     max_capacity: typeof edited.max_capacity === 'undefined' ? targetUser.max_capacity : edited.max_capacity,
@@ -66,7 +66,7 @@ export const editUser = async (
 export const issuanceCoupon = async (num: number) => {
   const result = await axiosWithSession.post<
   Record<string, never>,
-  AxiosResponse<{ coupons_id: string[] }>>(`${appLocation}/api/coupons`, {
+  AxiosResponse<{ coupons_id: string[] }>>(`${APP_LOCATION}/api/coupons`, {
     coupon: {
       method: 'ADD_CAPACITY',
       value: (5n * 1024n * 1024n * 1024n).toString(),

@@ -5,7 +5,7 @@ import {
   base642ByteArray, byteArray2base64, UUID2ByteArray,
 } from '../../../utils/uint8';
 import { axiosWithSession } from '../../../lib/axios';
-import { appLocation } from '../../../const';
+import { APP_LOCATION } from '../../../const';
 
 import type { AuthState } from '../authSlice';
 // TOTP追加処理
@@ -18,7 +18,7 @@ export const addFIDO2Async = createAsyncThunk<{ mfacode: string[] | null }>(
       rp: { id: string, name: string, icon: string }
     };
     const optionsOrigin = (await axiosWithSession.get<GetAttestation>(
-      `${appLocation}/api/fido2/attestation`,
+      `${APP_LOCATION}/api/fido2/attestation`,
     )).data;
     const options = {
       ...optionsOrigin,
@@ -55,7 +55,7 @@ export const addFIDO2Async = createAsyncThunk<{ mfacode: string[] | null }>(
     };
     try {
       const result = await axiosWithSession.post<{ mfacode: string[] | null }>(
-        `${appLocation}/api/fido2/attestation`,
+        `${APP_LOCATION}/api/fido2/attestation`,
         credentials,
       );
       dispatch(enqueueSnackbar({ message: '正常に反映しました', options: { variant: 'success' } }));

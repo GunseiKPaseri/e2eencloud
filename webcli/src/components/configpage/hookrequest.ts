@@ -2,7 +2,7 @@ import type { AxiosResponse } from 'axios';
 import type { GridFilterModel, GridSortItem } from '@mui/x-data-grid/models';
 import { ExhaustiveError } from '../../utils/assert';
 import { axiosWithSession } from '../../lib/axios';
-import { appLocation } from '../../const';
+import { APP_LOCATION } from '../../const';
 import type { HookDataGridRowModel } from './HookList';
 
 export type HookData = {
@@ -44,7 +44,7 @@ export const getHookList = async (params: {
   const result = await axiosWithSession.get<
   Record<string, never>,
   AxiosResponse<GetHookListJSONRow>,
-  { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(`${appLocation}/api/hooks`, {
+  { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(`${APP_LOCATION}/api/hooks`, {
     params: {
       offset: params.offset,
       limit: params.limit,
@@ -65,18 +65,18 @@ export const getHookList = async (params: {
 };
 
 export const addHock = async (name: string, hook: HookData, expired_at: Date | null) => {
-  await axiosWithSession.post(`${appLocation}/api/hooks`, { name, data: hook, expired_at });
+  await axiosWithSession.post(`${APP_LOCATION}/api/hooks`, { name, data: hook, expired_at });
 };
 
 export const deleteHook = async (id: string) => {
-  await axiosWithSession.delete(`${appLocation}/api/hook/${id}`);
+  await axiosWithSession.delete(`${APP_LOCATION}/api/hook/${id}`);
 };
 
 export const editHook = async (
   targetHook: HookDataGridRowModel,
   edited: Partial<HookDataGridRowModel>,
 ) => {
-  await axiosWithSession.patch(`${appLocation}/api/hook/${targetHook.id}`, edited);
+  await axiosWithSession.patch(`${APP_LOCATION}/api/hook/${targetHook.id}`, edited);
   return {
     ...targetHook,
     name: typeof edited.name === 'undefined' ? targetHook.name : edited.name,

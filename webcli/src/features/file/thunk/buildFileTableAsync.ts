@@ -3,7 +3,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
 import type { BuildFileTableAsyncResult, GetfileinfoJSONRow } from '../file.type';
 import { axiosWithSession } from '../../../lib/axios';
-import { appLocation } from '../../../const';
+import { APP_LOCATION } from '../../../const';
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 import { buildFileTable, decryptoFileInfo } from '../utils';
 import { assertFileNodeFolder } from '../filetypeAssert';
@@ -20,7 +20,7 @@ export const buildFileTableAsync = createAsyncThunk<BuildFileTableAsyncResult>(
     // get all file info
     const rowfiles = await axiosWithSession.get<
     Record<string, never>, AxiosResponse<GetfileinfoJSONRow[]>>(
-      `${appLocation}/api/my/files`,
+      `${APP_LOCATION}/api/my/files`,
       {
         onDownloadProgress: (progressEvent) => {
           dispatch(setProgress(progress(0, step, progressEvent)));

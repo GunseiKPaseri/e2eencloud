@@ -2,7 +2,7 @@ import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
 import { axiosWithSession } from '../../../lib/axios';
-import { appLocation } from '../../../const';
+import { APP_LOCATION } from '../../../const';
 
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
@@ -24,7 +24,7 @@ boolean, { mfacode: string }>(
       { mfacode: string },
       AxiosResponse<APITOTPLoginResponse>
       >(
-        `${appLocation}/api/mfacode`,
+        `${APP_LOCATION}/api/mfacode`,
         { mfacode: info.mfacode },
         {
           onUploadProgress: (progressEvent) => {
