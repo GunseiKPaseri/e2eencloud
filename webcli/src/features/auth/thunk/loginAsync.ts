@@ -7,7 +7,7 @@ import {
   getAESCTRKey,
 } from '../../../utils/crypto';
 import { byteArray2base64, base642ByteArray } from '../../../utils/uint8';
-import { setDerivedEncryptionKey } from '../../../app/encrypt';
+import { setDerivedEncryptionKey } from '../../../lib/encrypt';
 
 import { AES_AUTH_KEY_LENGTH } from '../../../global/const';
 

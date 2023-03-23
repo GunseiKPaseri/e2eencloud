@@ -1,7 +1,7 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import { setRSAKey } from '../../../app/encrypt';
+import { setRSAKey } from '../../../lib/encrypt';
 import { axiosWithSession } from '../../../lib/axios';
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 import {

@@ -25,7 +25,7 @@ import {
   assertNonFileNodeDiff,
 } from './filetypeAssert';
 
-import { decryptByRSA, encryptByRSA } from '../../app/encrypt';
+import { decryptByRSA, encryptByRSA } from '../../lib/encrypt';
 import { assertArrayNumber, ExhaustiveError } from '../../utils/assert';
 import {
   string2ByteArray, byteArray2base64, base642ByteArray, byteArray2string,

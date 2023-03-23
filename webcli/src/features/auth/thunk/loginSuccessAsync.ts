@@ -5,7 +5,7 @@ import {
   getAESCTRKey,
 } from '../../../utils/crypto';
 import { base642ByteArray } from '../../../utils/uint8';
-import { decryptoByDerivedEncryptionKey, setRSAKey } from '../../../app/encrypt';
+import { decryptoByDerivedEncryptionKey, setRSAKey } from '../../../lib/encrypt';
 import { buildFileTableAsync } from '../../file/thunk/buildFileTableAsync';
 
 import { deleteProgress } from '../../progress/progressSlice';
