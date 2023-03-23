@@ -9,7 +9,7 @@ import {
 import { byteArray2base64, base642ByteArray } from '../../../utils/uint8';
 import { setDerivedEncryptionKey } from '../../../app/encrypt';
 
-import { AES_AUTH_KEY_LENGTH } from '../../../const';
+import { AES_AUTH_KEY_LENGTH } from '../../../global/const';
 
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice';

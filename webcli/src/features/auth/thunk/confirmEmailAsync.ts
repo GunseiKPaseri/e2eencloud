@@ -14,7 +14,7 @@ import {
 } from '../../../utils/crypto';
 import { byteArray2base64 } from '../../../utils/uint8';
 
-import { AES_AUTH_KEY_LENGTH } from '../../../const';
+import { AES_AUTH_KEY_LENGTH } from '../../../global/const';
 
 import type { AuthState, EmailConfirm, UserState } from '../authSlice';
 import { buildFileTableAsync } from '../../file/thunk/buildFileTableAsync';

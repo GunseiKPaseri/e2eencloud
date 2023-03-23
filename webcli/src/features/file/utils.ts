@@ -33,7 +33,7 @@ import {
 import { getAESGCMKey, AESGCM, decryptAESGCM } from '../../utils/crypto';
 import { axiosWithSession } from '../../lib/axios';
 
-import { AES_FILE_KEY_LENGTH } from '../../const';
+import { AES_FILE_KEY_LENGTH } from '../../global/const';
 import { getPreview } from '../../utils/img';
 import { fileInfoMigrate, latestVersion } from './fileinfoMigration/fileinfo';
 

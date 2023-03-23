@@ -2,7 +2,7 @@ import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { FileInfo, FileNode } from '../file.type';
 import { decryptAESGCM, getAESGCMKey } from '../../../utils/crypto';
-import type { RootState } from '../../../app/store';
+import type { RootState } from '../../../global/store';
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 import type { ExpandServerDataResult } from '../utils';
 import {

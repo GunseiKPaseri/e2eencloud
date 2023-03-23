@@ -3,7 +3,7 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { SnackbarProvider } from 'notistack';
-import { store } from '../app/store';
+import { store } from '../global/store';
 
 import composeComponents from '../utils/composeComponents';
 

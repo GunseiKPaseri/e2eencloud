@@ -14,7 +14,7 @@ import { type ProgressState } from '../../features/progress/progressSlice';
 
 import UserIcon from './UserIcon';
 
-import { SIDEBAR_WIDTH } from '../../const';
+import { SIDEBAR_WIDTH } from '../../global/const';
 import LangSelector from '../../features/language/LangSelector';
 
 interface AppBarProps extends MuiAppBarProps {

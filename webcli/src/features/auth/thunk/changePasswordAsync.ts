@@ -9,11 +9,11 @@ import {
   getAESCTRKey,
 } from '../../../utils/crypto';
 import { byteArray2base64 } from '../../../utils/uint8';
-import { AES_AUTH_KEY_LENGTH } from '../../../const';
+import { AES_AUTH_KEY_LENGTH } from '../../../global/const';
 
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
-import type { RootState } from '../../../app/store';
+import type { RootState } from '../../../global/store';
 
 // パスワード変更処理
 export const changePasswordAsync = createAsyncThunk<

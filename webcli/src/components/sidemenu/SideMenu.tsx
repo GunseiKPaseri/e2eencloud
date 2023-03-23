@@ -16,7 +16,7 @@ import HomeIcon from '@mui/icons-material/Home';
 
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { useNavigate } from 'react-router-dom';
-import { SIDEBAR_WIDTH } from '../../const';
+import { SIDEBAR_WIDTH } from '../../global/const';
 
 import HeadAppBar from './HeadAppBar';
 
