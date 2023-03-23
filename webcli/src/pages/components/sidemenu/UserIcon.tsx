@@ -8,8 +8,8 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { logoutAsync, type AuthState } from '../../features/auth/authSlice';
-import { useAppDispatch, useAppSelector } from '../../lib/react-redux';
+import { logoutAsync, type AuthState } from '../../../features/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '../../../lib/react-redux';
 
 export default function UserIcon() {
   const selector = useAppSelector<AuthState>((state) => state.auth);

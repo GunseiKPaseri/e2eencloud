@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-import CopyableField from '../../../components/assets/CopyableField';
+import CopyableField from '../../../components/atom/CopyableField';
 import { useAppDispatch, useAppSelector } from '../../../lib/react-redux';
 import { addTOTPAsync, type AuthState } from '../authSlice';
 

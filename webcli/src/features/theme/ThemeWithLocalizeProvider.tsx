@@ -9,7 +9,7 @@ import * as MUILocales from '@mui/material/locale';
 import * as dateFnsLocale from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 
-import { useAppSelector } from '../lib/react-redux';
+import { useAppSelector } from '../../lib/react-redux';
 
 function ThemeWithLocalizeProvider({ children }: {
   children: ReactNode

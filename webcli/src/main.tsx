@@ -4,7 +4,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 
 import './index.css';
 
-import App from './App';
+import App from './pages/App';
 import Signup from './features/auth/components/Signup';
 import Login from './features/auth/components/login/Login';
 import Setup from './features/auth/components/Setup';
@@ -12,10 +12,10 @@ import Setup from './features/auth/components/Setup';
 import Notifier from './features/snackbar/Notifier';
 
 import ContextMenuProvider from './features/contextmenu/ContextMenu';
-import FileExplorer from './components/fileexplorer/FileExplorer';
-import ConfigurePage from './components/configpage/ConfigurePage';
+import FileExplorer from './pages/components/FileExplorer';
+import ConfigurePage from './pages/components/ConfigurePage';
 
-import ComposedProvider from './components/ComposedProvider';
+import ComposedProvider from './pages/ComposedProvider';
 import RequireAuth from './features/auth/components/RequireAuth';
 
 const rootElement = document.getElementById('root');

@@ -18,7 +18,7 @@ import { useDrop, useDrag, DragPreviewImage } from 'react-dnd';
 import { Badge } from '@mui/material';
 import { genUseDropReturn, genUseDragReturn } from '../dnd';
 
-import PngIcon from '../../../../components/assets/PngIcon';
+import PngIcon from '../../../../components/atom/PngIcon';
 
 import { useAppSelector, useAppDispatch } from '../../../../lib/react-redux';
 import type { FileNode, FileInfoFile, FileInfoFolder } from '../../file.type';

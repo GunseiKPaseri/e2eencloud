@@ -4,10 +4,10 @@ import type {
 import { useTranslation } from 'react-i18next';
 
 import { deleteUser, editUser, getUserList } from './adminrequest';
-import { useAppDispatch } from '../../lib/react-redux';
-import { enqueueSnackbar } from '../../features/snackbar/snackbarSlice';
-import EditableDataGrid from '../assets/EditableDataGrid';
-import type { ComputeMutation } from '../assets/EditableDataGrid';
+import { useAppDispatch } from '../../../lib/react-redux';
+import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
+import EditableDataGrid from '../../../components/atom/EditableDataGrid';
+import type { ComputeMutation } from '../../../components/atom/EditableDataGrid';
 
 const PAGE_SIZE = 10;
 

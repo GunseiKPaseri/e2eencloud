@@ -14,7 +14,7 @@ import {
 } from '../filetypeAssert';
 import allProgress from '../../../utils/allProgress';
 import { setProgress, deleteProgress } from '../../progress/progressSlice';
-import type { RootState } from '../../../global/store';
+import type { RootState } from '../../../store/store';
 import type { FileState } from '../fileSlice';
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
 import { updateUsageAsync } from './updateUsageAsync';

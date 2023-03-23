@@ -7,15 +7,15 @@ import { DateTimePicker } from '@mui/x-date-pickers';
 import Button from '@mui/material/Button';
 import { useState } from 'react';
 import addMonths from 'date-fns/addMonths';
-import type { ComputeMutation } from '../assets/EditableDataGrid';
+import type { ComputeMutation } from '../../../components/atom/EditableDataGrid';
 
-import { enqueueSnackbar } from '../../features/snackbar/snackbarSlice';
-import { useAppDispatch } from '../../lib/react-redux';
+import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
+import { useAppDispatch } from '../../../lib/react-redux';
 import {
   addHock,
   deleteHook, editHook, getHookList,
 } from './hookrequest';
-import EditableDataGrid from '../assets/EditableDataGrid';
+import EditableDataGrid from '../../../components/atom/EditableDataGrid';
 
 const PAGE_SIZE = 10;
 

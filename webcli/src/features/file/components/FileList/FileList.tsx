@@ -19,7 +19,7 @@ import type { Theme } from '@mui/material/styles';
 import type { SystemStyleObject } from '@mui/system/styleFunctionSx';
 
 import { useDrop } from 'react-dnd';
-import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '../../../../components/assets/StyledBreadcrumb';
+import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '../../../../components/atom/StyledBreadcrumb';
 import TagButton from '../TagButton';
 import type { FileNode, FileInfoFolder } from '../../file.type';
 import { assertFileNodeFolder } from '../../filetypeAssert';

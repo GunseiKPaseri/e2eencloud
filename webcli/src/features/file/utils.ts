@@ -25,7 +25,7 @@ import {
   assertNonFileNodeDiff,
 } from './filetypeAssert';
 
-import { decryptByRSA, encryptByRSA } from '../../lib/encrypt';
+import { decryptByRSA, encryptByRSA } from '../../class/encrypt';
 import { assertArrayNumber, ExhaustiveError } from '../../utils/assert';
 import {
   string2ByteArray, byteArray2base64, base642ByteArray, byteArray2string,
@@ -33,7 +33,7 @@ import {
 import { getAESGCMKey, AESGCM, decryptAESGCM } from '../../utils/crypto';
 import { axiosWithSession } from '../../lib/axios';
 
-import { AES_FILE_KEY_LENGTH } from '../../global/const';
+import { AES_FILE_KEY_LENGTH } from '../../const/const';
 import { getPreview } from '../../utils/img';
 import { fileInfoMigrate, latestVersion } from './fileinfoMigration/fileinfo';
 

@@ -6,13 +6,13 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import type { SetStateAction } from 'react';
 import { useState } from 'react';
-import { bs58CheckDecodeWithoutErr } from '../../utils/bs58check';
+import { bs58CheckDecodeWithoutErr } from '../../../utils/bs58check';
 
-import { axiosWithSession } from '../../lib/axios';
+import { axiosWithSession } from '../../../lib/axios';
 
-import { useAppDispatch } from '../../lib/react-redux';
-import { updateUsageAsync } from '../../features/file/fileSlice';
-import { enqueueSnackbar } from '../../features/snackbar/snackbarSlice';
+import { useAppDispatch } from '../../../lib/react-redux';
+import { updateUsageAsync } from '../../file/fileSlice';
+import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
 
 const validateId = (couponId: string) => !!bs58CheckDecodeWithoutErr(couponId);
 

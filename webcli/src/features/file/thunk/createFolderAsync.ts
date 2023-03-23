@@ -5,7 +5,7 @@ import type {
   FileInfoFolder,
   FileCryptoInfo,
 } from '../file.type';
-import type { RootState } from '../../../global/store';
+import type { RootState } from '../../../store/store';
 import {
   genUUID,
   getSafeName,

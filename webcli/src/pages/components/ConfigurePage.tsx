@@ -1,11 +1,11 @@
 import PasswordChanger from '../../features/auth/components/PasswordChanger';
 import { useAppSelector } from '../../lib/react-redux';
 import SessionConfig from '../../features/session/sessionConfing';
-import UserList from '../admin/UserList';
+import UserList from '../../features/configure/admin/UserList';
 import StorageInfo from '../../features/file/components/StorageInfo';
-import HookList from './HookList';
-import IssuanceCoupon from '../admin/IssuanceCoupon';
-import UseCoupon from './UseCoupon';
+import HookList from '../../features/configure/everyone/HookList';
+import IssuanceCoupon from '../../features/configure/admin/IssuanceCoupon';
+import UseCoupon from '../../features/configure/everyone/UseCoupon';
 import MFASetting from '../../features/auth/components/MFASetting';
 
 export default function ConfigurePage() {

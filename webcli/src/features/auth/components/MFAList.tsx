@@ -4,7 +4,7 @@ import type {
 } from '@mui/x-data-grid';
 import type { AxiosResponse } from 'axios';
 import { axiosWithSession } from '../../../lib/axios';
-import EditableDataGrid, { type ComputeMutation } from '../../../components/assets/EditableDataGrid';
+import EditableDataGrid, { type ComputeMutation } from '../../../components/atom/EditableDataGrid';
 
 type GetMFAListJSONRow = {
   number_of_mfa: number;

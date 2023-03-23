@@ -2,7 +2,7 @@ import * as zip from '@zip.js/zip.js';
 import type { FileInfoFolder, FileNode, FileTable } from '../file.type';
 import { getFileChildren } from '../utils';
 
-import { store } from '../../../global/store';
+import { store } from '../../../store/store';
 import { filedownloadAsync } from '../thunk/filedownloadAsync';
 import { ExhaustiveError } from '../../../utils/assert';
 import { assertFileNodeFolder } from '../filetypeAssert';
