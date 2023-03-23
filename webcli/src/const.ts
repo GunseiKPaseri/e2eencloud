@@ -5,4 +5,4 @@ export const ARGON2_MEMORYSISE = 1024; // KB
 export const ARGON2_ITERATIONS = 100;
 export const ARGON2_PARALLELISM = 1;
 
-export const appLocation = `http://${window.location.hostname}:3001`;
+export const APP_LOCATION = `http://${window.location.hostname}:3001`;
