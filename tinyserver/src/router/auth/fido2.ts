@@ -1,6 +1,8 @@
 import {
   base642ByteArray,
+  base64Url2ByteArray,
   byteArray2base64,
+  byteArray2base64Url,
   Fido2AssertionResult,
   Router,
   SERVER_URI,
@@ -93,7 +95,7 @@ router.post('/attestation', async (ctx) => {
     attestationExpectations,
   );
 
-  const credId = byteArray2base64(regResult.authnrData?.get('credId'));
+  const credId = byteArray2base64Url(regResult.authnrData?.get('credId'));
   const counter = regResult.authnrData?.get('counter');
 
   const date = (new Date()).toLocaleString();
@@ -114,7 +116,23 @@ router.post('/attestation', async (ctx) => {
     },
   });
 
+  if (
+    await prisma.mFASolution.findFirst({
+      where: {
+        available: true,
+        type: 'CODE',
+        user_id: user.id,
+      },
+    }) === null
+  ) {
+    const result = await user.addMFACode(5);
+    ctx.response.status = Status.OK;
+    ctx.response.body = { mfacode: result };
+    return;
+  }
+
   ctx.response.status = Status.OK;
+  ctx.response.body = { mfacode: null };
 });
 
 // test
@@ -208,7 +226,7 @@ router.post('/assertion/result', async (ctx) => {
   if (!attestationOrigin) return ctx.response.status = Status.BadRequest;
   const attestationValue = FIDO2DBSchema.safeParse(parseJSONwithoutErr(attestationOrigin.value));
   if (!attestationValue.success) return ctx.response.status = Status.BadRequest;
-  const attestation = { id: base642ByteArray(request.rawId).buffer, ...attestationValue.data };
+  const attestation = { id: base64Url2ByteArray(request.rawId).buffer, ...attestationValue.data };
   const assertionExpectations = {
     challenge: challenge,
     origin: SERVER_URI,
@@ -221,7 +239,7 @@ router.post('/assertion/result', async (ctx) => {
   const authnResult = await f2l.assertionResult(
     {
       id: request.id,
-      rawId: base642ByteArray(request.rawId).buffer,
+      rawId: base64Url2ByteArray(request.rawId).buffer,
       response: request.response,
     },
     assertionExpectations,

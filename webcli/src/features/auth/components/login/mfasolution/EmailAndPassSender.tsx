@@ -4,19 +4,17 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { useTranslation } from 'react-i18next';
 import Alert from '@mui/material/Alert';
-import { correctEmailaddr } from '../../../../util';
-import PasswordField from '../PasswordField';
-import { type AuthState, loginAsync } from '../../authSlice';
-import { useAppDispatch, useAppSelector } from '../../../../app/hooks';
+import { correctEmailaddr } from '../../../../../util';
+import PasswordField from '../../PasswordField';
+import { loginAsync } from '../../../authSlice';
+import { useAppDispatch } from '../../../../../app/hooks';
 
-export default function EmailAndPassSender() {
+export default function EmailAndPassSender({ state }: { state: 'pending' | 'error' | null }) {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const isGoodMailAddress = correctEmailaddr.test(email);
   const dispatch = useAppDispatch();
-  const loginStatus = useAppSelector<AuthState['loginStatus']>((state) => state.auth.loginStatus);
-  if (loginStatus.step !== 'EmailAndPass') return <></>;
   const login = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     await dispatch(loginAsync({ email, password }));
@@ -52,13 +50,13 @@ export default function EmailAndPassSender() {
         type="submit"
         fullWidth
         variant="contained"
-        disabled={loginStatus.state === 'pending'}
+        disabled={state === 'pending'}
         sx={{ mt: 3, mb: 2 }}
       >
         {t('auth.login', 'ログイン')}
       </Button>
       {
-        (loginStatus.state === 'error'
+        (state === 'error'
           ? (
             <Alert severity="error">
               {t('auth.loginfailed', 'ログインに失敗しました。')}

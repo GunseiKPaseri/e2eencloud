@@ -1,9 +1,9 @@
 import { DBEnumRole, DBUser, prisma } from 'tinyserver/src/client/dbclient.ts';
-import type { Prisma } from 'tinyserver/src/client/dbclient.ts';
+import { Prisma } from 'tinyserver/src/client/dbclient.ts';
 
 import { ExhaustiveError } from 'tinyserver/src/utils/typeUtil.ts';
 import { createSalt } from 'tinyserver/src/util.ts';
-import { byteArray2base64, OTPAuth, z } from 'tinyserver/deps.ts';
+import { bcrypt, byteArray2base64, OTPAuth, z } from 'tinyserver/deps.ts';
 import parseJSONwithoutErr from 'tinyserver/src/utils/parseJSONWithoutErr.ts';
 import {
   anyFilterModelSchema,
@@ -19,9 +19,10 @@ import {
 } from 'tinyserver/src/utils/dataGridFilter.ts';
 import { pick } from 'tinyserver/src/utils/objSubset.ts';
 import { recordUnion } from 'tinyserver/src/utils/typeUtil.ts';
+import { bs58CheckEncode } from 'tinyserver/src/utils/bs58check.ts';
+import { uniqueSequentialKey } from 'tinyserver/src/utils/uniqueKey.ts';
+import { createUnionSchema } from 'tinyserver/src/utils/zod.ts';
 import { confirmEmail } from './ConfirmingEmailAddress.ts';
-import { uniqueSequentialKey } from '../utils/uniqueKey.ts';
-import { createUnionSchema } from '../utils/zod.ts';
 
 const DEFAULT_MAX_CAPACITY = 10n * 1024n * 1024n; //10MiB
 
@@ -167,6 +168,37 @@ export class User {
     };
   }
 
+  async confirmMFACode(mfacode: string) {
+    const registedMFACode = await prisma.mFASolution.findMany({
+      select: {
+        id: true,
+        value: true,
+      },
+      where: {
+        type: 'CODE',
+        user_id: this.id,
+        available: true,
+      },
+    });
+    const compareMFACode = await Promise.all(registedMFACode.map(async (x) => ({
+      ...x,
+      target: await bcrypt.compare(mfacode, x.value),
+    })));
+    const targetMFACode = compareMFACode.filter((x) => x.target);
+    if (targetMFACode.length > 0) {
+      await prisma.mFASolution.update({
+        data: {
+          available: false,
+        },
+        where: {
+          id: targetMFACode[0].id,
+        },
+      });
+      return true;
+    }
+    return false;
+  }
+
   async usingMFA() {
     const usingTOTP = await prisma.mFASolution.findMany({
       select: {
@@ -221,6 +253,31 @@ export class User {
         available: true,
       },
     });
+  }
+
+  async addMFACode(quantity: number) {
+    const code = await Promise.all(
+      (new Array(quantity))
+        .fill(undefined)
+        .map(async (_, i): Promise<[Prisma.MFASolutionCreateManyInput, string]> => {
+          const bs58 = bs58CheckEncode(crypto.getRandomValues(new Uint8Array(20)));
+          return [
+            {
+              id: uniqueSequentialKey(),
+              name: `MFACode-${i}`,
+              type: 'CODE',
+              value: await bcrypt.hash(await bs58),
+              user_id: this.id,
+              available: true,
+            },
+            await bs58,
+          ];
+        }),
+    );
+    await prisma.mFASolution.createMany({
+      data: code.map((x) => x[0]),
+    });
+    return code.map((x) => x[1]);
   }
 
   async deleteTOTPAll() {

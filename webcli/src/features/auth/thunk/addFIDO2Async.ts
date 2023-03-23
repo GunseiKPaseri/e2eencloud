@@ -8,7 +8,7 @@ import { axiosWithSession, appLocation } from '../../componentutils';
 
 import type { AuthState } from '../authSlice';
 // TOTP追加処理
-export const addFIDO2Async = createAsyncThunk<void, void>(
+export const addFIDO2Async = createAsyncThunk<{ mfacode: string[] | null }>(
   'auth/add_fido2',
   async (_, { dispatch }) => {
     type GetAttestation = PublicKeyCredentialCreationOptions & {
@@ -29,7 +29,10 @@ export const addFIDO2Async = createAsyncThunk<void, void>(
     };
 
     const cred = await navigator.credentials.create({ publicKey: options });
-    if (cred === null) return;
+    if (cred === null) {
+      dispatch(enqueueSnackbar({ message: 'WebAuthnに失敗しました', options: { variant: 'success' } }));
+      return { mfacode: null };
+    }
     const rawId = (cred as { rawId?: unknown })?.rawId;
 
     const { response } = cred as {
@@ -50,20 +53,20 @@ export const addFIDO2Async = createAsyncThunk<void, void>(
       response: fixResponse,
     };
     try {
-      await axiosWithSession.post(
+      const result = await axiosWithSession.post<{ mfacode: string[] | null }>(
         `${appLocation}/api/fido2/attestation`,
         credentials,
       );
       dispatch(enqueueSnackbar({ message: '正常に反映しました', options: { variant: 'success' } }));
+      return result.data;
     } catch (_e) {
       dispatch(enqueueSnackbar({ message: 'エラーが発生しました', options: { variant: 'success' } }));
     }
+    return { mfacode: null };
   },
 );
 
 export const afterAddFIDO2AsyncFullfilled:
-CaseReducer<AuthState, PayloadAction<void>> = (state) => {
-  if (state.user) {
-    state.user.useMultiFactorAuth = true;
-  }
+CaseReducer<AuthState, PayloadAction<{ mfacode: string[] | null }>> = (state, action) => {
+  state.mfacode = action.payload.mfacode;
 };

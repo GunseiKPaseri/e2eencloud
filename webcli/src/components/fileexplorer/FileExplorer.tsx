@@ -1,6 +1,6 @@
 import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/material/styles';
-import Login from '../../features/auth/components/Login';
+import Login from '../../features/auth/components/Login/Login';
 import FileTreeViewer from '../../features/file/components/FileTreeViewer';
 import FileList from '../../features/file/components/FileList/FileList';
 import Viewer from '../../features/file/components/Viewer';

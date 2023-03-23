@@ -14,7 +14,7 @@ export default function FIDO2Register({ onSuccess }: { onSuccess: () => void }) 
     <Box>
       <Typography variant="h5">FIDO2 WebAuthn</Typography>
       <Button onClick={handleRegister}>
-        登録
+        新規登録
       </Button>
     </Box>
   );

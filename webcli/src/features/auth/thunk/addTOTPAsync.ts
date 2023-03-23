@@ -28,6 +28,6 @@ export const addTOTPAsync = createAsyncThunk<void, { secretKey: string, token: s
 );
 
 export const afterAddTOTPAsyncFullfilled:
-CaseReducer<AuthState, PayloadAction<void>> = (state) => {
+CaseReducer<AuthState, PayloadAction<void>> = () => {
   //
 };

@@ -2,6 +2,11 @@ export {
   decode as base642ByteArray,
   encode as byteArray2base64,
 } from 'https://deno.land/std@0.177.0/encoding/base64.ts';
+export {
+  decode as base64Url2ByteArray,
+  encode as byteArray2base64Url,
+} from 'https://deno.land/std@0.177.0/encoding/base64url.ts';
+
 export { bold, yellow } from 'https://deno.land/std@0.177.0/fmt/colors.ts';
 export { v4 } from 'https://deno.land/std@0.177.0/uuid/mod.ts';
 

@@ -230,6 +230,40 @@ router.post('/totplogin', async (ctx) => {
   login({ ctx, user });
 });
 
+// mfacode
+const POSTmfaloginScheme = z.object({
+  mfacode: z.string(),
+});
+
+router.post('/mfacode', async (ctx) => {
+  if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
+  const body = ctx.request.body();
+  if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
+  const parsed = POSTmfaloginScheme.safeParse(await body.value);
+  if (!parsed.success) {
+    return ctx.response.status = Status.BadRequest;
+  }
+  const data = parsed.data;
+
+  // use mfa_uid
+  const mfauid: string | null = await ctx.state.session.get('mfa_uid');
+  if (typeof mfauid !== 'string') return ctx.response.status = Status.Forbidden;
+
+  const user = await getUserById(mfauid);
+  if (user === null) return ctx.response.status = Status.Forbidden;
+
+  const confirmMFACode = await user.confirmMFACode(data.mfacode);
+  if (!confirmMFACode) return ctx.response.status = Status.Unauthorized;
+
+  login({ ctx, user });
+});
+
+router.post('/mfacancel', async (ctx) => {
+  // mfa delete
+  await ctx.state.session.set('mfa_uid', null);
+  ctx.response.status = Status.NoContent;
+});
+
 router.post('/logout', async (ctx) => {
   // auth
   const uid: string | null = await ctx.state.session.get('uid');

@@ -4,15 +4,13 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import { useTranslation } from 'react-i18next';
-import { type AuthState, totpLoginAsync } from '../../authSlice';
-import { useAppDispatch, useAppSelector } from '../../../../app/hooks';
+import { totpLoginAsync } from '../../../authSlice';
+import { useAppDispatch } from '../../../../../app/hooks';
 
-export default function TOTPSender() {
+export default function TOTPSender({ state }: { state: 'pending' | 'error' | null }) {
   const { t } = useTranslation();
   const [token, setToken] = useState('');
   const dispatch = useAppDispatch();
-  const loginStatus = useAppSelector<AuthState['loginStatus']>((state) => state.auth.loginStatus);
-  if (loginStatus.step !== 'TOTP') return <></>;
   const login = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     await dispatch(totpLoginAsync({ token }));
@@ -33,14 +31,14 @@ export default function TOTPSender() {
       <Button
         type="submit"
         fullWidth
-        disabled={loginStatus.state === 'pending'}
+        disabled={state === 'pending'}
         variant="contained"
         sx={{ mt: 3, mb: 2 }}
       >
         {t('auth.login', 'ログイン')}
       </Button>
       {
-        (loginStatus.state === 'error'
+        (state === 'error'
           ? (
             <Alert severity="error">
               {t('auth.loginfailed', 'ログインに失敗しました。')}

@@ -6,7 +6,7 @@ import './index.css';
 
 import App from './App';
 import Signup from './features/auth/components/Signup';
-import Login from './features/auth/components/Login';
+import Login from './features/auth/components/Login/Login';
 import Setup from './features/auth/components/Setup';
 
 import Notifier from './features/snackbar/Notifier';
