@@ -1,7 +1,6 @@
 import type { CaseReducer } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { axiosWithSession } from '../../../lib/axios';
-import { APP_LOCATION } from '../../../const';
 
 import { setProgress, progress } from '../../progress/progressSlice';
 
@@ -13,7 +12,7 @@ export const mfaCancelAsync = createAsyncThunk(
   async (_, { dispatch }) => {
     try {
       await axiosWithSession.post(
-        `${APP_LOCATION}/api/mfacancel`,
+        '/api/mfacancel',
         null,
         {
           onUploadProgress: (progressEvent) => {

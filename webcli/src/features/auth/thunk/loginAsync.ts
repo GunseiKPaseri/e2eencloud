@@ -9,7 +9,7 @@ import {
 import { byteArray2base64, base642ByteArray } from '../../../utils/uint8';
 import { setDerivedEncryptionKey } from '../../../app/encrypt';
 
-import { AES_AUTH_KEY_LENGTH, APP_LOCATION } from '../../../const';
+import { AES_AUTH_KEY_LENGTH } from '../../../const';
 
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
@@ -32,7 +32,7 @@ export const loginAsync = createAsyncThunk<LoginPayload, { email: string, passwo
       { email: string },
       AxiosResponse<{ salt: string }>
       >(
-        `${APP_LOCATION}/api/salt`,
+        '/api/salt',
         { email: userinfo.email },
         {
           onUploadProgress: (progressEvent) => {
@@ -66,7 +66,7 @@ export const loginAsync = createAsyncThunk<LoginPayload, { email: string, passwo
       { email: string, authenticationKey: string, token: string },
       AxiosResponse<APILoginResponse>
       >(
-        `${APP_LOCATION}/api/login`,
+        '/api/login',
         { email: userinfo.email, authenticationKeyBase64 },
         {
           onUploadProgress: (progressEvent) => {

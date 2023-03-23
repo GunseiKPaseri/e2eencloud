@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
 import { axiosWithSession } from '../../lib/axios';
-import { APP_LOCATION } from '../../const';
 import { logoutAsync } from '../auth/authSlice';
 
 export interface SessionsState {
@@ -24,7 +23,7 @@ const initialState: SessionsState = {
 export const getSessionsAsync = createAsyncThunk<SessionInfo[]>(
   'session/getSessions',
   async () => {
-    const rowfiles = await axiosWithSession.get<Record<string, never>, AxiosResponse<SessionInfo[]>>(`${APP_LOCATION}/api/my/sessions`);
+    const rowfiles = await axiosWithSession.get<Record<string, never>, AxiosResponse<SessionInfo[]>>('/api/my/sessions');
 
     return rowfiles.data;
   },
@@ -33,14 +32,14 @@ export const getSessionsAsync = createAsyncThunk<SessionInfo[]>(
 export const changeClientNameAsync = createAsyncThunk<void, { id:string, newClientName: string }>(
   'session/changeClientName',
   async (params) => {
-    await axiosWithSession.patch<{ clientName: string }>(`${APP_LOCATION}/api/my/sessions`, { clientName: params.newClientName });
+    await axiosWithSession.patch<{ clientName: string }>('/api/my/sessions', { clientName: params.newClientName });
   },
 );
 
 export const deleteSessionAsync = createAsyncThunk<void, { id: string }>(
   'session/changeClientName',
   async (params) => {
-    await axiosWithSession.delete<{ clientName: string }>(`${APP_LOCATION}/api/my/sessions/${params.id}`);
+    await axiosWithSession.delete<{ clientName: string }>(`/api/my/sessions/${params.id}`);
   },
 );
 

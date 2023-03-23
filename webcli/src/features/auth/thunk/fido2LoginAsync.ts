@@ -5,7 +5,6 @@ import {
   base642ByteArray, base64uri2ByteArray, byteArray2base64, byteArray2base64uri,
 } from '../../../utils/uint8';
 import { axiosWithSession } from '../../../lib/axios';
-import { APP_LOCATION } from '../../../const';
 
 import type { AuthState } from '../authSlice';
 import { loginSuccess, type APILoginSuccessResopnse } from './loginSuccessAsync';
@@ -17,7 +16,7 @@ export const fido2LoginAsync = createAsyncThunk<
   async ({ auto }, { dispatch }) => {
     try {
       type Res = Omit<PublicKeyCredentialRequestOptions, 'allowCredentials' | 'challenge'> & { allowCredentials?: (Omit<NonNullable<PublicKeyCredentialRequestOptions['allowCredentials']>[number], 'id'> & { id: string })[], challenge: string };
-      const resp = await axiosWithSession.post<Res>(`${APP_LOCATION}/api/fido2/assertion/options`);
+      const resp = await axiosWithSession.post<Res>('/api/fido2/assertion/options');
       const option = {
         ...resp.data,
         allowCredentials: resp.data.allowCredentials
@@ -68,7 +67,7 @@ export const fido2LoginAsync = createAsyncThunk<
           },
         };
 
-        const result2 = await axiosWithSession.post<PublicKeyCredentialRequestOptions, AxiosResponse<APILoginSuccessResopnse>>(`${APP_LOCATION}/api/fido2/assertion/result`, credentialJSON);
+        const result2 = await axiosWithSession.post<PublicKeyCredentialRequestOptions, AxiosResponse<APILoginSuccessResopnse>>('/api/fido2/assertion/result', credentialJSON);
         if (result2.data.success) {
           await dispatch(loginSuccess(result2.data));
           return { auto, success: true };

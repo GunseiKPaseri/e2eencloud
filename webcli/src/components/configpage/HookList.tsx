@@ -11,7 +11,6 @@ import type { ComputeMutation } from '../assets/EditableDataGrid';
 
 import { enqueueSnackbar } from '../../features/snackbar/snackbarSlice';
 import { useAppDispatch } from '../../lib/react-redux';
-import { APP_LOCATION } from '../../const';
 import {
   addHock,
   deleteHook, editHook, getHookList,
@@ -92,7 +91,7 @@ function HookList() {
             headerName: 'url',
             width: 600,
             valueFormatter: (params: GridValueFormatterParams<string>) => (
-              `${APP_LOCATION}/api/hook/${params.value}`
+              `/api/hook/${params.value}`
             ),
           },
           {

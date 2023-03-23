@@ -1,7 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
 import { axiosWithSession } from '../../../lib/axios';
-import { APP_LOCATION } from '../../../const';
 
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 
@@ -15,7 +14,7 @@ export const signupAsync = createAsyncThunk<{ success: boolean }, { email: strin
       PostSignUp,
       AxiosResponse<{ success: boolean }>
       >(
-        `${APP_LOCATION}/api/signup`,
+        '/api/signup',
         { email: userinfo.email },
         {
           onUploadProgress: (progressEvent) => {
