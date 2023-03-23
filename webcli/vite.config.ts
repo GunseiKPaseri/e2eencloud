@@ -24,7 +24,7 @@ export default defineConfig({
       reportsDirectory: '../coverage',
     },
     environment: 'happy-dom',
-    setupFiles: './setup.ts',
+    setupFiles: './dev/setup.ts',
     deps: {
       external: ['**/dist/**'],
     },
