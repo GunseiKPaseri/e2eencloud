@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import { appLocation, axiosWithSession } from '../componentutils';
+import { axiosWithSession } from '../../lib/axios';
+import { appLocation } from '../../const';
 import { logoutAsync } from '../auth/authSlice';
 
 export interface SessionsState {

@@ -4,7 +4,8 @@ import type { AxiosResponse } from 'axios';
 import {
   base642ByteArray, base64uri2ByteArray, byteArray2base64, byteArray2base64uri,
 } from '../../../utils/uint8';
-import { axiosWithSession, appLocation } from '../../componentutils';
+import { axiosWithSession } from '../../../lib/axios';
+import { appLocation } from '../../../const';
 
 import type { AuthState } from '../authSlice';
 import { loginSuccess, type APILoginSuccessResopnse } from './loginSuccessAsync';

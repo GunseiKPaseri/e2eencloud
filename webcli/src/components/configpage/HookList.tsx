@@ -11,7 +11,7 @@ import type { ComputeMutation } from '../assets/EditableDataGrid';
 
 import { enqueueSnackbar } from '../../features/snackbar/snackbarSlice';
 import { useAppDispatch } from '../../app/hooks';
-import { appLocation } from '../../features/componentutils';
+import { appLocation } from '../../const';
 import {
   addHock,
   deleteHook, editHook, getHookList,

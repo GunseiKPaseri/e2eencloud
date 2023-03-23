@@ -1,7 +1,8 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
-import { axiosWithSession, appLocation } from '../../componentutils';
+import { axiosWithSession } from '../../../lib/axios';
+import { appLocation } from '../../../const';
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 
 import type { AuthState } from '../authSlice';

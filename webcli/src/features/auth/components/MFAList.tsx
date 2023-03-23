@@ -3,7 +3,8 @@ import type {
   GridRowModel, GridSortItem,
 } from '@mui/x-data-grid';
 import type { AxiosResponse } from 'axios';
-import { appLocation, axiosWithSession } from '../../componentutils';
+import { axiosWithSession } from '../../../lib/axios';
+import { appLocation } from '../../../const';
 import EditableDataGrid, { type ComputeMutation } from '../../../components/assets/EditableDataGrid';
 
 type GetMFAListJSONRow = {

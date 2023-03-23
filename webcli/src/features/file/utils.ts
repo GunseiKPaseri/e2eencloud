@@ -31,9 +31,9 @@ import {
   string2ByteArray, byteArray2base64, base642ByteArray, byteArray2string,
 } from '../../utils/uint8';
 import { getAESGCMKey, AESGCM, decryptAESGCM } from '../../utils/crypto';
-import { axiosWithSession, appLocation } from '../componentutils';
+import { axiosWithSession } from '../../lib/axios';
 
-import { AES_FILE_KEY_LENGTH } from '../../const';
+import { AES_FILE_KEY_LENGTH, appLocation } from '../../const';
 import { getPreview } from '../../utils/img';
 import { fileInfoMigrate, latestVersion } from './fileinfoMigration/fileinfo';
 

@@ -2,7 +2,8 @@ import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAction, createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
 import type { StorageInfo } from '../file.type';
-import { axiosWithSession, appLocation } from '../../componentutils';
+import { axiosWithSession } from '../../../lib/axios';
+import { appLocation } from '../../../const';
 import type { FileState } from '../fileSlice';
 
 /**

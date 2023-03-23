@@ -1,6 +1,7 @@
 import type { GridFilterModel, GridSortItem } from '@mui/x-data-grid';
 import { type AxiosResponse } from 'axios';
-import { appLocation, axiosWithSession } from '../../features/componentutils';
+import { appLocation } from '../../const';
+import { axiosWithSession } from '../../lib/axios';
 import type { UserDataGridRowModel } from './UserList';
 
 type GetUserListJSONRow = {

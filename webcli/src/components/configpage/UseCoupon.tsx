@@ -8,7 +8,8 @@ import type { SetStateAction } from 'react';
 import { useState } from 'react';
 import { bs58CheckDecodeWithoutErr } from '../../utils/bs58check';
 
-import { axiosWithSession, appLocation } from '../../features/componentutils';
+import { axiosWithSession } from '../../lib/axios';
+import { appLocation } from '../../const';
 
 import { useAppDispatch } from '../../app/hooks';
 import { updateUsageAsync } from '../../features/file/fileSlice';

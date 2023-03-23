@@ -1,6 +1,7 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { axiosWithSession, appLocation } from '../../componentutils';
+import { axiosWithSession } from '../../../lib/axios';
+import { appLocation } from '../../../const';
 import type { AuthState } from '../authSlice';
 
 // ログアウト処理

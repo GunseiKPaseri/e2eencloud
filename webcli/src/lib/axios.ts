@@ -6,5 +6,3 @@ export const axiosWithSession = axios.create({
     'Content-Type': 'application/json;charset=utf-8',
   },
 });
-
-export const appLocation = `http://${window.location.hostname}:3001`;

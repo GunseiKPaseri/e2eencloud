@@ -1,7 +1,7 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import { axiosWithSession, appLocation } from '../../componentutils';
+import { axiosWithSession } from '../../../lib/axios';
 import {
   argon2encrypt,
   getAESCTRKey,
@@ -9,7 +9,7 @@ import {
 import { byteArray2base64, base642ByteArray } from '../../../utils/uint8';
 import { setDerivedEncryptionKey } from '../../../app/encrypt';
 
-import { AES_AUTH_KEY_LENGTH } from '../../../const';
+import { AES_AUTH_KEY_LENGTH, appLocation } from '../../../const';
 
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice';

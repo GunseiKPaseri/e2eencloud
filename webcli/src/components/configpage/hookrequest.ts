@@ -1,7 +1,8 @@
 import type { AxiosResponse } from 'axios';
 import type { GridFilterModel, GridSortItem } from '@mui/x-data-grid/models';
 import { ExhaustiveError } from '../../utils/assert';
-import { appLocation, axiosWithSession } from '../../features/componentutils';
+import { axiosWithSession } from '../../lib/axios';
+import { appLocation } from '../../const';
 import type { HookDataGridRowModel } from './HookList';
 
 export type HookData = {

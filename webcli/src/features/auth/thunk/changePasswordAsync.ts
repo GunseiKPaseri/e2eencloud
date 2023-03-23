@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import { axiosWithSession, appLocation } from '../../componentutils';
+import { axiosWithSession } from '../../../lib/axios';
 import {
   createSalt,
   SHA256,
@@ -9,7 +9,7 @@ import {
   getAESCTRKey,
 } from '../../../utils/crypto';
 import { byteArray2base64 } from '../../../utils/uint8';
-import { AES_AUTH_KEY_LENGTH } from '../../../const';
+import { appLocation, AES_AUTH_KEY_LENGTH } from '../../../const';
 
 import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice';

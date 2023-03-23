@@ -13,7 +13,8 @@ import { setProgress, deleteProgress, progress } from '../../progress/progressSl
 import type { RootState } from '../../../app/store';
 import type { FileState } from '../fileSlice';
 import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
-import { appLocation, axiosWithSession } from '../../componentutils';
+import { axiosWithSession } from '../../../lib/axios';
+import { appLocation } from '../../../const';
 import { updateUsageAsync } from './updateUsageAsync';
 
 /**

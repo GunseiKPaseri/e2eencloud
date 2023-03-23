@@ -4,7 +4,8 @@ import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
 import {
   base642ByteArray, byteArray2base64, UUID2ByteArray,
 } from '../../../utils/uint8';
-import { axiosWithSession, appLocation } from '../../componentutils';
+import { axiosWithSession } from '../../../lib/axios';
+import { appLocation } from '../../../const';
 
 import type { AuthState } from '../authSlice';
 // TOTP追加処理
