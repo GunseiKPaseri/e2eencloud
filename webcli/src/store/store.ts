@@ -1,12 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
 import logger from 'redux-logger';
-import authReducer from '../features/auth/authSlice';
-import contextmenuReducer from '../features/contextmenu/contextmenuSlice';
-import fileReducer from '../features/file/fileSlice';
-import languageReducer from '../features/language/languageSlice';
-import progressReducer from '../features/progress/progressSlice';
-import sessionReducer from '../features/session/sessionSlice';
-import snackbarReducer from '../features/snackbar/snackbarSlice';
+import authReducer from '~/features/auth/authSlice';
+import contextmenuReducer from '~/features/contextmenu/contextmenuSlice';
+import fileReducer from '~/features/file/fileSlice';
+import languageReducer from '~/features/language/languageSlice';
+import progressReducer from '~/features/progress/progressSlice';
+import sessionReducer from '~/features/session/sessionSlice';
+import snackbarReducer from '~/features/snackbar/snackbarSlice';
 
 export const store = configureStore({
   reducer: {

@@ -4,8 +4,8 @@ import type {
   FileDifference,
   FileInfoDiffFile,
   FileInfoFolder,
-} from '../file.type';
-import { latestVersion } from '../fileinfoMigration/fileinfo';
+} from '~/features/file/file.type';
+import { latestVersion } from '~/features/file/fileinfoMigration/fileinfo';
 
 export const genFileInfoFile = (props: {
   id: string,

@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAppSelector } from '../../../lib/react-redux';
+import { useAppSelector } from '~/lib/react-redux';
 
 // ログインしていない時ログイン画面へ遷移
 export default function RequireAuth({ children }: { children: JSX.Element }) {

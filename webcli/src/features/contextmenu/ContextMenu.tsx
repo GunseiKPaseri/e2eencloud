@@ -3,13 +3,13 @@ import MenuItem from '@mui/material/MenuItem';
 import Link from '@mui/material/Link';
 import React from 'react';
 import Divider from '@mui/material/Divider';
-import { useAppSelector, useAppDispatch } from '../../lib/react-redux';
-import { changeActiveFileGroupDir, createDiffAsync, filedownloadAsync } from '../file/fileSlice';
+import { useAppSelector, useAppDispatch } from '~/lib/react-redux';
+import { changeActiveFileGroupDir, createDiffAsync, filedownloadAsync } from '~/features/file/fileSlice';
+import { string2ByteArray } from '~/utils/uint8';
+import { ExhaustiveError } from '~/utils/assert';
+import { exportFileInfo, exportFolderInfo } from '~/features/file/util/exportinfo';
+import genZipFile from '~/features/file/util/zip';
 import { closeContextmenu } from './contextmenuSlice';
-import { string2ByteArray } from '../../utils/uint8';
-import { ExhaustiveError } from '../../utils/assert';
-import { exportFileInfo, exportFolderInfo } from '../file/util/exportinfo';
-import genZipFile from '../file/util/zip';
 
 function ContextMenu() {
   const menuState = useAppSelector((store) => store.contextmenu.menuState);

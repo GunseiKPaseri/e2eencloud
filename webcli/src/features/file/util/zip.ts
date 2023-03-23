@@ -1,11 +1,11 @@
 import * as zip from '@zip.js/zip.js';
-import type { FileInfoFolder, FileNode, FileTable } from '../file.type';
-import { getFileChildren } from '../utils';
+import { ExhaustiveError } from '~/utils/assert';
+import { store } from '~/store/store';
+import type { FileInfoFolder, FileNode, FileTable } from '~/features/file/file.type';
+import { assertFileNodeFolder } from '~/features/file/filetypeAssert';
+import { getFileChildren } from '~/features/file/utils';
 
-import { store } from '../../../store/store';
-import { filedownloadAsync } from '../thunk/filedownloadAsync';
-import { ExhaustiveError } from '../../../utils/assert';
-import { assertFileNodeFolder } from '../filetypeAssert';
+import { filedownloadAsync } from '~/features/file/thunk/filedownloadAsync';
 import { exportFolderInfo } from './exportinfo';
 
 type Item = {

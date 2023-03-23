@@ -11,6 +11,8 @@ parserOptions:
 settings:
   react:
     version: "18.1.0"
+  import/resolver:
+    typescript: []
 plugins:
   - '@typescript-eslint'
   - react

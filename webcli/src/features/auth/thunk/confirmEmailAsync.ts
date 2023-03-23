@@ -1,9 +1,8 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import { setRSAKey } from '../../../class/encrypt';
-import { axiosWithSession } from '../../../lib/axios';
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
+import { setRSAKey } from '~/class/encrypt';
+import { axiosWithSession } from '~/lib/axios';
 import {
   createSalt,
   SHA256,
@@ -11,15 +10,16 @@ import {
   AESCTR,
   getAESCTRKey,
   generateRSAKey,
-} from '../../../utils/crypto';
-import { byteArray2base64 } from '../../../utils/uint8';
+} from '~/utils/crypto';
+import { byteArray2base64 } from '~/utils/uint8';
 
-import { AES_AUTH_KEY_LENGTH } from '../../../const/const';
+import { AES_AUTH_KEY_LENGTH } from '~/const/const';
+import type { AuthState, EmailConfirm, UserState } from '~/features/auth/authSlice';
 
-import type { AuthState, EmailConfirm, UserState } from '../authSlice';
-import { buildFileTableAsync } from '../../file/thunk/buildFileTableAsync';
-import type { StorageInfo } from '../../file/file.type';
-import { updateUsage } from '../../file/thunk/updateUsageAsync';
+import { buildFileTableAsync } from '~/features/file/thunk/buildFileTableAsync';
+import type { StorageInfo } from '~/features/file/file.type';
+import { updateUsage } from '~/features/file/thunk/updateUsageAsync';
+import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
 
 type APIEmailConfirmResopnse = {
   success: true

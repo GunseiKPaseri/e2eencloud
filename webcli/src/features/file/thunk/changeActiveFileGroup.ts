@@ -1,9 +1,9 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAction } from '@reduxjs/toolkit';
-import type { FileInfo, FileNode } from '../file.type';
-import type { FileState } from '../fileSlice';
-import { searchFromTable, SearchQueryParser } from '../util/search';
-import { getFileParentsList } from '../utils';
+import { getFileParentsList } from '~/features/file/utils';
+import type { FileState } from '~/features/file/fileSlice';
+import type { FileInfo, FileNode } from '~/features/file/file.type';
+import { searchFromTable, SearchQueryParser } from '~/features/file/util/search';
 
 /**
  * activeFileGroupを変更(ディレクトリ)

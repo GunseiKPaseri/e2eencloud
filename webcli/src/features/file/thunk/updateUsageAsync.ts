@@ -1,9 +1,9 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAction, createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import type { StorageInfo } from '../file.type';
-import { axiosWithSession } from '../../../lib/axios';
-import type { FileState } from '../fileSlice';
+import { axiosWithSession } from '~/lib/axios';
+import type { FileState } from '~/features/file/fileSlice';
+import type { StorageInfo } from '~/features/file/file.type';
 
 /**
  * 容量情報を更新するReduxThunk

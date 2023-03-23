@@ -6,9 +6,9 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-import CopyableField from '../../../components/atom/CopyableField';
-import { useAppDispatch, useAppSelector } from '../../../lib/react-redux';
-import { addTOTPAsync, type AuthState } from '../authSlice';
+import CopyableField from '~/components/atom/CopyableField';
+import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
+import { addTOTPAsync, type AuthState } from '~/features/auth/authSlice';
 
 const genQR = (totp: OTPAuth.TOTP) => new Promise<string>((resolve, reject) => {
   QRcode.toDataURL(totp.toString(), (err, qrcode) => {

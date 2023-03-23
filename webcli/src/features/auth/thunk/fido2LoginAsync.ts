@@ -3,10 +3,10 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
 import {
   base642ByteArray, base64uri2ByteArray, byteArray2base64, byteArray2base64uri,
-} from '../../../utils/uint8';
-import { axiosWithSession } from '../../../lib/axios';
+} from '~/utils/uint8';
+import { axiosWithSession } from '~/lib/axios';
 
-import type { AuthState } from '../authSlice';
+import type { AuthState } from '~/features/auth/authSlice';
 import { loginSuccess, type APILoginSuccessResopnse } from './loginSuccessAsync';
 
 // ログイン処理

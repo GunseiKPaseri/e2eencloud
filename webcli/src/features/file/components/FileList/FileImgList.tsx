@@ -2,10 +2,10 @@ import { ImageListItemBar } from '@mui/material';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { openContextmenu } from '../../../contextmenu/contextmenuSlice';
-import { useAppDispatch, useAppSelector } from '../../../../lib/react-redux';
-import type { FileState } from '../../fileSlice';
-import { assertNonFileNodeDiff } from '../../filetypeAssert';
+import { openContextmenu } from '~/features/contextmenu/contextmenuSlice';
+import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
+import type { FileState } from '~/features/file/fileSlice';
+import { assertNonFileNodeDiff } from '~/features/file/filetypeAssert';
 
 function FileImgList({ sx, onSelectFile, onSelectFolder }: {
   sx: SxProps<Theme>,

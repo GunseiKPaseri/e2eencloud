@@ -1,4 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
+import path from 'path';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react-swc';
 import eslintPlugin from '@nabla/vite-plugin-eslint';
@@ -11,6 +12,11 @@ export default defineConfig({
   },
   publicDir: '../public',
   root: './src',
+  resolve: {
+    alias: {
+      '~': path.resolve(__dirname, 'src'),
+    },
+  },
   define: {
     'process.browser': true,
     'process.env': {},

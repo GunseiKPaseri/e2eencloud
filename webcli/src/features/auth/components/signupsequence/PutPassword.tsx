@@ -3,8 +3,8 @@ import Button from '@mui/material/Button';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 import zxcvbn from 'zxcvbn';
-import PasswordChecker from '../PasswordChecker';
-import PasswordField from '../PasswordField';
+import PasswordChecker from '~/features/auth/components/PasswordChecker';
+import PasswordField from '~/features/auth/components/PasswordField';
 
 interface PutPasswordProps {
   password: string;

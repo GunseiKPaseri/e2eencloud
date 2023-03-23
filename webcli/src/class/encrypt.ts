@@ -1,4 +1,4 @@
-import { decryptAESCTR } from '../utils/crypto';
+import { decryptAESCTR } from '~/utils/crypto';
 
 let rsaPrivateKey: CryptoKey | null = null;
 let rsaPublicKey: CryptoKey | null = null;

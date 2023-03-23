@@ -1,8 +1,8 @@
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
-import { changeActiveFileGroupSearch } from '../fileSlice';
-import { useAppDispatch, useAppSelector } from '../../../lib/react-redux';
+import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
+import { changeActiveFileGroupSearch } from '~/features/file/fileSlice';
 
 function SearchInput() {
   const dispatch = useAppDispatch();

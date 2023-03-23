@@ -3,11 +3,11 @@ import type {
 } from '@mui/x-data-grid';
 import { useTranslation } from 'react-i18next';
 
+import { useAppDispatch } from '~/lib/react-redux';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import EditableDataGrid from '~/components/atom/EditableDataGrid';
+import type { ComputeMutation } from '~/components/atom/EditableDataGrid';
 import { deleteUser, editUser, getUserList } from './adminrequest';
-import { useAppDispatch } from '../../../lib/react-redux';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
-import EditableDataGrid from '../../../components/atom/EditableDataGrid';
-import type { ComputeMutation } from '../../../components/atom/EditableDataGrid';
 
 const PAGE_SIZE = 10;
 

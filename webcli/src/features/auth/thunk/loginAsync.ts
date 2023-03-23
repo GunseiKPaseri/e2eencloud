@@ -1,20 +1,20 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import { axiosWithSession } from '../../../lib/axios';
+import { axiosWithSession } from '~/lib/axios';
 import {
   argon2encrypt,
   getAESCTRKey,
-} from '../../../utils/crypto';
-import { byteArray2base64, base642ByteArray } from '../../../utils/uint8';
-import { setDerivedEncryptionKey } from '../../../class/encrypt';
+} from '~/utils/crypto';
+import { byteArray2base64, base642ByteArray } from '~/utils/uint8';
+import { setDerivedEncryptionKey } from '~/class/encrypt';
 
-import { AES_AUTH_KEY_LENGTH } from '../../../const/const';
+import { AES_AUTH_KEY_LENGTH } from '~/const/const';
 
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
+import type { AuthState, MFASolution } from '~/features/auth/authSlice';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
 
-import type { AuthState, MFASolution } from '../authSlice';
 import { type APILoginSuccessResopnse, loginSuccess } from './loginSuccessAsync';
 import { fido2LoginAsync } from './fido2LoginAsync';
 

@@ -1,5 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+import { logoutAsync } from '~/features/auth/thunk/logoutAsync';
+
 import type {
   FileTable,
   TagGroup,
@@ -7,8 +9,6 @@ import type {
   SearchGroup,
   StorageInfo,
 } from './file.type';
-
-import { logoutAsync } from '../auth/thunk/logoutAsync';
 
 import {
   buildFileTableAsync,

@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { WritableDraft } from 'immer/dist/internal';
-import type { FileInfoFile, FileInfoFolder, FileNode } from '../file/file.type';
+import type { FileInfoFile, FileInfoFolder, FileNode } from '~/features/file/file.type';
 
 export type ContextMenuState = {
   menuState: {

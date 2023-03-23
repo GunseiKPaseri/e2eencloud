@@ -4,9 +4,9 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import { useTranslation } from 'react-i18next';
-import { bs58CheckDecodeWithoutErr } from '../../../../../utils/bs58check';
-import { mfacodeLoginAsync } from '../../../authSlice';
-import { useAppDispatch } from '../../../../../lib/react-redux';
+import { bs58CheckDecodeWithoutErr } from '~/utils/bs58check';
+import { useAppDispatch } from '~/lib/react-redux';
+import { mfacodeLoginAsync } from '~/features/auth/authSlice';
 
 export default function CODESender({ state }: { state: 'error' | 'pending' | null }) {
   const { t } = useTranslation();

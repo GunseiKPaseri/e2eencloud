@@ -4,10 +4,10 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { useTranslation } from 'react-i18next';
 import Alert from '@mui/material/Alert';
-import { isEmailCorrect } from '../../../../../utils/emailAddressCheck';
-import PasswordField from '../../PasswordField';
-import { loginAsync } from '../../../authSlice';
-import { useAppDispatch } from '../../../../../lib/react-redux';
+import { isEmailCorrect } from '~/utils/emailAddressCheck';
+import { useAppDispatch } from '~/lib/react-redux';
+import { loginAsync } from '~/features/auth/authSlice';
+import PasswordField from '~/features/auth/components/PasswordField';
 
 export default function EmailAndPassSender({ state }: { state: 'pending' | 'error' | null }) {
   const { t } = useTranslation();

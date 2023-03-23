@@ -9,12 +9,12 @@ import type {
   GridRenderCellParams, GridRowsProp, GridSelectionModel,
 } from '@mui/x-data-grid';
 
-import { useAppDispatch, useAppSelector } from '../../../../lib/react-redux';
-import { type FileState, changeSelection } from '../../fileSlice';
-import { assertNonFileNodeDiff } from '../../filetypeAssert';
-import TagButton from '../TagButton';
-import { assertArrayString } from '../../../../utils/assert';
-import { serializeTags, deserializeTags } from '../../util/serializeTags';
+import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
+import { assertArrayString } from '~/utils/assert';
+import { type FileState, changeSelection } from '~/features/file/fileSlice';
+import { assertNonFileNodeDiff } from '~/features/file/filetypeAssert';
+import TagButton from '~/features/file/components/TagButton';
+import { serializeTags, deserializeTags } from '~/features/file/util/serializeTags';
 
 function FileGrid({
   sx,

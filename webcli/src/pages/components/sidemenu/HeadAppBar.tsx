@@ -8,14 +8,13 @@ import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 
 import MenuIcon from '@mui/icons-material/Menu';
-import { useAppSelector } from '../../../lib/react-redux';
+import { useAppSelector } from '~/lib/react-redux';
 
-import { type ProgressState } from '../../../features/progress/progressSlice';
+import { type ProgressState } from '~/features/progress/progressSlice';
 
+import { SIDEBAR_WIDTH } from '~/const/const';
+import LangSelector from '~/features/language/LangSelector';
 import UserIcon from './UserIcon';
-
-import { SIDEBAR_WIDTH } from '../../../const/const';
-import LangSelector from '../../../features/language/LangSelector';
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;

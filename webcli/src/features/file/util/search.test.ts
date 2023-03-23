@@ -1,4 +1,5 @@
 import { describe, test, expect } from 'vitest';
+import { buildFileTable } from '~/features/file/utils';
 import {
   genFileInfoFolder,
   genFileInfoFile,
@@ -13,8 +14,6 @@ import {
 import type {
   SearchQuery,
 } from './search.type';
-
-import { buildFileTable } from '../utils';
 
 describe('#highlightMark', () => {
   test('正しくハイライトできる', () => {

@@ -1,12 +1,12 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import type { BuildFileTableAsyncResult, GetfileinfoJSONRow } from '../file.type';
-import { axiosWithSession } from '../../../lib/axios';
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
-import { buildFileTable, decryptoFileInfo } from '../utils';
-import { assertFileNodeFolder } from '../filetypeAssert';
-import type { FileState } from '../fileSlice';
+import { axiosWithSession } from '~/lib/axios';
+import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
+import { buildFileTable, decryptoFileInfo } from '~/features/file/utils';
+import type { FileState } from '~/features/file/fileSlice';
+import type { BuildFileTableAsyncResult, GetfileinfoJSONRow } from '~/features/file/file.type';
+import { assertFileNodeFolder } from '~/features/file/filetypeAssert';
 
 /**
  * ファイル情報を解析してディレクトリツリーを構成するReduxThunk

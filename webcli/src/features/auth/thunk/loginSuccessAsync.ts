@@ -3,16 +3,15 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import {
   importRSAKey,
   getAESCTRKey,
-} from '../../../utils/crypto';
-import { base642ByteArray } from '../../../utils/uint8';
-import { decryptoByDerivedEncryptionKey, setRSAKey } from '../../../class/encrypt';
-import { buildFileTableAsync } from '../../file/thunk/buildFileTableAsync';
+} from '~/utils/crypto';
+import { base642ByteArray } from '~/utils/uint8';
+import { decryptoByDerivedEncryptionKey, setRSAKey } from '~/class/encrypt';
+import type { AuthState, UserState } from '~/features/auth/authSlice';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import { buildFileTableAsync } from '~/features/file/thunk/buildFileTableAsync';
 
-import { deleteProgress } from '../../progress/progressSlice';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
-import { updateUsageAsync } from '../../file/thunk/updateUsageAsync';
-
-import type { AuthState, UserState } from '../authSlice';
+import { updateUsageAsync } from '~/features/file/thunk/updateUsageAsync';
+import { deleteProgress } from '~/features/progress/progressSlice';
 
 type LoginSuccess = {
   role: 'ADMIN' | 'USER',

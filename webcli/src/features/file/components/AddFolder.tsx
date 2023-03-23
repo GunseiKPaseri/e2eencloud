@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { type FileState, createFolderAsync } from '../fileSlice';
-import { useAppDispatch, useAppSelector } from '../../../lib/react-redux';
+import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
+import { type FileState, createFolderAsync } from '~/features/file/fileSlice';
 
 export function AddFolder() {
   const [name, setName] = useState<string>('');

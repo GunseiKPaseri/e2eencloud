@@ -1,10 +1,9 @@
 import type { CaseReducer } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { axiosWithSession } from '../../../lib/axios';
+import { axiosWithSession } from '~/lib/axios';
 
-import { setProgress, progress } from '../../progress/progressSlice';
-
-import type { AuthState } from '../authSlice';
+import type { AuthState } from '~/features/auth/authSlice';
+import { setProgress, progress } from '~/features/progress/progressSlice';
 
 // mfaセッションを削除する処理
 export const mfaCancelAsync = createAsyncThunk(

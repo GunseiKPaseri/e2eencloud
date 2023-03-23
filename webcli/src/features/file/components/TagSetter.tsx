@@ -1,11 +1,11 @@
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import type { FilterOptionsState } from '@mui/material/useAutocomplete';
-import { useAppSelector, useAppDispatch } from '../../../lib/react-redux';
+import { useAppSelector, useAppDispatch } from '~/lib/react-redux';
 
-import type { FileState } from '../fileSlice';
-import { createDiffAsync } from '../fileSlice';
-import { assertFileNodeFile } from '../filetypeAssert';
+import type { FileState } from '~/features/file/fileSlice';
+import { createDiffAsync } from '~/features/file/fileSlice';
+import { assertFileNodeFile } from '~/features/file/filetypeAssert';
 
 const filter = createFilterOptions();
 

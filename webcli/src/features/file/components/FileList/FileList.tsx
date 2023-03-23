@@ -19,21 +19,21 @@ import type { Theme } from '@mui/material/styles';
 import type { SystemStyleObject } from '@mui/system/styleFunctionSx';
 
 import { useDrop } from 'react-dnd';
-import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '../../../../components/atom/StyledBreadcrumb';
-import TagButton from '../TagButton';
-import type { FileNode, FileInfoFolder } from '../../file.type';
-import { assertFileNodeFolder } from '../../filetypeAssert';
-import type { FileState } from '../../fileSlice';
+import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '~/components/atom/StyledBreadcrumb';
+import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
+import { openContextmenu } from '~/features/contextmenu/contextmenuSlice';
+import TagButton from '~/features/file/components/TagButton';
+import type { FileNode, FileInfoFolder } from '~/features/file/file.type';
+import { assertFileNodeFolder } from '~/features/file/filetypeAssert';
+import type { FileState } from '~/features/file/fileSlice';
 import {
   changeActiveFileGroupDir, fileDeleteAsync, filedownloadAsync,
-} from '../../fileSlice';
-import { useAppDispatch, useAppSelector } from '../../../../lib/react-redux';
-import { genUseDropReturn } from '../dnd';
+} from '~/features/file/fileSlice';
+import { genUseDropReturn } from '~/features/file/components/dnd';
+import SearchInput from '~/features/file/components/SearchInput';
 import FileSimpleList from './FileSimpleList';
 import FileGrid from './FileGrid';
 import FileImgList from './FileImgList';
-import SearchInput from '../SearchInput';
-import { openContextmenu } from '../../../contextmenu/contextmenuSlice';
 
 function DIRBreadcrumb(props: { target: FileNode<FileInfoFolder> }) {
   const { target } = props;

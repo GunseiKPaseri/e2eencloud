@@ -1,12 +1,12 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import { axiosWithSession } from '../../../lib/axios';
+import { axiosWithSession } from '~/lib/axios';
 
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
+import type { AuthState } from '~/features/auth/authSlice';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
 
-import type { AuthState } from '../authSlice';
 import { loginSuccess, type APILoginSuccessResopnse } from './loginSuccessAsync';
 
 // ログイン処理

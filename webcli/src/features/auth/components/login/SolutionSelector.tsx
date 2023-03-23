@@ -1,6 +1,6 @@
-import { ExhaustiveError } from '../../../../utils/assert';
-import { type AuthState } from '../../authSlice';
-import { useAppSelector } from '../../../../lib/react-redux';
+import { ExhaustiveError } from '~/utils/assert';
+import { useAppSelector } from '~/lib/react-redux';
+import { type AuthState } from '~/features/auth/authSlice';
 import EmailAndPassSender from './mfasolution/EmailAndPassSender';
 import TOTPSender from './mfasolution/TOTPSender';
 import CODESender from './mfasolution/CODESender';

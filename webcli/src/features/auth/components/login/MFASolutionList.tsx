@@ -5,11 +5,11 @@ import EmailIcon from '@mui/icons-material/Email';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import PasswordIcon from '@mui/icons-material/Password';
 import LockClockIcon from '@mui/icons-material/LockClock';
-import { type AuthState, selectMFASolution, mfaCancelAsync } from '../../authSlice';
-import { useAppDispatch, useAppSelector } from '../../../../lib/react-redux';
-import { mfasolution2name } from '../../solution';
-import { ExhaustiveError } from '../../../../utils/assert';
-import { fido2LoginAsync } from '../../thunk/fido2LoginAsync';
+import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
+import { ExhaustiveError } from '~/utils/assert';
+import { type AuthState, selectMFASolution, mfaCancelAsync } from '~/features/auth/authSlice';
+import { mfasolution2name } from '~/features/auth/solution';
+import { fido2LoginAsync } from '~/features/auth/thunk/fido2LoginAsync';
 
 function MFASolutionLogo({ solution }: { solution: AuthState['suggestedMfa'][0] }) {
   switch (solution) {

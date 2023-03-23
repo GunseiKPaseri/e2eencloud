@@ -1,19 +1,19 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import { axiosWithSession } from '../../../lib/axios';
+import { axiosWithSession } from '~/lib/axios';
 import {
   createSalt,
   SHA256,
   argon2encrypt,
   AESCTR,
   getAESCTRKey,
-} from '../../../utils/crypto';
-import { byteArray2base64 } from '../../../utils/uint8';
-import { AES_AUTH_KEY_LENGTH } from '../../../const/const';
+} from '~/utils/crypto';
+import { byteArray2base64 } from '~/utils/uint8';
+import { AES_AUTH_KEY_LENGTH } from '~/const/const';
 
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
-import type { RootState } from '../../../store/store';
+import type { RootState } from '~/store/store';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
 
 // パスワード変更処理
 export const changePasswordAsync = createAsyncThunk<

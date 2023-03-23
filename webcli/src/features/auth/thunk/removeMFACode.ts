@@ -1,5 +1,5 @@
 import { type CaseReducer, createAction } from '@reduxjs/toolkit';
-import { type AuthState } from '../authSlice';
+import { type AuthState } from '~/features/auth/authSlice';
 
 /**
  * MFACodeを削除

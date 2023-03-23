@@ -3,7 +3,7 @@ import { createHash as createSHA256Hash } from 'sha256-uint8array';
 import { argon2id } from 'hash-wasm';
 import {
   AES_AUTH_KEY_LENGTH, ARGON2_ITERATIONS, ARGON2_MEMORYSISE, ARGON2_PARALLELISM,
-} from '../const/const';
+} from '~/const/const';
 
 import {
   string2ByteArray, byteArray2base64, base642ByteArray, hex2bytearray,

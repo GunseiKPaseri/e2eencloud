@@ -1,17 +1,16 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { FileInfo, FileNode } from '../file.type';
-import { decryptAESGCM, getAESGCMKey } from '../../../utils/crypto';
-import type { RootState } from '../../../store/store';
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
-import type { ExpandServerDataResult } from '../utils';
+import { decryptAESGCM, getAESGCMKey } from '~/utils/crypto';
+import type { RootState } from '~/store/store';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
 import {
   expandServerData, getEncryptedFileRaw, getFileHash, listUpSimilarFile,
-} from '../utils';
-import { assertFileNodeFile } from '../filetypeAssert';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
-
-import type { FileState } from '../fileSlice';
+} from '~/features/file/utils';
+import type { ExpandServerDataResult } from '~/features/file/utils';
+import type { FileState } from '~/features/file/fileSlice';
+import type { FileInfo, FileNode } from '~/features/file/file.type';
+import { assertFileNodeFile } from '~/features/file/filetypeAssert';
 
 type FiledownloadAsyncResult = { fileId: string, local: ExpandServerDataResult, active: boolean };
 

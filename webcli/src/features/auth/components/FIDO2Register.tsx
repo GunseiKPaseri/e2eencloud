@@ -1,8 +1,8 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { addFIDO2Async } from '../authSlice';
-import { useAppDispatch } from '../../../lib/react-redux';
+import { useAppDispatch } from '~/lib/react-redux';
+import { addFIDO2Async } from '~/features/auth/authSlice';
 
 export default function FIDO2Register({ onSuccess }: { onSuccess: () => void }) {
   const dispatch = useAppDispatch();

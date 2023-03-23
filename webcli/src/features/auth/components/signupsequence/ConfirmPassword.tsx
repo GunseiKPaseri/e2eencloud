@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import type { FormEvent } from 'react';
-import PasswordField from '../PasswordField';
+import PasswordField from '~/features/auth/components/PasswordField';
 
 interface PutPasswordProps {
   password: string;

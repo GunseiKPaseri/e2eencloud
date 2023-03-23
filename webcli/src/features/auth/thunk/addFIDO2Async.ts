@@ -1,12 +1,12 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
 import {
   base642ByteArray, byteArray2base64, UUID2ByteArray,
-} from '../../../utils/uint8';
-import { axiosWithSession } from '../../../lib/axios';
+} from '~/utils/uint8';
+import { axiosWithSession } from '~/lib/axios';
 
-import type { AuthState } from '../authSlice';
+import type { AuthState } from '~/features/auth/authSlice';
 // TOTP追加処理
 export const addFIDO2Async = createAsyncThunk<{ mfacode: string[] | null }>(
   'auth/add_fido2',

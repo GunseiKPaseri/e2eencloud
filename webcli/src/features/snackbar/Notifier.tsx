@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 import type { SnackbarKey } from 'notistack';
 import { useSnackbar } from 'notistack';
-import { useAppDispatch, useAppSelector } from '../../lib/react-redux';
+import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
 import { removeSnackbar } from './snackbarSlice';
 
 let displayed: SnackbarKey[] = [];

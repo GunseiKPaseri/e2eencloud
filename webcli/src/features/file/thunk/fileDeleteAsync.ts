@@ -1,19 +1,19 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import type { BuildFileTableAsyncResult } from '../file.type';
+import { axiosWithSession } from '~/lib/axios';
+import type { RootState } from '~/store/store';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
 import {
   getAllDependentFile,
   buildFileTable,
-} from '../utils';
+} from '~/features/file/utils';
+import type { FileState } from '~/features/file/fileSlice';
+import type { BuildFileTableAsyncResult } from '~/features/file/file.type';
 import {
   assertFileNodeFolder,
-} from '../filetypeAssert';
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
-import type { RootState } from '../../../store/store';
-import type { FileState } from '../fileSlice';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
-import { axiosWithSession } from '../../../lib/axios';
+} from '~/features/file/filetypeAssert';
 import { updateUsageAsync } from './updateUsageAsync';
 
 /**
