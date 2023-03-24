@@ -11,7 +11,7 @@ import Setup from './features/auth/components/Setup';
 
 import Notifier from './features/snackbar/Notifier';
 
-import ContextMenuProvider from './features/contextmenu/ContextMenu';
+import ContextMenuProvider from './features/contextmenu/ContextMenuProvider';
 import FileExplorer from './pages/components/FileExplorer';
 import ConfigurePage from './pages/components/ConfigurePage';
 

@@ -58,7 +58,7 @@ function DIRBreadcrumb(props: { target: FileNode<FileInfoFolder> }) {
 
   const handleContextMenu: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.preventDefault();
-    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitemfile', target, selected: false } }));
+    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitem', target, selected: false } }));
   };
 
   return (

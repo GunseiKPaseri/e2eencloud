@@ -57,7 +57,7 @@ function Viewer() {
                   onContextMenu={(event) => {
                     event.preventDefault();
                     if (target.type !== 'file') return;
-                    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitemfile', target, isInDir: false } }));
+                    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitem', target, isInDir: false } }));
                   }}
                 >
                   {/*
