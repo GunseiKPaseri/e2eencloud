@@ -1,12 +1,11 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { AxiosResponse } from 'axios';
-import { axiosWithSession } from '~/lib/axios';
 import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
 import { buildFileTable, decryptoFileInfo } from '~/features/file/utils';
 import type { FileState } from '~/features/file/fileSlice';
-import type { BuildFileTableAsyncResult, GetfileinfoJSONRow } from '~/features/file/file.type';
+import type { BuildFileTableAsyncResult } from '~/features/file/file.type';
 import { assertFileNodeFolder } from '~/features/file/filetypeAssert';
+import { getAllFileInfoRaw } from '../api';
 
 /**
  * ファイル情報を解析してディレクトリツリーを構成するReduxThunk
@@ -17,17 +16,13 @@ export const buildFileTableAsync = createAsyncThunk<BuildFileTableAsyncResult>(
     const step = 3;
     dispatch(setProgress(progress(0, step)));
     // get all file info
-    const rowfiles = await axiosWithSession.get<
-    Record<string, never>, AxiosResponse<GetfileinfoJSONRow[]>>(
-      '/api/my/files',
-      {
-        onDownloadProgress: (progressEvent) => {
-          dispatch(setProgress(progress(0, step, progressEvent)));
-        },
+    const rowfiles = await getAllFileInfoRaw({
+      onDownloadProgress: (progressEvent) => {
+        dispatch(setProgress(progress(0, step, progressEvent)));
       },
-    );
+    });
     dispatch(setProgress(progress(1, step)));
-    const files = await Promise.all(rowfiles.data.map((x) => decryptoFileInfo(x)));
+    const files = await Promise.all(rowfiles.map((x) => decryptoFileInfo(x)));
     dispatch(setProgress(progress(2, step)));
 
     // create filetable

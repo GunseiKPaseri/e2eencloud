@@ -5,8 +5,9 @@ import type { RootState } from '~/store/store';
 import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
 import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
 import {
-  expandServerData, getEncryptedFileRaw, getFileHash, listUpSimilarFile,
+  expandServerData, getFileHash, listUpSimilarFile,
 } from '~/features/file/utils';
+import { getEncryptedFileRaw } from '~/features/file/api';
 import type { ExpandServerDataResult } from '~/features/file/utils';
 import type { FileState } from '~/features/file/fileSlice';
 import type { FileInfo, FileNode } from '~/features/file/file.type';

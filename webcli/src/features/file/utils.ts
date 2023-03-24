@@ -1,5 +1,3 @@
-import FormData from 'form-data';
-import type { AxiosResponse } from 'axios';
 import { v4 } from 'uuid';
 import BrowserJimpImgClass from 'imghash-js/dist/esm/ImgClass/BrowserJimpImgClass';
 import ImgHash from 'imghash-js/dist/esm/ImgHash';
@@ -13,7 +11,6 @@ import {
   string2ByteArray, byteArray2base64, base642ByteArray, byteArray2string,
 } from '~/utils/uint8';
 import { getAESGCMKey, AESGCM, decryptAESGCM } from '~/utils/crypto';
-import { axiosWithSession } from '~/lib/axios';
 
 import { AES_FILE_KEY_LENGTH } from '~/const/const';
 import { getPreview } from '~/utils/img';
@@ -37,6 +34,7 @@ import {
   assertFileNodeFolder,
   assertNonFileNodeDiff,
 } from './filetypeAssert';
+import { addFile } from './api';
 
 /**
  * 生成
@@ -243,15 +241,11 @@ export const submitFileInfoWithEncryption = async <T extends Exclude<FileInfo, F
   const encryptedFileKeyBase64 = byteArray2base64(new Uint8Array(await encryptedFileKeyAsync));
 
   // send encryptedfile, send encryptedfileinfo, encryptedfilekey iv,iv
-  const fileSendData = new FormData();
-  fileSendData.append('id', fileInfo.id);
-  fileSendData.append('encryptedFileInfoBase64', encryptedFileInfoBase64);
-  fileSendData.append('encryptedFileInfoIVBase64', encryptedFileInfoIVBase64);
-  fileSendData.append('encryptedFileKeyBase64', encryptedFileKeyBase64);
-  await axiosWithSession.post('/api/files', fileSendData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+  await addFile({
+    id: fileInfo.id,
+    encryptedFileKeyBase64,
+    encryptedFileInfoBase64,
+    encryptedFileInfoIVBase64,
   });
 
   return { fileKeyBin: Array.from(fileKeyRaw), fileInfo, originalVersion: fileInfo.version };
@@ -311,17 +305,13 @@ Promise<{ server: FileCryptoInfoWithBin, local: ExpandServerDataResult }> => {
   const encryptedFileKeyBase64 = byteArray2base64(new Uint8Array(encryptedFileKey));
 
   // send encryptedfile, send encryptedfileinfo, encryptedfilekey iv,iv
-  const fileSendData = new FormData();
-  fileSendData.append('id', uuid);
-  fileSendData.append('encryptedFile', encryptedFileBlob);
-  fileSendData.append('encryptedFileIVBase64', encryptedFileIVBase64);
-  fileSendData.append('encryptedFileInfoBase64', encryptedFileInfoBase64);
-  fileSendData.append('encryptedFileInfoIVBase64', encryptedFileInfoIVBase64);
-  fileSendData.append('encryptedFileKeyBase64', encryptedFileKeyBase64);
-  await axiosWithSession.post('/api/files', fileSendData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+  await addFile({
+    id: uuid,
+    encryptedFileBlob,
+    encryptedFileIVBase64,
+    encryptedFileKeyBase64,
+    encryptedFileInfoBase64,
+    encryptedFileInfoIVBase64,
   });
 
   // memory file to indexedDB
@@ -380,14 +370,6 @@ export const decryptoFileInfo = async (fileinforaw: GetfileinfoJSONRow)
   }
   if (fileInfo.type === 'folder') return { fileKeyBin, fileInfo, originalVersion };
   return { fileKeyBin, fileInfo, originalVersion };
-};
-
-/**
- * 対象ファイルの生データを取得
- */
-export const getEncryptedFileRaw = async (fileId: string) => {
-  const encryptedFileRowDL = await axiosWithSession.get<Record<string, never>, AxiosResponse<ArrayBuffer>>(`/api/files/${fileId}/bin`, { responseType: 'arraybuffer' });
-  return encryptedFileRowDL.data;
 };
 
 /**
