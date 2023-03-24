@@ -37,6 +37,11 @@ export default defineConfig({
   },
   plugins: [
     react({ plugins: [['@swc/plugin-styled-components', {}]] }),
-    eslintPlugin(),
+    eslintPlugin({
+      eslintOptions: {
+        cache: true,
+        cacheLocation: 'node_modules/.cache/.eslintcache',
+      },
+    }),
   ],
 });

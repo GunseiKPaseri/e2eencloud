@@ -5,11 +5,11 @@
     "dev": "run-p watch:*",
     "watch:ts": "vite",
     "watch:test": "vitest watch",
-    "build": "eslint ./src/ --ext ts,tsx --ignore-path .gitignore && tsc && vitest run && vite build --emptyOutDir",
+    "build": "tsc && vitest run && vite build --emptyOutDir",
     "preview": "vite preview",
-    "test": "eslint ./src/ --ext ts,tsx --ignore-path .gitignore && tsc && vitest run",
-    "lint": "eslint ./src/ --ext ts,tsx --ignore-path .gitignore",
-    "fix:lint": "eslint ./src/ --fix --ext ts,tsx --ignore-path .gitignore",
+    "test": "npm run lint & tsc & vitest run",
+    "lint": "eslint ./src/ --ext ts,tsx --ignore-path .gitignore --cache --cache-location node_modules/.cache/.eslintcache",
+    "fix:lint": "eslint ./src/ --fix --ext ts,tsx --ignore-path .gitignore --cache --cache-location node_modules/.cache/.eslintcache",
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
