@@ -39,11 +39,11 @@ const AppBar = styled(MuiAppBar, {
 }));
 
 export default function HeadAppBar(
-  { open, setOpen }: { open: boolean, setOpen: React.Dispatch<React.SetStateAction<boolean>> },
+  { isSidebarOpen, onSidebarToggle }: { isSidebarOpen: boolean, onSidebarToggle: () => void },
 ) {
   const { progress } = useAppSelector<ProgressState>((state) => state.progress);
   return (
-    <AppBar position="fixed" open={open}>
+    <AppBar position="fixed" open={isSidebarOpen}>
       <>
         <Toolbar>
           <Box sx={{ flexGrow: 1 }}>
@@ -53,7 +53,7 @@ export default function HeadAppBar(
               color="inherit"
               aria-label="menu"
               sx={{ mr: 2 }}
-              onClick={() => setOpen(!open)}
+              onClick={onSidebarToggle}
             >
               <MenuIcon />
             </IconButton>

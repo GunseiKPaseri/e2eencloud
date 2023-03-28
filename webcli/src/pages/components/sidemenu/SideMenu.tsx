@@ -65,7 +65,7 @@ export default function SideMenu() {
   const navigate = useNavigate();
   return (
     <>
-      <HeadAppBar open={open} setOpen={setOpen} />
+      <HeadAppBar isSidebarOpen={open} onSidebarToggle={toggleDrawer} />
       <Drawer variant="permanent" open={open}>
         <Toolbar
           sx={{
