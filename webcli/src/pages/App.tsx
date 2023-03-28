@@ -19,7 +19,14 @@ function App() {
           height: '100vh',
         }}
       >
-        <Outlet />
+        <Box
+          sx={{
+            height: (theme) => `calc(100vh - ${theme.spacing(8)})`,
+            overflow: 'auto',
+          }}
+        >
+          <Outlet />
+        </Box>
       </Box>
     </Box>
   );

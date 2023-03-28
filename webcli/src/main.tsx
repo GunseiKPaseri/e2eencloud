@@ -13,10 +13,13 @@ import Notifier from './features/snackbar/Notifier';
 
 import ContextMenuProvider from './features/contextmenu/ContextMenuProvider';
 import FileExplorer from './pages/components/FileExplorer';
-import ConfigurePage from './pages/components/ConfigurePage';
 
 import ComposedProvider from './pages/ComposedProvider';
 import RequireAuth from './features/auth/components/RequireAuth';
+import RequireAdmin from './features/auth/components/RequireAdmin';
+import APIConfigure from './pages/components/configure/APIConfigure';
+import AuthConfigure from './pages/components/configure/AuthConfigure';
+import AdminConfigure from './pages/components/configure/AdminConfigure';
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
@@ -32,7 +35,9 @@ if (rootElement) {
             <Route path="/" element={<App />}>
               <Route index element={<FileExplorer />} />
               <Route path="configure">
-                <Route index element={<RequireAuth><ConfigurePage /></RequireAuth>} />
+                <Route path="admin" element={<RequireAdmin><AdminConfigure /></RequireAdmin>} />
+                <Route path="api" element={<RequireAuth><APIConfigure /></RequireAuth>} />
+                <Route path="auth" element={<RequireAuth><AuthConfigure /></RequireAuth>} />
               </Route>
             </Route>
             <Route path="/signup" element={<Signup />} />

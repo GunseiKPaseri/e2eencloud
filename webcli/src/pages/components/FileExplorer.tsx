@@ -1,5 +1,5 @@
+import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
-import { useTheme } from '@mui/material/styles';
 import Login from '~/features/auth/components/login/Login';
 import FileTreeViewer from '~/features/file/components/FileTreeViewer';
 import FileList from '~/features/file/components/FileList/FileList';
@@ -9,17 +9,16 @@ import { DiffTree } from '~/features/file/components/DiffTree';
 import TagButton from '~/features/file/components/TagButton';
 
 export default function FileExplorer() {
-  const theme = useTheme();
   return (
-    <div style={{
+    <Box sx={{
       display: 'grid',
       gridAutoFlow: 'column',
       alignItems: 'stretch',
       gridTemplateColumns: '300px 1fr',
       gridTemplateRows: '1fr 1fr',
-      padding: theme.spacing(1),
-      gridGap: theme.spacing(1),
-      height: `calc(100vh - ${theme.spacing(8)})`,
+      padding: 1,
+      gridGap: (theme) => theme.spacing(1),
+      height: '100%',
     }}
     >
       <Paper sx={{ overflow: 'scroll', gridRow: '1/3', padding: 1 }}>
@@ -35,6 +34,6 @@ export default function FileExplorer() {
         <Viewer />
         <DiffTree />
       </Paper>
-    </div>
+    </Box>
   );
 }
