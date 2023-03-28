@@ -50,6 +50,25 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
   }),
 );
 
+function ListItem(props: {
+  icon: JSX.Element,
+  text: string,
+  onClick: () => void,
+  buttonRight?: JSX.Element
+  pl?: number,
+}) {
+  const {
+    pl, text, icon, onClick, buttonRight,
+  } = props;
+  return (
+    <ListItemButton sx={{ pl }} onClick={onClick}>
+      <ListItemIcon>{icon}</ListItemIcon>
+      <ListItemText primary={text} />
+      {buttonRight}
+    </ListItemButton>
+  );
+}
+
 export default function SideMenu() {
   const user = useAppSelector((state) => state.auth.user);
   const [open, setOpen] = useState(false);
@@ -81,41 +100,15 @@ export default function SideMenu() {
         </Toolbar>
         <Divider />
         <List>
-          <ListItemButton onClick={() => navigate('/')}>
-            <ListItemIcon>
-              <HomeIcon />
-            </ListItemIcon>
-            <ListItemText primary="ホーム" />
-          </ListItemButton>
-          <ListItemButton onClick={handleConfigureOpen}>
-            <ListItemIcon>
-              <SettingsIcon />
-            </ListItemIcon>
-            <ListItemText primary="設定" />
-            {configureOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </ListItemButton>
+          <ListItem text="ホーム" onClick={() => navigate('/')} icon={<HomeIcon />} />
+          <ListItem text="設定" onClick={handleConfigureOpen} icon={<SettingsIcon />} buttonRight={configureOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />} />
           <Collapse in={configureOpen} timeout="auto" unmountOnExit>
-            <ListItemButton sx={{ pl: 4 }} onClick={() => navigate('/configure/auth')}>
-              <ListItemIcon>
-                <SettingsIcon />
-              </ListItemIcon>
-              <ListItemText primary="認証" />
-            </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }} onClick={() => navigate('/configure/api')}>
-              <ListItemIcon>
-                <SettingsIcon />
-              </ListItemIcon>
-              <ListItemText primary="API" />
-            </ListItemButton>
+            <ListItem text="認証" onClick={() => navigate('/configure/auth')} icon={<SettingsIcon />} pl={4} />
+            <ListItem text="API" onClick={() => navigate('/configure/api')} icon={<SettingsIcon />} pl={4} />
             {
               user && user.authority === 'ADMIN'
               && (
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  <SettingsIcon />
-                </ListItemIcon>
-                <ListItemText primary="管理" onClick={() => navigate('/configure/admin')} />
-              </ListItemButton>
+                <ListItem text="管理" onClick={() => navigate('/configure/admin')} icon={<SettingsIcon />} pl={4} />
               )
             }
           </Collapse>
