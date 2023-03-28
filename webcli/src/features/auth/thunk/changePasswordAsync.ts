@@ -1,9 +1,9 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
+import { sha256 } from '@noble/hashes/sha256';
 import { axiosWithSession } from '~/lib/axios';
 import {
   createSalt,
-  SHA256,
   argon2encrypt,
   AESCTR,
   getAESCTRKey,
@@ -46,7 +46,7 @@ Record<string, never>, { newpassword: string }, { state: RootState }
 
     // 128bit Encrypted Master Key
     const EncryptedMasterKey = await AESCTR(MasterKey, DerivedEncryptionKey);
-    const HashedAuthenticationKey = SHA256(DerivedAuthenticationKey);
+    const HashedAuthenticationKey = sha256(DerivedAuthenticationKey);
     // console.log(MasterKey, DerivedEncryptionKey, EncryptedMasterKey);
 
     dispatch(setProgress(progress(3, step)));

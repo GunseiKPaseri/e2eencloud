@@ -1,12 +1,12 @@
 /* eslint-disable no-bitwise */
 import baseX from 'base-x';
-import { SHA256 } from './crypto';
+import { sha256 } from '@noble/hashes/sha256';
 
 const BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
 const bs58 = baseX(BASE58);
 
-const checksumFn = (payload: Uint8Array) => SHA256(SHA256(payload));
+const checksumFn = (payload: Uint8Array) => sha256(sha256(payload));
 
 export const bs58CheckEncode = (payload: Uint8Array) => {
   const checksum = checksumFn(payload).slice(0, 4);
