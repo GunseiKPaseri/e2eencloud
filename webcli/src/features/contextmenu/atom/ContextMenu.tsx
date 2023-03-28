@@ -3,8 +3,8 @@ import { ExhaustiveError } from '~/utils/assert';
 import type { Awaitable } from 'vitest';
 import type { AppDispatch } from '~/store/store';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
-import { closeContextmenu } from './contextmenuSlice';
-import MenuFileListItem from './menu/MenuFileListItem';
+import { closeContextmenu } from '../contextmenuSlice';
+import MenuFileListItem from '../features/MenuFileListItem';
 
 const genHandleContextMenu = (dispatch: AppDispatch) => (
   (onClick:

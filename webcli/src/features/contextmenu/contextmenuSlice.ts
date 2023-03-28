@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { WritableDraft } from 'immer/dist/internal';
 
-import type { ContextMenuFileListItem } from './menu/MenuFileListItem';
+import type { ContextMenuFileListItem } from './features/MenuFileListItem';
 
 export type ContextMenuItem = ContextMenuFileListItem;
 

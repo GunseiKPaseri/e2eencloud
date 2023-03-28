@@ -10,7 +10,7 @@ import { ExhaustiveError } from '~/utils/assert';
 import { string2ByteArray } from '~/utils/uint8';
 import type { ContextMenuProps } from '../util';
 import { downloadLocal } from '../util';
-import ContextMenuWrapper from '../ContextMenuWrapper';
+import ContextMenuWrapper from '../atom/ContextMenuWrapper';
 
 export type ContextMenuFileListItem = {
   type: 'filelistitem',
