@@ -4,7 +4,6 @@ import type {
   GridSortItem,
   GridValidRowModel,
   GridFilterModel,
-  GridEnrichedColDef,
 } from '@mui/x-data-grid';
 import type { Namespace, TFunction } from 'i18next';
 import EditableDataGrid from './EditableDataGrid';
@@ -18,8 +17,7 @@ export type ComputeMutation<T extends GridValidRowModel, N extends Namespace<'tr
   = (params: { newRow: T, oldRow: T, t: TFunction<N, TKPrefix> }) => string | null;
 
 function DeletableDataGrid<T extends GridValidRowModel>(
-  props: Omit<DataGridProps<T>, 'rows' | 'columns'> & {
-    columns: (Omit<GridEnrichedColDef<T>, 'editable'> & { editable?: false })[],
+  props: Omit<DataGridProps<T>, 'rows'> & {
     getName: (params: GridRowParams<T>) => string,
     getList: (props:{
       offset: number,

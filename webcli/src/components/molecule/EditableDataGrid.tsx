@@ -59,7 +59,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
     reloader,
     ...originProps
   } = props;
-  const pageSize = originProps.pageSize ?? 100;
+  const pageSize = originProps.paginationModel?.pageSize ?? 10;
   const { t } = useTranslation();
   const [rows, setRows] = useState<GridRowsProp<T>>([]);
   const [page, setPage] = useState(0);
@@ -228,7 +228,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
         rows={rows}
         rowCount={rowLength}
         paginationMode="server"
-        onPageChange={(newPage) => setPage(newPage)}
+        onPaginationModelChange={(newPageModel) => setPage(newPageModel.page)}
         sortingMode="server"
         onSortModelChange={(model) => {
           setSortQuery([...model]);
@@ -237,10 +237,9 @@ function EditableDataGrid<T extends GridValidRowModel>(
         onFilterModelChange={(model) => {
           setFilterQuery(model);
         }}
-        page={page}
+        paginationModel={{ page, pageSize }}
         loading={loading}
         processRowUpdate={processRowUpdate}
-        experimentalFeatures={{ newEditingApi: true }}
       />
     </div>
   );

@@ -9,8 +9,6 @@ import EditableDataGrid from '~/components/molecule/EditableDataGrid';
 import type { ComputeMutation } from '~/components/molecule/EditableDataGrid';
 import { deleteUser, editUser, getUserList } from './adminrequest';
 
-const PAGE_SIZE = 10;
-
 export type UserDataGridRowModel = GridRowModel<{
   id: number;
   email: string;
@@ -36,8 +34,15 @@ function UserList() {
     <EditableDataGrid <UserDataGridRowModel>
       computeMutation={computeMutation}
       getName={(params) => params.row.email}
+      initialState={{
+        columns: {
+          columnVisibilityModel: {
+            id: false,
+          },
+        },
+      }}
       columns={[
-        { field: 'id', hide: true },
+        { field: 'id' },
         { field: 'email', headerName: t('auth.login', 'ログイン'), width: 200 },
         {
           field: 'multi_factor_authentication',
@@ -66,8 +71,6 @@ function UserList() {
         },
       ]}
       parentHeight={400}
-      pageSize={PAGE_SIZE}
-      rowsPerPageOptions={[PAGE_SIZE]}
       getList={getUserList}
       editItem={editUser}
       onDelete={async (params) => {

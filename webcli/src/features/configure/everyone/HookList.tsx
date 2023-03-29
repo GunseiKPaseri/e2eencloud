@@ -18,8 +18,6 @@ import {
   deleteHook, editHook, getHookList,
 } from './hookrequest';
 
-const PAGE_SIZE = 10;
-
 export type HookDataGridRowModel = GridRowModel<{
   id: string;
   name: string;
@@ -67,7 +65,6 @@ function HookList() {
         }}
       />
       <DateTimePicker
-        renderInput={(props) => <TextField {...props} />}
         label="有効期限"
         value={expiredAt}
         onChange={(newExpiredAt) => {
@@ -121,8 +118,6 @@ function HookList() {
           },
         ]}
         parentHeight={400}
-        pageSize={PAGE_SIZE}
-        rowsPerPageOptions={[PAGE_SIZE]}
         getList={getHookList}
         editItem={editHook}
         onDelete={async (params) => {

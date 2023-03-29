@@ -16,8 +16,6 @@ type GetMFAListJSONRow = {
   }[]
 };
 
-const PAGE_SIZE = 10;
-
 export type MFADataGridRowModel = GridRowModel<{
   id: string;
   type: string;
@@ -103,8 +101,6 @@ function MFAList({ reloader }: { reloader: symbol }) {
         },
       ]}
       parentHeight={400}
-      pageSize={PAGE_SIZE}
-      rowsPerPageOptions={[PAGE_SIZE]}
       getList={getMFAList}
       editItem={editMFA}
       reloader={reloader}
