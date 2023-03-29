@@ -2,7 +2,6 @@ import {
   useEffect,
   useState,
   useCallback,
-  useRef,
 } from 'react';
 import {
   DataGrid, GridActionsCellItem, jaJP,
@@ -16,14 +15,10 @@ import type {
   GridFilterModel,
 } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
 import { Tooltip, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { Namespace, TFunction } from 'i18next';
+import ConfirmDialog from '../atom/ConfirmDialog';
 
 type GetListJSON<T> = {
   total_number: number;
@@ -84,8 +79,6 @@ function EditableDataGrid<T extends GridValidRowModel>(
   {
     params: GridRowParams<T>,
   } | null>(null);
-
-  const noButtonRef = useRef<HTMLButtonElement>(null);
 
   // get collect information
   useEffect(() => {
@@ -165,42 +158,6 @@ function EditableDataGrid<T extends GridValidRowModel>(
     }
   } : () => Promise.resolve();
 
-  const handleEditConfirmEntered = () => {
-    // The `autoFocus` is not used because, if used, the same Enter that saves
-    // the cell triggers "No". Instead, we manually focus the "No" button once
-    // the dialog is fully open.
-    // noButtonRef.current?.focus();
-  };
-
-  const renderEditConfirmDialog = () => {
-    if (!editConfirmPromiseArguments) {
-      return <></>;
-    }
-
-    const { newRow, oldRow } = editConfirmPromiseArguments;
-    const mutation = computeMutation({ newRow, oldRow, t });
-    if (!mutation) return <></>;
-
-    return (
-      <Dialog
-        maxWidth="xs"
-        TransitionProps={{ onEntered: handleEditConfirmEntered }}
-        open={!!editConfirmPromiseArguments}
-      >
-        <DialogTitle>以下の内容で変更しますか？</DialogTitle>
-        <DialogContent dividers>
-          <Typography>{mutation}</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button ref={noButtonRef} onClick={handleEditConfirmNo}>
-            {t('admin.cancel', 'キャンセル')}
-          </Button>
-          <Button onClick={handleEditConfirmYes}>{t('auth.edit', '編集')}</Button>
-        </DialogActions>
-      </Dialog>
-    );
-  };
-
   const handleDeleteConfirmNo = () => {
     if (!deleteConfirmArguments) return;
     setDeleteConfirmArguments(null);
@@ -215,31 +172,6 @@ function EditableDataGrid<T extends GridValidRowModel>(
     onDelete(params);
     setPageReloader(Symbol('reload'));
     setDeleteConfirmArguments(null);
-  };
-
-  const renderDeleteConfirmDialog = () => {
-    if (!deleteConfirmArguments) {
-      return <></>;
-    }
-    const { params } = deleteConfirmArguments;
-
-    return (
-      <Dialog
-        maxWidth="xs"
-        open={!!deleteConfirmArguments}
-      >
-        <DialogTitle>以下の要素を削除しますか</DialogTitle>
-        <DialogContent dividers>
-          <Typography>{getName(params)}</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button ref={noButtonRef} onClick={handleDeleteConfirmNo}>
-            {t('admin.cancel', 'キャンセル')}
-          </Button>
-          <Button onClick={handleDeleteConfirmYes} color="error">{t('auth.delete', '削除')}</Button>
-        </DialogActions>
-      </Dialog>
-    );
   };
 
   const columnsWithAction = [
@@ -261,11 +193,32 @@ function EditableDataGrid<T extends GridValidRowModel>(
       ]),
     },
   ];
+  const editConfirmDirlogMain = editConfirmPromiseArguments ? computeMutation({ newRow: editConfirmPromiseArguments.newRow, oldRow: editConfirmPromiseArguments.oldRow, t }) : '';
 
   return (
     <div style={{ height: parentHeight, width: '100%' }}>
-      {renderEditConfirmDialog()}
-      {renderDeleteConfirmDialog()}
+      <ConfirmDialog
+        title="以下の内容で変更を保存しますか？"
+        open={!!editConfirmPromiseArguments}
+        contents={
+          <Typography>{editConfirmDirlogMain}</Typography>
+        }
+        handleEditConfirmNo={handleEditConfirmNo}
+        handleEditConfirmYes={handleEditConfirmYes}
+        textYes={t('auth.edit', '編集')}
+        textNo={t('admin.cancel', 'キャンセル')}
+      />
+      <ConfirmDialog
+        title="以下の要素を削除しますか"
+        open={!!deleteConfirmArguments}
+        contents={
+          <Typography>{deleteConfirmArguments ? getName(deleteConfirmArguments.params) : ''}</Typography>
+        }
+        handleEditConfirmNo={handleDeleteConfirmNo}
+        handleEditConfirmYes={handleDeleteConfirmYes}
+        textYes={t('auth.delete', '削除')}
+        textNo={t('admin.cancel', 'キャンセル')}
+      />
       <DataGrid
         {...props}
         columns={columnsWithAction}

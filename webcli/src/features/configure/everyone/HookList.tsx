@@ -7,11 +7,11 @@ import { DateTimePicker } from '@mui/x-date-pickers';
 import Button from '@mui/material/Button';
 import { useState } from 'react';
 import addMonths from 'date-fns/addMonths';
-import type { ComputeMutation } from '~/components/atom/EditableDataGrid';
+import type { ComputeMutation } from '~/components/molecule/EditableDataGrid';
 
 import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
 import { useAppDispatch } from '~/lib/react-redux';
-import EditableDataGrid from '~/components/atom/EditableDataGrid';
+import EditableDataGrid from '~/components/molecule/EditableDataGrid';
 
 import {
   addHock,
