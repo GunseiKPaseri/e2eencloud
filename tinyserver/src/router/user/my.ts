@@ -258,7 +258,6 @@ router.get('/mfa', async (ctx) => {
 
   const [list, getSizeOfHooks] = await Promise.all([
     user.getMFAList({
-      user_id: user.id,
       offset,
       limit,
       order,
@@ -271,7 +270,7 @@ router.get('/mfa', async (ctx) => {
         available: true,
       },
     }),
-    user.getNumberOfHooks(queryFilter),
+    user.getNumberOfMFAs(queryFilter),
   ]);
   const result = {
     number_of_mfa: getSizeOfHooks,

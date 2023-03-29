@@ -213,7 +213,6 @@ export class User {
   }
 
   async getMFAList(params: {
-    user_id: string;
     offset: number;
     limit: number;
     orderBy: 'id' | 'type' | 'name';
@@ -228,16 +227,17 @@ export class User {
       orderBy: { [params.orderBy]: params.order },
       where: {
         ...mfaFilterQueryToPrismaQuery(params.queryFilter),
-        user_id: params.user_id,
+        user_id: this.id,
       },
     });
     return x;
   }
 
-  async getNumberOfHooks(queryFilter?: GridMFAFilterModel): Promise<number> {
-    return await prisma.hooks.count({
+  async getNumberOfMFAs(queryFilter?: GridMFAFilterModel): Promise<number> {
+    return await prisma.mFASolution.count({
       where: {
         ...(queryFilter ? mfaFilterQueryToPrismaQuery(queryFilter) : {}),
+        user_id: this.id,
       },
     });
   }

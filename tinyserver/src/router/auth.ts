@@ -127,6 +127,7 @@ const POSTloginScheme = z.object({
 });
 
 export const login = async <R extends string>(props: {
+  // deno-lint-ignore no-explicit-any
   ctx: RouterContext<R, RouteParams<R>, Record<string, any>>;
   user: User;
 }) => {
