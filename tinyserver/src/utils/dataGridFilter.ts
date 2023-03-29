@@ -14,19 +14,19 @@ type FilterBooleanItemSchema<T extends string> = ReturnType<typeof filterBoolean
 
 const filterBooleanItemSchemaCore = <T extends z.ZodType>(schema: T) =>
   z.object({
-    columnField: schema,
+    field: schema,
     value: z.union([
-      z.literal('any'),
+      z.literal(''),
       z.literal('true'),
       z.literal('false'),
-    ]),
-    operatorValue: z.literal('is'),
+    ]).optional(),
+    operator: z.literal('is'),
   });
 
 export type FilterBooleanItem<T extends string> = {
-  columnField: T;
-  value: 'any' | 'true' | 'false';
-  operatorValue: 'is';
+  field: T;
+  value?: '' | 'true' | 'false';
+  operator: 'is';
 };
 
 // For Union
@@ -76,25 +76,25 @@ type FilterEnumItemSchema<T extends string, U extends readonly [string, string, 
 const filterEnumItemSchemaCore = <T extends z.ZodType, U extends z.ZodType>(schema: T, value: U) =>
   z.union([
     z.object({
-      columnField: schema,
-      value: value,
-      operatorValue: z.literal('equals'),
+      field: schema,
+      value: value.optional(),
+      operator: z.union([z.literal('is'), z.literal('not')]),
     }),
     z.object({
-      columnField: schema,
-      value: z.union([value, value.array()]),
-      operatorValue: z.union([z.literal('in'), z.literal('notIn')]),
+      field: schema,
+      value: value.array().optional(),
+      operator: z.literal('isAnyOf'),
     }),
   ]);
 
 export type FilterEnumItem<T extends string, U extends string> = {
-  columnField: T;
-  value: U;
-  operatorValue: 'equals';
+  field: T;
+  value?: U;
+  operator: 'is' | 'not';
 } | {
-  columnField: T;
-  value: U | U[];
-  operatorValue: 'in' | 'notIn';
+  field: T;
+  value?: U[];
+  operator: 'isAnyOf';
 };
 
 // For Union
@@ -151,9 +151,9 @@ type FilterNumberItemSchema<T extends string> = ReturnType<typeof filterNumberIt
 export const filterNumberItemSchemaCore = <T extends z.ZodType>(schema: T) =>
   z.union([
     z.object({
-      columnField: schema,
-      value: z.string(),
-      operatorValue: z.union([
+      field: schema,
+      value: z.string().optional(),
+      operator: z.union([
         z.literal('='),
         z.literal('!='),
         z.literal('>'),
@@ -163,27 +163,27 @@ export const filterNumberItemSchemaCore = <T extends z.ZodType>(schema: T) =>
       ]),
     }),
     z.object({
-      columnField: schema,
-      value: z.string().array(),
-      operatorValue: z.literal('isAnyOf'),
+      field: schema,
+      value: z.string().array().optional(),
+      operator: z.literal('isAnyOf'),
     }),
     z.object({
-      columnField: schema,
-      operatorValue: z.union([z.literal('isEmpty'), z.literal('isNotEmpty')]),
+      field: schema,
+      operator: z.union([z.literal('isEmpty'), z.literal('isNotEmpty')]),
     }),
   ]);
 
 export type FilterNumberItem<T extends string> = {
-  columnField: T;
-  value: string;
-  operatorValue: '=' | '!=' | '>' | '>=' | '<' | '<=';
+  field: T;
+  value?: string;
+  operator: '=' | '!=' | '>' | '>=' | '<' | '<=';
 } | {
-  columnField: T;
-  value: string[];
-  operatorValue: 'isAnyOf';
+  field: T;
+  value?: string[];
+  operator: 'isAnyOf';
 } | {
-  columnField: T;
-  operatorValue: 'isEmpty' | 'isNotEmpty';
+  field: T;
+  operator: 'isEmpty' | 'isNotEmpty';
 };
 
 // For Union
@@ -226,9 +226,9 @@ type FilterStringItemSchema<T extends string> = ReturnType<typeof filterStringIt
 export const filterStringItemSchemaCore = <T extends z.ZodType>(schema: T) =>
   z.union([
     z.object({
-      columnField: schema,
-      value: z.string(),
-      operatorValue: z.union([
+      field: schema,
+      value: z.string().optional(),
+      operator: z.union([
         z.literal('contains'),
         z.literal('equals'),
         z.literal('startsWith'),
@@ -236,27 +236,27 @@ export const filterStringItemSchemaCore = <T extends z.ZodType>(schema: T) =>
       ]),
     }),
     z.object({
-      columnField: schema,
-      value: z.string().array(),
-      operatorValue: z.literal('isAnyOf'),
+      field: schema,
+      value: z.string().array().optional(),
+      operator: z.literal('isAnyOf'),
     }),
     z.object({
-      columnField: schema,
-      operatorValue: z.union([z.literal('isEmpty'), z.literal('isNotEmpty')]),
+      field: schema,
+      operator: z.union([z.literal('isEmpty'), z.literal('isNotEmpty')]),
     }),
   ]);
 
 export type FilterStringItem<T extends string> = {
-  columnField: T;
-  value: string;
-  operatorValue: 'contains' | 'equals' | 'startsWith' | 'endsWith';
+  field: T;
+  value?: string;
+  operator: 'contains' | 'equals' | 'startsWith' | 'endsWith';
 } | {
-  columnField: T;
-  value: string[];
-  operatorValue: 'isAnyOf';
+  field: T;
+  value?: string[];
+  operator: 'isAnyOf';
 } | {
-  columnField: T;
-  operatorValue: 'isEmpty' | 'isNotEmpty';
+  field: T;
+  operator: 'isEmpty' | 'isNotEmpty';
 };
 
 // For Union
@@ -299,9 +299,9 @@ type FilterDateItemSchema<T extends string> = ReturnType<typeof filterDateItemSc
 export const filterDateItemSchemaCore = <T extends z.ZodType>(schema: T) =>
   z.union([
     z.object({
-      columnField: schema,
-      value: z.string(),
-      operatorValue: z.union([
+      field: schema,
+      value: z.string().optional(),
+      operator: z.union([
         z.literal('is'),
         z.literal('not'),
         z.literal('after'),
@@ -311,18 +311,18 @@ export const filterDateItemSchemaCore = <T extends z.ZodType>(schema: T) =>
       ]),
     }),
     z.object({
-      columnField: schema,
-      operatorValue: z.union([z.literal('isEmpty'), z.literal('isNotEmpty')]),
+      field: schema,
+      operator: z.union([z.literal('isEmpty'), z.literal('isNotEmpty')]),
     }),
   ]);
 
 export type FilterDateItem<T extends string> = {
-  columnField: T;
-  value: string;
-  operatorValue: 'is' | 'not' | 'after' | 'onOrAfter' | 'before' | 'onOrBefore';
+  field: T;
+  value?: string;
+  operator: 'is' | 'not' | 'after' | 'onOrAfter' | 'before' | 'onOrBefore';
 } | {
-  columnField: T;
-  operatorValue: 'isEmpty' | 'isNotEmpty';
+  field: T;
+  operator: 'isEmpty' | 'isNotEmpty';
 };
 
 // For Union
@@ -363,17 +363,23 @@ export const createFilterDateItemUnionSchema = (<T extends readonly string[]>(va
 
 export interface GridFilterModel<T> {
   items: T[];
-  linkOperator: 'and' | 'or';
+  logicOperator?: 'and' | 'or';
+  // deno-lint-ignore no-explicit-any
+  quickFilterValues?: any;
+  quickFilterLogicOperator?: 'and' | 'or';
 }
 
 export const anyFilterModelSchema = <T extends z.ZodType>(schema: T, target: unknown) => {
   try {
     return z.object({
       items: schema.array(),
-      linkOperator: z.union([z.literal('and'), z.literal('or')]),
+      logicOperator: z.union([z.literal('and'), z.literal('or')]).optional(),
+      quickFilterValues: z.any().optional(),
+      quickFilterLogincOperator: z.union([z.literal('and'), z.literal('or')]).optional(),
     }).parse(target);
   } catch (_) {
-    return { items: [], linkOperator: 'and' as const };
+    console.error(_);
+    return { items: [] };
   }
 };
 
@@ -400,21 +406,21 @@ type PrismaFilterTuple<T extends string, U extends FilterType> = [T, PrismaFilte
 export const gridFilterToPrismaFilterBoolean = <T extends string>(
   gf: FilterBooleanItem<T>,
 ): PrismaFilter<T, 'Boolean'> => {
-  const x: Prisma.BoolFilter = { equals: gf.value === 'any' ? undefined : gf.value === 'true' };
+  const x: Prisma.BoolFilter = { equals: gf.value === '' ? undefined : gf.value === 'true' };
   return {
-    [gf.columnField]: x,
+    [gf.field]: x,
   } as PrismaFilterReturn<T, Prisma.BoolFilter>;
 };
 
 const gf2pfsString = <T extends string>(
   gf: FilterStringItem<T>,
 ): Prisma.StringFilter => {
-  switch (gf.operatorValue) {
+  switch (gf.operator) {
     case 'contains':
     case 'equals':
     case 'startsWith':
     case 'endsWith':
-      return { [gf.operatorValue]: gf.value };
+      return { [gf.operator]: gf.value };
     case 'isEmpty':
       return { equals: undefined };
     case 'isNotEmpty':
@@ -431,28 +437,34 @@ export const gridFilterToPrismaFilterString = <T extends string>(
 ): PrismaFilterReturn<T, Prisma.StringFilter> | null => {
   const x: Prisma.StringFilter = gf2pfsString(gf);
   return {
-    [gf.columnField]: x,
+    [gf.field]: x,
   } as PrismaFilterReturn<T, Prisma.StringFilter>;
+};
+
+const str2number = (x: string | undefined) => {
+  const t = Number(x);
+  if (isNaN(t)) return 0;
+  return t;
 };
 
 const gf2pfsNumber = <T extends string>(
   gf: FilterNumberItem<T>,
 ): Prisma.IntFilter => {
-  switch (gf.operatorValue) {
+  switch (gf.operator) {
     case '=':
-      return { equals: Number(gf.value) };
+      return { equals: str2number(gf.value) };
     case '!=':
-      return { not: Number(gf.value) };
+      return { not: str2number(gf.value) };
     case '<':
-      return { lt: Number(gf.value) };
+      return { lt: str2number(gf.value) };
     case '>':
-      return { gt: Number(gf.value) };
+      return { gt: str2number(gf.value) };
     case '<=':
-      return { lte: Number(gf.value) };
+      return { lte: str2number(gf.value) };
     case '>=':
-      return { gte: Number(gf.value) };
+      return { gte: str2number(gf.value) };
     case 'isAnyOf':
-      return { in: gf.value.map((x) => Number(x)) };
+      return { in: (gf.value ?? []).map((x) => str2number(x)) };
     case 'isEmpty':
       return { equals: undefined };
     case 'isNotEmpty':
@@ -467,14 +479,14 @@ export const gridFilterToPrismaFilterNumber = <T extends string>(
 ): PrismaFilterReturn<T, Prisma.IntFilter> | null => {
   const x: Prisma.IntFilter = gf2pfsNumber(gf);
   return {
-    [gf.columnField]: x,
+    [gf.field]: x,
   } as PrismaFilterReturn<T, Prisma.IntFilter>;
 };
 
 const gf2pfsDateTime = <T extends string>(
   gf: FilterDateItem<T>,
 ): Prisma.DateTimeFilter => {
-  switch (gf.operatorValue) {
+  switch (gf.operator) {
     case 'is':
       return { equals: gf.value };
     case 'not':
@@ -501,20 +513,20 @@ export const gridFilterToPrismaFilterDateTime = <T extends string>(
 ): PrismaFilterReturn<T, Prisma.DateTimeFilter> | null => {
   const x: Prisma.DateTimeFilter = gf2pfsDateTime(gf);
   return {
-    [gf.columnField]: x,
+    [gf.field]: x,
   } as PrismaFilterReturn<T, Prisma.DateTimeFilter>;
 };
 
 const gf2pfsEnum = <T extends string, U extends readonly string[]>(
   gf: FilterEnumItem<T, U[number]>,
 ): EnumFilter<U[number]> => {
-  switch (gf.operatorValue) {
-    case 'equals':
+  switch (gf.operator) {
+    case 'is':
       return { equals: gf.value };
-    case 'in':
+    case 'not':
+      return { not: { equals: gf.value } };
+    case 'isAnyOf':
       return { in: gf.value };
-    case 'notIn':
-      return { not: { in: gf.value } };
     default:
       throw new ExhaustiveError(gf);
   }
@@ -538,7 +550,7 @@ export const gridFilterToPrismaFilterEnum = <T extends string, U extends readonl
 ): EnumFilter<U[number]> | null => {
   const x: EnumFilter<U[number]> = gf2pfsEnum<T, U>(gf);
   return {
-    [gf.columnField]: x,
+    [gf.field]: x,
   } as PrismaFilterReturn<T, EnumFilter<U[number]>>;
 };
 
@@ -566,54 +578,54 @@ export const gridFilterToPrismaFilter = <T extends string, U extends FilterType>
 // ) => {
 //   const terms = filterModel
 //     ? filterModel.items.map((x) => {
-//       switch (x.operatorValue) {
+//       switch (x.operator) {
 //         // number
 //         case '!=':
-//           return Where.ne(x.columnField, Number(x.value));
+//           return Where.ne(x.field, str2number(x.value));
 //         case '<':
-//           return Where.lt(x.columnField, Number(x.value));
+//           return Where.lt(x.field, str2number(x.value));
 //         case '<=':
-//           return Where.lte(x.columnField, Number(x.value));
+//           return Where.lte(x.field, str2number(x.value));
 //         case '>':
-//           return Where.gt(x.columnField, Number(x.value));
+//           return Where.gt(x.field, str2number(x.value));
 //         case '>=':
-//           return Where.gte(x.columnField, Number(x.value));
+//           return Where.gte(x.field, str2number(x.value));
 //         case '=':
-//           return Where.eq(x.columnField, Number(x.value));
+//           return Where.eq(x.field, str2number(x.value));
 //         // string
 //         case 'contains':
-//           return Where.like(x.columnField, `%${x.value}%`);
+//           return Where.like(x.field, `%${x.value}%`);
 //         case 'equals':
-//           return Where.like(x.columnField, x.value);
+//           return Where.like(x.field, x.value);
 //         case 'startsWith':
-//           return Where.like(x.columnField, `${x.value}%`);
+//           return Where.like(x.field, `${x.value}%`);
 //         case 'endsWith':
-//           return Where.like(x.columnField, `%${x.value}`);
+//           return Where.like(x.field, `%${x.value}`);
 //         // boolean
 //         case 'is':
 //           return x.value === 'true'
-//             ? Where.eq(x.columnField, true)
+//             ? Where.eq(x.field, true)
 //             : x.value === 'false'
-//             ? Where.eq(x.columnField, false)
+//             ? Where.eq(x.field, false)
 //             : null;
 //         // date
 //         case 'not':
-//           return Where.ne(x.columnField, new Date(x.value));
+//           return Where.ne(x.field, new Date(x.value));
 //         case 'before':
-//           return Where.lt(x.columnField, new Date(x.value));
+//           return Where.lt(x.field, new Date(x.value));
 //         case 'onOrBefore':
-//           return Where.lte(x.columnField, new Date(x.value));
+//           return Where.lte(x.field, new Date(x.value));
 //         case 'after':
-//           return Where.gt(x.columnField, new Date(x.value));
+//           return Where.gt(x.field, new Date(x.value));
 //         case 'onOrAfter':
-//           return Where.gte(x.columnField, new Date(x.value));
+//           return Where.gte(x.field, new Date(x.value));
 //         case 'isEmpty':
-//           return Where.isNull(x.columnField);
+//           return Where.isNull(x.field);
 //         case 'isNotEmpty':
-//           // return Where.isNotNull(x.columnField); // has bug
-//           return Where.expr('?? IS NOT NULL', x.columnField);
+//           // return Where.isNotNull(x.field); // has bug
+//           return Where.expr('?? IS NOT NULL', x.field);
 //         case 'isAnyOf':
-//           return x.value.length > 0 ? Where.in(x.columnField, x.value) : null;
+//           return x.value.length > 0 ? Where.in(x.field, x.value) : null;
 //         default:
 //           throw new ExhaustiveError(x);
 //       }

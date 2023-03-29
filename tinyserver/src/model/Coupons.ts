@@ -189,7 +189,7 @@ export const parseCouponFilterQuery = (query: string): GridFilterModel<GridCoupo
 const couponFilterQueryToPrismaQuery = (gridFilter: GridCouponFilterModel): Prisma.CouponsWhereInput => {
   const t = gridFilter.items
     .map((x) => {
-      switch (x.columnField) {
+      switch (x.field) {
         case 'id':
         case 'data':
           return gridFilterToPrismaFilter(x, 'String');

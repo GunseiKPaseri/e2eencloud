@@ -131,7 +131,7 @@ function MFAList() {
         getName={(params) => `${params.row.name}`}
         columns={[
           { field: 'id', minWidth: 200 },
-          { field: 'type', type: 'singleSelect', valueOptions: ['TOTP', 'FIDO2'] },
+          { field: 'type', type: 'singleSelect', valueOptions: ['TOTP', 'FIDO2', 'CODE'] },
           { field: 'name', minWidth: 300, editable: true },
           {
             field: 'available',

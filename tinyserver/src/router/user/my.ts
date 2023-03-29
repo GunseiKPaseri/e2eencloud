@@ -255,8 +255,9 @@ router.get('/mfa', async (ctx) => {
     ),
     user_id: user.id,
   };
+  console.log(ctx.request.url.searchParams.get('q'), queryFilter);
 
-  const [list, getSizeOfHooks] = await Promise.all([
+  const [list, getSizeOfMFAs] = await Promise.all([
     user.getMFAList({
       offset,
       limit,
@@ -273,7 +274,7 @@ router.get('/mfa', async (ctx) => {
     user.getNumberOfMFAs(queryFilter),
   ]);
   const result = {
-    number_of_mfa: getSizeOfHooks,
+    number_of_mfa: getSizeOfMFAs,
     mfa: list,
   };
 

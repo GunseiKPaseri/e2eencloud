@@ -7,6 +7,8 @@ import { bcrypt, byteArray2base64, OTPAuth, z } from 'tinyserver/deps.ts';
 import parseJSONwithoutErr from 'tinyserver/src/utils/parseJSONWithoutErr.ts';
 import {
   anyFilterModelSchema,
+  FilterBooleanItem,
+  filterBooleanItemSchema,
   FilterEnumItem,
   filterEnumItemSchema,
   type FilterNumberItem,
@@ -215,7 +217,7 @@ export class User {
   async getMFAList(params: {
     offset: number;
     limit: number;
-    orderBy: 'id' | 'type' | 'name';
+    orderBy: 'id' | 'type' | 'name' | 'available';
     order: 'asc' | 'desc';
     queryFilter: GridMFAFilterModel;
     select: Prisma.MFASolutionSelect;
@@ -565,13 +567,15 @@ export const deleteUserById = async (id: string | null): Promise<{ success: bool
 //  Filter
 // ===================================================================
 
-const filterStringColumn = ['id', 'email', 'authority'] as const;
+const filterStringColumn = ['id', 'email'] as const;
 const filterNumberColumn = ['max_capacity', 'file_usage'] as const;
+
+const filterEnumRoleValue = ['ADMIN', 'USER'] as const;
 
 const userFilterItemSchema = z.union([
   filterStringItemSchema('id'),
   filterStringItemSchema('email'),
-  filterStringItemSchema('authority'),
+  filterEnumItemSchema('role', filterEnumRoleValue),
   filterNumberItemSchema('max_capacity'),
   filterNumberItemSchema('file_usage'),
 ]);
@@ -579,7 +583,8 @@ type GridUserFilterItem = z.infer<typeof userFilterItemSchema>;
 
 type FixedGridUserFilterItem =
   | FilterStringItem<typeof filterStringColumn[number]>
-  | FilterNumberItem<typeof filterNumberColumn[number]>;
+  | FilterNumberItem<typeof filterNumberColumn[number]>
+  | FilterEnumItem<'role', typeof filterEnumRoleValue[number]>;
 
 type GridUserFilterModel = GridFilterModel<FixedGridUserFilterItem>;
 
@@ -606,14 +611,15 @@ export const parseUserFilterQuery = (query: string): GridFilterModel<GridUserFil
 const userFilterQueryToPrismaQuery = (gridFilter: GridUserFilterModel): Prisma.UserWhereInput => {
   const t = gridFilter.items
     .map((x) => {
-      switch (x.columnField) {
+      switch (x.field) {
         case 'max_capacity':
         case 'file_usage':
           return gridFilterToPrismaFilter(x, 'Number');
         case 'id':
         case 'email':
-        case 'authority':
           return gridFilterToPrismaFilter(x, 'String');
+        case 'role':
+          return gridFilterToPrismaFilterEnum<'role', typeof filterEnumRoleValue>(x);
         default:
           console.log(new ExhaustiveError(x));
       }
@@ -622,9 +628,10 @@ const userFilterQueryToPrismaQuery = (gridFilter: GridUserFilterModel): Prisma.U
 };
 
 const mfaFilterStringColumn = ['id', 'name'] as const;
-const mfaFilterEnumTypeValue = ['TOTP', 'FIDO2', 'EMAIL'] as const;
+const mfaFilterEnumTypeValue = ['TOTP', 'FIDO2', 'EMAIL', 'CODE'] as const;
+const mfaFilterBooleanColumn = ['available'] as const;
 
-const mfaFilterColumns = [...mfaFilterStringColumn, 'type'] as const;
+const mfaFilterColumns = [...mfaFilterStringColumn, 'type', ...mfaFilterBooleanColumn] as const;
 
 export const mfaColumnsSchema = createUnionSchema(mfaFilterColumns);
 
@@ -632,12 +639,14 @@ const mfaFilterItemSchema = z.union([
   filterStringItemSchema('id'),
   filterStringItemSchema('name'),
   filterEnumItemSchema('type', mfaFilterEnumTypeValue),
+  filterBooleanItemSchema('available'),
 ]);
 type GridMFAFilterItem = z.infer<typeof mfaFilterItemSchema>;
 
 type FixedGridMFAFilterItem =
   | FilterStringItem<typeof mfaFilterStringColumn[number]>
-  | FilterEnumItem<'type', typeof mfaFilterEnumTypeValue[number]>;
+  | FilterEnumItem<'type', typeof mfaFilterEnumTypeValue[number]>
+  | FilterBooleanItem<typeof mfaFilterBooleanColumn[number]>;
 
 type GridMFAFilterModel = GridFilterModel<FixedGridMFAFilterItem>;
 
@@ -654,12 +663,14 @@ export const parseMFAFilterQuery = (query: string): GridFilterModel<GridMFAFilte
 const mfaFilterQueryToPrismaQuery = (gridFilter: GridMFAFilterModel): Prisma.MFASolutionWhereInput => {
   const t = gridFilter.items
     .map((x) => {
-      switch (x.columnField) {
+      switch (x.field) {
         case 'id':
         case 'name':
           return gridFilterToPrismaFilter(x, 'String');
         case 'type':
           return gridFilterToPrismaFilterEnum<'type', typeof mfaFilterEnumTypeValue>(x);
+        case 'available':
+          return gridFilterToPrismaFilter(x, 'Boolean');
         default:
           console.log(new ExhaustiveError(x));
       }

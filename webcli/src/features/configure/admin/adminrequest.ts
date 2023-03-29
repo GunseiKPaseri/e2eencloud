@@ -10,7 +10,7 @@ type GetUserListJSONRow = {
     email: string;
     max_capacity: string;
     file_usage: string;
-    authority?: string;
+    role: 'ADMIN' | 'USER';
     multi_factor_authentication: boolean;
   }[]
 };
@@ -42,7 +42,7 @@ export const getUserList = async (props: {
       ...x,
       max_capacity: Number(x.max_capacity),
       file_usage: Number(x.file_usage),
-      authority: x.authority ?? null,
+      role: x.role,
     })),
   };
 };

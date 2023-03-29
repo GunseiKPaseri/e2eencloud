@@ -15,7 +15,7 @@ export type UserDataGridRowModel = GridRowModel<{
   multi_factor_authentication: boolean;
   max_capacity: number;
   file_usage: number;
-  authority: string | null;
+  role: 'ADMIN' | 'USER';
 }>;
 
 const computeMutation: ComputeMutation<UserDataGridRowModel> = ({ newRow, oldRow, t }) => {
@@ -65,8 +65,10 @@ function UserList() {
           width: 120,
         },
         {
-          field: 'authority',
+          field: 'role',
           headerName: t('admin.authority', '権限'),
+          type: 'singleSelect',
+          valueOptions: ['ADMIN', 'USER'],
           width: 120,
         },
       ]}
