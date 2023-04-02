@@ -1,15 +1,15 @@
 import { z } from 'tinyserver/deps.ts';
-import { ExhaustiveError } from 'tinyserver/src/utils/typeUtil.ts';
+import { ExhaustiveError, recordUnion } from 'tinyserver/src/utils/typeUtil.ts';
 
 import type { Prisma } from 'tinyserver/src/client/dbclient.ts';
 import { createUnionSchema } from './zod.ts';
+import parseJSONwithoutErr from './parseJSONWithoutErr.ts';
 
 /*******
  *  Boolean Filter
  */
 
-export const filterBooleanItemSchema = <T extends string>(fieldname: T) =>
-  filterBooleanItemSchemaCore(z.literal(fieldname));
+export const filterBooleanItemSchema = <T extends string>(field: T) => filterBooleanItemSchemaCore(z.literal(field));
 type FilterBooleanItemSchema<T extends string> = ReturnType<typeof filterBooleanItemSchema<T>>;
 
 const filterBooleanItemSchemaCore = <T extends z.ZodType>(schema: T) =>
@@ -28,46 +28,129 @@ export type FilterBooleanItem<T extends string> = {
   value?: '' | 'true' | 'false';
   operator: 'is';
 };
+type MappedFilterBooleanItem<T extends readonly string[]> = {
+  -readonly [K in keyof T]: FilterBooleanItem<T[K]>;
+};
 
 // For Union
-type MappedFilterBooleanItem<T extends readonly string[]> = {
+type MappedFilterBooleanItemScheme<T extends readonly string[]> = {
   -readonly [K in keyof T]: FilterBooleanItemSchema<T[K]>;
 };
 
+type CreateFilterBooleanItemUnionReturnType<T extends readonly [string, string, ...string[]]> = z.ZodUnion<
+  MappedFilterBooleanItemScheme<T>
+>;
+
 export function createFilterBooleanItemUnion<A extends readonly [string, string, ...string[]]>(items: A) {
   return z.union(
-    items.map((str) => filterBooleanItemSchema(str)) as MappedFilterBooleanItem<A>,
+    items.map((str) => filterBooleanItemSchema(str)) as MappedFilterBooleanItemScheme<A>,
   );
 }
 
-type CreateFilterBooleanItemUnionSchema = {
-  <T extends readonly []>(values: T): z.ZodNever;
-  <T extends readonly [string]>(values: T): FilterBooleanItemSchema<T[0]>;
-  <T extends readonly [string, string, ...string[]]>(values: T): z.ZodUnion<MappedFilterBooleanItem<T>>;
-};
-export const createFilterBooleanItemUnionSchema = (<T extends readonly [...string[]]>(
+type CreateFilterBooleanItemUnionSchemaReturnType<T extends StrTuple> = T extends readonly [] ? z.ZodNever
+  : T extends readonly [string] ? FilterBooleanItemSchema<T[0]>
+  : T extends readonly [string, string, ...string[]] ? CreateFilterBooleanItemUnionReturnType<T>
+  : unknown;
+
+export const createFilterBooleanItemUnionSchema = <T extends StrTuple>(
   values: T,
-) => {
+): CreateFilterBooleanItemUnionSchemaReturnType<T> => {
   if (values.length > 1) {
     return createFilterBooleanItemUnion(
       values as unknown as [string, string, ...string[]],
-    );
+    ) as CreateFilterBooleanItemUnionSchemaReturnType<T>;
   } else if (values.length === 1) {
-    return filterBooleanItemSchema(values[0]) as FilterBooleanItemSchema<T[0]>;
+    return filterBooleanItemSchema(values[0]) as CreateFilterBooleanItemUnionSchemaReturnType<T>;
   } else if (values.length === 0) {
-    return z.never();
+    return z.never() as CreateFilterBooleanItemUnionSchemaReturnType<T>;
   }
   throw new Error('Array must have a length');
-}) as CreateFilterBooleanItemUnionSchema;
+};
+
+/********
+ * Date Filter
+ */
+
+export const filterDateItemSchema = <T extends string>(field: T) => filterDateItemSchemaCore(z.literal(field));
+type FilterDateItemSchema<T extends string> = ReturnType<typeof filterDateItemSchema<T>>;
+
+export const filterDateItemSchemaCore = <T extends z.ZodType>(schema: T) =>
+  z.union([
+    z.object({
+      field: schema,
+      value: z.string().optional(),
+      operator: z.union([
+        z.literal('is'),
+        z.literal('not'),
+        z.literal('after'),
+        z.literal('onOrAfter'),
+        z.literal('before'),
+        z.literal('onOrBefore'),
+      ]),
+    }),
+    z.object({
+      field: schema,
+      operator: z.union([z.literal('isEmpty'), z.literal('isNotEmpty')]),
+    }),
+  ]);
+
+export type FilterDateItem<T extends string> = {
+  field: T;
+  value?: string;
+  operator: 'is' | 'not' | 'after' | 'onOrAfter' | 'before' | 'onOrBefore';
+} | {
+  field: T;
+  operator: 'isEmpty' | 'isNotEmpty';
+};
+type MappedFilterDateItem<T extends StrTuple> = {
+  -readonly [K in keyof T]: FilterDateItem<T[K]>;
+};
+
+// For Union
+type MappedFilterDateItemScheme<T extends readonly string[]> = {
+  -readonly [K in keyof T]: FilterDateItemSchema<T[K]>;
+};
+type CreateFilterDateItemUnionReturnType<T extends readonly [string, string, ...string[]]> = z.ZodUnion<
+  MappedFilterDateItemScheme<T>
+>;
+function createFilterDateItemUnion<A extends readonly [string, string, ...string[]]>(items: A) {
+  return z.union(
+    items.map((str) => filterDateItemSchema(str)) as MappedFilterDateItemScheme<A>,
+  );
+}
+
+type CreateFilterDateItemUnionSchemaReturnType<T extends StrTuple> = T extends readonly [] ? z.ZodNever
+  : T extends readonly [string] ? FilterDateItemSchema<T[0]>
+  : T extends readonly [string, string, ...string[]] ? CreateFilterDateItemUnionReturnType<T>
+  : unknown;
+
+export const createFilterDateItemUnionSchema = <T extends StrTuple>(
+  values: T,
+): CreateFilterDateItemUnionSchemaReturnType<T> => {
+  if (values.length > 1) {
+    return createFilterDateItemUnion(
+      values as unknown as [string, string, ...string[]],
+    ) as CreateFilterDateItemUnionSchemaReturnType<T>;
+  } else if (values.length === 1) {
+    return filterDateItemSchema(values[0]) as CreateFilterDateItemUnionSchemaReturnType<T>;
+  } else if (values.length === 0) {
+    return z.never() as CreateFilterDateItemUnionSchemaReturnType<T>;
+  }
+  throw new Error('Array must have a length');
+};
 
 /*******
  *  Enum Filter
  */
 
+type EnumItem<T extends string, U extends readonly [string, string, ...string[]]> = {
+  readonly field: T;
+  readonly value: U;
+};
+
 export const filterEnumItemSchema = <T extends string, U extends readonly [string, string, ...string[]]>(
-  fieldname: T,
-  value: U,
-) => filterEnumItemSchemaCore(z.literal(fieldname), createUnionSchema(value));
+  props: EnumItem<T, U>,
+) => filterEnumItemSchemaCore(z.literal(props.field), createUnionSchema(props.value));
 
 type FilterEnumItemSchema<T extends string, U extends readonly [string, string, ...string[]]> = ReturnType<
   typeof filterEnumItemSchema<T, U>
@@ -87,65 +170,63 @@ const filterEnumItemSchemaCore = <T extends z.ZodType, U extends z.ZodType>(sche
     }),
   ]);
 
-export type FilterEnumItem<T extends string, U extends string> = {
-  field: T;
-  value?: U;
+export type FilterEnumItem<T extends EnumItemAbst> = {
+  field: T['field'];
+  value?: T['value'][number];
   operator: 'is' | 'not';
 } | {
-  field: T;
-  value?: U[];
+  field: T['field'];
+  value?: T['value'][number][];
   operator: 'isAnyOf';
 };
-
-// For Union
-type MappedFilterEnumItem<T extends readonly string[], U extends readonly [string, string, ...string[]]> = {
-  -readonly [K in keyof T]: FilterEnumItemSchema<T[K], U>;
+type MappedFilterEnumItem<T extends EnumItemTuple> = {
+  -readonly [K in keyof T]: FilterEnumItem<T[K]>;
 };
 
+type EnumItemAbst = EnumItem<string, readonly [string, string, ...string[]]>;
+type EnumItemTuple = readonly [] | readonly [EnumItemAbst] | readonly [EnumItemAbst, EnumItemAbst, ...EnumItemAbst[]];
+
+//For Union
+type MappedFilterEnumItemScheme<T extends EnumItemTuple> = {
+  -readonly [K in keyof T]: FilterEnumItemSchema<T[K]['field'], T[K]['value']>;
+};
+type CreateFilterEnumItemUnionReturnType<
+  T extends readonly [EnumItemAbst, EnumItemAbst, ...EnumItemAbst[]],
+> = z.ZodUnion<MappedFilterEnumItemScheme<T>>;
+
 export function createFilterEnumItemUnion<
-  A extends readonly [string, string, ...string[]],
-  U extends readonly [string, string, ...string[]],
->(items: A, value: U) {
+  T extends [EnumItemAbst, EnumItemAbst, ...EnumItemAbst[]],
+>(items: T) {
   return z.union(
-    items.map((str) => filterEnumItemSchema(str, value)) as MappedFilterEnumItem<A, U>,
+    items.map((str) => filterEnumItemSchema(str)) as MappedFilterEnumItemScheme<T>,
   );
 }
 
-type CreateFilterEnumItemUnionSchema = {
-  <T extends readonly [], U extends readonly [string, string, ...string[]]>(items: T, value: U): z.ZodNever;
-  <T extends readonly [string], U extends readonly [string, string, ...string[]]>(
-    items: T,
-    value: U,
-  ): FilterEnumItemSchema<T[0], U>;
-  <T extends readonly [string, string, ...string[]], U extends readonly [string, string, ...string[]]>(
-    items: T,
-    value: U,
-  ): z.ZodUnion<MappedFilterEnumItem<T, U>>;
+type CreateFilterEnumItemUnionSchemaReturnType<T extends EnumItemTuple> = T extends readonly [] ? z.ZodNever
+  : T extends readonly [EnumItemAbst] ? FilterEnumItemSchema<T[0]['field'], T[0]['value']>
+  : T extends readonly [EnumItemAbst, EnumItemAbst, ...EnumItemAbst[]] ? CreateFilterEnumItemUnionReturnType<T>
+  : unknown;
+
+export const createFilterEnumItemUnionSchema = <T extends EnumItemTuple>(
+  items: T,
+): CreateFilterEnumItemUnionSchemaReturnType<T> => {
+  if (items.length > 1) {
+    return createFilterEnumItemUnion(
+      items as unknown as [EnumItemAbst, EnumItemAbst, ...EnumItemAbst[]],
+    ) as CreateFilterEnumItemUnionSchemaReturnType<T>;
+  } else if (items.length === 1) {
+    return filterEnumItemSchema(items[0]) as CreateFilterEnumItemUnionSchemaReturnType<T>;
+  } else if (items.length === 0) {
+    return z.never() as CreateFilterEnumItemUnionSchemaReturnType<T>;
+  }
+  throw new Error('Array must have a length');
 };
-export const createFilterEnumItemUnionSchema =
-  (<T extends readonly [...string[]], U extends readonly [string, string, ...string[]]>(
-    items: T,
-    value: U,
-  ) => {
-    if (items.length > 1) {
-      return createFilterEnumItemUnion(
-        items as unknown as [string, string, ...string[]],
-        value,
-      );
-    } else if (items.length === 1) {
-      return filterEnumItemSchema(items[0], value) as FilterEnumItemSchema<T[0], U>;
-    } else if (items.length === 0) {
-      return z.never();
-    }
-    throw new Error('Array must have a length');
-  }) as CreateFilterEnumItemUnionSchema;
 
 /*****
  * Number filter
  */
 
-export const filterNumberItemSchema = <T extends string>(fieldname: T) =>
-  filterNumberItemSchemaCore(z.literal(fieldname));
+export const filterNumberItemSchema = <T extends string>(field: T) => filterNumberItemSchemaCore(z.literal(field));
 type FilterNumberItemSchema<T extends string> = ReturnType<typeof filterNumberItemSchema<T>>;
 
 export const filterNumberItemSchemaCore = <T extends z.ZodType>(schema: T) =>
@@ -185,42 +266,49 @@ export type FilterNumberItem<T extends string> = {
   field: T;
   operator: 'isEmpty' | 'isNotEmpty';
 };
+type MappedFilterNumberItem<T extends StrTuple> = {
+  -readonly [K in keyof T]: FilterNumberItem<T[K]>;
+};
 
 // For Union
-type MappedFilterNumberItem<T extends readonly string[]> = {
+type MappedFilterNumberItemScheme<T extends StrTuple> = {
   -readonly [K in keyof T]: FilterNumberItemSchema<T[K]>;
 };
+type CreateFilterNumberItemUnionReturnType<T extends readonly [string, string, ...string[]]> = z.ZodUnion<
+  MappedFilterNumberItemScheme<T>
+>;
 
 function createFilterNumberItemUnion<A extends readonly [string, string, ...string[]]>(items: A) {
   return z.union(
-    items.map((str) => filterNumberItemSchema(str)) as MappedFilterNumberItem<A>,
+    items.map((str) => filterNumberItemSchema(str)) as MappedFilterNumberItemScheme<A>,
   );
 }
 
-type CreateFilterNumberItemUnionSchema = {
-  <T extends readonly []>(values: T): z.ZodNever;
-  <T extends readonly [string]>(values: T): FilterNumberItemSchema<T[0]>;
-  <T extends readonly [string, string, ...string[]]>(values: T): z.ZodUnion<MappedFilterNumberItem<T>>;
-};
-export const createFilterNumberItemUnionSchema = (<T extends readonly string[]>(values: T) => {
+type CreateFilterNumberItemUnionSchemaReturnType<T extends StrTuple> = T extends readonly [] ? z.ZodNever
+  : T extends readonly [string] ? FilterNumberItemSchema<T[0]>
+  : T extends readonly [string, string, ...string[]] ? CreateFilterNumberItemUnionReturnType<T>
+  : unknown;
+
+export const createFilterNumberItemUnionSchema = <T extends StrTuple>(
+  values: T,
+): CreateFilterNumberItemUnionSchemaReturnType<T> => {
   if (values.length > 1) {
     return createFilterNumberItemUnion(
       values as unknown as [string, string, ...string[]],
-    );
+    ) as CreateFilterNumberItemUnionSchemaReturnType<T>;
   } else if (values.length === 1) {
-    return filterNumberItemSchema(values[0]) as FilterNumberItemSchema<T[0]>;
+    return filterNumberItemSchema(values[0]) as CreateFilterNumberItemUnionSchemaReturnType<T>;
   } else if (values.length === 0) {
-    return z.never();
+    return z.never() as CreateFilterNumberItemUnionSchemaReturnType<T>;
   }
   throw new Error('Array must have a length');
-}) as CreateFilterNumberItemUnionSchema;
+};
 
 /********
  * String Filter
  */
 
-export const filterStringItemSchema = <T extends string>(fieldname: T) =>
-  filterStringItemSchemaCore(z.literal(fieldname));
+export const filterStringItemSchema = <T extends string>(field: T) => filterStringItemSchemaCore(z.literal(field));
 type FilterStringItemSchema<T extends string> = ReturnType<typeof filterStringItemSchema<T>>;
 
 export const filterStringItemSchemaCore = <T extends z.ZodType>(schema: T) =>
@@ -258,110 +346,52 @@ export type FilterStringItem<T extends string> = {
   field: T;
   operator: 'isEmpty' | 'isNotEmpty';
 };
+type MappedFilterStringItem<T extends StrTuple> = {
+  -readonly [K in keyof T]: FilterStringItem<T[K]>;
+};
 
 // For Union
-type MappedFilterStringItem<T extends readonly string[]> = {
+type MappedFilterStringItemScheme<T extends StrTuple> = {
   -readonly [K in keyof T]: FilterStringItemSchema<T[K]>;
 };
+type CreateFilterStringItemUnionReturnType<T extends readonly [string, string, ...string[]]> = z.ZodUnion<
+  MappedFilterStringItemScheme<T>
+>;
 
 function createFilterStringItemUnion<A extends readonly [string, string, ...string[]]>(items: A) {
   return z.union(
-    items.map((str) => filterStringItemSchema(str)) as MappedFilterStringItem<A>,
+    items.map((str) => filterStringItemSchema(str)) as MappedFilterStringItemScheme<A>,
   );
 }
 
-type CreateFilterStringItemUnionSchema = {
-  <T extends readonly []>(values: T): z.ZodNever;
-  <T extends readonly [string]>(values: T): FilterStringItemSchema<T[0]>;
-  <T extends readonly [string, string, ...string[]]>(values: T): z.ZodUnion<MappedFilterStringItem<T>>;
-};
+type CreateFilterStringItemUnionSchemaReturnType<T extends StrTuple> = T extends readonly [] ? z.ZodNever
+  : T extends readonly [string] ? FilterStringItemSchema<T[0]>
+  : T extends readonly [string, string, ...string[]] ? CreateFilterStringItemUnionReturnType<T>
+  : unknown;
 
-export const createFilterStringItemUnionSchema = (<T extends readonly string[]>(values: T) => {
+export const createFilterStringItemUnionSchema = <T extends StrTuple>(
+  values: T,
+): CreateFilterStringItemUnionSchemaReturnType<T> => {
   if (values.length > 1) {
     return createFilterStringItemUnion(
       values as typeof values & [string, string, ...string[]],
-    );
+    ) as CreateFilterStringItemUnionSchemaReturnType<T>;
   } else if (values.length === 1) {
-    return filterStringItemSchema(values[0]) as FilterStringItemSchema<T[0]>;
+    return filterStringItemSchema(values[0]) as CreateFilterStringItemUnionSchemaReturnType<T>;
   } else if (values.length === 0) {
-    return z.never();
+    return z.never() as CreateFilterStringItemUnionSchemaReturnType<T>;
   }
   throw new Error('Array must have a length');
-}) as CreateFilterStringItemUnionSchema;
-
-/********
- * Date Filter
- */
-
-export const filterDateItemSchema = <T extends string>(fieldname: T) => filterDateItemSchemaCore(z.literal(fieldname));
-type FilterDateItemSchema<T extends string> = ReturnType<typeof filterDateItemSchema<T>>;
-
-export const filterDateItemSchemaCore = <T extends z.ZodType>(schema: T) =>
-  z.union([
-    z.object({
-      field: schema,
-      value: z.string().optional(),
-      operator: z.union([
-        z.literal('is'),
-        z.literal('not'),
-        z.literal('after'),
-        z.literal('onOrAfter'),
-        z.literal('before'),
-        z.literal('onOrBefore'),
-      ]),
-    }),
-    z.object({
-      field: schema,
-      operator: z.union([z.literal('isEmpty'), z.literal('isNotEmpty')]),
-    }),
-  ]);
-
-export type FilterDateItem<T extends string> = {
-  field: T;
-  value?: string;
-  operator: 'is' | 'not' | 'after' | 'onOrAfter' | 'before' | 'onOrBefore';
-} | {
-  field: T;
-  operator: 'isEmpty' | 'isNotEmpty';
 };
 
-// For Union
-type MappedFilterDateItem<T extends readonly string[]> = {
-  -readonly [K in keyof T]: FilterDateItemSchema<T[K]>;
-};
-
-function createFilterDateItemUnion<A extends readonly [string, string, ...string[]]>(items: A) {
-  return z.union(
-    items.map((str) => filterDateItemSchema(str)) as MappedFilterDateItem<A>,
-  );
-}
-
-type CreateFilterDateItemUnionSchema = {
-  <T extends readonly []>(values: T): z.ZodNever;
-  <T extends readonly [string]>(values: T): FilterDateItemSchema<T[0]>;
-  <T extends readonly [string, string, ...string[]]>(values: T): z.ZodUnion<MappedFilterDateItem<T>>;
-};
-
-export const createFilterDateItemUnionSchema = (<T extends readonly string[]>(values: T) => {
-  if (values.length > 1) {
-    return createFilterDateItemUnion(
-      values as typeof values & [string, string, ...string[]],
-    );
-  } else if (values.length === 1) {
-    return filterDateItemSchema(values[0]) as FilterDateItemSchema<T[0]>;
-  } else if (values.length === 0) {
-    return z.never();
-  }
-  throw new Error('Array must have a length');
-}) as CreateFilterDateItemUnionSchema;
-
-// type GridFilterModelItem<T extends string> =
-//   | FilterBooleanItem<T>
-//   | FilterNumberItem<T>
-//   | FilterStringItem<T>
-//   | FilterDateItem<T>;
-
-export interface GridFilterModel<T> {
+export interface GridFilterModel<
+  T extends
+    | FilterBooleanItem<string>
+    | FilterDateItem<string>
+    | FilterEnumItem<EnumItemAbst>
+    | FilterNumberItem<string>
+    | FilterStringItem<string>,
+> {
   items: T[];
   logicOperator?: 'and' | 'or';
   // deno-lint-ignore no-explicit-any
@@ -400,8 +430,6 @@ type PrismaFilter<T extends string, U extends FilterType> = U extends 'Boolean'
   : U extends 'Date' ? PrismaFilterReturn<T, Prisma.DateTimeFilter>
   : U extends 'String' ? PrismaFilterReturn<T, Prisma.StringFilter>
   : never;
-
-type PrismaFilterTuple<T extends string, U extends FilterType> = [T, PrismaFilter<T, U>];
 
 export const gridFilterToPrismaFilterBoolean = <T extends string>(
   gf: FilterBooleanItem<T>,
@@ -517,11 +545,13 @@ export const gridFilterToPrismaFilterDateTime = <T extends string>(
   } as PrismaFilterReturn<T, Prisma.DateTimeFilter>;
 };
 
-const gf2pfsEnum = <T extends string, U extends readonly string[]>(
-  gf: FilterEnumItem<T, U[number]>,
-): EnumFilter<U[number]> => {
+const gf2pfsEnum = <T extends EnumItemAbst>(
+  gf: FilterEnumItem<T>,
+): EnumFilter<T['value'][number]> | undefined => {
+  if (typeof gf.value === 'undefined') return undefined;
   switch (gf.operator) {
     case 'is':
+      if (typeof gf.value === 'undefined') return undefined;
       return { equals: gf.value };
     case 'not':
       return { not: { equals: gf.value } };
@@ -545,13 +575,13 @@ type NestedEnumFilter<Enum extends string> = {
   not?: NestedEnumFilter<Enum> | Enum;
 };
 
-export const gridFilterToPrismaFilterEnum = <T extends string, U extends readonly string[]>(
-  gf: FilterEnumItem<T, U[number]>,
-): EnumFilter<U[number]> | null => {
-  const x: EnumFilter<U[number]> = gf2pfsEnum<T, U>(gf);
+export const gridFilterToPrismaFilterEnum = <T extends EnumItemAbst>(
+  gf: FilterEnumItem<T>,
+): PrismaFilterReturn<T['field'], EnumFilter<T['value'][number]> | undefined> | null => {
+  const x: EnumFilter<T['value'][number]> | undefined = gf2pfsEnum<T>(gf);
   return {
     [gf.field]: x,
-  } as PrismaFilterReturn<T, EnumFilter<U[number]>>;
+  } as PrismaFilterReturn<T['field'], EnumFilter<T['value'][number]> | undefined>;
 };
 
 export const gridFilterToPrismaFilter = <T extends string, U extends FilterType>(
@@ -572,66 +602,216 @@ export const gridFilterToPrismaFilter = <T extends string, U extends FilterType>
   }
 };
 
-// export const filterModelToPrismaWhereInput = <T extends string, U extends GridFilterModelItem<T>>(
-//   filterModel?: GridFilterModel<U>,
-//   additionalObj: WhereInput[] = [],
-// ) => {
-//   const terms = filterModel
-//     ? filterModel.items.map((x) => {
-//       switch (x.operator) {
-//         // number
-//         case '!=':
-//           return Where.ne(x.field, str2number(x.value));
-//         case '<':
-//           return Where.lt(x.field, str2number(x.value));
-//         case '<=':
-//           return Where.lte(x.field, str2number(x.value));
-//         case '>':
-//           return Where.gt(x.field, str2number(x.value));
-//         case '>=':
-//           return Where.gte(x.field, str2number(x.value));
-//         case '=':
-//           return Where.eq(x.field, str2number(x.value));
-//         // string
-//         case 'contains':
-//           return Where.like(x.field, `%${x.value}%`);
-//         case 'equals':
-//           return Where.like(x.field, x.value);
-//         case 'startsWith':
-//           return Where.like(x.field, `${x.value}%`);
-//         case 'endsWith':
-//           return Where.like(x.field, `%${x.value}`);
-//         // boolean
-//         case 'is':
-//           return x.value === 'true'
-//             ? Where.eq(x.field, true)
-//             : x.value === 'false'
-//             ? Where.eq(x.field, false)
-//             : null;
-//         // date
-//         case 'not':
-//           return Where.ne(x.field, new Date(x.value));
-//         case 'before':
-//           return Where.lt(x.field, new Date(x.value));
-//         case 'onOrBefore':
-//           return Where.lte(x.field, new Date(x.value));
-//         case 'after':
-//           return Where.gt(x.field, new Date(x.value));
-//         case 'onOrAfter':
-//           return Where.gte(x.field, new Date(x.value));
-//         case 'isEmpty':
-//           return Where.isNull(x.field);
-//         case 'isNotEmpty':
-//           // return Where.isNotNull(x.field); // has bug
-//           return Where.expr('?? IS NOT NULL', x.field);
-//         case 'isAnyOf':
-//           return x.value.length > 0 ? Where.in(x.field, x.value) : null;
-//         default:
-//           throw new ExhaustiveError(x);
-//       }
-//     })
-//     : [];
-//   return filterModel?.linkOperator === 'or'
-//     ? Where.or(...terms, ...additionalObj)
-//     : Where.and(...terms, ...additionalObj);
-// };
+type StrTuple = readonly [] | readonly [string] | readonly [string, string, ...string[]];
+
+type DataGridColumn = {
+  str: StrTuple;
+  bool: StrTuple;
+  num: StrTuple;
+  date: StrTuple;
+  enum: EnumItemTuple;
+};
+
+type DataGridFilter<Val extends Readonly<DataGridColumn>> = GridFilterModel<
+  | MappedFilterBooleanItem<Val['bool']>[number]
+  | MappedFilterDateItem<Val['date']>[number]
+  | MappedFilterEnumItem<Val['enum']>[number]
+  | MappedFilterNumberItem<Val['num']>[number]
+  | MappedFilterStringItem<Val['str']>[number]
+>;
+
+// const isBooleanColumn = <T extends DataGridFilter<Val>['items'][number], Val extends Readonly<DataGridColumn>>(
+//   x: T,
+//   boolcolumns: Val['bool'],
+// ): x is FilterBooleanItem<Val['bool'][number]> => boolcolumns.includes((x as {field: string}).field);
+
+// deno-lint-ignore no-explicit-any
+type DataGridColumnConfVal<T extends DataGridColumnConf<any>> = T extends DataGridColumnConf<infer R> ? R
+  : never;
+
+// deno-lint-ignore no-explicit-any
+export type GetFilterFromDataGridColumnConf<T extends DataGridColumnConf<any>> = DataGridFilter<
+  DataGridColumnConfVal<T>
+>;
+
+type MappedZodLiterals<T extends readonly z.Primitive[]> = {
+  -readonly [K in keyof T]: z.ZodLiteral<T[K]>;
+};
+type MultiZodUnion<T extends readonly [z.Primitive, z.Primitive, ...z.Primitive[]]> = z.ZodUnion<MappedZodLiterals<T>>;
+
+type CreateUnionSchemaWrappterReturnType<
+  T extends readonly [] | readonly [z.Primitive] | readonly [z.Primitive, z.Primitive, ...z.Primitive[]],
+> = T extends readonly [] ? z.ZodNever
+  : T extends readonly [z.Primitive] ? z.ZodLiteral<T[0]>
+  : T extends readonly [z.Primitive, z.Primitive, ...z.Primitive[]] ? MultiZodUnion<T>
+  : never;
+const createUnionSchemaWrapper = <
+  T extends readonly [] | readonly [z.Primitive] | readonly [z.Primitive, z.Primitive, ...z.Primitive[]],
+>(
+  props: T,
+  // deno-lint-ignore no-explicit-any
+): CreateUnionSchemaWrappterReturnType<T> => createUnionSchema(props as any) as CreateUnionSchemaWrappterReturnType<T>;
+
+type MappedEnumFields<T extends EnumItemTuple> = {
+  -readonly [K in keyof T]: T[K]['field'];
+};
+
+type EnumField<
+  T extends readonly [] | readonly [EnumItemAbst] | readonly [EnumItemAbst, EnumItemAbst, ...EnumItemAbst[]],
+> = T extends readonly [] ? readonly []
+  : T extends readonly [EnumItemAbst] ? readonly [T[0]['field']]
+  : T extends readonly [EnumItemAbst, EnumItemAbst, ...EnumItemAbst[]] ? Readonly<MappedEnumFields<T>>
+  : never;
+
+// deno-lint-ignore no-explicit-any
+type ExcludeFromTuple<T extends readonly any[], E> = T extends [infer F, ...infer R]
+  ? ([F] extends [E] ? ExcludeFromTuple<R, E> : [F, ...ExcludeFromTuple<R, E>])
+  : [];
+
+type FilterEnumValue<EnumItems extends EnumItemTuple, T extends string> = ExcludeFromTuple<EnumItems, { field: T }>;
+type GetEnumValue<EnumItems extends EnumItemTuple, T extends string> = FilterEnumValue<EnumItems, T> extends
+  [EnumItem<T, infer R>] ? R : never;
+
+// type GetPrismaWhereOptionArrayReturnType<Val extends Readonly<DataGridColumn>, T extends DataGridFilter<Val>['items']> =
+//   {
+//     [K in keyof T]: (
+//       T[K] extends FilterBooleanItem<T[K]['field']> ? PrismaFilter<T[K]['field'], 'Boolean'>
+//         : T[K] extends FilterDateItem<T[K]['field']> ? PrismaFilter<T[K]['field'], 'Date'>
+//         // deno-lint-ignore no-explicit-any
+//         : T[K] extends FilterEnumItem<EnumItem<T[K]['field'], any>>
+//           ? EnumFilter<GetEnumValue<Val['enum'], T[K]['field']>[number]> | null
+//         : T[K] extends FilterNumberItem<T[K]['field']> ? PrismaFilter<T[K]['field'], 'Number'>
+//         : T[K] extends FilterStringItem<T[K]['field']> ? PrismaFilter<T[K]['field'], 'String'>
+//         : never
+//     );
+//   };
+
+export class DataGridColumnConf<Val extends Readonly<DataGridColumn>> {
+  private val: Val;
+  constructor(params: Val) {
+    this.val = params;
+  }
+
+  get boolItemSchema() {
+    return createFilterBooleanItemUnionSchema(this.val.bool) as CreateFilterBooleanItemUnionSchemaReturnType<
+      Val['bool']
+    >;
+  }
+  get dateItemSchema() {
+    return createFilterDateItemUnionSchema(this.val.date) as CreateFilterDateItemUnionSchemaReturnType<Val['date']>;
+  }
+  get enumItemSchema() {
+    return createFilterEnumItemUnionSchema(this.val.enum) as CreateFilterEnumItemUnionSchemaReturnType<Val['enum']>;
+  }
+  get numItemSchema() {
+    return createFilterNumberItemUnionSchema(this.val.num) as CreateFilterNumberItemUnionSchemaReturnType<Val['num']>;
+  }
+  get strItemSchema() {
+    return createFilterStringItemUnionSchema(this.val.str) as CreateFilterStringItemUnionSchemaReturnType<Val['str']>;
+  }
+  get anyItemSchema() {
+    return z.union([
+      this.strItemSchema,
+      this.boolItemSchema,
+      this.numItemSchema,
+      this.dateItemSchema,
+      this.enumItemSchema,
+    ]);
+  }
+
+  get boolField(): Val['bool'] {
+    return this.val.bool;
+  }
+  get dateField(): Val['date'] {
+    return this.val.date;
+  }
+  get enumField() {
+    return this.val.enum.map((x) => x.field) as unknown as EnumField<Val['enum']>;
+  }
+  get numField(): Val['num'] {
+    return this.val.num;
+  }
+  get strField(): Val['str'] {
+    return this.val.str;
+  }
+
+  get anyField(): readonly [...Val['bool'], ...Val['date'], ...EnumField<Val['enum']>, ...Val['num'], ...Val['str']] {
+    return [
+      ...this.boolField,
+      ...this.dateField,
+      ...this.enumField,
+      ...this.numField,
+      ...this.strField,
+    ];
+  }
+
+  get anyFieldSchema() {
+    return z.union([
+      createUnionSchemaWrapper(this.boolField),
+      createUnionSchemaWrapper(this.dateField),
+      createUnionSchemaWrapper(this.enumField),
+      createUnionSchemaWrapper(this.numField),
+      createUnionSchemaWrapper(this.strField),
+    ]);
+  }
+
+  get schema() {
+    return z.object({
+      items: this.anyItemSchema.array(),
+      logicOperator: z.union([z.literal('and'), z.literal('or')]).optional(),
+      quickFilterVales: z.any().optional(),
+      quiclFilterLogicOperator: z.union([z.literal('and'), z.literal('or')]).optional(),
+    });
+  }
+  parseFromString(query: string) {
+    try {
+      return this.schema.parse(parseJSONwithoutErr(query));
+    } catch (e) {
+      console.log(e);
+      return { items: [] };
+    }
+  }
+
+  private assertsBoolField(p: DataGridFilter<Val>['items'][number]): p is FilterBooleanItem<Val['bool'][number]> {
+    return (this.boolField as unknown as string[]).includes(p.field);
+  }
+  private assertsDateField(p: DataGridFilter<Val>['items'][number]): p is FilterDateItem<Val['date'][number]> {
+    return (this.dateField as unknown as string[]).includes(p.field);
+  }
+  private assertsEnumField(p: DataGridFilter<Val>['items'][number]): p is FilterEnumItem<Val['enum'][number]> {
+    return (this.enumField as unknown as string[]).includes(p.field);
+  }
+  private assertsNumField(p: DataGridFilter<Val>['items'][number]): p is FilterNumberItem<Val['num'][number]> {
+    return (this.numField as unknown as string[]).includes(p.field);
+  }
+  private assertsStrField(p: DataGridFilter<Val>['items'][number]): p is FilterStringItem<Val['str'][number]> {
+    return (this.strField as unknown as string[]).includes(p.field);
+  }
+
+  private getPrismaWhereOptionArray<T extends DataGridFilter<Val>>(dataGridFilter: T) {
+    const converted = dataGridFilter.items
+      .map((x) => {
+        if (this.assertsBoolField(x)) {
+          return gridFilterToPrismaFilterBoolean(x);
+        } else if (this.assertsDateField(x)) {
+          return gridFilterToPrismaFilterDateTime(x);
+        } else if (this.assertsEnumField(x)) {
+          return gridFilterToPrismaFilterEnum(x);
+        } else if (this.assertsNumField(x)) {
+          return gridFilterToPrismaFilterNumber(x);
+        } else if (this.assertsStrField(x)) {
+          return gridFilterToPrismaFilterString(x);
+        }
+        throw new ExhaustiveError(x);
+      });
+    return recordUnion(converted) as Partial<ReturnType<typeof recordUnion>>;
+  }
+
+  getPrismaWhereInput<T extends DataGridFilter<Val>>(dataGridFilter: T, defaultOperator: 'and' | 'or' = 'and') {
+    if (dataGridFilter.logicOperator ?? defaultOperator === 'and') {
+      return { 'AND': this.getPrismaWhereOptionArray(dataGridFilter) };
+    } else {
+      return { 'OR': this.getPrismaWhereOptionArray(dataGridFilter) };
+    }
+  }
+}

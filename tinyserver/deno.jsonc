@@ -1,4 +1,7 @@
 {
+  "compilerOptions": {
+    "noErrorTruncation": true
+  },
   "importMap": "import_map.json",
   "fmt": {
     "options": {

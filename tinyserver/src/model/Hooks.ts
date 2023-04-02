@@ -3,17 +3,8 @@ import type { DBHooks, Prisma } from 'tinyserver/src/client/dbclient.ts';
 
 import { bs58, compareAsc, z } from 'tinyserver/deps.ts';
 
-import {
-  anyFilterModelSchema,
-  filterDateItemSchema,
-  filterStringItemSchema,
-  type GridFilterModel,
-  gridFilterToPrismaFilter,
-} from 'tinyserver/src/utils/dataGridFilter.ts';
-import { ExhaustiveError } from 'tinyserver/src/utils/typeUtil.ts';
+import { DataGridColumnConf, GetFilterFromDataGridColumnConf } from 'tinyserver/src/utils/dataGridFilter.ts';
 import parseJSONwithoutErr from 'tinyserver/src/utils/parseJSONWithoutErr.ts';
-import { recordUnion } from 'tinyserver/src/utils/typeUtil.ts';
-import { createUnionSchema } from 'tinyserver/src/utils/zod.ts';
 import { User } from './Users.ts';
 
 export const hookScheme = z.union([
@@ -133,58 +124,35 @@ export const addHook = async (
 //  Filter
 // ===================================================================
 
-const filterDateColumns = ['created_at', 'expired_at'] as const;
-const filterStringColumns = ['id', 'name', 'data'] as const;
+const hookDataGridFilterConfig = new DataGridColumnConf(
+  {
+    bool: [],
+    date: ['created_at', 'expired_at'],
+    enum: [],
+    num: [],
+    str: ['id', 'name', 'data'],
+  } as const,
+);
 
-const filterColumns = [...filterDateColumns, ...filterStringColumns] as const;
+type GridHookFilterModel = GetFilterFromDataGridColumnConf<typeof hookDataGridFilterConfig>;
 
-export const hooksColumnsSchema = createUnionSchema(filterColumns);
-type HooksColumns = z.infer<typeof hooksColumnsSchema>;
-
-const hooksFilterItemSchema = z.union([
-  filterStringItemSchema('id'),
-  filterStringItemSchema('name'),
-  filterStringItemSchema('data'),
-  filterDateItemSchema('created_at'),
-  filterDateItemSchema('expired_at'),
-]);
-
-type GridHookFilterItem = z.infer<typeof hooksFilterItemSchema>;
-type GridHookFilterModel = GridFilterModel<GridHookFilterItem>;
+export const hooksColumnsSchema = hookDataGridFilterConfig.anyFieldSchema;
 
 /**
  * parse as MUI DataGrid FilterModel
  * @param query DataGrid FilterModel(for Hooks)
  * @returns
  */
-export const parseHookFilterQuery = (query: string): GridFilterModel<GridHookFilterItem> => {
-  const parsed = anyFilterModelSchema(hooksFilterItemSchema, parseJSONwithoutErr(query));
-  return parsed;
-};
+export const parseHookFilterQuery = (query: string) => hookDataGridFilterConfig.parseFromString(query);
 
-const hookFilterQueryToPrismaQuery = (gridFilter: GridHookFilterModel): Prisma.CouponsWhereInput => {
-  const t = gridFilter.items
-    .map((x) => {
-      switch (x.field) {
-        case 'id':
-        case 'data':
-        case 'name':
-          return gridFilterToPrismaFilter(x, 'String');
-        case 'created_at':
-        case 'expired_at':
-          return gridFilterToPrismaFilter(x, 'Date');
-        default:
-          console.log(new ExhaustiveError(x));
-      }
-    });
-  return recordUnion(t);
-};
+const hookFilterQueryToPrismaQuery = (gridFilter: GridHookFilterModel): Prisma.HooksWhereInput =>
+  hookDataGridFilterConfig.getPrismaWhereInput(gridFilter);
 
 export const getHooksList = async (params: {
   user_id: string;
   offset: number;
   limit: number;
-  orderBy: HooksColumns;
+  orderBy: GridHookFilterModel['items'][number]['field'];
   order: 'asc' | 'desc';
   queryFilter: GridHookFilterModel;
   select: Prisma.HooksSelect;
@@ -195,8 +163,10 @@ export const getHooksList = async (params: {
     take: params.limit,
     orderBy: { [params.orderBy]: params.order },
     where: {
-      ...hookFilterQueryToPrismaQuery(params.queryFilter),
-      user_id: params.user_id,
+      'AND': {
+        ...hookFilterQueryToPrismaQuery(params.queryFilter),
+        user_id: params.user_id,
+      },
     },
   });
   return x;

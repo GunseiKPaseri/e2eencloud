@@ -1,17 +1,10 @@
 import { compareAsc, z } from 'tinyserver/deps.ts';
 import { prisma } from 'tinyserver/src/client/dbclient.ts';
 import type { DBCoupons, Prisma } from 'tinyserver/src/client/dbclient.ts';
-import {
-  anyFilterModelSchema,
-  filterDateItemSchema,
-  filterStringItemSchema,
-  type GridFilterModel,
-  gridFilterToPrismaFilter,
-} from 'tinyserver/src/utils/dataGridFilter.ts';
+import { DataGridColumnConf, GetFilterFromDataGridColumnConf } from 'tinyserver/src/utils/dataGridFilter.ts';
 import { ExhaustiveError } from 'tinyserver/src/utils/typeUtil.ts';
 import parseJSONwithoutErr from 'tinyserver/src/utils/parseJSONWithoutErr.ts';
 import { bs58CheckEncode } from 'tinyserver/src/utils/bs58check.ts';
-import { recordUnion } from 'tinyserver/src/utils/typeUtil.ts';
 import { User } from './Users.ts';
 
 export const couponScheme = z.union([
@@ -161,53 +154,32 @@ export const addCoupon = async (
 //  Filter
 // ===================================================================
 
-const filterDateColumn = ['created_at', 'expired_at'] as const;
-const filterStringColumn = ['id', 'data'] as const;
-
-type CouponColumns = (typeof filterDateColumn)[number] | (typeof filterStringColumn)[number];
-
-const couponFilterItemSchema = z.union([
-  filterStringItemSchema('id'),
-  filterStringItemSchema('data'),
-  filterDateItemSchema('created_at'),
-  filterDateItemSchema('expired_at'),
-]);
-
-type GridCouponFilterItem = z.infer<typeof couponFilterItemSchema>;
-type GridCouponFilterModel = GridFilterModel<GridCouponFilterItem>;
+const couponDataGridFilterConfig = new DataGridColumnConf(
+  {
+    bool: [],
+    date: ['created_at', 'expired_at'],
+    enum: [],
+    num: [],
+    str: ['id', 'data'],
+  } as const,
+);
+type GridCouponFilterModel = GetFilterFromDataGridColumnConf<typeof couponDataGridFilterConfig>;
 
 /**
  * parse as MUI DataGrid FilterModel
  * @param query DataGrid FilterModel(for Coupons)
  * @returns
  */
-export const parseCouponFilterQuery = (query: string): GridFilterModel<GridCouponFilterItem> => {
-  const parsed = anyFilterModelSchema(couponFilterItemSchema, parseJSONwithoutErr(query));
-  return parsed;
-};
+export const parseCouponFilterQuery = (query: string) => couponDataGridFilterConfig.parseFromString(query);
 
-const couponFilterQueryToPrismaQuery = (gridFilter: GridCouponFilterModel): Prisma.CouponsWhereInput => {
-  const t = gridFilter.items
-    .map((x) => {
-      switch (x.field) {
-        case 'id':
-        case 'data':
-          return gridFilterToPrismaFilter(x, 'String');
-        case 'created_at':
-        case 'expired_at':
-          return gridFilterToPrismaFilter(x, 'Date');
-        default:
-          console.log(new ExhaustiveError(x));
-      }
-    });
-  return recordUnion(t);
-};
+const couponFilterQueryToPrismaQuery = (gridFilter: GridCouponFilterModel): Prisma.CouponsWhereInput =>
+  couponDataGridFilterConfig.getPrismaWhereInput(gridFilter);
 
 export const getCouponsList = async (params: {
   user_id: string;
   offset: number;
   limit: number;
-  orderBy: CouponColumns;
+  orderBy: GridCouponFilterModel['items'][number]['field'];
   order: 'asc' | 'desc';
   queryFilter: GridCouponFilterModel;
 }): Promise<Coupon[]> => {
@@ -216,8 +188,10 @@ export const getCouponsList = async (params: {
     take: params.limit,
     orderBy: { [params.orderBy]: params.order },
     where: {
-      ...couponFilterQueryToPrismaQuery(params.queryFilter),
-      id: params.user_id,
+      'AND': {
+        ...couponFilterQueryToPrismaQuery(params.queryFilter),
+        id: params.user_id,
+      },
     },
   });
   return coupons.map((coupon) => new Coupon(coupon));

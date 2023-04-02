@@ -1,29 +1,12 @@
 import { DBEnumRole, DBUser, prisma } from 'tinyserver/src/client/dbclient.ts';
 import { Prisma } from 'tinyserver/src/client/dbclient.ts';
 
-import { ExhaustiveError } from 'tinyserver/src/utils/typeUtil.ts';
 import { createSalt } from 'tinyserver/src/util.ts';
 import { bcrypt, byteArray2base64, OTPAuth, z } from 'tinyserver/deps.ts';
-import parseJSONwithoutErr from 'tinyserver/src/utils/parseJSONWithoutErr.ts';
-import {
-  anyFilterModelSchema,
-  FilterBooleanItem,
-  filterBooleanItemSchema,
-  FilterEnumItem,
-  filterEnumItemSchema,
-  type FilterNumberItem,
-  filterNumberItemSchema,
-  type FilterStringItem,
-  filterStringItemSchema,
-  GridFilterModel,
-  gridFilterToPrismaFilter,
-  gridFilterToPrismaFilterEnum,
-} from 'tinyserver/src/utils/dataGridFilter.ts';
+import { DataGridColumnConf, GetFilterFromDataGridColumnConf } from 'tinyserver/src/utils/dataGridFilter.ts';
 import { pick } from 'tinyserver/src/utils/objSubset.ts';
-import { recordUnion } from 'tinyserver/src/utils/typeUtil.ts';
 import { bs58CheckEncode } from 'tinyserver/src/utils/bs58check.ts';
 import { uniqueSequentialKey } from 'tinyserver/src/utils/uniqueKey.ts';
-import { createUnionSchema } from 'tinyserver/src/utils/zod.ts';
 import { confirmEmail } from './ConfirmingEmailAddress.ts';
 
 const DEFAULT_MAX_CAPACITY = 10n * 1024n * 1024n; //10MiB
@@ -228,8 +211,10 @@ export class User {
       take: params.limit,
       orderBy: { [params.orderBy]: params.order },
       where: {
-        ...mfaFilterQueryToPrismaQuery(params.queryFilter),
-        user_id: this.id,
+        'AND': {
+          ...mfaFilterQueryToPrismaQuery(params.queryFilter),
+          user_id: this.id,
+        },
       },
     });
     return x;
@@ -238,8 +223,10 @@ export class User {
   async getNumberOfMFAs(queryFilter?: GridMFAFilterModel): Promise<number> {
     return await prisma.mFASolution.count({
       where: {
-        ...(queryFilter ? mfaFilterQueryToPrismaQuery(queryFilter) : {}),
-        user_id: this.id,
+        'AND': {
+          ...(queryFilter ? mfaFilterQueryToPrismaQuery(queryFilter) : {}),
+          user_id: this.id,
+        },
       },
     });
   }
@@ -507,6 +494,7 @@ export const getUsers = async (
     select: { id: true } & Prisma.UserSelect;
   },
 ) => {
+  console.log(params.queryFilter, userFilterQueryToPrismaQuery(params.queryFilter));
   const users = await prisma.user.findMany({
     skip: params.offset,
     take: params.limit,
@@ -563,117 +551,50 @@ export const deleteUserById = async (id: string | null): Promise<{ success: bool
   return { success: result.count === 1 };
 };
 
-// ===================================================================
-//  Filter
-// ===================================================================
+const userDataGridFilterConfig = new DataGridColumnConf(
+  {
+    bool: ['available'],
+    date: [],
+    enum: [{ field: 'role', value: ['ADMIN', 'USER'] }],
+    num: ['max_capacity', 'file_usage'],
+    str: ['id', 'email'],
+  } as const,
+);
 
-const filterStringColumn = ['id', 'email'] as const;
-const filterNumberColumn = ['max_capacity', 'file_usage'] as const;
-
-const filterEnumRoleValue = ['ADMIN', 'USER'] as const;
-
-const userFilterItemSchema = z.union([
-  filterStringItemSchema('id'),
-  filterStringItemSchema('email'),
-  filterEnumItemSchema('role', filterEnumRoleValue),
-  filterNumberItemSchema('max_capacity'),
-  filterNumberItemSchema('file_usage'),
-]);
-type GridUserFilterItem = z.infer<typeof userFilterItemSchema>;
-
-type FixedGridUserFilterItem =
-  | FilterStringItem<typeof filterStringColumn[number]>
-  | FilterNumberItem<typeof filterNumberColumn[number]>
-  | FilterEnumItem<'role', typeof filterEnumRoleValue[number]>;
-
-type GridUserFilterModel = GridFilterModel<FixedGridUserFilterItem>;
+type GridUserFilterModel = GetFilterFromDataGridColumnConf<typeof userDataGridFilterConfig>;
 
 /**
  * parse as MUI DataGrid FilterModel
  * @param query DataGrid FilterModel(for Users)
  * @returns
  */
-export const parseUserFilterQuery = (query: string): GridFilterModel<GridUserFilterItem> => {
-  const parsed = anyFilterModelSchema(userFilterItemSchema, parseJSONwithoutErr(query));
-  return parsed;
-};
+export const parseUserFilterQuery = (query: string): GridUserFilterModel =>
+  userDataGridFilterConfig.parseFromString(query);
 
-// const prismaNumberColumn = ['max_capacity', 'file_usage'] as const;
-// const prismaStringColumn = ['id', 'email', 'authority'] as const;
+const userFilterQueryToPrismaQuery = (gridFilter: GridUserFilterModel): Prisma.UserWhereInput =>
+  userDataGridFilterConfig.getPrismaWhereInput(gridFilter);
 
-// const prismaUserFilterSchema = z.union([
-//   createFilterBooleanItemUnionSchema([] as const),
-//   createFilterDateItemUnionSchema([] as const),
-//   createFilterNumberItemUnionSchema(prismaNumberColumn),
-//   createFilterStringItemUnionSchema(prismaStringColumn),
-// ]);
+const mfaDataGridFilterConfig = new DataGridColumnConf(
+  {
+    bool: ['available'],
+    date: [],
+    enum: [{ field: 'type', value: ['TOTP', 'FIDO2', 'EMAIL', 'CODE'] }],
+    num: [],
+    str: ['id', 'name'],
+  } as const,
+);
 
-const userFilterQueryToPrismaQuery = (gridFilter: GridUserFilterModel): Prisma.UserWhereInput => {
-  const t = gridFilter.items
-    .map((x) => {
-      switch (x.field) {
-        case 'max_capacity':
-        case 'file_usage':
-          return gridFilterToPrismaFilter(x, 'Number');
-        case 'id':
-        case 'email':
-          return gridFilterToPrismaFilter(x, 'String');
-        case 'role':
-          return gridFilterToPrismaFilterEnum<'role', typeof filterEnumRoleValue>(x);
-        default:
-          console.log(new ExhaustiveError(x));
-      }
-    });
-  return recordUnion(t);
-};
+type GridMFAFilterModel = GetFilterFromDataGridColumnConf<typeof mfaDataGridFilterConfig>;
 
-const mfaFilterStringColumn = ['id', 'name'] as const;
-const mfaFilterEnumTypeValue = ['TOTP', 'FIDO2', 'EMAIL', 'CODE'] as const;
-const mfaFilterBooleanColumn = ['available'] as const;
-
-const mfaFilterColumns = [...mfaFilterStringColumn, 'type', ...mfaFilterBooleanColumn] as const;
-
-export const mfaColumnsSchema = createUnionSchema(mfaFilterColumns);
-
-const mfaFilterItemSchema = z.union([
-  filterStringItemSchema('id'),
-  filterStringItemSchema('name'),
-  filterEnumItemSchema('type', mfaFilterEnumTypeValue),
-  filterBooleanItemSchema('available'),
-]);
-type GridMFAFilterItem = z.infer<typeof mfaFilterItemSchema>;
-
-type FixedGridMFAFilterItem =
-  | FilterStringItem<typeof mfaFilterStringColumn[number]>
-  | FilterEnumItem<'type', typeof mfaFilterEnumTypeValue[number]>
-  | FilterBooleanItem<typeof mfaFilterBooleanColumn[number]>;
-
-type GridMFAFilterModel = GridFilterModel<FixedGridMFAFilterItem>;
+export const mfaColumnsSchema = mfaDataGridFilterConfig.anyFieldSchema;
 
 /**
  * parse as MUI DataGrid FilterModel
  * @param query DataGrid FilterModel(for MFA)
  * @returns
  */
-export const parseMFAFilterQuery = (query: string): GridFilterModel<GridMFAFilterItem> => {
-  const parsed = anyFilterModelSchema(mfaFilterItemSchema, parseJSONwithoutErr(query));
-  return parsed;
-};
+export const parseMFAFilterQuery = (query: string): GridMFAFilterModel =>
+  mfaDataGridFilterConfig.parseFromString(query);
 
-const mfaFilterQueryToPrismaQuery = (gridFilter: GridMFAFilterModel): Prisma.MFASolutionWhereInput => {
-  const t = gridFilter.items
-    .map((x) => {
-      switch (x.field) {
-        case 'id':
-        case 'name':
-          return gridFilterToPrismaFilter(x, 'String');
-        case 'type':
-          return gridFilterToPrismaFilterEnum<'type', typeof mfaFilterEnumTypeValue>(x);
-        case 'available':
-          return gridFilterToPrismaFilter(x, 'Boolean');
-        default:
-          console.log(new ExhaustiveError(x));
-      }
-    });
-  return recordUnion(t);
-};
+const mfaFilterQueryToPrismaQuery = (gridFilter: GridMFAFilterModel): Prisma.MFASolutionWhereInput =>
+  mfaDataGridFilterConfig.getPrismaWhereInput(gridFilter);
