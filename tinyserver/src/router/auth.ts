@@ -100,13 +100,11 @@ const GETSaltScheme = z.object({
 
 // GETではBODYに格納するのが困難
 router.post('/salt', async (ctx) => {
-  console.log('aaa');
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
 
   const parsed = GETSaltScheme.safeParse(await body.value);
-  console.log('aaa', parsed);
   if (!parsed.success) {
     return ctx.response.status = Status.BadRequest;
   }

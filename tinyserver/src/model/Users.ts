@@ -337,7 +337,6 @@ export class User {
           max_capacity: Number(this.#max_capacity),
         },
       });
-      console.log(params);
       if (params.multi_factor_authentication !== true) {
         // 無効化のみ
         await prisma.mFASolution.updateMany({
@@ -372,7 +371,6 @@ export const addUser = async (
   >,
 ) => {
   try {
-    console.log(params, 0n);
     return await prisma.user.create({
       data: {
         ...pick(params, [
@@ -494,7 +492,6 @@ export const getUsers = async (
     select: { id: true } & Prisma.UserSelect;
   },
 ) => {
-  console.log(params.queryFilter, userFilterQueryToPrismaQuery(params.queryFilter));
   const users = await prisma.user.findMany({
     skip: params.offset,
     take: params.limit,
