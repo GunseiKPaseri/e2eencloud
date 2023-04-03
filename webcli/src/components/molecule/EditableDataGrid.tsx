@@ -206,7 +206,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
         }
         handleEditConfirmNo={handleEditConfirmNo}
         handleEditConfirmYes={handleEditConfirmYes}
-        textYes={t('auth.edit', '編集')}
+        textYes={t('admin.edit', '編集')}
         textNo={t('admin.cancel', 'キャンセル')}
       />
       <ConfirmDialog
@@ -217,7 +217,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
         }
         handleEditConfirmNo={handleDeleteConfirmNo}
         handleEditConfirmYes={handleDeleteConfirmYes}
-        textYes={t('auth.delete', '削除')}
+        textYes={t('admin.delete', '削除')}
         textNo={t('admin.cancel', 'キャンセル')}
       />
       <DataGrid
