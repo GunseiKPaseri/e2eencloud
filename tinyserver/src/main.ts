@@ -8,7 +8,7 @@ const app = new Application();
 // Enable CORS
 app.use(
   oakCors({
-    origin: ['http://localhost:3000'],
+    origin: /^.+(localhost|127.0.0.1)(:\d*)?$/,
     credentials: true,
   }),
 );

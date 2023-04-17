@@ -206,8 +206,8 @@ volumes:
 
 networks:
   web:
-    external:
-      name: traefik_web
+    external: false
+    name: traefik_web
   database:
     driver: bridge
   minionet:

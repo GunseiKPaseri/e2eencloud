@@ -1,4 +1,4 @@
-import { SERVER_HOSTNAME, SMTPClient } from 'tinyserver/deps.ts';
+import { SERVER_HOSTNAME, SMTP_PASSWORD, SMTP_USER, SMTPClient } from 'tinyserver/deps.ts';
 
 const mailcli = new SMTPClient({
   debug: {
@@ -8,8 +8,8 @@ const mailcli = new SMTPClient({
     hostname: 'mailer',
     port: 1025,
     auth: {
-      username: 'e2eencloudserver',
-      password: 'HBS3WKVmlzZqTFlkujTttHRWh',
+      username: SMTP_USER,
+      password: SMTP_PASSWORD,
     },
   },
 });
