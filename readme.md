@@ -6,18 +6,18 @@ E2E暗号化を実装したWebストレージアプリケーション
 
 ## tinyserver
 
-Deno製アプリケーションサーバ
+Deno製アプリケーションサーバ（app.localhost/api以下に提供されます。）
 
 ## webcli
 
-クライアントアプリケーション
+クライアントSPA（開発用更新サーバ付き）
 
 ## テスト環境の立ち上げ
-最初に`tinyserver`を参考に`.env`を作成する
+最初に`tinyserver`を参考に`.env`をこのreadme.mdと同階層に作成する
 
-次に`docker compose`で立ち会げる
+次に`docker compose`で立ち上げる
 ```
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 または`tinyserver`・`webcli`それぞれでVSCode等を利用しdevcontainerを立ち上げる。
-それぞれのサーバを立ち上げれば[app.localhost]から利用できる。
+それぞれのサーバを立ち上げれば[app.localhost]から利用できる。（ローカルの80番ポートを開けておくこと）
