@@ -1,4 +1,4 @@
-import { Application, bold, oakCors, oakSession, PORT, Status, yellow } from 'tinyserver/deps.ts';
+import { Application, bold, ENV, oakCors, oakSession, Status, yellow } from 'tinyserver/deps.ts';
 import { distDir } from 'tinyserver/src/util.ts';
 import sessionsStore from './model/Sessions.ts';
 import apiRouter from './router/api.ts';
@@ -57,6 +57,6 @@ app.addEventListener('listen', ({ hostname, port, serverType }) => {
   console.log('  using HTTP server: ' + yellow(serverType));
 });
 
-await app.listen({ hostname: '0.0.0.0', port: PORT });
+await app.listen({ hostname: '0.0.0.0', port: ENV.PORT });
 
 console.log('finished...');

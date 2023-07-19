@@ -3,9 +3,9 @@ import {
   base64Url2ByteArray,
   byteArray2base64,
   byteArray2base64Url,
+  ENV,
   Fido2AssertionResult,
   Router,
-  SERVER_URI,
   Status,
   z,
 } from '../../../deps.ts';
@@ -86,7 +86,7 @@ router.post('/attestation', async (ctx) => {
 
   const attestationExpectations = {
     challenge,
-    origin: SERVER_URI,
+    origin: ENV.SERVER_URI,
     factor: 'either',
   };
 
@@ -229,7 +229,7 @@ router.post('/assertion/result', async (ctx) => {
   const attestation = { id: base64Url2ByteArray(request.rawId).buffer, ...attestationValue.data };
   const assertionExpectations = {
     challenge: challenge,
-    origin: SERVER_URI,
+    origin: ENV.SERVER_URI,
     factor: 'either',
     publicKey: attestation.publicKey,
     prevCounter: attestation.counter,
