@@ -1,0 +1,10 @@
+{
+    "VSCodeCounter.exclude": [
+        "**/.gitignore",
+        "**/.vscode/**",
+        "**/node_modules/**",
+        "**/generated/**",
+        "**/deno.lock",
+        "**/package-lock.json"
+    ]
+}
