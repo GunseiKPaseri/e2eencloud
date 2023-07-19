@@ -595,7 +595,7 @@
       "prisma@4.11.0": "prisma@4.11.0",
       "short-uuid": "short-uuid@4.2.2",
       "ua-parser-js@1.0.33": "ua-parser-js@1.0.33",
-      "uuidv7": "uuidv7@0.4.1"
+      "uuidv7": "uuidv7@0.5.3"
     },
     "packages": {
       "@prisma/engines@4.11.0": {
@@ -641,6 +641,10 @@
       },
       "uuidv7@0.4.1": {
         "integrity": "sha512-o7/EhvDo1BNYDiw4Br59CIqvS6E//yheuDHFm5KwvBzFT9m+BgEtcMLIl2mDeSI10lf5lnF2O8jdTt5IAUb6yw==",
+        "dependencies": {}
+      },
+      "uuidv7@0.5.3": {
+        "integrity": "sha512-N7GGRx9Lj8s1P6N41IXaOm9ymXoq5J+VCdmuYkknc7Xl7R4kyh/5PC8FPJ2JA7GeigZPRvwDvTPQSsCf5dxAqA==",
         "dependencies": {}
       }
     }
