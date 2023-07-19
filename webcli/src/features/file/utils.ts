@@ -1,9 +1,9 @@
 import { v4 } from 'uuid';
-import BrowserJimpImgClass from 'imghash-js/dist/esm/ImgClass/BrowserJimpImgClass';
+import ahash from 'imghash-js/dist/esm/hash/ahash';
+import dhash from 'imghash-js/dist/esm/hash/dhash';
+import phash from 'imghash-js/dist/esm/hash/phash';
+import BrowserCanvas from 'imghash-js/dist/esm/ImgClass/BrowserCanvas';
 import ImgHash from 'imghash-js/dist/esm/ImgHash';
-import ahash from 'imghash-js/dist/esm/ahash';
-import dhash from 'imghash-js/dist/esm/dhash';
-import phash from 'imghash-js/dist/esm/phash';
 
 import { decryptByRSA, encryptByRSA } from '~/class/encrypt';
 import { assertArrayNumber, ExhaustiveError } from '~/utils/assert';
@@ -13,7 +13,7 @@ import {
 import { getAESGCMKey, AESGCM, decryptAESGCM } from '~/utils/crypto';
 
 import { AES_FILE_KEY_LENGTH } from '~/const/const';
-import { getPreview } from '~/utils/img';
+import { getPreview, loadImage } from '~/utils/img';
 import { fileInfoMigrate, latestVersion } from './fileinfoMigration/fileinfo';
 
 import type {
@@ -167,17 +167,17 @@ export const trimExpansion = (expansionLocal: FileNode<FileInfoFile>['expansion'
 export const genExpansion = async (fileInfo: FileInfoFile, blobURL: string): Promise<{ expansion: FileInfoFile['expansion'], expansionLocal: FileNode<FileInfoFile>['expansion'] } | undefined> => {
   if (fileInfo.mime.indexOf('image/') === 0) {
     // image
-    const img = await (new BrowserJimpImgClass()).init(blobURL);
+    const img = new BrowserCanvas(await loadImage(blobURL));
     // console.log(img);
     const imghashs = {
-      ahashObj: ahash(img.clone()),
-      dhashObj: dhash(img.clone()),
-      phashObj: phash(img.clone()),
+      ahashObj: ahash(img),
+      dhashObj: dhash(img),
+      phashObj: phash(img),
     };
     const expansion: FileInfoFile['expansion'] = {
       type: 'img',
-      width: img.raw().bitmap.width,
-      height: img.raw().bitmap.height,
+      width: img.width,
+      height: img.height,
       ahash: imghashs.ahashObj.hex,
       dhash: imghashs.dhashObj.hex,
       phash: imghashs.phashObj.hex,

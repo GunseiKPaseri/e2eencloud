@@ -18,3 +18,11 @@ export const hex2bytearray = (hex: string) => {
 export const byteArray2hex = (x: Uint8Array) => Array.from(new Uint8Array(x)).map((b) => b.toString(16).padStart(2, '0')).join('');
 
 export const UUID2ByteArray = (uuid: string) => hex2bytearray(uuid.replace(/-/g, ''));
+
+export const blob2DataURL = (x: Blob) => new Promise<string>((resolve) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(x);
+  reader.addEventListener('load', () => {
+    resolve(reader.result as string);
+  });
+});
