@@ -1,0 +1,30 @@
+version: '3.7'
+services:
+  apiserver:
+    command: sleep infinity
+    volumes:
+      - .:/e2eencloud:cached
+      - apiserver-bashhistory:/commandhistory
+    ports:
+      - 8084:5555
+    labels:
+      traefik.http.routers.app.rule: "Host(`app.localhost`) && PathPrefix(`/api`)"
+  frontenddevserver:
+    container_name: frontenddevserver
+    image: node:18
+    command: sleep infinity
+    volumes:
+      - .:/e2eencloud:cached
+    networks:
+      - web
+    restart: always
+    labels:
+      traefik.enable: true
+      traefik.http.routers.front.rule: "Host(`app.localhost`) && !PathPrefix(`/api`)"
+      traefik.http.routers.front.entrypoints: http
+      traefik.http.services.front.loadbalancer.server.port: 3000
+      traefik.docker.network: traefik_web
+
+volumes:
+  apiserver-bashhistory:
+  volume-appcache:

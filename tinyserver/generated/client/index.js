@@ -216,7 +216,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/workspace/tinyserver/generated/client",
+      "value": "/e2eencloud/tinyserver/generated/client",
       "fromEnvVar": null
     },
     "config": {
@@ -229,8 +229,7 @@ const config = {
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../.env",
-    "schemaEnvPath": "../../.env"
+    "rootEnvPath": null
   },
   "relativePath": "../../prisma",
   "clientVersion": "4.11.0",

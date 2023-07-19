@@ -27,6 +27,9 @@ services:
   db:
     image: mysql:8
     container_name: db
+    hostname: db
+    env_file:
+      - .env
     environment:
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_USER=${DB_USER}
@@ -35,13 +38,15 @@ services:
       - TZ=${TZ}
     volumes:
       - volume-mysql:/var/lib/mysql
-      - ./dev/db/mysql/conf:/etc/mysql/conf.d
+      - ./tinyserver/dev/db/mysql/conf:/etc/mysql/conf.d
     networks:
       - database
   db-gui:
     depends_on:
       - db
     image: phpmyadmin/phpmyadmin:5.2.0
+    env_file:
+      - .env
     environment:
       - PMA_ARBITRARY=1
       - PMA_HOSTS=db
@@ -57,21 +62,23 @@ services:
       - web
       - database
     volumes:
-      - ./dev/db-gui/phpmyadmin/sessions:/sessions
+      - ./tinyserver/dev/db-gui/phpmyadmin/sessions:/sessions
   db-prisma-proxy:
     depends_on:
       - db
     build:
-      context: ./dev/db-prisma-proxy
+      context: ./tinyserver/dev/db-prisma-proxy
       dockerfile: Dockerfile
     image: e2eencloud/pdpa
     working_dir: /app
+    env_file:
+      - .env
     environment:
       DATABASE_URL: mysql://${DB_USER}:${DB_PASS}@db:3306/${DB_NAME}
       DATA_PROXY_API_KEY: HOGE_HOGE
       PORT: "3000"
     volumes:
-      - ./prisma/:/app/prisma-original/:ro
+      - ./tinyserver/prisma/:/app/prisma-original/:ro
     user: "node:node"
     networks:
       - database
@@ -80,11 +87,13 @@ services:
     depends_on:
       - db-prisma-proxy
     image: steveltn/https-portal:1
+    env_file:
+      - .env
     environment:
       STAGE: local
       DOMAINS: 'db-prisma-proxy-https -> http://db-prisma-proxy:3000'
     volumes:
-      - ./dev/db-prisma-proxy-https/ssl-certs:/var/lib/https-portal
+      - ./tinyserver/dev/db-prisma-proxy-https/ssl-certs:/var/lib/https-portal
     networks:
       - prismanet
   owner-setter:
@@ -101,6 +110,8 @@ services:
     volumes:
       - volume-mailer:/home/maildev:rw
     restart: always
+    env_file:
+      - .env
     environment:
       - TZ=${TZ}
       - MAILDEV_WEB_PORT=1080
@@ -126,6 +137,8 @@ services:
   minio:
     image: 'minio/minio'
     container_name: minio
+    env_file:
+      - .env
     environment:
       - MINIO_ROOT_USER=${L_MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${L_MINIO_ROOT_PASSWORD}
@@ -148,6 +161,8 @@ services:
       - minio
     image: minio/mc
     container_name: minio-createbucketd
+    env_file:
+      - .env
     entrypoint: >
       /bin/sh -c "
       until (/usr/bin/mc config host add myminio http://minio:9000 ${L_MINIO_ROOT_USER} ${L_MINIO_ROOT_PASSWORD}) do echo '...waiting...' && sleep 1; done;
@@ -157,18 +172,20 @@ services:
       "
     networks:
       - minionet
-  app:
+  apiserver:
     build:
-      context: ./dev
+      context: ./tinyserver/dev
       dockerfile: DockerfileApp
-    image: e2eencloud/app
-    container_name: app
-    command: sleep infinity
+    image: e2eencloud/apiserver
+    container_name: apiserver
+    command: "sleep infinity"
+    env_file:
+      - .env
     environment:
       - DATABASE_URL=prisma://db-prisma-proxy-https?api_key=HOGE_HOGE
       - SHADOW_DATABASE_URL=mysql://${DB_USER}:${DB_PASS}@db:3306/${DB_NAME}
     volumes:
-      - volume-appcache:/home/vscode/.cache
+      - volume-apiservercache:/home/vscode/.cache
     labels:
       traefik.enable: true
       traefik.host: app
@@ -187,8 +204,10 @@ services:
     ports:
       - '80:80'
       - '443:443'
+    env_file:
+      - .env
     volumes:
-      - ./dev/rproxy/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./tinyserver/dev/rproxy/traefik.yml:/etc/traefik/traefik.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - web
@@ -201,7 +220,7 @@ services:
 volumes:
   volume-mysql:
   volume-minio:
-  volume-appcache:
+  volume-apiservercache:
   volume-mailer:
 
 networks:
