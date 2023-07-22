@@ -4,6 +4,7 @@ env:
 extends:
   - eslint:recommended
   - plugin:@typescript-eslint/recommended-requiring-type-checking
+  - plugin:@typescript-eslint/stylistic-type-checked
 parserOptions:
   project: './tsconfig.eslint.json'
 settings:
@@ -22,22 +23,30 @@ globals:
   React: true
   JSX: true
 rules:
+  # 許容
   "@typescript-eslint/no-misused-promises": "off"
-  "@typescript-eslint/no-use-before-define":
-    - "error"
-  "@typescript-eslint/consistent-type-imports":
-    - "error"
+  "@typescript-eslint/consistent-type-definitions": "off"
   import/no-default-export: "off"
   import/prefer-default-export: "off"
   jsx-a11y/label-has-associated-control: "off"
   no-nested-ternary: "off"
-  no-use-before-define: "off"
-  no-param-reassign: "off"
   react/jsx-props-no-spreading: "off"
   react/jsx-no-useless-fragment: "off"
   react/no-unused-prop-types: "off"
   react/require-default-props: "off"
-  react-refresh/only-export-components: "warn"
+  # swc向け https://github.com/ArnaudBarre/eslint-plugin-react-refresh
+  react-refresh/only-export-components: error
+  # 強化
+  "@typescript-eslint/no-use-before-define": error
+  "@typescript-eslint/consistent-type-imports": error
+  # 未使用変数はアンダーバー開始のものを許容
+  '@typescript-eslint/no-unused-vars':
+    - warn
+    - argsIgnorePattern: ^_
+      varsIgnorePattern: ^_
+      caughtErrorsIgnorePattern: ^_
+      destructuredArrayIgnorePattern: ^_
+  # 依存関係の階層設定
   strict-dependencies/strict-dependencies:
     - "error"
     - - module: ./src/features/*/thunk

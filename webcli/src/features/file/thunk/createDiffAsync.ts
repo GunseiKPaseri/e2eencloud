@@ -83,7 +83,7 @@ CaseReducer<FileState, PayloadAction<CreateDiffAsyncResult>> = (state, action) =
   fileTable[fileInfo.prevId].nextId = fileInfo.id;
   fileTable[fileInfo.id] = { ...fileInfo, parentId: fileInfo.parentId, origin: uploaded };
   // tagTreeを更新
-  if (fileInfo.diff.addtag || fileInfo.diff.deltag) {
+  if (fileInfo.diff.addtag !== undefined || fileInfo.diff.deltag !== undefined) {
     const tagTree = { ...state.tagTree };
     if (fileInfo.diff.addtag) {
       fileInfo.diff.addtag.forEach((tag) => {

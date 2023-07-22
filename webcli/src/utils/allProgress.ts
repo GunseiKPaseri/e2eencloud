@@ -2,7 +2,7 @@
  * Promise all with progress
  */
 const allProgress = <T>(
-  values: Array<Promise<T>>,
+  values: Promise<T>[],
   callback: (resolved: number, rejected: number, all: number) => void,
 ): Promise<(Awaited<T> | null)[]> => {
   let resolvecnt = 0;

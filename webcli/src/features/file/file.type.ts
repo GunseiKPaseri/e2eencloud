@@ -72,7 +72,7 @@ export type FileNode<T extends FileInfo> = {
 /**
   * ディレクトリテーブル
   */
-export type FileTable = { [key: string]: FileNode<FileInfo> };
+export type FileTable = Record<string, FileNode<FileInfo>>;
 
 type GroupCommon = { files: string[], selecting: string[] };
 
@@ -91,7 +91,7 @@ export interface GetfileinfoJSONRow {
 
 export type BuildFileTableAsyncResult = {
   fileTable: FileTable,
-  tagTree: { [key: string]: string[] }
+  tagTree: Record<string, string[]>
 };
 
 /* 容量情報 */

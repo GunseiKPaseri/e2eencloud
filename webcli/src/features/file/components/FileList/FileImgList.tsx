@@ -33,7 +33,7 @@ function FileImgList({ sx, onSelectFile, onSelectFolder }: {
               }}
             >
               {
-                target.type === 'file' && target.mime.indexOf('image/') === 0 && target.blobURL
+                target.type === 'file' && target.mime.startsWith('image/') && target.blobURL
                   ? (
                     <img
                       src={target.blobURL}

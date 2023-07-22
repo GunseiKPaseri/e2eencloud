@@ -34,7 +34,7 @@ function Viewer() {
               </Link>
             </Tooltip>
           </Box>
-          {activeNode.mime.indexOf('image/') === 0 && <img alt={activeNode.name} width="100%" src={activeFile.link} />}
+          {activeNode.mime.startsWith('image/') && <img alt={activeNode.name} width="100%" src={activeFile.link} />}
 
           <ImageList
             rowHeight={164}
@@ -67,7 +67,7 @@ function Viewer() {
                     />
                   */}
                   {
-                    target.type === 'file' && target.mime.indexOf('image/') === 0 && target.blobURL
+                    target.type === 'file' && target.mime.startsWith('image/') && target.blobURL
                       ? (
                         <img
                           src={target.blobURL}
