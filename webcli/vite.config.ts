@@ -2,7 +2,7 @@
 import path from 'path';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react-swc';
-import eslintPlugin from '@nabla/vite-plugin-eslint';
+import checker from 'vite-plugin-checker';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -38,10 +38,10 @@ export default defineConfig({
   },
   plugins: [
     react({ plugins: [['@swc/plugin-styled-components', {}]] }),
-    eslintPlugin({
-      eslintOptions: {
-        cache: true,
-        cacheLocation: 'node_modules/.cache/.eslintcache',
+    checker({
+      typescript: true,
+      eslint: {
+        lintCommand: 'eslint ./ --ext ts,tsx --ignore-path ../.gitignore --cache --cache-location node_modules/.cache/.eslintcache',
       },
     }),
   ],

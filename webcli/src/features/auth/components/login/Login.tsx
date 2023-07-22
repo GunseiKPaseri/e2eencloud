@@ -34,7 +34,6 @@ function OtherStepGuide() {
               loginStatus.step === 'SelectMFASolution'
                 ? <></>
                 : (
-                  // eslint-disable-next-line jsx-a11y/anchor-is-valid
                   <Link
                     component="button"
                     variant="body2"

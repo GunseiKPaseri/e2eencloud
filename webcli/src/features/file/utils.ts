@@ -152,6 +152,7 @@ export const trimExpansion = (expansionLocal: FileNode<FileInfoFile>['expansion'
   switch (expansionLocal.type) {
     case 'img': {
       const {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         ahashObj, dhashObj, phashObj, ...expansion
       } = expansionLocal;
       return expansion;
