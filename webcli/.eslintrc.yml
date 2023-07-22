@@ -3,7 +3,7 @@ env:
   es2022: true
 extends:
   - eslint:recommended
-  - plugin:@typescript-eslint/recommended-requiring-type-checking
+  - plugin:@typescript-eslint/recommended-type-checked
   - plugin:@typescript-eslint/stylistic-type-checked
 parserOptions:
   project: './tsconfig.eslint.json'
@@ -34,11 +34,6 @@ rules:
   react/jsx-no-useless-fragment: "off"
   react/no-unused-prop-types: "off"
   react/require-default-props: "off"
-  # swc向け https://github.com/ArnaudBarre/eslint-plugin-react-refresh
-  react-refresh/only-export-components: error
-  # 強化
-  "@typescript-eslint/no-use-before-define": error
-  "@typescript-eslint/consistent-type-imports": error
   # 未使用変数はアンダーバー開始のものを許容
   '@typescript-eslint/no-unused-vars':
     - warn
@@ -46,6 +41,11 @@ rules:
       varsIgnorePattern: ^_
       caughtErrorsIgnorePattern: ^_
       destructuredArrayIgnorePattern: ^_
+  # swc向け https://github.com/ArnaudBarre/eslint-plugin-react-refresh
+  react-refresh/only-export-components: error
+  # 強化
+  "@typescript-eslint/no-use-before-define": error
+  "@typescript-eslint/consistent-type-imports": error
   # 依存関係の階層設定
   strict-dependencies/strict-dependencies:
     - "error"
