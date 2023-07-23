@@ -1,20 +1,21 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import path from 'path';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react-swc';
 import checker from 'vite-plugin-checker';
 
+const relativePath = (...list: string[]) => path.resolve(__dirname, ...list);
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  build: {
-    // root (= ./src) から見た相対パスで指定
-    outDir: '../dist',
-  },
-  publicDir: '../public',
   root: './src',
+  // root (= ./src) から見た相対パスで指定
+  build: {
+    outDir: relativePath('dist'),
+  },
+  publicDir: relativePath('public'),
   resolve: {
     alias: {
-      '~': path.resolve(__dirname, 'src'),
+      '~': relativePath('src'),
     },
   },
   define: {
@@ -28,10 +29,11 @@ export default defineConfig({
   test: {
     coverage: {
       provider: 'c8',
-      reportsDirectory: '../coverage',
+      reportsDirectory: relativePath('coverage'),
     },
+    cache: {dir: relativePath('node_modules', '.vitest')},
     environment: 'happy-dom',
-    setupFiles: './dev/setup.ts',
+    setupFiles: relativePath('src', 'dev', 'setup.ts'),
     deps: {
       external: ['**/dist/**'],
     },
@@ -41,7 +43,13 @@ export default defineConfig({
     checker({
       typescript: true,
       eslint: {
-        lintCommand: 'eslint ./ --ext ts,tsx --ignore-path ../.gitignore --cache --cache-location node_modules/.cache/.eslintcache',
+        lintCommand: `eslint ${
+          relativePath('src')
+        } --ext ts,tsx --ignore-path ${
+          relativePath('.gitignore')
+        } --cache --cache-location ${
+          relativePath('node_modules', '.cache', '.eslintcache')
+        }`,
       },
     }),
   ],
