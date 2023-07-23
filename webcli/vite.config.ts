@@ -28,7 +28,7 @@ export default defineConfig({
   },
   test: {
     coverage: {
-      provider: 'c8',
+      provider: 'v8',
       reportsDirectory: relativePath('coverage'),
     },
     cache: {dir: relativePath('node_modules', '.vitest')},
