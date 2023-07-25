@@ -5,6 +5,7 @@ services:
     volumes:
       - .:/e2eencloud:cached
       - apiserver-bashhistory:/commandhistory
+      - volume-apiservercache:/home/vscode/.cache
     ports:
       - 8084:5555
     labels:

@@ -178,13 +178,14 @@ services:
       dockerfile: DockerfileApp
     image: e2eencloud/apiserver
     container_name: apiserver
-    command: "sleep infinity"
+    command: "bash -c \"cd /e2eencloud/tinyserver && deno task server\""
     env_file:
       - .env
     environment:
       - DATABASE_URL=prisma://db-prisma-proxy-https?api_key=HOGE_HOGE
       - SHADOW_DATABASE_URL=mysql://${DB_USER}:${DB_PASS}@db:3306/${DB_NAME}
     volumes:
+      - .:/e2eencloud:cached
       - volume-apiservercache:/home/vscode/.cache
     labels:
       traefik.enable: true
