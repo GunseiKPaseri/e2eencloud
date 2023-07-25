@@ -97,7 +97,7 @@ services:
     networks:
       - prismanet
   owner-setter:
-    image: node:18
+    image: node:20.5.0
     user: root
     group_add:
       - '1000'

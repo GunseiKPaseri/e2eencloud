@@ -4,16 +4,20 @@ E2E暗号化を実装したWebストレージアプリケーション
 
 ![web client picture](document/asset/e2eencloud.png)
 
-## 使い方
+## 動作方法
 
+以下を**初回のみ**実行する
+```shell-session
+$ ./build-env.sh
+$ ./build-firsttime.sh
+$ ./build-frontend.sh
 ```
-./build-frontend.sh
-docker compose up -d
+以下を実行する
+```shell-session
+$ docker compose up -d
 ```
 
-`./build-frontend.sh`でフロントエンドアプリケーションを作成する。実行は初回のみでよい
-
-app.localhostを開く
+[app.localhost]を開く
 
 ## ディレクトリ構造
 
@@ -26,7 +30,20 @@ Deno製アプリケーションサーバ（app.localhost/api以下に提供さ�
 クライアントSPA（開発用更新サーバ付き）
 
 ## テスト環境の立ち上げ
-最初に`tinyserver`を参考に`.env`をこのreadme.mdと同階層に作成する
+
+以下を**初回のみ**実行する
+```shell-session
+./build-env.sh
+```
 
 `tinyserver`・`webcli`それぞれでVSCode等を利用しdevcontainerを立ち上げる。
+
+tinyserver側のコンテナで以下を実行
+```shell-session
+$ deno task prisma:gen
+$ deno task prisma:mgdev
+$ deno task prisma:seed
+```
+
 それぞれのサーバを立ち上げれば[app.localhost]から利用できる。（ローカルの80番ポートを開けておくこと）
+

@@ -1,0 +1,15 @@
+version: '3.7'
+services:
+  apiserver:
+    command: sleep infinity
+    volumes:
+      - .:/e2eencloud:cached
+      - apiserver-bashhistory:/commandhistory
+      - volume-apiservercache:/home/vscode/.cache
+    ports:
+      - 8084:5555
+    labels:
+      traefik.http.routers.app.rule: "Host(`app.localhost`) && PathPrefix(`/api`)"
+
+volumes:
+  apiserver-bashhistory:
