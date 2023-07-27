@@ -17,12 +17,13 @@ export default defineConfig(({ mode }) => ({
       plugins: [
         mode === 'analyze' ? visualizer({
           open: true,
-          filename: relativePath('analyze', 'bundlesize-visualize.html'),
+          filename: relativePath('dist', 'analyze', 'bundlesize-visualize.html'),
           gzipSize: true,
           brotliSize: true,
         }) : undefined,
       ]
-    }
+    },
+    emptyOutDir: true,
   },
   publicDir: relativePath('public'),
   resolve: {
@@ -41,7 +42,7 @@ export default defineConfig(({ mode }) => ({
   test: {
     coverage: {
       provider: 'v8',
-      reportsDirectory: relativePath('analyze', 'coverage'),
+      reportsDirectory: relativePath('dist', 'analyze', 'coverage'),
     },
     cache: {dir: relativePath('node_modules', '.vitest')},
     environment: 'happy-dom',
