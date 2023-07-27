@@ -3,8 +3,8 @@ node_modules
 dist
 dist-ssr
 *.local
-# vitest coverage
-coverage/
+# vitest coverage & bundle size
+analyze
 # only need file
 public/*
 !public/locales/

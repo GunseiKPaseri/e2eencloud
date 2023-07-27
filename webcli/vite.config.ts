@@ -2,15 +2,26 @@ import path from 'path';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react-swc';
 import checker from 'vite-plugin-checker';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 const relativePath = (...list: string[]) => path.resolve(__dirname, ...list);
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   root: './src',
   // root (= ./src) から見た相対パスで指定
   build: {
     outDir: relativePath('dist'),
+    rollupOptions: {
+      plugins: [
+        mode === 'analyze' ? visualizer({
+          open: true,
+          filename: relativePath('analyze', 'bundlesize-visualize.html'),
+          gzipSize: true,
+          brotliSize: true,
+        }) : undefined,
+      ]
+    }
   },
   publicDir: relativePath('public'),
   resolve: {
@@ -29,7 +40,7 @@ export default defineConfig({
   test: {
     coverage: {
       provider: 'v8',
-      reportsDirectory: relativePath('coverage'),
+      reportsDirectory: relativePath('analyze', 'coverage'),
     },
     cache: {dir: relativePath('node_modules', '.vitest')},
     environment: 'happy-dom',
@@ -53,4 +64,4 @@ export default defineConfig({
       },
     }),
   ],
-});
+}));
