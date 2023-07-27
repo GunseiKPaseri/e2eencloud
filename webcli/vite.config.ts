@@ -16,13 +16,20 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       plugins: [
         mode === 'analyze' ? visualizer({
-          open: true,
           filename: relativePath('dist', 'analyze', 'bundlesize-visualize.html'),
           gzipSize: true,
           brotliSize: true,
         }) : undefined,
-      ]
+      ],
+      manualChunks: {
+        'react': ['react-dom', 'react-router', 'react-dnd'],
+        'mui': ['@mui/material'],
+        'mui-grid': ['@mui/x-data-grid'],
+        'bin': ['@zip.js/zip.js', 'hash-wasm', '@noble/hashes'],
+        'date-fns': ['date-fns'],
+      }
     },
+    chunkSizeWarningLimit: 850,
     emptyOutDir: true,
   },
   publicDir: relativePath('public'),

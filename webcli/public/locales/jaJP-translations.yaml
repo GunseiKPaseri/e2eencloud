@@ -25,5 +25,3 @@ language:
   jaJP: 日本語
   enUS: 英語
   zhCN: 中国語
-conf:
-  dateFnsLocale: ja
