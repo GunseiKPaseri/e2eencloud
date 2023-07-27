@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => ({
   // root (= ./src) から見た相対パスで指定
   build: {
     outDir: relativePath('dist'),
+    minify: 'terser',
     rollupOptions: {
       plugins: [
         mode === 'analyze' ? visualizer({
