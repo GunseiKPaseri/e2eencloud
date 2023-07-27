@@ -1,5 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit';
-import logger from 'redux-logger';
+import { createLogger } from 'redux-logger';
+import { createReduxHistoryContext } from "redux-first-history";
+import { createBrowserHistory } from 'history';
+
 import authReducer from '~/features/auth/authSlice';
 import contextmenuReducer from '~/features/contextmenu/contextmenuSlice';
 import fileReducer from '~/features/file/fileSlice';
@@ -8,6 +11,15 @@ import progressReducer from '~/features/progress/progressSlice';
 import sessionReducer from '~/features/session/sessionSlice';
 import snackbarReducer from '~/features/snackbar/snackbarSlice';
 
+const { createReduxHistory, routerMiddleware, routerReducer } = createReduxHistoryContext({ 
+  history: createBrowserHistory(),
+});
+
+const logger = createLogger({
+  collapsed: true,
+  diff: true,
+})
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -15,12 +27,15 @@ export const store = configureStore({
     file: fileReducer,
     language: languageReducer,
     progress: progressReducer,
+    router: routerReducer,
     session: sessionReducer,
     snackbar: snackbarReducer,
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat([logger, routerMiddleware]),
   devTools: true,
 });
+
+export const history = createReduxHistory(store);
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>;

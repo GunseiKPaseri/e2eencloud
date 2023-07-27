@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { HistoryRouter } from 'redux-first-history/rr6';
+import { Route, Routes } from 'react-router-dom';
 import CssBaseline from '@mui/material/CssBaseline';
 
 import './index.css';
@@ -14,6 +15,8 @@ import Notifier from './features/snackbar/Notifier';
 import ContextMenuProvider from './features/contextmenu/ContextMenuProvider';
 import FileExplorer from './pages/components/FileExplorer';
 
+import { history } from './store/store';
+
 import ComposedProvider from './pages/ComposedProvider';
 import RequireAuth from './features/auth/components/RequireAuth';
 import RequireAdmin from './features/auth/components/RequireAdmin';
@@ -24,13 +27,12 @@ import AdminConfigure from './pages/components/configure/AdminConfigure';
 const rootElement = document.getElementById('root');
 if (rootElement) {
   const root = createRoot(rootElement);
-
   root.render(
     <ComposedProvider>
       <CssBaseline />
       <Notifier />
       <ContextMenuProvider>
-        <BrowserRouter>
+        <HistoryRouter history={history}>
           <Routes>
             <Route path="/" element={<App />}>
               <Route index element={<FileExplorer />} />
@@ -44,7 +46,8 @@ if (rootElement) {
             <Route path="/confirm" element={<Setup />} />
             <Route path="/login" element={<Login />} />
           </Routes>
-        </BrowserRouter>
+        </HistoryRouter>
+        {/* <RouterProvider router={router} /> */}
       </ContextMenuProvider>
     </ComposedProvider>,
   );

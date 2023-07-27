@@ -12,6 +12,7 @@ import { buildFileTableAsync } from '~/features/file/thunk/buildFileTableAsync';
 
 import { updateUsageAsync } from '~/features/file/thunk/updateUsageAsync';
 import { deleteProgress } from '~/features/progress/progressSlice';
+import { push } from 'redux-first-history';
 
 type LoginSuccess = {
   role: 'ADMIN' | 'USER',
@@ -74,6 +75,8 @@ UserState, LoginSuccess>(
     ]);
 
     dispatch(deleteProgress());
+
+    dispatch(push('/'));
 
     dispatch(enqueueSnackbar({ message: 'ログインに成功しました', options: { variant: 'success' } }));
     return {
