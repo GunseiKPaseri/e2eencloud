@@ -78,6 +78,7 @@ describe('#searchFromTable', () => {
 });
 
 const SearchQueryTestCase: [string, SearchQuery][] = [
+  ['', []],
   ['Hogehoge', [[{ type: 'name', word: 'Hogehoge' }]]],
   ['tag:', [[{ type: 'tag', value: '' }]]],
   ['Hogehoge mime: image/png　OR Fugafuga tag:😃', [[{ type: 'name', word: 'Hogehoge' }, { type: 'mime', word: 'image/png' }], [{ type: 'name', word: 'Fugafuga' }, { type: 'tag', value: '😃' }]]],

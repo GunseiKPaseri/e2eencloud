@@ -76,9 +76,22 @@ export type FileTable = Record<string, FileNode<FileInfo>>;
 
 type GroupCommon = { files: string[], selecting: string[] };
 
-export type TagGroup = GroupCommon & { type: 'tag', tagName: string };
-export type DirGroup = GroupCommon & { type: 'dir', folderId: string, parents: string[] };
-export type SearchGroup = GroupCommon & { type: 'search', exfiles: [string, Highlight[]][], queryString: string, query: SearchQuery };
+export type TagGroup = GroupCommon & {
+  type: 'tag';
+  tagName: string;
+};
+export type DirGroup = GroupCommon & {
+  type: 'dir';
+  folderId: string;
+  parents: string[];
+};
+export type SearchGroup = GroupCommon & {
+  type: 'search';
+  exfiles: [string, Highlight[]][];
+  queryString: string;
+  query: SearchQuery;
+  preGroup: null | TagGroup | DirGroup;
+};
 
 export interface GetfileinfoJSONRow {
   id: string,
