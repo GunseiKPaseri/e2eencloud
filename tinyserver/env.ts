@@ -1,6 +1,6 @@
 // APP PORT
 export const PORT = parseInt(Deno.env.get('PORT') ?? '3001');
-export const SERVER_HOSTNAME = Deno.env.get('SERVER_HOSTNAME') ?? 'localhost';
+export const SERVER_HOSTNAME = Deno.env.get('SERVER_HOSTNAME') ?? 'app.localhost';
 export const SERVER_URI = Deno.env.get('SERVER_URI') ?? 'http://localhost';
 
 // DB

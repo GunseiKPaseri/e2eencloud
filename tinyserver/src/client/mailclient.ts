@@ -19,7 +19,7 @@ export const sendMail = async (
 ) => {
   const to = params.to;
   const from = `${params.fromInfo ?? 'noreply'}@${
-    ENV.SERVER_HOSTNAME === 'localhost' ? 'example.com' : ENV.SERVER_HOSTNAME
+    ENV.SERVER_HOSTNAME.endsWith('localhost') ? 'example.com' : ENV.SERVER_HOSTNAME
   }`;
   await mailcli.send({
     from,
