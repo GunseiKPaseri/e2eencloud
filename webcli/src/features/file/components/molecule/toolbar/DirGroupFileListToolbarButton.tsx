@@ -1,5 +1,4 @@
 import React, { useId, useState } from 'react';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -9,6 +8,7 @@ import Button from '@mui/material/Button';
 
 import AddIcon from '@mui/icons-material/Add';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
 import { type FileState, createFolderAsync } from '~/features/file/fileSlice';
@@ -16,6 +16,8 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
+import StyledToggleButtonGroup from '~/components/atom/StyledToggleButtonGroup';
+import { ListItemIcon, ListItemText } from '@mui/material';
 
 function AddFolderDialog(props: {
   open: boolean;
@@ -63,7 +65,7 @@ function AddFolderDialog(props: {
 }
 
 
-export default function AppToolberDir() {
+export default function DirGroupFileListToolbarButton() {
   const anchorId = useId();
   const [anchorAddEl, setAnchorAddEl] = useState<null | HTMLElement>(null);
   const openAddMenu = Boolean(anchorAddEl)
@@ -84,7 +86,7 @@ export default function AppToolberDir() {
 
   return (
     <>
-      <ToggleButtonGroup sx={{marginLeft: 1}}>
+      <StyledToggleButtonGroup size='small'>
         <Tooltip title="新規作成">
           <ToggleButton
             onClick={handleClick}
@@ -94,10 +96,11 @@ export default function AppToolberDir() {
             aria-haspopup="true"
             aria-expanded={openAddMenu ? 'true' : undefined}
           >
-            <AddIcon />
+              <AddIcon />
+              <ArrowDropDownIcon />
           </ToggleButton>
         </Tooltip>
-      </ToggleButtonGroup>
+      </StyledToggleButtonGroup>
       {
         openAddMenu &&
         <Menu
@@ -122,7 +125,12 @@ export default function AppToolberDir() {
             handleDialogClickOpen();
             handleClose();
           }}>
-            <CreateNewFolderIcon /> 新しいフォルダー
+            <ListItemIcon>
+              <CreateNewFolderIcon />
+            </ListItemIcon>
+            <ListItemText>
+              新しいフォルダー
+            </ListItemText>
           </MenuItem>
         </Menu>
       }

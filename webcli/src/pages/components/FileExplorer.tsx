@@ -4,8 +4,8 @@ import Login from '~/features/auth/components/login/Login';
 import FileTreeViewer from '~/features/file/components/FileTreeViewer';
 import FileList from '~/features/file/components/FileList';
 import Viewer from '~/features/file/components/Viewer';
-import { DiffTree } from '~/features/file/components/DiffTree';
-import TagButton from '~/features/file/components/TagButton';
+import { DiffTree } from '~/features/file/components/molecule/DiffTree';
+import TagButton from '~/features/file/components/atom/TagButton';
 
 export default function FileExplorer() {
   return (

@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react';
 import ListItemText from '@mui/material/ListItemText';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 
 import FolderIcon from '@mui/icons-material/Folder';
@@ -13,7 +12,6 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ViewComfyIcon from '@mui/icons-material/ViewComfy';
-import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import type { Theme } from '@mui/material/styles';
@@ -23,7 +21,7 @@ import { useDrop } from 'react-dnd';
 import { StyledBreadcrumb, StyledBreadcrumbWithMenu } from '~/components/atom/StyledBreadcrumb';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
 import { openContextmenu } from '~/features/contextmenu/contextmenuSlice';
-import TagButton from '~/features/file/components/TagButton';
+import TagButton from '~/features/file/components/atom/TagButton';
 import type { FileNode, FileInfoFolder } from '~/features/file/file.type';
 import { assertFileNodeFolder } from '~/features/file/filetypeAssert';
 import type { FileState } from '~/features/file/fileSlice';
@@ -31,11 +29,14 @@ import {
   changeActiveFileGroupDir, fileDeleteAsync, filedownloadAsync,
 } from '~/features/file/fileSlice';
 import { genUseDropReturn } from '~/features/file/components/dnd';
-import SearchInput from '~/features/file/components/SearchInput';
-import FileSimpleList from './FileList/FileSimpleList';
-import FileGrid from './FileList/FileGrid';
-import FileImgList from './FileList/FileImgList';
-import AppToolberDir from './toolbar/AppToolbarDir';
+import SearchInput from '~/features/file/components/atom/SearchInput';
+import FileSimpleList from './molecule/filelist/FileSimpleList';
+import FileGrid from './molecule/filelist/FileGrid';
+import FileImgList from './molecule/filelist/FileImgList';
+import DirGroupFileListToolbarButton from './molecule/toolbar/DirGroupFileListToolbarButton';
+import StyledToggleButtonGroupWrapper from '~/components/atom/StyledToggleButtonGroupWrapper';
+import StyledToggleButtonGroup from '~/components/atom/StyledToggleButtonGroup';
+import Divider from '@mui/material/Divider';
 
 function DIRBreadcrumb(props: { target: FileNode<FileInfoFolder> }) {
   const { target } = props;
@@ -137,29 +138,43 @@ function FileList() {
   return (
     <>
       <Toolbar>
-        <ToggleButtonGroup
-          value={viewStyle}
-          exclusive
-          onChange={(_: unknown, nextView: React.SetStateAction<'list' | 'detaillist' | 'pic'>) => setViewStyle(nextView)}
-        >
-          <ToggleButton value="list"><ViewListIcon /></ToggleButton>
-          <ToggleButton value="detaillist"><ViewHeadlineIcon /></ToggleButton>
-          <ToggleButton value="pic"><ViewComfyIcon /></ToggleButton>
-        </ToggleButtonGroup>
-        {
-          activeFileGroup && activeFileGroup.type === 'dir'
-            && <AppToolberDir />
-        }
-        {
-          activeFileGroup && activeFileGroup.type === 'tag' && activeFileGroup.tagName === 'bin'
-            && (
-              <Tooltip title="完全削除">
-                <IconButton onClick={handleDeleteClick}>
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
-            )
-        }
+        <StyledToggleButtonGroupWrapper>
+          <StyledToggleButtonGroup
+            size='small'
+            value={viewStyle}
+            exclusive
+            onChange={(_: unknown, nextView: React.SetStateAction<'list' | 'detaillist' | 'pic'>) => setViewStyle(nextView)}
+          >
+            <ToggleButton value="list"><Tooltip title="一覧"><ViewListIcon /></Tooltip></ToggleButton>
+            <ToggleButton value="detaillist"><Tooltip title="詳細"><ViewHeadlineIcon /></Tooltip></ToggleButton>
+            <ToggleButton value="pic"><Tooltip title="画像タイル"><ViewComfyIcon /></Tooltip></ToggleButton>
+          </StyledToggleButtonGroup>
+          {
+            activeFileGroup && activeFileGroup.type === 'dir'
+              && (
+                <>
+                  <Divider flexItem orientation="vertical" sx={{ mx: 0.5, my: 1 }} />
+                  <DirGroupFileListToolbarButton />
+                </>
+              )
+          }
+          {
+            activeFileGroup && activeFileGroup.type === 'tag' && activeFileGroup.tagName === 'bin'
+              && (
+              <>
+                <Divider flexItem orientation="vertical" sx={{ mx: 0.5, my: 1 }} />
+                <StyledToggleButtonGroup size='small'>
+                  <Tooltip title="完全削除">
+                    <ToggleButton value='' onClick={handleDeleteClick}>
+                      <DeleteIcon />
+                    </ToggleButton>
+                  </Tooltip>
+                </StyledToggleButtonGroup>
+              </>
+              )
+          }
+        </StyledToggleButtonGroupWrapper>
+
         <SearchInput sx={{marginLeft: 1}} />
       </Toolbar>
       {
