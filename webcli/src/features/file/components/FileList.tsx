@@ -14,6 +14,7 @@ import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ViewComfyIcon from '@mui/icons-material/ViewComfy';
 import IconButton from '@mui/material/IconButton';
+import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import type { Theme } from '@mui/material/styles';
 import type { SystemStyleObject } from '@mui/system/styleFunctionSx';
@@ -31,9 +32,10 @@ import {
 } from '~/features/file/fileSlice';
 import { genUseDropReturn } from '~/features/file/components/dnd';
 import SearchInput from '~/features/file/components/SearchInput';
-import FileSimpleList from './FileSimpleList';
-import FileGrid from './FileGrid';
-import FileImgList from './FileImgList';
+import FileSimpleList from './FileList/FileSimpleList';
+import FileGrid from './FileList/FileGrid';
+import FileImgList from './FileList/FileImgList';
+import AppToolberDir from './toolbar/AppToolbarDir';
 
 function DIRBreadcrumb(props: { target: FileNode<FileInfoFolder> }) {
   const { target } = props;
@@ -134,20 +136,32 @@ function FileList() {
 
   return (
     <>
-      <ToggleButtonGroup
-        value={viewStyle}
-        exclusive
-        onChange={(_: unknown, nextView: React.SetStateAction<'list' | 'detaillist' | 'pic'>) => setViewStyle(nextView)}
-      >
-        <ToggleButton value="list"><ViewListIcon /></ToggleButton>
-        <ToggleButton value="detaillist"><ViewHeadlineIcon /></ToggleButton>
-        <ToggleButton value="pic"><ViewComfyIcon /></ToggleButton>
-      </ToggleButtonGroup>
-      <SearchInput />
-      {
-        activeFileGroup && activeFileGroup.type === 'tag' && activeFileGroup.tagName === 'bin'
-          && <Tooltip title="完全削除"><IconButton onClick={handleDeleteClick}><DeleteIcon /></IconButton></Tooltip>
-      }
+      <Toolbar>
+        <ToggleButtonGroup
+          value={viewStyle}
+          exclusive
+          onChange={(_: unknown, nextView: React.SetStateAction<'list' | 'detaillist' | 'pic'>) => setViewStyle(nextView)}
+        >
+          <ToggleButton value="list"><ViewListIcon /></ToggleButton>
+          <ToggleButton value="detaillist"><ViewHeadlineIcon /></ToggleButton>
+          <ToggleButton value="pic"><ViewComfyIcon /></ToggleButton>
+        </ToggleButtonGroup>
+        {
+          activeFileGroup && activeFileGroup.type === 'dir'
+            && <AppToolberDir />
+        }
+        {
+          activeFileGroup && activeFileGroup.type === 'tag' && activeFileGroup.tagName === 'bin'
+            && (
+              <Tooltip title="完全削除">
+                <IconButton onClick={handleDeleteClick}>
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+            )
+        }
+        <SearchInput sx={{marginLeft: 1}} />
+      </Toolbar>
       {
         activeFileGroup
           && (

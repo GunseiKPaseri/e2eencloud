@@ -2,9 +2,8 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Login from '~/features/auth/components/login/Login';
 import FileTreeViewer from '~/features/file/components/FileTreeViewer';
-import FileList from '~/features/file/components/FileList/FileList';
+import FileList from '~/features/file/components/FileList';
 import Viewer from '~/features/file/components/Viewer';
-import { AddFolder } from '~/features/file/components/AddFolder';
 import { DiffTree } from '~/features/file/components/DiffTree';
 import TagButton from '~/features/file/components/TagButton';
 
@@ -27,7 +26,6 @@ export default function FileExplorer() {
         <Login />
       </Paper>
       <Paper sx={{ overflowY: 'scroll', padding: 1 }}>
-        <AddFolder />
         <FileList />
       </Paper>
       <Paper sx={{ overflowY: 'scroll', padding: 1 }}>

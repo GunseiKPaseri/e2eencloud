@@ -3,12 +3,14 @@ import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
 import { changeActiveFileGroupSearch } from '~/features/file/fileSlice';
+import type { SxProps, Theme } from '@mui/material';
 
-function SearchInput() {
+function SearchInput(props: {sx?: SxProps<Theme>}) {
   const dispatch = useAppDispatch();
   const activeFileGroup = useAppSelector((state) => state.file.activeFileGroup);
   return (
     <TextField
+      sx={props.sx}
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">
