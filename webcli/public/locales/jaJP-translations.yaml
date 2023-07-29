@@ -4,6 +4,8 @@ admin:
   cancel: キャンセル
   ChangeSuccessful: 変更が正常に反映されました
   ChangeFailed: 変更に失敗しました
+  ConfirmDeleteElement: 以下の要素を削除しますか？
+  ConfirmSave: 以下の内容で変更を保存しますか？
   delete: 削除
   edit: 編集
   issue: 発行
@@ -21,6 +23,9 @@ auth:
   registifyoudonothaveanaccount: アカウントが無ければ登録
   multifactorauth: 多要素認証
   youalreadyloggined: 既に{{email}}としてログイン済です
+  DisposableCode: 使い捨てコード
+  SelectMFASolution: 二要素認証の選択
+  UseOtherAuthMethod: 他の認証手段を利用
 language:
   jaJP: 日本語
   enUS: 英語

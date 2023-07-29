@@ -10,6 +10,7 @@ import { ExhaustiveError } from '~/utils/assert';
 import { type AuthState, selectMFASolution, mfaCancelAsync } from '~/features/auth/authSlice';
 import { mfasolution2name } from '~/features/auth/solution';
 import { fido2LoginAsync } from '~/features/auth/thunk/fido2LoginAsync';
+import { useTranslation } from 'react-i18next';
 
 function MFASolutionLogo({ solution }: { solution: AuthState['suggestedMfa'][0] }) {
   switch (solution) {
@@ -27,12 +28,13 @@ function MFASolutionLogo({ solution }: { solution: AuthState['suggestedMfa'][0] 
 }
 
 export default function MFASolutionList() {
+  const { t } = useTranslation();
   const suggestedMFA = useAppSelector<AuthState['suggestedMfa']>((state) => state.auth.suggestedMfa);
   const dispatch = useAppDispatch();
 
   return (
     <Box sx={{ mt: 1 }}>
-      <Typography>二要素認証の選択</Typography>
+      <Typography>{t('admin.SelectMFASolution', '多要素認証の選択')}</Typography>
       {
         suggestedMFA.map((x) => (
           <Button
@@ -61,7 +63,7 @@ export default function MFASolutionList() {
           await dispatch(mfaCancelAsync());
         }}
       >
-        キャンセル
+        {t('admin.cancel', 'キャンセル')}
       </Button>
     </Box>
   );

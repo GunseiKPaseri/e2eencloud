@@ -39,7 +39,7 @@ function OtherStepGuide() {
                     variant="body2"
                     onClick={() => dispatch(selectMFASolution('SelectMFASolution'))}
                   >
-                    他の認証手段を利用
+                    {t('auth.auth.UseOtherAuthMethod', '他の認証手段を利用')}
                   </Link>
                 )
             )

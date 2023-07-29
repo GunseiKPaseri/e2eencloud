@@ -182,10 +182,10 @@ function EditableDataGrid<T extends GridValidRowModel>(
       type: 'actions',
       // eslint-disable-next-line react/no-unstable-nested-components
       getActions: (params: GridRowParams<T>) => ([
-        <Tooltip title="削除">
+        <Tooltip title={t('admin.delete', '削除')}>
           <GridActionsCellItem
             icon={<DeleteIcon />}
-            label="削除"
+            label={t('admin.delete', '削除')}
             onClick={() => {
               setDeleteConfirmArguments({ params });
             }}
@@ -199,7 +199,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
   return (
     <div style={{ height: parentHeight, width: '100%' }}>
       <ConfirmDialog
-        title="以下の内容で変更を保存しますか？"
+        title={t('admin.ConfirmSave', '以下の内容で変更を保存しますか？')}
         open={!!editConfirmPromiseArguments}
         contents={
           <Typography>{editConfirmDirlogMain}</Typography>
@@ -210,7 +210,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
         textNo={t('admin.cancel', 'キャンセル')}
       />
       <ConfirmDialog
-        title="以下の要素を削除しますか"
+        title={t('admin.ConfirmDeleteElement', '以下の要素を削除しますか？')}
         open={!!deleteConfirmArguments}
         contents={
           <Typography>{deleteConfirmArguments ? getName(deleteConfirmArguments.params) : ''}</Typography>

@@ -24,7 +24,7 @@ export default function CODESender({ state }: { state: 'error' | 'pending' | nul
         margin="normal"
         fullWidth
         name="token"
-        label="使い捨てコード"
+        label={t('auth.DisposableCode', "使い捨てコード")}
         type="normal"
         id="token"
         value={mfacode}
