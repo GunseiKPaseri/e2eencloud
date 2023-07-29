@@ -70,7 +70,7 @@ export { updateUsageAsync };
 export interface FileState {
   loading: 0 | 1,
   fileTable: FileTable,
-  tagTree: { [key: string]: string[] },
+  tagTree: Record<string, string[]>,
   activeFile: {
     link: string,
     fileId: string,

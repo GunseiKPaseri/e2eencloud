@@ -25,14 +25,14 @@
     }
   },
   "tasks": {
-    "init": "deno run ./script/gen_environment.ts > .env",
-    "server": "deno run --allow-env --allow-net=0.0.0.0:3001,db-prisma-proxy-https,minio,mailer --allow-read --unsafely-ignore-certificate-errors=db-prisma-proxy-https --unstable ./src/main.ts",
+    "init": "deno run ./script/gen_environment.ts > ../.env",
+    "server": "deno run --allow-env --allow-net=0.0.0.0:3001,db-prisma-proxy-https,minio,mailer,deno.land --allow-read --unsafely-ignore-certificate-errors=db-prisma-proxy-https --unstable ./src/main.ts",
     "test": "deno check ./src/main.ts & deno test --allow-env --allow-net --allow-read",
     "checkdependent": "deno cache --lock-write --unstable ./deps.ts",
     "checkupdate": "deno run --allow-read=. --allow-net https://deno.land/x/udd@0.8.2/main.ts deps.ts --dry-run",
     "update": "deno run --allow-write=./deps.ts --allow-read=. --allow-net https://deno.land/x/udd@0.8.2/main.ts deps.ts --test='deno task test'",
     "prisma:gen": "deno run --unstable -A npm:prisma@4.11.0 generate --data-proxy",
-    "prisma:mgdev": "./dblocalaccess.sh deno run --unstable -A npm:prisma@4.11.0 db push",
+    "prisma:mgdev": "deno run --unstable -A npm:prisma@4.11.0 db push",
     "prisma:seed": "deno run --allow-read --allow-env --allow-net=db-prisma-proxy-https --unsafely-ignore-certificate-errors=db-prisma-proxy-https ./prisma/seed.ts"
     //    "migrate": "deno run -A --unstable --allow-net=localhost:13306 https://deno.land/x/nessie@2.0.10/cli.ts migrate",
     //    "rollback": "deno run -A --unstable --allow-net=localhost:13306 https://deno.land/x/nessie@2.0.10/cli.ts rollback"

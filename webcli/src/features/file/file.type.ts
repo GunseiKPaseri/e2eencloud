@@ -72,13 +72,26 @@ export type FileNode<T extends FileInfo> = {
 /**
   * ディレクトリテーブル
   */
-export type FileTable = { [key: string]: FileNode<FileInfo> };
+export type FileTable = Record<string, FileNode<FileInfo>>;
 
 type GroupCommon = { files: string[], selecting: string[] };
 
-export type TagGroup = GroupCommon & { type: 'tag', tagName: string };
-export type DirGroup = GroupCommon & { type: 'dir', folderId: string, parents: string[] };
-export type SearchGroup = GroupCommon & { type: 'search', exfiles: [string, Highlight[]][], queryString: string, query: SearchQuery };
+export type TagGroup = GroupCommon & {
+  type: 'tag';
+  tagName: string;
+};
+export type DirGroup = GroupCommon & {
+  type: 'dir';
+  folderId: string;
+  parents: string[];
+};
+export type SearchGroup = GroupCommon & {
+  type: 'search';
+  exfiles: [string, Highlight[]][];
+  queryString: string;
+  query: SearchQuery;
+  preGroup: null | TagGroup | DirGroup;
+};
 
 export interface GetfileinfoJSONRow {
   id: string,
@@ -91,7 +104,7 @@ export interface GetfileinfoJSONRow {
 
 export type BuildFileTableAsyncResult = {
   fileTable: FileTable,
-  tagTree: { [key: string]: string[] }
+  tagTree: Record<string, string[]>
 };
 
 /* 容量情報 */

@@ -152,7 +152,7 @@ export const trimExpansion = (expansionLocal: FileNode<FileInfoFile>['expansion'
   switch (expansionLocal.type) {
     case 'img': {
       const {
-        ahashObj, dhashObj, phashObj, ...expansion
+        ahashObj: _a, dhashObj: _d, phashObj: _p, ...expansion
       } = expansionLocal;
       return expansion;
     }
@@ -165,7 +165,7 @@ export const trimExpansion = (expansionLocal: FileNode<FileInfoFile>['expansion'
  * ファイル拡張情報の生成
  */
 export const genExpansion = async (fileInfo: FileInfoFile, blobURL: string): Promise<{ expansion: FileInfoFile['expansion'], expansionLocal: FileNode<FileInfoFile>['expansion'] } | undefined> => {
-  if (fileInfo.mime.indexOf('image/') === 0) {
+  if (fileInfo.mime.startsWith('image/')) {
     // image
     const img = new BrowserCanvas(await loadImage(blobURL));
     // console.log(img);
@@ -201,7 +201,7 @@ export type ExpandServerDataResult = { blobURL: string, previewURL: string | und
 export const expandServerData = async (fileObj: FileNode<FileInfoFile>, blobURL: string, exists?: { expansion: FileNode<FileInfoFile>['expansion'] }):Promise<ExpandServerDataResult> => {
   let previewURL:string | undefined;
   let expansion:FileNode<FileInfoFile>['expansion'] = exists?.expansion;
-  if (fileObj.mime.indexOf('image/') === 0) {
+  if (fileObj.mime.startsWith('image/')) {
     // make preview
     const MAX_SIZE = 150;
     previewURL = await getPreview(blobURL, MAX_SIZE, 'image/png');
@@ -486,7 +486,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):BuildFileTable
       },
     },
   };
-  const nextTable: { [key: string]: string | undefined } = {};
+  const nextTable: Record<string, string | undefined> = {};
   files.forEach((fileInfoWithEnc) => {
     const { fileInfo, fileKeyBin, originalVersion } = fileInfoWithEnc;
     switch (fileInfo.type) {
@@ -500,7 +500,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):BuildFileTable
         };
         break;
       case 'file': {
-        const fileInfoWithEncx: { [entry: string]: unknown } = fileInfoWithEnc;
+        const fileInfoWithEncx: Record<string, unknown> = fileInfoWithEnc;
         const fileInfoWithEncMustHaveBin: { encryptedFileIVBin?: unknown } = fileInfoWithEncx;
         const { encryptedFileIVBin } = fileInfoWithEncMustHaveBin;
         assertArrayNumber(encryptedFileIVBin);
@@ -530,8 +530,8 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):BuildFileTable
   });
 
   // create diff tree
-  const descendantsTable:{ [key: string]: {
-    prevId?: string, nextId?: string, diffList?: string[] } | undefined } = {};
+  const descendantsTable:Record<string, {
+    prevId?: string, nextId?: string, diffList?: string[] } | undefined> = {};
   const fileNodes = files
     .filter((x): x is FileCryptoInfoWithBin | FileCryptoInfoWithoutBin<FileInfoFolder> => x.fileInfo.type === 'folder' || x.fileInfo.type === 'file')
     .map((x) => x.fileInfo.id);
@@ -612,7 +612,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):BuildFileTable
   });
 
   // create tagtree
-  const tagTree: { [key: string]: string[] } = {};
+  const tagTree: Record<string, string[]> = {};
   dirTreeItems.forEach((x) => {
     const t = fileTable[x];
     if (!(t.type === 'file' || t.type === 'folder')) return;

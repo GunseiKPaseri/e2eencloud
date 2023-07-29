@@ -29,7 +29,7 @@ export const addEmailConfirmation = async (
   const token = uniqueKey();
   const hashedToken = bcrypt.hash(token);
 
-  const confirmURLBuilder = new URL(`${ENV.SERVER_URI}/confirm`);
+  const confirmURLBuilder = new URL(`http://${ENV.SERVER_HOSTNAME}/confirm`);
   confirmURLBuilder.searchParams.append('token', `${id}:${token}`);
   confirmURLBuilder.searchParams.append('expired_at', expired_at.toJSON());
   const confirmURL = confirmURLBuilder.toString();

@@ -127,7 +127,7 @@ export const searchTest = (
 };
 
 const genStrToken = (plainStr: string, type: Highlight[0]): SearchQueryToken => {
-  if (plainStr[0] === '"' && plainStr[plainStr.length - 1] === '"' && plainStr.length > 2) {
+  if (plainStr.startsWith('"') && plainStr.endsWith('"') && plainStr.length > 2) {
     return { type, word: plainStr.slice(1, -1), searchType: 'in' };
   }
   return { type, word: plainStr };

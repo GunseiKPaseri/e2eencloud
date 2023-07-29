@@ -22,7 +22,7 @@ const getDir = (
     const target = fileTable[id];
     switch (target.type) {
       case 'file':
-        return fetch(target.blobURL as string).then(async (res) => ({
+        return fetch(target.blobURL!).then(async (res) => ({
           blob: await res.blob(),
           name: `${tree}${target.name}`,
         }));

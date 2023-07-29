@@ -1,9 +1,3 @@
-import Box from '@mui/material/Box';
-import DownloadIcon from '@mui/icons-material/Download';
-import IconButton from '@mui/material/IconButton';
-import Link from '@mui/material/Link';
-import Tooltip from '@mui/material/Tooltip';
-
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
@@ -12,8 +6,8 @@ import { openContextmenu } from '~/features/contextmenu/contextmenuSlice';
 import type { FileState } from '~/features/file/fileSlice';
 import { filedownloadAsync } from '~/features/file/fileSlice';
 import { assertFileNodeFile, assertFileNodeFileORUndefined } from '~/features/file/filetypeAssert';
-import TagField from './TagField';
-import Renamer from './Renamer';
+import TagField from './molecule/TagField';
+import FilePreviewToolbar from './molecule/toolbar/FilePreviewToolbar';
 
 function Viewer() {
   const fileState = useAppSelector<FileState>((store) => store.file);
@@ -26,15 +20,8 @@ function Viewer() {
       ? (
         <>
           <TagField />
-          <Renamer id={activeNode.id} name={activeNode.name} />
-          <Box>
-            <Tooltip title="ダウンロード">
-              <Link href={activeFile.link} download={activeNode.name}>
-                <IconButton><DownloadIcon /></IconButton>
-              </Link>
-            </Tooltip>
-          </Box>
-          {activeNode.mime.indexOf('image/') === 0 && <img alt={activeNode.name} width="100%" src={activeFile.link} />}
+          <FilePreviewToolbar />
+          {activeNode.mime.startsWith('image/') && <img alt={activeNode.name} width="100%" src={activeFile.link} />}
 
           <ImageList
             rowHeight={164}
@@ -67,7 +54,7 @@ function Viewer() {
                     />
                   */}
                   {
-                    target.type === 'file' && target.mime.indexOf('image/') === 0 && target.blobURL
+                    target.type === 'file' && target.mime.startsWith('image/') && target.blobURL
                       ? (
                         <img
                           src={target.blobURL}

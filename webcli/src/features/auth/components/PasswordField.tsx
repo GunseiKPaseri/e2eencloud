@@ -46,7 +46,7 @@ export default function PasswordField({
   variant?: 'filled' | 'outlined' | 'standard',
 }) {
   const [showPassword, setShowPassword] = useState(false);
-  const InputComponent = variantComponent[variant || 'outlined'];
+  const InputComponent = variantComponent[variant ?? 'outlined'];
   return (
     <FormControl
       variant={variant}

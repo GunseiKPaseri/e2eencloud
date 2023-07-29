@@ -16,5 +16,4 @@ language:
   jaJP: Japanese
   enUS: English
   zhCN: Chinese
-conf:
-  dateFnsLocale: enUS
+

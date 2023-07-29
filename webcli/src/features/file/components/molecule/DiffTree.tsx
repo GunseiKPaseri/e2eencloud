@@ -11,7 +11,7 @@ import { useAppSelector } from '~/lib/react-redux';
 import type { FileState } from '~/features/file/fileSlice';
 import { assertNonFileNodeDiff } from '~/features/file/filetypeAssert';
 import type { FileInfo } from '~/features/file/file.type';
-import TagButton from './TagButton';
+import TagButton from '../atom/TagButton';
 
 /**
  * 差分情報から差分説明を作成

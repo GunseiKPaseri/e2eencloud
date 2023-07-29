@@ -15,6 +15,8 @@ declare module 'i18next' {
           cancel: string
           ChangeSuccessful: string
           ChangeFailed: string
+          ConfirmDeleteElement: string
+          ConfirmSave: string
           delete: string
           edit: string
           issue: string
@@ -35,6 +37,9 @@ declare module 'i18next' {
           multifactorauth: string
           totptoken: string
           youalreadyloggined: string
+          DisposableCode: string
+          SelectMFASolution: string
+          UseOtherAuthMethod: string
         }
         language: {
           jaJP: string

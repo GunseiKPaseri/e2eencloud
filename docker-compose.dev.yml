@@ -5,13 +5,14 @@ services:
     volumes:
       - .:/e2eencloud:cached
       - apiserver-bashhistory:/commandhistory
+      - volume-apiservercache:/home/vscode/.cache
     ports:
       - 8084:5555
     labels:
       traefik.http.routers.app.rule: "Host(`app.localhost`) && PathPrefix(`/api`)"
   frontenddevserver:
     container_name: frontenddevserver
-    image: node:18
+    image: node:20.5.0
     command: sleep infinity
     volumes:
       - .:/e2eencloud:cached

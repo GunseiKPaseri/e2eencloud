@@ -51,7 +51,12 @@ export const afterChangeActiveFileGroupSearch:
 CaseReducer<FileState, PayloadAction<{ queryString: string }>> = (state, action) => {
   // 指定タグのディレクトリをactiveにする
   const { query } = new SearchQueryParser(action.payload.queryString);
+  if (query.length === 0) {
+    state.activeFileGroup = (state.activeFileGroup?.type !== 'search' ?  state.activeFileGroup : state.activeFileGroup.preGroup)
+    return
+  }
   const result = searchFromTable(state.fileTable, query);
+  const preGroup = (state.activeFileGroup?.type !== 'search' ?  state.activeFileGroup : state.activeFileGroup.preGroup)
   state.activeFileGroup = {
     type: 'search',
     files: result.map((x) => x[0]),
@@ -59,6 +64,7 @@ CaseReducer<FileState, PayloadAction<{ queryString: string }>> = (state, action)
     exfiles: result,
     query,
     queryString: action.payload.queryString,
+    preGroup,
   };
 };
 

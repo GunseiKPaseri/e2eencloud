@@ -1,21 +1,60 @@
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import * as MUIDataGridLocales from '@mui/x-data-grid/locales';
 import { LocalizationProvider } from '@mui/x-date-pickers';
-import * as MUIDateLocales from '@mui/x-date-pickers/locales';
 import { useMemo } from 'react';
 import type { ReactNode } from 'react';
-import * as MUILocales from '@mui/material/locale';
-import * as dateFnsLocale from 'date-fns/locale';
-import { useTranslation } from 'react-i18next';
+import {
+  jaJP as MUILocalejaJP,
+  zhCN as MUILocalezhCN,
+  enUS as MUILocaleenUS
+} from '@mui/material/locale';
+import {
+  jaJP as MUIDateLocalejaJP,
+  zhCN as MUIDateLocalezhCN,
+  enUS as MUIDateLocaleenUS
+} from '@mui/x-date-pickers/locales';
+import {
+  jaJP as MUIDataGridLocalejaJP,
+  zhCN as MUIDataGridLocalezhCN,
+  enUS as MUIDataGridLocaleenUS
+} from '@mui/x-data-grid/locales';
+import {
+  ja as dateFnsLocalejaJP,
+  zhCN as dateFnsLocalezhCN,
+  enUS as dateFnsLocaleenUS
+} from 'date-fns/locale';
 
 import { useAppSelector } from '~/lib/react-redux';
+import type { LanguageState } from '~/features/language/languageState';
+
+const MUILocales = {
+  jaJP: MUILocalejaJP,
+  zhCN: MUILocalezhCN,
+  enUS: MUILocaleenUS,
+} as const satisfies Record<LanguageState['language'], typeof MUILocalejaJP>;
+
+const dateFnsLocale = {
+  jaJP: dateFnsLocalejaJP,
+  zhCN: dateFnsLocalezhCN,
+  enUS: dateFnsLocaleenUS,
+} as const satisfies Record<LanguageState['language'], typeof dateFnsLocalejaJP>;
+
+const MUIDateLocales = {
+  jaJP: MUIDateLocalejaJP,
+  zhCN: MUIDateLocalezhCN,
+  enUS: MUIDateLocaleenUS,
+} as const satisfies Record<LanguageState['language'], typeof MUIDateLocalejaJP>;
+
+const MUIDataGridLocales = {
+  jaJP: MUIDataGridLocalejaJP,
+  zhCN: MUIDataGridLocalezhCN,
+  enUS: MUIDataGridLocaleenUS,
+} as const satisfies Record<LanguageState['language'], typeof MUIDataGridLocalejaJP>;
 
 function ThemeWithLocalizeProvider({ children }: {
   children: ReactNode
 }) {
   const locale = useAppSelector((store) => store.language.language);
-  const { t } = useTranslation();
 
   const theme = {};
 
@@ -26,11 +65,9 @@ function ThemeWithLocalizeProvider({ children }: {
     MUIDataGridLocales[locale],
   ), [locale, theme]);
 
-  const x = dateFnsLocale[t('conf.dateFnsLocale', 'ja')];
-
   return (
     <ThemeProvider theme={themeWithLocale}>
-      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={x}>
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={dateFnsLocale[locale]}>
         {children}
       </LocalizationProvider>
     </ThemeProvider>

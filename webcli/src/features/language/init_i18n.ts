@@ -25,7 +25,7 @@ const initI18N = (): Promise<TFunction> => i18n.use(Backend)
     },
     backend: {
       loadPath: '/locales/{{lng}}-{{ns}}.yaml',
-      parse: (data:string) => (load(data) as { [key: string]: string }),
+      parse: (data:string) => (load(data) as Record<string, string>),
     },
   });
 

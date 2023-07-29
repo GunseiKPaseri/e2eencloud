@@ -34,13 +34,12 @@ function OtherStepGuide() {
               loginStatus.step === 'SelectMFASolution'
                 ? <></>
                 : (
-                  // eslint-disable-next-line jsx-a11y/anchor-is-valid
                   <Link
                     component="button"
                     variant="body2"
                     onClick={() => dispatch(selectMFASolution('SelectMFASolution'))}
                   >
-                    他の認証手段を利用
+                    {t('auth.auth.UseOtherAuthMethod', '他の認証手段を利用')}
                   </Link>
                 )
             )

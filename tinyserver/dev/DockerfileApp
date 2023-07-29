@@ -1,7 +1,7 @@
-ARG DENO_VERSION=1.35.1
-ARG NODE_VERSION=18.14.0
+ARG DENO_VERSION=1.35.2
+ARG NODE_VERSION=20.5.0
 
-ARG DENO_BIN_IMAGE=denoland/deno:bin-${DENO_VERSION}
+ARG DENO_BIN_IMAGE=denoland/deno:${DENO_VERSION}
 
 
 FROM ${DENO_BIN_IMAGE} AS denobin
@@ -17,7 +17,7 @@ RUN apt-get update \
     tini \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=denobin /deno /bin/deno
+COPY --from=denobin /usr/bin/deno /bin/deno
 COPY --from=node /usr/local/include/ /usr/local/include/
 COPY --from=node /usr/local/lib/ /usr/local/lib/
 COPY --from=node /usr/local/bin/ /usr/local/bin/
