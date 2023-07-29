@@ -1,4 +1,10 @@
-import { ExhaustiveError } from '../../../utils/assert';
+import { ExhaustiveError } from '~/utils/assert';
+import type {
+  FileInfo,
+  FileInfoFile,
+  FileNode,
+  FileTable,
+} from '~/features/file/file.type';
 import type {
   SearchQuery,
   SearchQuerySet,
@@ -6,13 +12,6 @@ import type {
   StrSearchType,
   NumberSearchType,
 } from './search.type';
-
-import type {
-  FileInfo,
-  FileInfoFile,
-  FileNode,
-  FileTable,
-} from '../file.type';
 
 /**
  * 検索用の正規化

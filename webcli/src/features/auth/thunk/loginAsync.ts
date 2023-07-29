@@ -1,29 +1,29 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import { axiosWithSession, appLocation } from '../../componentutils';
+import { axiosWithSession } from '~/lib/axios';
 import {
   argon2encrypt,
   getAESCTRKey,
-} from '../../../utils/crypto';
-import { byteArray2base64, base642ByteArray } from '../../../utils/uint8';
-import { setDerivedEncryptionKey } from '../../../app/encrypt';
+} from '~/utils/crypto';
+import { byteArray2base64, base642ByteArray } from '~/utils/uint8';
+import { setDerivedEncryptionKey } from '~/class/encrypt';
 
-import { AES_AUTH_KEY_LENGTH } from '../../../const';
+import { AES_AUTH_KEY_LENGTH } from '~/const/const';
 
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
+import type { AuthState, MFASolution } from '~/features/auth/authSlice';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
 
-import type { AuthState } from '../authSlice';
-import { type APILoginSuccessResopnse, loginSuccess } from './loginSuccess';
+import { type APILoginSuccessResopnse, loginSuccess } from './loginSuccessAsync';
+import { fido2LoginAsync } from './fido2LoginAsync';
 
 type LoginNextState = AuthState['loginStatus']['step'];
-
+type LoginPayload = { next: LoginNextState | null, suggestedMfa: MFASolution[] };
 // ログイン処理
-export const loginAsync = createAsyncThunk<
-LoginNextState, { email: string, password: string }>(
+export const loginAsync = createAsyncThunk<LoginPayload, { email: string, password: string }>(
   'auth/login',
-  async (userinfo, { dispatch }) => {
+  async (userinfo, { dispatch }): Promise<LoginPayload> => {
     const step = 4;
     dispatch(setProgress(progress(0, step)));
     let getSalt: AxiosResponse<{ salt: string }>;
@@ -32,7 +32,7 @@ LoginNextState, { email: string, password: string }>(
       { email: string },
       AxiosResponse<{ salt: string }>
       >(
-        `${appLocation}/api/salt`,
+        '/api/salt',
         { email: userinfo.email },
         {
           onUploadProgress: (progressEvent) => {
@@ -56,7 +56,8 @@ LoginNextState, { email: string, password: string }>(
 
     const authenticationKeyBase64 = byteArray2base64(DerivedAuthenticationKey);
 
-    type APILoginResponse = APILoginSuccessResopnse | { success: false, suggestedSolution: ('CODE' | 'EMAIL' | 'FIDO2' | 'TOTP')[] };
+    type APILoginResponse = APILoginSuccessResopnse
+    | { success: false, suggestedSolution: MFASolution[] };
 
     // login
     let result: AxiosResponse<APILoginResponse>;
@@ -65,7 +66,7 @@ LoginNextState, { email: string, password: string }>(
       { email: string, authenticationKey: string, token: string },
       AxiosResponse<APILoginResponse>
       >(
-        `${appLocation}/api/login`,
+        '/api/login',
         { email: userinfo.email, authenticationKeyBase64 },
         {
           onUploadProgress: (progressEvent) => {
@@ -82,73 +83,18 @@ LoginNextState, { email: string, password: string }>(
 
     if (result.data.success) {
       await dispatch(loginSuccess(result.data));
-      return 'EmailAndPass';
+      return { suggestedMfa: [], next: 'EmailAndPass' };
     }
     if (result.data.suggestedSolution.includes('FIDO2')) {
+      // FIDO2がある場合はそれを優先
       try {
-        type Res = Omit<PublicKeyCredentialRequestOptions, 'allowCredentials' | 'challenge'> & { allowCredentials?: (Omit<NonNullable<PublicKeyCredentialRequestOptions['allowCredentials']>[number], 'id'> & { id: string })[], challenge: string };
-        const resp = await axiosWithSession.post<Res>(`${appLocation}/api/fido2/assertion/options`);
-        const option = {
-          ...resp.data,
-          allowCredentials: resp.data.allowCredentials
-            ? resp.data.allowCredentials.map((x) => ({ ...x, id: base642ByteArray(x.id).buffer }))
-            : undefined,
-          challenge: base642ByteArray(resp.data.challenge).buffer,
-        };
-        const credential = await navigator.credentials.get({ publicKey: option });
-        if (credential !== null) {
-          const rawId = (credential as { rawId?: unknown })?.rawId;
-          const response = (credential as { response?: unknown })?.response;
-          if (typeof response !== 'object') throw new Error('responce is not object');
-
-          const authenticatorData = (
-            (response as { authenticatorData?: unknown })?.authenticatorData
-          );
-          const clientDataJSON = (response as { clientDataJSON?: unknown })?.clientDataJSON;
-          const signature = (response as { signature?: unknown })?.signature;
-          const userHandle = (response as { userHandle?: unknown })?.userHandle;
-
-          const credentialJSON = {
-            id: credential.id,
-            type: credential.type,
-            rawId: (
-              rawId instanceof ArrayBuffer ? byteArray2base64(new Uint8Array(rawId)) : undefined
-            ),
-            response: {
-              authenticatorData: (
-                authenticatorData instanceof ArrayBuffer
-                  ? byteArray2base64(new Uint8Array(authenticatorData))
-                  : undefined
-              ),
-              clientDataJSON: (
-                clientDataJSON instanceof ArrayBuffer
-                  ? byteArray2base64(new Uint8Array(clientDataJSON))
-                  : undefined
-              ),
-              signature: (
-                signature instanceof ArrayBuffer
-                  ? byteArray2base64(new Uint8Array(signature))
-                  : undefined
-              ),
-              userHandle: (
-                userHandle instanceof ArrayBuffer
-                  ? byteArray2base64(new Uint8Array(userHandle))
-                  : undefined
-              ),
-            },
-          };
-
-          const result2 = await axiosWithSession.post<PublicKeyCredentialRequestOptions, AxiosResponse<APILoginSuccessResopnse>>(`${appLocation}/api/fido2/assertion/result`, credentialJSON);
-          if (result2.data.success) {
-            await dispatch(loginSuccess(result2.data));
-            return 'EmailAndPass';
-          }
-        }
+        await dispatch(fido2LoginAsync({ auto: true }));
+        return { suggestedMfa: result.data.suggestedSolution, next: null };
       } catch (_e) {
-        if (result.data.suggestedSolution.length === 1) throw new Error('Nothing');
+        return { suggestedMfa: result.data.suggestedSolution, next: result.data.suggestedSolution[0] ?? 'EmailAndPass' };
       }
     }
-    return 'TOTP';
+    return { suggestedMfa: result.data.suggestedSolution, next: result.data.suggestedSolution[0] ?? 'EmailAndPass' };
   },
 );
 
@@ -162,6 +108,11 @@ export const afterLoginAsyncRejected = (state: AuthState) => {
 };
 
 export const afterLoginAsyncFullfilled:
-CaseReducer<AuthState, PayloadAction<LoginNextState>> = (state, action) => {
-  state.loginStatus = { step: action.payload, state: null };
+CaseReducer<AuthState, PayloadAction<LoginPayload>> = (state, action) => {
+  if (action.payload !== null) {
+    state.suggestedMfa = action.payload.suggestedMfa;
+    if (action.payload.next !== null) {
+      state.loginStatus = { step: action.payload.next, state: null };
+    }
+  }
 };

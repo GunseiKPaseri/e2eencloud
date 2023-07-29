@@ -16,17 +16,16 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 import { useDrop, useDrag, DragPreviewImage } from 'react-dnd';
 import { Badge } from '@mui/material';
-import { genUseDropReturn, genUseDragReturn } from '../dnd';
+import PngIcon from '~/components/atom/PngIcon';
+import { useAppSelector, useAppDispatch } from '~/lib/react-redux';
+import { openContextmenu } from '~/features/contextmenu/contextmenuSlice';
+import { genUseDropReturn, genUseDragReturn } from '~/features/file/components/dnd';
 
-import PngIcon from '../../../../components/assets/PngIcon';
-
-import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
-import type { FileNode, FileInfoFile, FileInfoFolder } from '../../file.type';
-import type { FileState } from '../../fileSlice';
-import { assertNonFileNodeDiff } from '../../filetypeAssert';
-import { openContextmenu } from '../../../contextmenu/contextmenuSlice';
+import type { FileNode, FileInfoFile, FileInfoFolder } from '~/features/file/file.type';
+import type { FileState } from '~/features/file/fileSlice';
+import { assertNonFileNodeDiff } from '~/features/file/filetypeAssert';
+import type { Highlight } from '~/features/file/util/search.type';
 import SearchHighLight from './SearchHighLight';
-import type { Highlight } from '../../util/search.type';
 
 function FileListListFolder(
   { selected, targetFolder, onSelectFolder }: {
@@ -39,7 +38,7 @@ function FileListListFolder(
 
   const handleContextMenu: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.preventDefault();
-    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitemfile', target: targetFolder, selected } }));
+    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitem', target: targetFolder, selected } }));
   };
 
   const drag = useDrag(() => genUseDragReturn(targetFolder.id))[1];
@@ -112,7 +111,7 @@ function FileListListFile({
 
   const handleContextMenu: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.preventDefault();
-    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitemfile', target: targetFile, selected } }));
+    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitem', target: targetFile, selected } }));
   };
 
   return (

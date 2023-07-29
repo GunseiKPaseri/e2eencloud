@@ -10,10 +10,10 @@ import Box from '@mui/material/Box';
 import type { SystemStyleObject } from '@mui/system/styleFunctionSx';
 
 import { useDrop } from 'react-dnd';
-import type { FileNode, FileInfoFile, FileInfoFolder } from '../file.type';
-import StyledTreeItem from '../../../components/assets/StyledTreeItem';
-import { type FileState, changeActiveFileGroupDir, filedownloadAsync } from '../fileSlice';
-import { useAppDispatch, useAppSelector } from '../../../app/hooks';
+import StyledTreeItem from '~/components/atom/StyledTreeItem';
+import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
+import type { FileNode, FileInfoFile, FileInfoFolder } from '~/features/file/file.type';
+import { type FileState, changeActiveFileGroupDir, filedownloadAsync } from '~/features/file/fileSlice';
 
 import { genUseDropReturn } from './dnd';
 

@@ -1,24 +1,24 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type {
-  FileTable,
-  FileInfoFolder,
-  FileCryptoInfo,
-} from '../file.type';
-import type { RootState } from '../../../app/store';
+import type { RootState } from '~/store/store';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
 import {
   genUUID,
   getSafeName,
   submitFileInfoWithEncryption,
   fileSort,
-} from '../utils';
+} from '~/features/file/utils';
+import type { FileState } from '~/features/file/fileSlice';
+import type {
+  FileTable,
+  FileInfoFolder,
+  FileCryptoInfo,
+} from '~/features/file/file.type';
 import {
   assertFileInfoFolder,
   assertWritableDraftFileNodeFolder,
-} from '../filetypeAssert';
-import type { FileState } from '../fileSlice';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
-import { latestVersion } from '../fileinfoMigration/fileinfo';
+} from '~/features/file/filetypeAssert';
+import { latestVersion } from '~/features/file/fileinfoMigration/fileinfo';
 import { updateUsageAsync } from './updateUsageAsync';
 
 type CreateFolderAsyncResult = { uploaded: FileCryptoInfo<FileInfoFolder>, parents: string[] };

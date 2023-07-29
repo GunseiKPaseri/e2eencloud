@@ -1,22 +1,22 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { FileCryptoInfoWithBin, FileInfo, FileNode } from '../file.type';
-import type { ExpandServerDataResult } from '../utils';
+import allProgress from '~/utils/allProgress';
+import type { RootState } from '~/store/store';
+import { setProgress, deleteProgress } from '~/features/progress/progressSlice';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import type { ExpandServerDataResult } from '~/features/file/utils';
 import {
   getSafeName,
   submitFileWithEncryption,
   fileSort,
   listUpSimilarFile,
-} from '../utils';
+} from '~/features/file/utils';
+import type { FileState } from '~/features/file/fileSlice';
+import type { FileCryptoInfoWithBin, FileInfo, FileNode } from '~/features/file/file.type';
 import {
   assertFileNodeFile,
   assertWritableDraftFileNodeFolder,
-} from '../filetypeAssert';
-import allProgress from '../../../utils/allProgress';
-import { setProgress, deleteProgress } from '../../progress/progressSlice';
-import type { RootState } from '../../../app/store';
-import type { FileState } from '../fileSlice';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
+} from '~/features/file/filetypeAssert';
 import { updateUsageAsync } from './updateUsageAsync';
 
 type FileuploadAsyncResult = {

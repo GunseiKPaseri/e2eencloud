@@ -1,19 +1,19 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import { axiosWithSession, appLocation } from '../../componentutils';
+import { sha256 } from '@noble/hashes/sha256';
+import { axiosWithSession } from '~/lib/axios';
 import {
   createSalt,
-  SHA256,
   argon2encrypt,
   AESCTR,
   getAESCTRKey,
-} from '../../../utils/crypto';
-import { byteArray2base64 } from '../../../utils/uint8';
-import { AES_AUTH_KEY_LENGTH } from '../../../const';
+} from '~/utils/crypto';
+import { byteArray2base64 } from '~/utils/uint8';
+import { AES_AUTH_KEY_LENGTH } from '~/const/const';
 
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
-import type { RootState } from '../../../app/store';
+import type { RootState } from '~/store/store';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
 
 // パスワード変更処理
 export const changePasswordAsync = createAsyncThunk<
@@ -46,7 +46,7 @@ Record<string, never>, { newpassword: string }, { state: RootState }
 
     // 128bit Encrypted Master Key
     const EncryptedMasterKey = await AESCTR(MasterKey, DerivedEncryptionKey);
-    const HashedAuthenticationKey = SHA256(DerivedAuthenticationKey);
+    const HashedAuthenticationKey = sha256(DerivedAuthenticationKey);
     // console.log(MasterKey, DerivedEncryptionKey, EncryptedMasterKey);
 
     dispatch(setProgress(progress(3, step)));
@@ -67,7 +67,7 @@ Record<string, never>, { newpassword: string }, { state: RootState }
     SendData,
     AxiosResponse<{ success: boolean }>
     >(
-      `${appLocation}/api/my/password`,
+      '/api/my/password',
       sendData,
       {
         onUploadProgress: (progressEvent) => {

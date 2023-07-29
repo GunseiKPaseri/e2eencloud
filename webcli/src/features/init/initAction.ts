@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { initI18NAsync } from '../language/languageSlice';
+import { initI18NAsync } from '~/features/language/languageSlice';
 
 const initAction = createAsyncThunk<void, void>(
   'init/caller',

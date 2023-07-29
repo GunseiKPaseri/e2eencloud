@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createAction, createSlice } from '@reduxjs/toolkit';
 
 // Thunk
 import { signupAsync } from './thunk/signupAsync';
@@ -15,7 +15,7 @@ import {
 import {
   loginSuccess,
   afterLoginSuccessFullfilled,
-} from './thunk/loginSuccess';
+} from './thunk/loginSuccessAsync';
 
 import { afterLogoutAsyncFullfilled, logoutAsync } from './thunk/logoutAsync';
 import { changePasswordAsync } from './thunk/changePasswordAsync';
@@ -26,6 +26,25 @@ import {
   totpLoginAsync,
 } from './thunk/totpLoginAsync';
 
+import {
+  afterMFACodeLoginAsyncFullfilled,
+  afterMFACodeLoginAsyncPending,
+  afterMFACodeLoginAsyncRejected,
+  mfacodeLoginAsync,
+} from './thunk/mfacodeLoginAsync';
+
+import { removeMFACode, afterRemoveMFACode } from './thunk/removeMFACode';
+import {
+  afterFIDO2LoginAsyncFullfilled,
+  afterFIDO2LoginAsyncPending,
+  afterFIDO2LoginAsyncRejected,
+  fido2LoginAsync,
+} from './thunk/fido2LoginAsync';
+import { afterMFACancelAsyncFullfilled, mfaCancelAsync } from './thunk/mfaCancelAsync';
+
+export const selectMFASolution = createAction<AuthState['loginStatus']['step']>('auth/selectMFASolution');
+
+export { removeMFACode };
 export { signupAsync };
 export { confirmEmailAsync };
 export { addFIDO2Async };
@@ -35,6 +54,8 @@ export { loginAsync };
 export { logoutAsync };
 export { totpLoginAsync };
 export { changePasswordAsync };
+export { mfaCancelAsync };
+export { mfacodeLoginAsync };
 
 export interface PostSignUp {
   email: string;
@@ -58,16 +79,22 @@ export interface UserState {
   authority: 'ADMIN' | null;
 }
 
+export type MFASolution = 'CODE' | 'EMAIL' | 'FIDO2' | 'TOTP';
+
 type ConfirmState = 'LOADING' | 'ERROR' | 'SUCCESS';
 
 export interface AuthState {
+  mfacode: string[] | null;
+  suggestedMfa: MFASolution[];
   user: UserState | null;
   signupStatus: 'failed' | null;
-  loginStatus: { step: 'EmailAndPass', state: null | 'pending' | 'error' } | { step: 'TOTP', state: null | 'pending' | 'error' };
+  loginStatus: { step: 'EmailAndPass' | MFASolution, state: null | 'pending' | 'error' } | { step: 'SelectMFASolution' };
   confirmstate: Record<string, ConfirmState | undefined>;
 }
 
 const initialState: AuthState = {
+  mfacode: null,
+  suggestedMfa: [],
   user: null,
   signupStatus: null,
   loginStatus: { step: 'EmailAndPass', state: null },
@@ -92,7 +119,19 @@ export const authSlice = createSlice({
       .addCase(totpLoginAsync.pending, afterTOTPLoginAsyncPending)
       .addCase(totpLoginAsync.rejected, afterTOTPLoginAsyncRejected)
       .addCase(totpLoginAsync.fulfilled, afterTOTPLoginAsyncFullfilled)
-      .addCase(logoutAsync.fulfilled, afterLogoutAsyncFullfilled);
+      .addCase(mfacodeLoginAsync.pending, afterMFACodeLoginAsyncPending)
+      .addCase(mfacodeLoginAsync.rejected, afterMFACodeLoginAsyncRejected)
+      .addCase(mfacodeLoginAsync.fulfilled, afterMFACodeLoginAsyncFullfilled)
+      .addCase(fido2LoginAsync.rejected, afterFIDO2LoginAsyncRejected)
+      .addCase(fido2LoginAsync.pending, afterFIDO2LoginAsyncPending)
+      .addCase(fido2LoginAsync.fulfilled, afterFIDO2LoginAsyncFullfilled)
+      .addCase(logoutAsync.fulfilled, afterLogoutAsyncFullfilled)
+      .addCase(removeMFACode, afterRemoveMFACode)
+      .addCase(mfaCancelAsync.fulfilled, afterMFACancelAsyncFullfilled)
+      .addCase(selectMFASolution, (state, action) => {
+        // 指定MFA手段に変更する
+        state.loginStatus = { step: action.payload, state: null };
+      });
   },
 });
 

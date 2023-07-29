@@ -4,19 +4,22 @@ import CssBaseline from '@mui/material/CssBaseline';
 
 import './index.css';
 
-import App from './App';
+import App from './pages/App';
 import Signup from './features/auth/components/Signup';
-import Login from './features/auth/components/Login';
+import Login from './features/auth/components/login/Login';
 import Setup from './features/auth/components/Setup';
 
 import Notifier from './features/snackbar/Notifier';
 
-import ContextMenuProvider from './features/contextmenu/ContextMenu';
-import FileExplorer from './components/fileexplorer/FileExplorer';
-import ConfigurePage from './components/configpage/ConfigurePage';
+import ContextMenuProvider from './features/contextmenu/ContextMenuProvider';
+import FileExplorer from './pages/components/FileExplorer';
 
-import ComposedProvider from './components/ComposedProvider';
+import ComposedProvider from './pages/ComposedProvider';
 import RequireAuth from './features/auth/components/RequireAuth';
+import RequireAdmin from './features/auth/components/RequireAdmin';
+import APIConfigure from './pages/components/configure/APIConfigure';
+import AuthConfigure from './pages/components/configure/AuthConfigure';
+import AdminConfigure from './pages/components/configure/AdminConfigure';
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
@@ -32,7 +35,9 @@ if (rootElement) {
             <Route path="/" element={<App />}>
               <Route index element={<FileExplorer />} />
               <Route path="configure">
-                <Route index element={<RequireAuth><ConfigurePage /></RequireAuth>} />
+                <Route path="admin" element={<RequireAdmin><AdminConfigure /></RequireAdmin>} />
+                <Route path="api" element={<RequireAuth><APIConfigure /></RequireAuth>} />
+                <Route path="auth" element={<RequireAuth><AuthConfigure /></RequireAuth>} />
               </Route>
             </Route>
             <Route path="/signup" element={<Signup />} />

@@ -6,15 +6,15 @@ import {
   DataGrid, jaJP,
 } from '@mui/x-data-grid';
 import type {
-  GridRenderCellParams, GridRowsProp, GridSelectionModel,
+  GridRenderCellParams, GridRowsProp, GridInputRowSelectionModel,
 } from '@mui/x-data-grid';
 
-import { useAppDispatch, useAppSelector } from '../../../../app/hooks';
-import { type FileState, changeSelection } from '../../fileSlice';
-import { assertNonFileNodeDiff } from '../../filetypeAssert';
-import TagButton from '../TagButton';
-import { assertArrayString } from '../../../../utils/assert';
-import { serializeTags, deserializeTags } from '../../util/serializeTags';
+import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
+import { assertArrayString } from '~/utils/assert';
+import { type FileState, changeSelection } from '~/features/file/fileSlice';
+import { assertNonFileNodeDiff } from '~/features/file/filetypeAssert';
+import TagButton from '~/features/file/components/TagButton';
+import { serializeTags, deserializeTags } from '~/features/file/util/serializeTags';
 
 function FileGrid({
   sx,
@@ -27,7 +27,7 @@ function FileGrid({
 }) {
   const { fileTable, activeFileGroup } = useAppSelector<FileState>((state) => state.file);
   const dispatch = useAppDispatch();
-  const selectionModel: GridSelectionModel = activeFileGroup?.selecting ?? [];
+  const selectionModel: GridInputRowSelectionModel = activeFileGroup?.selecting ?? [];
   // console.log(selectionModel);
 
   return (activeFileGroup
@@ -38,8 +38,8 @@ function FileGrid({
           localeText={jaJP.components.MuiDataGrid.defaultProps.localeText}
           editMode="row"
           checkboxSelection
-          selectionModel={selectionModel}
-          onSelectionModelChange={(newSelectionModel) => {
+          rowSelectionModel={selectionModel}
+          onRowSelectionModelChange={(newSelectionModel) => {
             assertArrayString(newSelectionModel);
             dispatch(changeSelection({ selection: newSelectionModel }));
           }}
@@ -60,8 +60,15 @@ function FileGrid({
                 };
             })
           }
+          initialState={{
+            columns: {
+              columnVisibilityModel: {
+                id: false,
+              },
+            },
+          }}
           columns={[
-            { field: 'id', hide: true },
+            { field: 'id' },
             { field: 'name', headerName: '名前', width: 200 },
             { field: 'mime', headerName: 'MIMEタイプ', width: 200 },
             {
@@ -71,7 +78,9 @@ function FileGrid({
               field: 'tags',
               headerName: 'タグ',
               width: 600,
-              renderCell: (params: GridRenderCellParams<string>) => (params.value
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              renderCell: (params: GridRenderCellParams<any, string>) => (
+                params.value
                 && deserializeTags(params.value).map((x) => (<TagButton key={x} tag={x} />))
               ),
             },

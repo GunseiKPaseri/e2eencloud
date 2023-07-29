@@ -1,25 +1,25 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import { setRSAKey } from '../../../app/encrypt';
-import { axiosWithSession, appLocation } from '../../componentutils';
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
+import { sha256 } from '@noble/hashes/sha256';
+import { setRSAKey } from '~/class/encrypt';
+import { axiosWithSession } from '~/lib/axios';
 import {
   createSalt,
-  SHA256,
   argon2encrypt,
   AESCTR,
   getAESCTRKey,
   generateRSAKey,
-} from '../../../utils/crypto';
-import { byteArray2base64 } from '../../../utils/uint8';
+} from '~/utils/crypto';
+import { byteArray2base64 } from '~/utils/uint8';
 
-import { AES_AUTH_KEY_LENGTH } from '../../../const';
+import { AES_AUTH_KEY_LENGTH } from '~/const/const';
+import type { AuthState, EmailConfirm, UserState } from '~/features/auth/authSlice';
 
-import type { AuthState, EmailConfirm, UserState } from '../authSlice';
-import { buildFileTableAsync } from '../../file/thunk/buildFileTableAsync';
-import type { StorageInfo } from '../../file/file.type';
-import { updateUsage } from '../../file/thunk/updateUsageAsync';
+import { buildFileTableAsync } from '~/features/file/thunk/buildFileTableAsync';
+import type { StorageInfo } from '~/features/file/file.type';
+import { updateUsage } from '~/features/file/thunk/updateUsageAsync';
+import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
 
 type APIEmailConfirmResopnse = {
   success: true
@@ -67,7 +67,7 @@ EmailConfirmReturned,
       );
       // 128bit Encrypted Master Key
       const EncryptedMasterKey = await AESCTR(MasterKey, DerivedEncryptionKey);
-      const HashedAuthenticationKey = SHA256(DerivedAuthenticationKey);
+      const HashedAuthenticationKey = sha256(DerivedAuthenticationKey);
       // console.log(MasterKey, DerivedEncryptionKey, EncryptedMasterKey);
 
       // RSAKey
@@ -89,7 +89,7 @@ EmailConfirmReturned,
       EmailConfirm,
       AxiosResponse<{ success: false } | APIEmailConfirmResopnse>
       >(
-        `${appLocation}/api/email_confirm`,
+        '/api/email_confirm',
         sendData,
         {
           onUploadProgress: (progressEvent) => {

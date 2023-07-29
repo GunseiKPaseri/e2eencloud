@@ -1,9 +1,9 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAction, createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import type { StorageInfo } from '../file.type';
-import { axiosWithSession, appLocation } from '../../componentutils';
-import type { FileState } from '../fileSlice';
+import { axiosWithSession } from '~/lib/axios';
+import type { FileState } from '~/features/file/fileSlice';
+import type { StorageInfo } from '~/features/file/file.type';
 
 /**
  * 容量情報を更新するReduxThunk
@@ -13,7 +13,7 @@ export const updateUsageAsync = createAsyncThunk<StorageInfo>(
   async () => {
     // get all file info
     const capacity = await axiosWithSession.get<Record<string, never>, AxiosResponse<{ 'usage': string, 'max_capacity': string }>>(
-      `${appLocation}/api/my/capacity`,
+      '/api/my/capacity',
     );
     const result: StorageInfo = {
       usage: Number(capacity.data.usage),

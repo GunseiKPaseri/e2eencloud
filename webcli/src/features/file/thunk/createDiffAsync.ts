@@ -1,21 +1,21 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { FileCryptoInfo, FileInfoDiffFile } from '../file.type';
-import type { RootState } from '../../../app/store';
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
+import type { RootState } from '~/store/store';
+import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
 import {
   submitFileInfoWithEncryption,
   createDiff,
   integrateDifference,
   fileSort,
-} from '../utils';
+} from '~/features/file/utils';
+import type { FileState } from '~/features/file/fileSlice';
+import type { FileCryptoInfo, FileInfoDiffFile } from '~/features/file/file.type';
 import {
   assertFileInfoDiffFile,
   assertNonWritableDraftFileNodeDiff,
   assertWritableDraftFileNodeFolder,
-} from '../filetypeAssert';
-import type { FileState } from '../fileSlice';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
+} from '~/features/file/filetypeAssert';
 import { updateUsageAsync } from './updateUsageAsync';
 
 type CreateDiffAsyncResult = { uploaded: FileCryptoInfo<FileInfoDiffFile>, targetId: string };

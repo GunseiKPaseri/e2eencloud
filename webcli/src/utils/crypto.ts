@@ -1,9 +1,9 @@
-import { createHash as createSHA256Hash } from 'sha256-uint8array';
+import { sha256 } from '@noble/hashes/sha256';
 
 import { argon2id } from 'hash-wasm';
 import {
   AES_AUTH_KEY_LENGTH, ARGON2_ITERATIONS, ARGON2_MEMORYSISE, ARGON2_PARALLELISM,
-} from '../const';
+} from '~/const/const';
 
 import {
   string2ByteArray, byteArray2base64, base642ByteArray, hex2bytearray,
@@ -62,8 +62,6 @@ export const argon2encrypt = async (password: string, salt: Uint8Array) => {
   return bytes;
 };
 
-export const SHA256 = (array: Uint8Array) => createSHA256Hash().update(array).digest();
-
 /**
  * Salt = SHA-256( “E2EEncloud” || “Padding” || Client Random Value )
  */
@@ -78,7 +76,7 @@ export const createSalt = (ClientRandomValue: Uint8Array) => {
   concatenatedSaltArray.set(saltArray);
   concatenatedSaltArray.set(ClientRandomValue, saltStringMaxLength);
 
-  return SHA256(concatenatedSaltArray);
+  return sha256(concatenatedSaltArray);
 };
 
 export const generateRSAKey = async (masterkey: CryptoKey) => {

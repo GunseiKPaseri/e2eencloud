@@ -100,13 +100,11 @@ const GETSaltScheme = z.object({
 
 // GETではBODYに格納するのが困難
 router.post('/salt', async (ctx) => {
-  console.log('aaa');
   if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
   const body = ctx.request.body();
   if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
 
   const parsed = GETSaltScheme.safeParse(await body.value);
-  console.log('aaa', parsed);
   if (!parsed.success) {
     return ctx.response.status = Status.BadRequest;
   }
@@ -127,6 +125,7 @@ const POSTloginScheme = z.object({
 });
 
 export const login = async <R extends string>(props: {
+  // deno-lint-ignore no-explicit-any
   ctx: RouterContext<R, RouteParams<R>, Record<string, any>>;
   user: User;
 }) => {
@@ -228,6 +227,40 @@ router.post('/totplogin', async (ctx) => {
   if (!confirmTOTP.success) return ctx.response.status = Status.Unauthorized;
 
   login({ ctx, user });
+});
+
+// mfacode
+const POSTmfaloginScheme = z.object({
+  mfacode: z.string(),
+});
+
+router.post('/mfacode', async (ctx) => {
+  if (!ctx.request.hasBody) return ctx.response.status = Status.BadRequest;
+  const body = ctx.request.body();
+  if (body.type !== 'json') return ctx.response.status = Status.BadRequest;
+  const parsed = POSTmfaloginScheme.safeParse(await body.value);
+  if (!parsed.success) {
+    return ctx.response.status = Status.BadRequest;
+  }
+  const data = parsed.data;
+
+  // use mfa_uid
+  const mfauid: string | null = await ctx.state.session.get('mfa_uid');
+  if (typeof mfauid !== 'string') return ctx.response.status = Status.Forbidden;
+
+  const user = await getUserById(mfauid);
+  if (user === null) return ctx.response.status = Status.Forbidden;
+
+  const confirmMFACode = await user.confirmMFACode(data.mfacode);
+  if (!confirmMFACode) return ctx.response.status = Status.Unauthorized;
+
+  login({ ctx, user });
+});
+
+router.post('/mfacancel', async (ctx) => {
+  // mfa delete
+  await ctx.state.session.set('mfa_uid', null);
+  ctx.response.status = Status.NoContent;
 });
 
 router.post('/logout', async (ctx) => {

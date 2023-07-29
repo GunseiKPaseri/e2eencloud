@@ -1,8 +1,8 @@
-import { ExhaustiveError } from '../../../utils/assert';
+import { ExhaustiveError } from '~/utils/assert';
 import type {
   FileInfoFile, FileInfoFolder, FileNode, FileTable,
-} from '../file.type';
-import { trimExpansion } from '../utils';
+} from '~/features/file/file.type';
+import { trimExpansion } from '~/features/file/utils';
 
 type ExportFileType = Omit<FileInfoFile, 'type' | 'parentId' | 'prevId'>;
 

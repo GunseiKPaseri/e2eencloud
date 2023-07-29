@@ -1,17 +1,17 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
-import { axiosWithSession, appLocation } from '../../componentutils';
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
+import { axiosWithSession } from '~/lib/axios';
+import type { AuthState } from '~/features/auth/authSlice';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
 
-import type { AuthState } from '../authSlice';
 // TOTP追加処理
 export const addTOTPAsync = createAsyncThunk<void, { secretKey: string, token: string }>(
   'auth/add_totp',
   async (secretkey, { dispatch }) => {
     try {
       await axiosWithSession.put<{ secretKey: string, token: string }>(
-        `${appLocation}/api/my/totp`,
+        '/api/my/totp',
         secretkey,
         {
           onUploadProgress: (progressEvent) => {
@@ -28,6 +28,6 @@ export const addTOTPAsync = createAsyncThunk<void, { secretKey: string, token: s
 );
 
 export const afterAddTOTPAsyncFullfilled:
-CaseReducer<AuthState, PayloadAction<void>> = (state) => {
+CaseReducer<AuthState, PayloadAction<void>> = () => {
   //
 };

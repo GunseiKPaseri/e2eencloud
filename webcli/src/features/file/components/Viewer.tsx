@@ -7,13 +7,13 @@ import Tooltip from '@mui/material/Tooltip';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
-import { assertFileNodeFile, assertFileNodeFileORUndefined } from '../filetypeAssert';
+import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
+import { openContextmenu } from '~/features/contextmenu/contextmenuSlice';
+import type { FileState } from '~/features/file/fileSlice';
+import { filedownloadAsync } from '~/features/file/fileSlice';
+import { assertFileNodeFile, assertFileNodeFileORUndefined } from '~/features/file/filetypeAssert';
 import TagField from './TagField';
 import Renamer from './Renamer';
-import type { FileState } from '../fileSlice';
-import { filedownloadAsync } from '../fileSlice';
-import { useAppDispatch, useAppSelector } from '../../../app/hooks';
-import { openContextmenu } from '../../contextmenu/contextmenuSlice';
 
 function Viewer() {
   const fileState = useAppSelector<FileState>((store) => store.file);
@@ -57,7 +57,7 @@ function Viewer() {
                   onContextMenu={(event) => {
                     event.preventDefault();
                     if (target.type !== 'file') return;
-                    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitemfile', target, isInDir: false } }));
+                    dispatch(openContextmenu({ anchor: { left: event.clientX, top: event.clientY }, menu: { type: 'filelistitem', target, isInDir: false } }));
                   }}
                 >
                   {/*

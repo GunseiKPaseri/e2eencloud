@@ -1,10 +1,10 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import { axiosWithSession, appLocation } from '../../componentutils';
+import { axiosWithSession } from '~/lib/axios';
 
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
+import type { PostSignUp } from '~/features/auth/authSlice';
+import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
 
-import type { PostSignUp } from '../authSlice';
 // サインアップ処理
 export const signupAsync = createAsyncThunk<{ success: boolean }, { email: string }>(
   'auth/signup',
@@ -14,7 +14,7 @@ export const signupAsync = createAsyncThunk<{ success: boolean }, { email: strin
       PostSignUp,
       AxiosResponse<{ success: boolean }>
       >(
-        `${appLocation}/api/signup`,
+        '/api/signup',
         { email: userinfo.email },
         {
           onUploadProgress: (progressEvent) => {

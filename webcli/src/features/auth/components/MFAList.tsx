@@ -2,9 +2,20 @@ import type {
   GridFilterModel,
   GridRowModel, GridSortItem,
 } from '@mui/x-data-grid';
+import { GridToolbarContainer } from '@mui/x-data-grid';
+import Button from '@mui/material/Button';
+import AddIcon from '@mui/icons-material/Add';
 import type { AxiosResponse } from 'axios';
-import { appLocation, axiosWithSession } from '../../componentutils';
-import EditableDataGrid, { type ComputeMutation } from '../../../components/assets/EditableDataGrid';
+import { useState } from 'react';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+
+import EditableDataGrid, { type ComputeMutation } from '~/components/molecule/EditableDataGrid';
+import { axiosWithSession } from '~/lib/axios';
+
+import TOTPAdder from './TOTPAdder';
+import FIDO2Register from './FIDO2Register';
 
 type GetMFAListJSONRow = {
   number_of_mfa: number;
@@ -15,8 +26,6 @@ type GetMFAListJSONRow = {
     available: boolean;
   }[]
 };
-
-const PAGE_SIZE = 10;
 
 export type MFADataGridRowModel = GridRowModel<{
   id: string;
@@ -35,7 +44,7 @@ const getMFAList = async (props: {
   Record<string, never>,
   AxiosResponse<GetMFAListJSONRow>,
   { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(
-    `${appLocation}/api/my/mfa`,
+    '/api/my/mfa',
     {
       params: {
         offset: props.offset,
@@ -56,7 +65,7 @@ const editMFA = async (
   targetMFA: MFADataGridRowModel,
   edited: Partial<MFADataGridRowModel>,
 ) => {
-  await axiosWithSession.patch(`${appLocation}/api/my/mfa/${targetMFA.id}`, { available: edited.available, name: edited.name });
+  await axiosWithSession.patch(`/api/my/mfa/${targetMFA.id}`, { available: edited.available, name: edited.name });
   return {
     ...targetMFA,
     available: edited.available ?? false,
@@ -68,7 +77,7 @@ const deleteMFA = async (id: string) => {
   Record<string, never>,
   AxiosResponse<GetMFAListJSONRow>,
   { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(
-    `${appLocation}/api/my/mfa/${id}`,
+    `/api/my/mfa/${id}`,
   );
   return result;
 };
@@ -86,32 +95,63 @@ const computeMutation: ComputeMutation<MFADataGridRowModel> = ({ newRow, oldRow,
   return str;
 };
 
-function MFAList({ reloader }: { reloader: symbol }) {
+function MFAList() {
+  const [openAdditionDialog, setOpenAdditionDialog] = useState<boolean>(false);
+  const [pageReloader, setPageReloader] = useState<symbol>(Symbol('pageload'));
+
+  const renderCustomToolbar = () => (
+    <GridToolbarContainer>
+      <Button startIcon={<AddIcon />} color="primary" onClick={() => { setOpenAdditionDialog(true); }}>追加</Button>
+    </GridToolbarContainer>
+  );
+
   return (
-    <EditableDataGrid <MFADataGridRowModel>
-      computeMutation={computeMutation}
-      getName={(params) => `${params.row.name}`}
-      columns={[
-        { field: 'id', minWidth: 200 },
-        { field: 'type', type: 'singleSelect', valueOptions: ['TOTP', 'FIDO2'] },
-        { field: 'name', minWidth: 300, editable: true },
-        {
-          field: 'available',
-          headerName: '有効',
-          type: 'boolean',
-          editable: true,
-        },
-      ]}
-      parentHeight={400}
-      pageSize={PAGE_SIZE}
-      rowsPerPageOptions={[PAGE_SIZE]}
-      getList={getMFAList}
-      editItem={editMFA}
-      reloader={reloader}
-      onDelete={async (params) => {
-        await deleteMFA(params.row.id);
-      }}
-    />
+    <>
+      <Dialog
+        maxWidth="xs"
+        open={openAdditionDialog}
+        onClose={() => { setOpenAdditionDialog(false); }}
+      >
+        <DialogTitle>MFAの追加</DialogTitle>
+        <DialogContent dividers>
+          <TOTPAdder onSuccess={() => {
+            setPageReloader(Symbol('reload'));
+            setOpenAdditionDialog(false);
+          }}
+          />
+          <FIDO2Register onSuccess={() => {
+            setPageReloader(Symbol('reload'));
+            setOpenAdditionDialog(false);
+          }}
+          />
+        </DialogContent>
+      </Dialog>
+      <EditableDataGrid <MFADataGridRowModel>
+        computeMutation={computeMutation}
+        getName={(params) => `${params.row.name}`}
+        columns={[
+          { field: 'id', minWidth: 200 },
+          { field: 'type', type: 'singleSelect', valueOptions: ['TOTP', 'FIDO2', 'CODE'] },
+          { field: 'name', minWidth: 300, editable: true },
+          {
+            field: 'available',
+            headerName: '有効',
+            type: 'boolean',
+            editable: true,
+          },
+        ]}
+        parentHeight={400}
+        slots={{
+          toolbar: renderCustomToolbar,
+        }}
+        getList={getMFAList}
+        editItem={editMFA}
+        reloader={pageReloader}
+        onDelete={async (params) => {
+          await deleteMFA(params.row.id);
+        }}
+      />
+    </>
   );
 }
 

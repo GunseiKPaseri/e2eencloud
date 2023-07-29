@@ -11,11 +11,14 @@ parserOptions:
 settings:
   react:
     version: "18.1.0"
+  import/resolver:
+    typescript: []
 plugins:
   - '@typescript-eslint'
   - react
   - react-hooks
   - react-refresh
+  - strict-dependencies
   - vitest
 globals:
   React: true
@@ -37,3 +40,20 @@ rules:
   react/no-unused-prop-types: "off"
   react/require-default-props: "off"
   react-refresh/only-export-components: "warn"
+  strict-dependencies/strict-dependencies:
+    - "error"
+    - - module: ./src/features/*/thunk
+        allowReferenceFrom:
+          - ./src/features/*
+        allowSameModule: true
+      - module: ./src/features/*
+        allowReferenceFrom:
+          - ./src/pages/*
+        allowSameModule: true
+      - module: ./src/pages/components/*
+        allowReferenceFrom:
+          - ./src/*.tsx
+          - ./src/pages/*
+        allowSameModule: true
+    - resolveRelativeImport: true
+

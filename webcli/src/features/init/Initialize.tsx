@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { useAppDispatch } from '../../app/hooks';
+import { useAppDispatch } from '~/lib/react-redux';
 import initAction from './initAction';
 
 // 初期化処理を初回ロード時に1度だけ実行

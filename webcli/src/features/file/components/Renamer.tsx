@@ -4,9 +4,9 @@ import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
-import { createDiffAsync } from '../fileSlice';
-import { useAppDispatch } from '../../../app/hooks';
-import { isDiffExt } from '../utils';
+import { useAppDispatch } from '~/lib/react-redux';
+import { isDiffExt } from '~/features/file/utils';
+import { createDiffAsync } from '~/features/file/fileSlice';
 
 function Renamer({ id, name }: { id: string, name: string }) {
   const [newName, setNewName] = useState<string>(name);

@@ -1,18 +1,18 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
-import { axiosWithSession, appLocation } from '../../componentutils';
+import { axiosWithSession } from '~/lib/axios';
 
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
+import type { AuthState } from '~/features/auth/authSlice';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
 
-import type { AuthState } from '../authSlice';
-import { loginSuccess, type APILoginSuccessResopnse } from './loginSuccess';
+import { loginSuccess, type APILoginSuccessResopnse } from './loginSuccessAsync';
 
 // ログイン処理
 export const totpLoginAsync = createAsyncThunk<
 boolean, { token: string }>(
-  'auth/mfaLogin',
+  'auth/mfaTOTPLogin',
   async (info, { dispatch }) => {
     type APITOTPLoginResponse = APILoginSuccessResopnse | { success: false };
 
@@ -23,7 +23,7 @@ boolean, { token: string }>(
       { token: string },
       AxiosResponse<APITOTPLoginResponse>
       >(
-        `${appLocation}/api/totplogin`,
+        '/api/totplogin',
         { token: info.token },
         {
           onUploadProgress: (progressEvent) => {

@@ -1,4 +1,4 @@
-import { Application, bold, oakCors, oakSession, PORT, Status, yellow } from 'tinyserver/deps.ts';
+import { Application, bold, ENV, oakCors, oakSession, Status, yellow } from 'tinyserver/deps.ts';
 import { distDir } from 'tinyserver/src/util.ts';
 import sessionsStore from './model/Sessions.ts';
 import apiRouter from './router/api.ts';
@@ -8,7 +8,7 @@ const app = new Application();
 // Enable CORS
 app.use(
   oakCors({
-    origin: ['http://localhost:3000'],
+    origin: /^.+(localhost|127.0.0.1)(:\d*)?$/,
     credentials: true,
   }),
 );
@@ -57,6 +57,6 @@ app.addEventListener('listen', ({ hostname, port, serverType }) => {
   console.log('  using HTTP server: ' + yellow(serverType));
 });
 
-await app.listen({ hostname: 'localhost', port: PORT });
+await app.listen({ hostname: '0.0.0.0', port: ENV.PORT });
 
 console.log('finished...');

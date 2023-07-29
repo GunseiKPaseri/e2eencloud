@@ -1,20 +1,19 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { AxiosResponse } from 'axios';
-import type { BuildFileTableAsyncResult } from '../file.type';
+import type { RootState } from '~/store/store';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
 import {
   getAllDependentFile,
   buildFileTable,
-} from '../utils';
+} from '~/features/file/utils';
+import type { FileState } from '~/features/file/fileSlice';
+import type { BuildFileTableAsyncResult } from '~/features/file/file.type';
 import {
   assertFileNodeFolder,
-} from '../filetypeAssert';
-import { setProgress, deleteProgress, progress } from '../../progress/progressSlice';
-import type { RootState } from '../../../app/store';
-import type { FileState } from '../fileSlice';
-import { enqueueSnackbar } from '../../snackbar/snackbarSlice';
-import { appLocation, axiosWithSession } from '../../componentutils';
+} from '~/features/file/filetypeAssert';
 import { updateUsageAsync } from './updateUsageAsync';
+import { deleteFile } from '../api';
 
 /**
  * ファイルを完全削除するReduxThunk
@@ -35,22 +34,10 @@ BuildFileTableAsyncResult,
       getAllDependentFile(fileTable[targetId], fileTable)
     )).flat();
 
-    // get all file info
-    const rowfiles = await axiosWithSession.post<
-    { files: string[] },
-    AxiosResponse<{ deleted: string[] }>
-    >(
-      `${appLocation}/api/files/delete`,
-      { files: deleteItems },
-      {
-        onDownloadProgress: (progressEvent) => {
-          dispatch(setProgress(progress(0, step, progressEvent)));
-        },
-      },
-    );
+    const rawFiles = await deleteFile({ deleteItems });
 
     // console.log(rowfiles);
-    const deleteItemsSet = new Set(rowfiles.data.deleted);
+    const deleteItemsSet = new Set(rawFiles.deleted);
     const result = buildFileTable(
       Object
         .values(fileTable)

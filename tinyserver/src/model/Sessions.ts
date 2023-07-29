@@ -1,6 +1,6 @@
-import { prisma } from 'tinyserver/src/client/dbclient.ts';
 import type { OakSessionStore } from 'tinyserver/deps.ts';
 import { SessionData } from 'tinyserver/deps.ts';
+import { prisma } from 'tinyserver/src/client/dbclient.ts';
 import { omit } from 'tinyserver/src/utils/objSubset.ts';
 
 interface AppSessionData extends SessionData {
