@@ -152,7 +152,18 @@ export const deleteFiles = async (user: User, fileIDs: string[]) => {
     },
   }))._sum.size ?? 0n;
 
-  const result = await prisma.files.deleteMany({
+  const resultTarget = await prisma.files.findMany({
+    select: {
+      id: true,
+    },
+    where: {
+      id: {
+        in: trueTargetFileIDs,
+      },
+      created_by: user.id,
+    },
+  });
+  await prisma.files.deleteMany({
     where: {
       id: {
         in: trueTargetFileIDs,
@@ -176,5 +187,5 @@ export const deleteFiles = async (user: User, fileIDs: string[]) => {
   // [TODO sizeをrelationで連動させる]
   await user.patchUsage(newSize);
 
-  return result.count;
+  return resultTarget.map((x) => x.id);
 };
