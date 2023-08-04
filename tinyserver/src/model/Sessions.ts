@@ -61,7 +61,8 @@ class SessionsStore implements OakSessionStore {
     return session !== null ? true : false;
   }
 
-  async getSessionById(sessionKey: string): Promise<AppSessionData | null> {
+  async getSessionById(sessionKey?: string): Promise<AppSessionData | null> {
+    if (sessionKey === undefined) return null;
     const session = await prisma.sessions.findUnique({
       select: {
         id: true,

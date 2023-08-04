@@ -18,6 +18,7 @@ export class User {
   readonly encrypted_master_key: string;
   readonly encrypted_master_key_iv: string;
   readonly hashed_authentication_key: string;
+  readonly leader_socket: string;
   #max_capacity: number;
   #file_usage: number;
   #rsa_public_key: string;
@@ -36,6 +37,7 @@ export class User {
     this.encrypted_master_key = user.encrypted_master_key;
     this.encrypted_master_key_iv = user.encrypted_master_key_iv;
     this.hashed_authentication_key = user.hashed_authentication_key;
+    this.leader_socket = user.leader_socket ?? '';
     this.#max_capacity = typeof user.max_capacity === 'number' ? user.max_capacity : Number(user.max_capacity);
     this.#file_usage = typeof user.file_usage === 'number' ? user.file_usage : Number(user.file_usage);
     this.#rsa_public_key = user.rsa_public_key;

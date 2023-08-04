@@ -10,6 +10,8 @@ import languageReducer from '~/features/language/languageSlice';
 import progressReducer from '~/features/progress/progressSlice';
 import sessionReducer from '~/features/session/sessionSlice';
 import snackbarReducer from '~/features/snackbar/snackbarSlice';
+import { socketIOListener } from '~/class/socketio';
+import exclctrlSlice from '~/features/exclctrl/exclctrlSlice';
 
 const { createReduxHistory, routerMiddleware, routerReducer } = createReduxHistoryContext({ 
   history: createBrowserHistory(),
@@ -24,6 +26,7 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     contextmenu: contextmenuReducer,
+    exclctrl: exclctrlSlice,
     file: fileReducer,
     language: languageReducer,
     progress: progressReducer,
@@ -34,6 +37,8 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat([logger, routerMiddleware]),
   devTools: true,
 });
+
+socketIOListener(store.dispatch);
 
 export const history = createReduxHistory(store);
 

@@ -36,6 +36,11 @@ export { oakCors } from 'https://deno.land/x/cors@v1.2.2/mod.ts';
 
 export { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts';
 
+export { serve } from 'https://deno.land/std@0.197.0/http/server.ts';
+export { Server as SocketIOServer } from 'https://deno.land/x/socket_io@0.2.0/mod.ts';
+
+export { getCookies } from 'https://deno.land/std@0.197.0/http/cookie.ts';
+
 import * as z from 'https://deno.land/x/zod@v3.21.4/mod.ts';
 export { z };
 

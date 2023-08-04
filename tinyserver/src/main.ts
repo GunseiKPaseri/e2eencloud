@@ -1,7 +1,8 @@
-import { Application, bold, ENV, oakCors, oakSession, Status, yellow } from 'tinyserver/deps.ts';
+import { Application, bold, ENV, oakCors, oakSession, serve, Status, yellow } from 'tinyserver/deps.ts';
 import { distDir } from 'tinyserver/src/util.ts';
 import sessionsStore from './model/Sessions.ts';
 import apiRouter from './router/api.ts';
+import io from 'tinyserver/src/router/socket.ts';
 
 const app = new Application();
 
@@ -57,6 +58,13 @@ app.addEventListener('listen', ({ hostname, port, serverType }) => {
   console.log('  using HTTP server: ' + yellow(serverType));
 });
 
-await app.listen({ hostname: '0.0.0.0', port: ENV.PORT });
+const handler = io.handler(async (req) => {
+  return await app.handle(req) || new Response(null, { status: 404 });
+});
+
+await serve(handler, {
+  hostname: '0.0.0.0',
+  port: ENV.PORT,
+});
 
 console.log('finished...');

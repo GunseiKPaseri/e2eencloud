@@ -6,6 +6,7 @@ import FileList from '~/features/file/components/FileList';
 import Viewer from '~/features/file/components/Viewer';
 import { DiffTree } from '~/features/file/components/molecule/DiffTree';
 import TagButton from '~/features/file/components/atom/TagButton';
+import Exclctrl from '~/features/exclctrl/Exclctrl';
 
 export default function FileExplorer() {
   return (
@@ -21,6 +22,7 @@ export default function FileExplorer() {
     }}
     >
       <Paper sx={{ overflow: 'scroll', gridRow: '1/3', padding: 1 }}>
+        <Exclctrl />
         <FileTreeViewer />
         <TagButton tag="bin" />
         <Login />
