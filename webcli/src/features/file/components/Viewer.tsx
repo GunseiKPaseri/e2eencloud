@@ -8,6 +8,7 @@ import { filedownloadAsync } from '~/features/file/fileSlice';
 import { assertFileNodeFile, assertFileNodeFileORUndefined } from '~/features/file/filetypeAssert';
 import TagField from './molecule/TagField';
 import FilePreviewToolbar from './molecule/toolbar/FilePreviewToolbar';
+import { glayPicture } from '~/const/const';
 
 function Viewer() {
   const fileState = useAppSelector<FileState>((store) => store.file);
@@ -62,7 +63,7 @@ function Viewer() {
                           loading="lazy"
                         />
                       )
-                      : <img alt={target.name} />
+                      : <img alt={target.name} src={glayPicture} />
                   }
                   <ImageListItemBar
                     position="top"
