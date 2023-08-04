@@ -1,4 +1,5 @@
-import type { Dispatch } from "redux";
+import type{ ThunkDispatch } from "@reduxjs/toolkit";
+import type { Action } from "redux";
 import { io } from "socket.io-client";
 
 const socket = io(location.href, {
@@ -14,10 +15,12 @@ socket.on("connect_error", (err) => {
   console.error(`connect_error due to ${err.message}`);
 });
 
-export const socketIOListener = (dispatch: Dispatch) => {
-  socket.onAny((eventName, ...args) => {
-    console.log(eventName, args);
-    dispatch({type: `SOCKET.IO/${eventName}`, payload: args})
+type OnListenSocket<State, ExtraThunkArg, BasicAction extends Action<unknown>> = Record<string, (args: unknown[], dispatch: ThunkDispatch<State, ExtraThunkArg, BasicAction>) => Promise<void> | void>
+
+export const socketIOListener = <State, ExtraThunkArg, BasicAction extends Action<unknown>>(dispatch: ThunkDispatch<State, ExtraThunkArg, BasicAction>, on: OnListenSocket<State, ExtraThunkArg, BasicAction>) => {
+  socket.onAny(async (eventName, ...args) => {
+    if(typeof eventName === 'string' && on[eventName]) await on[eventName](args, dispatch);
+    dispatch({type: `SOCKET.IO/${eventName}`, payload: args} as unknown as BasicAction)
   })
 }
 

@@ -25,7 +25,6 @@ export const exclctrlSlice = createSlice({
         state.pending = true;
       })
       .addCase(decideExclCtrl, (state, action) => {
-        console.log(action.payload)
         state.usable = action.payload[0].leader === socket.id;
         state.pending = false;
       });

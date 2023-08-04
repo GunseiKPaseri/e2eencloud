@@ -3,15 +3,17 @@ import { requestExclCtrl } from "./requestExclCtrl";
 import Button from "@mui/material/Button";
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Alert } from "@mui/material";
+import type { AuthState } from "../auth/authSlice";
 
 export default function Exclctrl(){
   const exclctrl = useAppSelector((store) => store.exclctrl);
+  const user = useAppSelector<AuthState['user']>((state) => state.auth.user);
   const dispatch = useAppDispatch();
   const handleClick = () => {
     requestExclCtrl(dispatch);
   }
   return (
-    exclctrl.usable
+    user === null || exclctrl.usable
       ? (<></>)
       : (
         <Alert
