@@ -3,7 +3,7 @@ import { createAction } from '@reduxjs/toolkit';
 import { getFileParentsList } from '~/features/file/utils';
 import type { FileState } from '~/features/file/fileSlice';
 import type { FileInfo, FileNode } from '~/features/file/file.type';
-import { searchFromTable, SearchQueryParser } from '~/features/file/util/search';
+import { exchangeSearchQueryForRedux, hasSearchQueryHasError, searchFromTable, SearchQueryParser } from '~/features/file/util/search';
 
 /**
  * activeFileGroupを変更(ディレクトリ)
@@ -62,8 +62,9 @@ CaseReducer<FileState, PayloadAction<{ queryString: string }>> = (state, action)
     files: result.map((x) => x[0]),
     selecting: state.activeFileGroup?.selecting ?? [],
     exfiles: result,
-    query,
+    query: exchangeSearchQueryForRedux(query),
     queryString: action.payload.queryString,
+    queryHasError: hasSearchQueryHasError(query),
     preGroup,
   };
 };

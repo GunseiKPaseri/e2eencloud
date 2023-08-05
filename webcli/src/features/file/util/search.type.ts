@@ -1,7 +1,7 @@
 export type StrSearchType = 'eq' | 'in' | 'inlike';
 export type NumberSearchType = '>' | '<' | '>=' | '<=' | '==';
 
-export type SearchQuerySet =
+export type SearchQuerySetCommon =
 {
   type: 'tag',
   value: string
@@ -11,12 +11,6 @@ export type SearchQuerySet =
   id: string,
   searchSubDir: boolean
 } |
-// str
-{
-  type: 'name' | 'mime',
-  word: string | RegExp,
-  searchType?: StrSearchType
-} |
 // num
 {
   type: 'size',
@@ -24,6 +18,25 @@ export type SearchQuerySet =
   operator: NumberSearchType
 };
 
+export type SearchQuerySet = SearchQuerySetCommon |
+// str
+{
+  type: 'name' | 'mime',
+  word: string | RegExp,
+  searchType?: StrSearchType,
+  error?: boolean,
+}
+
 export type SearchQuery = SearchQuerySet[][];
+
+export type SearchQuerySetForRedux = SearchQuerySetCommon | 
+{
+  type: 'name' | 'mime',
+  word: string | {type: 'RegExp', word: string},
+  searchType?: StrSearchType,
+  error?: boolean,
+}
+
+export type SearchQueryForRedux = SearchQuerySetForRedux[][]
 
 export type Highlight = ['name' | 'mime', number, number];
