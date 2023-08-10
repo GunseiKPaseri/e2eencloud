@@ -6,6 +6,7 @@ import { openContextmenu } from '~/features/contextmenu/contextmenuSlice';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
 import type { FileState } from '~/features/file/fileSlice';
 import { assertNonFileNodeDiff } from '~/features/file/filetypeAssert';
+import { glayPicture } from '~/const/const';
 
 function FileImgList({ sx, onSelectFile, onSelectFolder }: {
   sx: SxProps<Theme>,
@@ -41,7 +42,7 @@ function FileImgList({ sx, onSelectFile, onSelectFolder }: {
                       loading="lazy"
                     />
                   )
-                  : <img alt={target.name} />
+                  : <img alt={target.name} src={glayPicture} />
               }
               <ImageListItemBar
                 position="top"

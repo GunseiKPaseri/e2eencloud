@@ -54,6 +54,7 @@
     "redux": "^4.2.1",
     "redux-first-history": "^5.1.1",
     "redux-logger": "^3.0.6",
+    "socket.io-client": "^4.7.2",
     "uuid": "^9.0.0",
     "zod": "^3.21.4",
     "zxcvbn": "^4.4.2"

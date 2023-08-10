@@ -1,4 +1,4 @@
-import type { Highlight, SearchQuery } from './util/search.type';
+import type { Highlight, SearchQueryForRedux } from './util/search.type';
 
 import type {
   FileDifference,
@@ -88,8 +88,9 @@ export type DirGroup = GroupCommon & {
 export type SearchGroup = GroupCommon & {
   type: 'search';
   exfiles: [string, Highlight[]][];
+  queryHasError: boolean;
   queryString: string;
-  query: SearchQuery;
+  query: SearchQueryForRedux;
   preGroup: null | TagGroup | DirGroup;
 };
 

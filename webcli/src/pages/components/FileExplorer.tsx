@@ -1,11 +1,12 @@
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
-import Login from '~/features/auth/components/login/Login';
 import FileTreeViewer from '~/features/file/components/FileTreeViewer';
 import FileList from '~/features/file/components/FileList';
 import Viewer from '~/features/file/components/Viewer';
 import { DiffTree } from '~/features/file/components/molecule/DiffTree';
 import TagButton from '~/features/file/components/atom/TagButton';
+import Exclctrl from '~/features/exclctrl/Exclctrl';
+import Detail from '~/features/file/components/molecule/Detail';
 
 export default function FileExplorer() {
   return (
@@ -21,15 +22,16 @@ export default function FileExplorer() {
     }}
     >
       <Paper sx={{ overflow: 'scroll', gridRow: '1/3', padding: 1 }}>
+        <Exclctrl />
         <FileTreeViewer />
         <TagButton tag="bin" />
-        <Login />
       </Paper>
       <Paper sx={{ overflowY: 'scroll', padding: 1 }}>
         <FileList />
       </Paper>
       <Paper sx={{ overflowY: 'scroll', padding: 1 }}>
         <Viewer />
+        <Detail />
         <DiffTree />
       </Paper>
     </Box>

@@ -37,6 +37,7 @@ router.post('/files', async (ctx) => {
     | Partial<POSTFilesFormWithBin>
     | Partial<POSTFilesFormWithoutBin> = {};
   const {
+    socketid,
     id,
     encryptedFileIVBase64,
     encryptedFileInfoBase64,
@@ -53,12 +54,18 @@ router.post('/files', async (ctx) => {
   };
 
   if (
+    socketid === undefined ||
     receivedFile.id === undefined ||
     receivedFile.encryptedFileKeyBase64 === undefined ||
     receivedFile.encryptedFileInfoBase64 === undefined ||
     receivedFile.encryptedFileInfoIVBase64 === undefined
   ) {
     return ctx.throw(Status.BadRequest, 'Bad Request');
+  }
+
+  // auth socket id
+  if (socketid !== user.leader_socket) {
+    return ctx.throw(Status.Forbidden, `Only the Leader has access ${socketid} | ${user.leader_socket}`);
   }
 
   if (receivedFile.encryptedFileIVBase64) {

@@ -11,6 +11,9 @@ import type {
   Highlight,
   StrSearchType,
   NumberSearchType,
+  SearchQueryForRedux,
+  SearchQuerySetForRedux,
+  SearchQuerySetCommon,
 } from './search.type';
 
 /**
@@ -130,9 +133,30 @@ const genStrToken = (plainStr: string, type: Highlight[0]): SearchQueryToken => 
   if (plainStr.startsWith('"') && plainStr.endsWith('"') && plainStr.length > 2) {
     return { type, word: plainStr.slice(1, -1), searchType: 'in' };
   }
+  if (plainStr.startsWith('/') && plainStr.endsWith('/') && plainStr.length > 2) {
+    try {
+      return { type, word: new RegExp(plainStr.slice(1, -1)), searchType: 'in' }
+    }catch(e){
+      return { type, word: plainStr, searchType: 'in', error: true }
+    }
+  }
   return { type, word: plainStr };
 };
 
+export const exchangeSearchQueryForRedux = (query: SearchQuery): SearchQueryForRedux => {
+  return query.map(x => x.map(((set):SearchQuerySetForRedux => {
+    if (set.type === 'name' || set.type === 'mime'){
+      return {...set, word: (typeof set.word === 'string' ? set.word : {type: 'RegExp', word: set.word.toString()})}
+    } else {
+      return set as SearchQuerySetCommon;
+    }
+  }
+  )))
+}
+
+export const hasSearchQueryHasError = (query: SearchQuery|SearchQueryForRedux): boolean => {
+  return query.some(x => x.some(y => (y.type === 'name' || y.type === 'mime') && y.error))
+}
 /**
  * 指定位置にmarkタグを追加
  * @param value 対象文字列

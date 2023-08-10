@@ -18,6 +18,7 @@ function SearchInput(props: {sx?: SxProps<Theme>}) {
           </InputAdornment>
         ),
       }}
+      error={activeFileGroup?.type === 'search' && activeFileGroup.queryHasError}
       value={activeFileGroup && activeFileGroup.type === 'search' ? activeFileGroup.queryString : ''}
       variant="standard"
       onChange={(e) => {

@@ -1,6 +1,7 @@
 import type { AxiosProgressEvent, AxiosResponse } from 'axios';
 import { axiosWithSession } from '~/lib/axios';
 import type { GetfileinfoJSONRow } from './file.type';
+import socket from '~/class/socketio';
 
 export const getAllFileInfoRaw = async ({
   onDownloadProgress,
@@ -49,6 +50,7 @@ export const addFile = async (props: {
   encryptedFileIVBase64: string,
 }) => {
   const fileSendData = new FormData();
+  fileSendData.append('socketid', socket.id);
   fileSendData.append('id', props.id);
   fileSendData.append('encryptedFileInfoBase64', props.encryptedFileInfoBase64);
   fileSendData.append('encryptedFileInfoIVBase64', props.encryptedFileInfoIVBase64);

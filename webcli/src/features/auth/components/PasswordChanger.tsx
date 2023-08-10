@@ -44,17 +44,24 @@ export default function PasswordChanger() {
   };
 
   return (
-    <Box>
-      <Stepper activeStep={stepState} alternativeLabel>
+    <Box
+      sx={{
+        marginTop: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}
+    >
+      <Typography component="h1" variant="h5">
+        パスワード変更
+      </Typography>
+      <Stepper sx={{marginTop: 2, marginBottm: 2}} activeStep={stepState} alternativeLabel>
         {steps.map((label) => (
           <Step key={label}>
             <StepLabel>{label}</StepLabel>
           </Step>
         ))}
       </Stepper>
-      <Typography component="h1" variant="h5">
-        パスワード変更
-      </Typography>
       <Typography component="p">パスワードは絶対忘れないようにしてください</Typography>
       <Box component="form" onSubmit={changePass} noValidate sx={{ mt: 1 }}>
         <PasswordField

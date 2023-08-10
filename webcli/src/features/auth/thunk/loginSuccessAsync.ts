@@ -13,6 +13,7 @@ import { buildFileTableAsync } from '~/features/file/thunk/buildFileTableAsync';
 import { updateUsageAsync } from '~/features/file/thunk/updateUsageAsync';
 import { deleteProgress } from '~/features/progress/progressSlice';
 import { push } from 'redux-first-history';
+import socket from '~/class/socketio';
 
 type LoginSuccess = {
   role: 'ADMIN' | 'USER',
@@ -73,6 +74,9 @@ UserState, LoginSuccess>(
       dispatch(buildFileTableAsync()), // file tree
       dispatch(updateUsageAsync()), //    storage
     ]);
+
+    // join user room
+    socket.emit('LOGGED_IN')
 
     dispatch(deleteProgress());
 

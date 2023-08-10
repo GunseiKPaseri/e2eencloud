@@ -5,11 +5,13 @@ import { createBrowserHistory } from 'history';
 
 import authReducer from '~/features/auth/authSlice';
 import contextmenuReducer from '~/features/contextmenu/contextmenuSlice';
-import fileReducer from '~/features/file/fileSlice';
+import fileReducer, { buildFileTableAsync } from '~/features/file/fileSlice';
 import languageReducer from '~/features/language/languageSlice';
 import progressReducer from '~/features/progress/progressSlice';
 import sessionReducer from '~/features/session/sessionSlice';
 import snackbarReducer from '~/features/snackbar/snackbarSlice';
+import socket, { socketIOListener } from '~/class/socketio';
+import exclctrlSlice from '~/features/exclctrl/exclctrlSlice';
 
 const { createReduxHistory, routerMiddleware, routerReducer } = createReduxHistoryContext({ 
   history: createBrowserHistory(),
@@ -24,6 +26,7 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     contextmenu: contextmenuReducer,
+    exclctrl: exclctrlSlice,
     file: fileReducer,
     language: languageReducer,
     progress: progressReducer,
@@ -33,6 +36,15 @@ export const store = configureStore({
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat([logger, routerMiddleware]),
   devTools: true,
+});
+
+socketIOListener(store.dispatch, {
+  DECIDED_EXCLCTRL: async (args, dispatch) => {
+    console.log(args);
+    if(typeof args[0] === 'object' && (args[0] as {leader: unknown}).leader === socket.id){
+      await dispatch(buildFileTableAsync())
+    }
+  }
 });
 
 export const history = createReduxHistory(store);

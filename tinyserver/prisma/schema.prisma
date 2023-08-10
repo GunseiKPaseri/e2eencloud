@@ -8,8 +8,8 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider  = "mysql"
+  url       = env("DATABASE_URL")
   directUrl = env("SHADOW_DATABASE_URL")
 }
 
@@ -38,6 +38,7 @@ model User {
   Sessions                     Sessions[]
   Hooks                        Hooks[]
   Files                        Files[]
+  leader_socket                String?
 
   @@index([email])
 }
