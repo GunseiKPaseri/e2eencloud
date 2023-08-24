@@ -7,8 +7,10 @@ import { DiffTree } from '~/features/file/components/molecule/DiffTree';
 import TagButton from '~/features/file/components/atom/TagButton';
 import Exclctrl from '~/features/exclctrl/Exclctrl';
 import Detail from '~/features/file/components/molecule/Detail';
+import { useAppSelector } from '~/lib/react-redux';
 
 export default function FileExplorer() {
+  const activeFile = useAppSelector((store) => store.file.activeFile)
   return (
     <Box sx={{
       display: 'grid',
@@ -26,14 +28,23 @@ export default function FileExplorer() {
         <FileTreeViewer />
         <TagButton tag="bin" />
       </Paper>
-      <Paper sx={{ overflowY: 'scroll', padding: 1 }}>
-        <FileList />
-      </Paper>
-      <Paper sx={{ overflowY: 'scroll', padding: 1 }}>
-        <Viewer />
-        <Detail />
-        <DiffTree />
-      </Paper>
+      {
+        activeFile !== null ? <>
+          <Paper sx={{ overflowY: 'scroll', padding: 1 }}>
+            <FileList />
+          </Paper>
+          <Paper sx={{ overflowY: 'scroll', padding: 1 }}>
+            <Viewer />
+            <Detail />
+            <DiffTree />
+          </Paper>
+        </>
+        : <>
+          <Paper sx={{ overflowY: 'scroll', gridRow: '1/3', padding: 1 }}>
+            <FileList />
+          </Paper>
+        </>
+      }
     </Box>
   );
 }
