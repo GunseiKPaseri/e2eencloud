@@ -25,7 +25,7 @@ import type { FileNode, FileInfoFile, FileInfoFolder } from '~/features/file/fil
 import type { FileState } from '~/features/file/fileSlice';
 import { assertNonFileNodeDiff } from '~/features/file/filetypeAssert';
 import type { Highlight } from '~/features/file/util/search.type';
-import SearchHighLight from '../../atom/SearchHighLight';
+import SearchHighLight from '../../atom/search/SearchHighLight';
 
 function FileListListFolder(
   { selected, targetFolder, onSelectFolder }: {

@@ -10,11 +10,11 @@ import type {
 } from '@mui/x-data-grid';
 
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
-import { assertArrayString } from '~/utils/assert';
 import { type FileState, changeSelection } from '~/features/file/fileSlice';
 import { assertNonFileNodeDiff } from '~/features/file/filetypeAssert';
 import TagButton from '~/features/file/components/atom/TagButton';
 import { serializeTags, deserializeTags } from '~/features/file/util/serializeTags';
+import { $array, $string } from 'lizod';
 
 function FileGrid({
   sx,
@@ -40,7 +40,7 @@ function FileGrid({
           checkboxSelection
           rowSelectionModel={selectionModel}
           onRowSelectionModelChange={(newSelectionModel) => {
-            assertArrayString(newSelectionModel);
+            if(!$array($string)(newSelectionModel)) throw new Error('Unexpected Error!');
             dispatch(changeSelection({ selection: newSelectionModel }));
           }}
           rows={

@@ -29,7 +29,7 @@ import {
   changeActiveFileGroupDir, fileDeleteAsync, filedownloadAsync,
 } from '~/features/file/fileSlice';
 import { genUseDropReturn } from '~/features/file/components/dnd';
-import SearchInput from '~/features/file/components/atom/SearchInput';
+import SearchInput from '~/features/file/components/molecule/search/SearchInput';
 import FileSimpleList from './molecule/filelist/FileSimpleList';
 import FileGrid from './molecule/filelist/FileGrid';
 import FileImgList from './molecule/filelist/FileImgList';

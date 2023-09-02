@@ -1,4 +1,5 @@
-import { ExhaustiveError } from '~/utils/assert';
+import type { DistributiveOmit} from '~/utils/assert';
+import { ExhaustiveError, assertString } from '~/utils/assert';
 import type {
   FileInfo,
   FileInfoFile,
@@ -13,9 +14,14 @@ import type {
   NumberSearchType,
   SearchQueryForRedux,
   SearchQuerySetForRedux,
-  SearchQuerySetCommon,
+  SearchQuerySetPrimitiveOnly,
+  SearchQuerySetForReduxString,
+  SearchQueryForReduxOmitId,
+  SearchQueryTermForReduxOmitId,
+  SearchQueryAndTermForReduxOmitId,
+  SearchQueryAndTermForRedux,
 } from './search.type';
-
+import type { UniqueIdentifier } from '@dnd-kit/core';
 /**
  * 検索用の正規化
  * @param before 正規化対象
@@ -79,6 +85,13 @@ const numtest = (target: number, value: number, operator: NumberSearchType):bool
   }
 };
 
+/**
+ * ファイルに対し検索クエリの結果を返す
+ * @param target 対象ノード
+ * @param query 検索クエリ
+ * @param filetable ファイルテーブル
+ * @returns 
+ */
 export const searchTest = (
   target: FileNode<FileInfoFile>,
   query: SearchQuery,
@@ -86,9 +99,9 @@ export const searchTest = (
 ): Highlight[] | null => {
   let allMarker :Highlight[] = [];
   let isAllOK = false;
-  query.forEach((orterm) => {
+  query.term.forEach((orterm) => {
     const marker: Highlight[] = [];
-    const isOK = orterm.every((andterm) => {
+    const isOK = orterm.term.every((andterm) => {
       switch (andterm.type) {
         case 'tag':
           return target.tag.includes(andterm.value);
@@ -107,7 +120,6 @@ export const searchTest = (
             return isSubDir;
           }
           return target.prevId === andterm.id;
-          break;
         case 'size':
           return numtest(target[andterm.type], andterm.value, andterm.operator);
         case 'name':
@@ -129,34 +141,212 @@ export const searchTest = (
   return isAllOK ? allMarker.sort((a, b) => (a[1] - b[1] === 0 ? a[2] - b[2] : a[1] - b[1])) : null;
 };
 
+const compareString = (a: string, b: string) => (a > b ? 1 : (a < b ? -1 : 0))
+const compareArray = <T>(a: T[], b: T[], compareFn: (a:T, b:T)=>number) => {
+  if(a.length !== b.length) return a.length - b.length
+  for(let i = 0; i < a.length; i++){
+    const c = compareFn(a[i], b[i])
+    if(c !== 0) return c
+  }
+  return 0
+}
+
+const compareStringQuery = (a: DistributiveOmit<SearchQuerySetForReduxString, 'id'>, b: DistributiveOmit<SearchQuerySetForReduxString, 'id'>) => {
+  if(typeof a.word === 'string'){
+    if(typeof b.word === 'object') return 1
+    return compareString(a.word, b.word)
+  }else{
+    if(typeof b.word === 'string') return -1
+    return compareString(a.word.word, b.word.word)
+  }
+}
+
+/**
+ * 
+ */
+const compareTerm = (a: SearchQueryTermForReduxOmitId, b: SearchQueryTermForReduxOmitId) => {
+  if(a.type !== b.type) return compareString(a.type, b.type)
+  switch(a.type){
+    case 'tag':
+      assertString(b.type, 'tag')
+      return compareString(a.value, b.value);
+    case 'dir':
+      assertString(b.type, 'dir')
+      return compareString(a.dirid, b.dirid)
+    case 'size':
+      assertString(b.type, 'size')
+      return a.operator !== b.operator ? compareString(a.operator, b.operator) : a.value - b.value;
+    case 'name': {
+      assertString(b.type, 'name')
+      return compareStringQuery(a, b)
+    }
+    case 'mime': {
+      assertString(b.type, 'mime')
+      return compareStringQuery(a, b)
+    }
+    default:
+      // Comprehensiveness check
+      throw new ExhaustiveError(a);
+  }
+}
+
+const compareAndTerm = (a: SearchQueryAndTermForReduxOmitId, b: SearchQueryAndTermForReduxOmitId) => compareArray(a.term, b.term, compareTerm)
+const compareQuery = (a: SearchQueryForReduxOmitId, b: SearchQueryForReduxOmitId) => compareArray(a.term, b.term, compareAndTerm)
+
+/**
+ * 正規表現の文字列として正しいかテスト
+ * @param str 正規表現文字列
+ * @returns 正誤
+ */
+export const isRegExpText = (str: string) => {
+  try {
+    const _test = new RegExp(str)
+    return true;
+  }catch (_){
+    return false;
+  }
+}
+/**
+ * 与えられたユーザ入力をクエリに変換
+ * @param plainStr ユーザ入力文字列
+ * @param type クエリタイプ
+ * @returns 
+ */
 const genStrToken = (plainStr: string, type: Highlight[0]): SearchQueryToken => {
   if (plainStr.startsWith('"') && plainStr.endsWith('"') && plainStr.length > 2) {
-    return { type, word: plainStr.slice(1, -1), searchType: 'in' };
+    return { type, word: plainStr.slice(1, -1), searchType: 'in', id: '' };
   }
   if (plainStr.startsWith('/') && plainStr.endsWith('/') && plainStr.length > 2) {
     try {
-      return { type, word: new RegExp(plainStr.slice(1, -1)), searchType: 'in' }
+      return { type, word: new RegExp(plainStr.slice(1, -1)), id: '' }
     }catch(e){
-      return { type, word: plainStr, searchType: 'in', error: true }
+      return { type, word: plainStr, error: true, id: '' }
     }
   }
-  return { type, word: plainStr };
+  return { type, word: plainStr, id: '' };
 };
 
-export const exchangeSearchQueryForRedux = (query: SearchQuery): SearchQueryForRedux => {
-  return query.map(x => x.map(((set):SearchQuerySetForRedux => {
-    if (set.type === 'name' || set.type === 'mime'){
-      return {...set, word: (typeof set.word === 'string' ? set.word : {type: 'RegExp', word: set.word.toString()})}
-    } else {
-      return set as SearchQuerySetCommon;
-    }
+/**
+ * 検索クエリをシリアライズ可能な要素に置き換え
+ * @param query 
+ * @returns 
+ */
+export const exchangeSearchQueryForRedux = (query: SearchQuery | SearchQueryForRedux): SearchQueryForRedux => {
+  return {
+    ...query,
+    term: query.term.map(x => ({
+      ...x,
+      term: x.term.map((set):SearchQuerySetForRedux => {
+        if (set.type === 'name' || set.type === 'mime'){
+          return {...set, word: (typeof set.word === 'string' || !(set.word instanceof RegExp) ? set.word : {type: 'RegExp', word: set.word.toString().slice(1, -1)})}
+        } else {
+          return set as SearchQuerySetPrimitiveOnly;
+        }
+      }),
+    })
+    )
   }
-  )))
 }
 
-export const hasSearchQueryHasError = (query: SearchQuery|SearchQueryForRedux): boolean => {
-  return query.some(x => x.some(y => (y.type === 'name' || y.type === 'mime') && y.error))
+/**
+ * 検索クエリをデシリアライズ
+ * @param query 
+ * @returns 
+ */
+export const exchangeSearchQuery = (query: SearchQueryForRedux): SearchQuery => {
+  return {
+    ...query,
+    term: query.term.map(x => ({
+      ...x,
+      term: x.term.map(((set):SearchQuerySet => {
+        if (set.type === 'name' || set.type === 'mime'){
+          return {...set, word: (typeof set.word === 'string' ? set.word : new RegExp(set.word.word))}
+        } else {
+          return set as SearchQuerySetPrimitiveOnly;
+        }
+      }))
+    }))
+  }
 }
+
+export const omitIdFromQuery = (query: SearchQueryForRedux):SearchQueryForReduxOmitId => {
+  const {id: _id, ...q} = {...query, term: query.term.map((andTerm) => {
+    const {id: _id, ...q} = {...andTerm, term: andTerm.term.map((term) => {
+      const {id: _id, ...q} = term
+      return q
+    })}
+    return q
+  })}
+  return q
+}
+export const addEmptyIdToQuery = (query: SearchQueryForReduxOmitId):SearchQueryForRedux => ({
+  ...query,
+  id: '',
+  term: query.term.map((andTerm) => ({
+    ...andTerm,
+    id: '',
+    term: andTerm.term.map((term) => ({
+      ...term,
+      id: '',
+    }))
+  }))
+})
+
+/**
+ * 検索クエリがエラーを持つか確認
+ * @param query 対象クエリ
+ * @returns 
+ */
+export const hasSearchQueryHasError = (query: SearchQuery|SearchQueryForRedux): boolean => {
+  return query.term.some(x => x.term.some(y => (y.type === 'name' || y.type === 'mime') && y.error))
+}
+
+const exchangeComparable = (query: SearchQueryForRedux):SearchQueryForReduxOmitId => {
+  const {id: _id, ...q} = {...query, term: query.term.map((andTerm) => {
+    const {id: _id, ...q} = {...andTerm, term: andTerm.term.map((term) => {
+        const {id: _id, ...q} = term
+        return q
+      }).sort(compareTerm)
+    }
+    return q
+  }).sort(compareAndTerm)}
+  return q
+}
+
+export const isSearchQueryChanged = (beforeQuery: SearchQueryForRedux, afterQuery: SearchQueryForRedux) =>
+  compareQuery(exchangeComparable(beforeQuery), exchangeComparable(afterQuery))
+
+const searchQueryStringToString = (input: string | RegExp | {type: 'RegExp', word: string}) => {
+  if(typeof input === 'object'){
+    if (input instanceof RegExp) return input.toString();
+    return `/${input.word}/`
+  }
+  if(input.indexOf(' ') !== -1) return `"${input}"`
+  return input
+}
+
+const searchQuerySetToString = (set: (SearchQuery|SearchQueryForRedux)['term'][number]['term'][number])=>{
+  switch(set.type){
+    case 'tag':
+      return `tag: ${searchQueryStringToString(set.value)}`
+    case 'dir':
+      // NO
+      return ''
+    case 'size':
+      return `${set.type}: ${set.operator === '==' ? '' : `${set.operator} ` }${set.value}`
+    case 'name':
+    case 'mime':
+      return `${set.type !== 'name' ? `${set.type}: ` : ''}${searchQueryStringToString(set.word)}`
+    default:
+      // Comprehensiveness check
+      return new ExhaustiveError(set)
+  }
+}
+
+export const searchQueryBuilder = (query: SearchQuery|SearchQueryForRedux): string => (
+  query.term.map(orTerm => orTerm.term.map(andTerm => searchQuerySetToString(andTerm)).join(' ')).filter(orTerm => orTerm.length !== 0).join(' OR ')
+)
+
 /**
  * 指定位置にmarkタグを追加
  * @param value 対象文字列
@@ -210,6 +400,68 @@ export const searchFromTable = (filetable: FileTable, query: SearchQuery) => {
   return result;
 };
 
+export const searchQueryNormalizer = (query: SearchQuery | SearchQueryForRedux):SearchQueryForRedux => {
+  const queryForRedux = exchangeSearchQueryForRedux(query)
+  const andTerms = queryForRedux.term.filter((andTerm)=> andTerm.term.length !== 0).map((andTerm) => {
+    const validTerm = new Set<string>();
+    const flaggedTerm: SearchQueryForRedux['term'][number]['term'] = []
+    for(const term of andTerm.term){
+      const serializedTerm = JSON.stringify(term)
+      if(validTerm.has(serializedTerm)){
+        flaggedTerm.push({...term, ignore: true})
+      }else{
+        validTerm.add(serializedTerm)
+        flaggedTerm.push(term)
+      }
+    }
+    return {...andTerm, term: flaggedTerm};
+  })
+  const validAndTerm = new Set<string>()
+  const flaggedTerm: SearchQueryForRedux['term'] = []
+  for(const term of andTerms){
+    const serializedTerm = JSON.stringify(term.term.map(x => {
+      const {ignore: _ignore, ...y} = x
+      return JSON.stringify(y)
+    }).sort())
+    if(validAndTerm.has(serializedTerm)){
+      flaggedTerm.push({...term, ignore: true})
+    }else{
+      validAndTerm.add(serializedTerm)
+      flaggedTerm.push(term)
+    }
+  }
+  const normalizedQuery:SearchQueryForRedux = {...queryForRedux, term: flaggedTerm}
+  return {
+    ...normalizedQuery,
+    term: normalizedQuery.term.map((orTerm, i) => ({
+      ...orTerm,
+      id: `term${i}`,
+      term: orTerm.term.map((term, j) => ({
+        ...term,
+        id: `term${i}-${j}`,
+      }))
+    }))
+  }
+}
+
+export const searchTermById = <T extends {id: string},>(queryItem: {term: T[]}, id: UniqueIdentifier): T | undefined => {
+  return queryItem.term.filter(item => item.id === id)[0]
+}
+export const getTermById = (searchQueryItem: SearchQueryForRedux, termId: UniqueIdentifier): {id: string, term: SearchQuerySetForRedux} | undefined => {
+  const t = searchQueryItem.term.map(x => ({id: x.id, terms: x.term.filter(x => x.id === termId)})).filter(x => x.terms.length !== 0)
+  return t.length > 0 && t[0].terms.length > 0 ? {id: t[0].id, term: t[0].terms[0]} : undefined
+}
+export const indexOfById = <T extends {id: string},>(queryItem: {term: T[]}, id: UniqueIdentifier) => {
+  if(typeof id !== 'string') return -1
+  return queryItem.term.map(x=>x.id).indexOf(id)
+}
+export const hasById = <T extends {id: string},>(queryItem: {term: T[]}, id: UniqueIdentifier) => (
+  queryItem.term.some(term => term.id === id)
+)
+export const searchTerm = (searchQueryItem: SearchQueryForRedux, termId: UniqueIdentifier): SearchQueryAndTermForRedux | undefined => {
+  return searchQueryItem.term.filter(andTerm => hasById(andTerm, termId))[0]
+}
+
 type SearchQueryToken = SearchQuerySet | { 'type': 'OR' } | null;
 export class SearchQueryParser {
   #queryString: string;
@@ -220,7 +472,7 @@ export class SearchQueryParser {
 
   #token: SearchQueryToken;
 
-  #result: SearchQuery | null;
+  #result: SearchQueryForRedux | null;
 
   constructor(queryString: string) {
     this.#queryString = queryString;
@@ -230,18 +482,18 @@ export class SearchQueryParser {
     this.#token = null;
   }
 
-  get query():SearchQuery {
+  get query():SearchQueryForRedux {
     if (this.#result) return this.#result;
 
-    const result = this.#statement();
+    const result = searchQueryNormalizer(this.#statement());
     this.#result = result;
     return result;
   }
 
   #statement(): SearchQuery {
     let token: SearchQueryToken;
-    const orterms: SearchQuerySet[][] = [];
-    let andterms: SearchQuerySet[] = [];
+    const orterms: SearchQuery['term'] = [];
+    let andterms: SearchQuery['term'][number]['term'] = [];
 
     /**
      * トークンからクエリ配列生成
@@ -249,14 +501,14 @@ export class SearchQueryParser {
     // eslint-disable-next-line no-cond-assign
     while (token = this.#nextToken()) {
       if (token.type === 'OR') {
-        if (andterms.length > 0) orterms.push(andterms);
+        if (andterms.length > 0) orterms.push({term: andterms, id: ''});
         andterms = [];
       } else {
         andterms.push(token);
       }
     }
-    if (andterms.length > 0) orterms.push(andterms);
-    return orterms;
+    if (andterms.length > 0) orterms.push({term: andterms, id: ''});
+    return {term: orterms, id: ''};
   }
 
   /**
@@ -274,7 +526,7 @@ export class SearchQueryParser {
   #word() {
     let t = '';
     const firstChar = this.#queryString[this.#currentPoint];
-    if (firstChar === '"') {
+    if (firstChar === '"' || firstChar === '/') {
       // "x y"
       t += firstChar;
       this.#currentPoint += 1;
@@ -347,11 +599,12 @@ export class SearchQueryParser {
       this.#currentPoint += 4;
       this.#skipSpace();
       const value = this.#word();
-      return { type: 'tag', value };
+      if(value.startsWith('"') && value.endsWith('"') && value.length > 2) return {type: 'tag', value: value.slice(1, -1), id: ''}
+      return { type: 'tag', value, id: '' };
     }
     const next5 = this.#queryString.slice(this.#currentPoint, this.#currentPoint + 5).toLowerCase();
     if ((next4 === 'mime' || next4 === 'name') && next5[4] === ':') {
-      // mime
+      // mime | name
       this.#currentPoint += 5;
       this.#skipSpace();
       return genStrToken(this.#word(), next4);
@@ -362,7 +615,7 @@ export class SearchQueryParser {
       const operator = this.#operator() ?? '==';
       this.#skipSpace();
       const value = this.#number();
-      return { type: 'size', value, operator };
+      return { type: 'size', value, operator, id:'' };
     }
     const value = this.#word();
     if (searchNormalize(value) === 'or') {

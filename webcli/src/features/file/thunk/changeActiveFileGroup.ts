@@ -3,7 +3,8 @@ import { createAction } from '@reduxjs/toolkit';
 import { getFileParentsList } from '~/features/file/utils';
 import type { FileState } from '~/features/file/fileSlice';
 import type { FileInfo, FileNode } from '~/features/file/file.type';
-import { exchangeSearchQueryForRedux, hasSearchQueryHasError, searchFromTable, SearchQueryParser } from '~/features/file/util/search';
+import { exchangeSearchQuery, exchangeSearchQueryForRedux, hasSearchQueryHasError, isSearchQueryChanged, searchFromTable, searchQueryBuilder, searchQueryNormalizer, SearchQueryParser } from '~/features/file/util/search';
+import type { SearchQueryForRedux } from '../util/search.type';
 
 /**
  * activeFileGroupを変更(ディレクトリ)
@@ -42,28 +43,46 @@ CaseReducer<FileState, PayloadAction<{ tag: string }>> = (state, action) => {
   };
 };
 
+type CreateActiveFileGroupSearch = {
+  queryString: string,
+} | {
+  query: SearchQueryForRedux
+}
 /**
  * activeFileGroupを変更(検索)
+ * refresh: クエリ文字列を再生成する
  * */
-export const changeActiveFileGroupSearch = createAction<{ queryString: string }>('file/changeActiveFileGroupSearch');
+export const changeActiveFileGroupSearch = createAction<CreateActiveFileGroupSearch>('file/changeActiveFileGroupSearch');
 
 export const afterChangeActiveFileGroupSearch:
-CaseReducer<FileState, PayloadAction<{ queryString: string }>> = (state, action) => {
-  // 指定タグのディレクトリをactiveにする
-  const { query } = new SearchQueryParser(action.payload.queryString);
-  if (query.length === 0) {
+CaseReducer<FileState, PayloadAction<CreateActiveFileGroupSearch>> = (state, action) => {
+  const {queryString, query} = (
+    'query' in action.payload
+      ? ((query: SearchQueryForRedux) => {
+          const normalizeQuery = searchQueryNormalizer(query)
+          return {query: normalizeQuery, queryString: searchQueryBuilder(normalizeQuery)}
+        })(action.payload.query)
+      : {query: exchangeSearchQueryForRedux(new SearchQueryParser(action.payload.queryString).query), queryString: action.payload.queryString}
+    )
+  // 何も入力されていなかったらディレクトリに復元
+  if (query.term.length === 0) {
     state.activeFileGroup = (state.activeFileGroup?.type !== 'search' ?  state.activeFileGroup : state.activeFileGroup.preGroup)
     return
   }
-  const result = searchFromTable(state.fileTable, query);
+
+  // クエリが更新されていたら検索結果を更新
+  const exfiles = (state.activeFileGroup?.type !== 'search' || isSearchQueryChanged(state.activeFileGroup.query, query))
+    ? searchFromTable(state.fileTable, exchangeSearchQuery(query))
+    : state.activeFileGroup.exfiles;
+
   const preGroup = (state.activeFileGroup?.type !== 'search' ?  state.activeFileGroup : state.activeFileGroup.preGroup)
   state.activeFileGroup = {
     type: 'search',
-    files: result.map((x) => x[0]),
+    files: exfiles.map((x) => x[0]),
     selecting: state.activeFileGroup?.selecting ?? [],
-    exfiles: result,
-    query: exchangeSearchQueryForRedux(query),
-    queryString: action.payload.queryString,
+    exfiles,
+    query,
+    queryString,
     queryHasError: hasSearchQueryHasError(query),
     preGroup,
   };

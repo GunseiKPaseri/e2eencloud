@@ -6,7 +6,7 @@ import BrowserCanvas from 'imghash-js/dist/esm/ImgClass/BrowserCanvas';
 import ImgHash from 'imghash-js/dist/esm/ImgHash';
 
 import { decryptByRSA, encryptByRSA } from '~/class/encrypt';
-import { assertArrayNumber, ExhaustiveError } from '~/utils/assert';
+import { ExhaustiveError } from '~/utils/assert';
 import {
   string2ByteArray, byteArray2base64, base642ByteArray, byteArray2string,
 } from '~/utils/uint8';
@@ -35,6 +35,7 @@ import {
   assertNonFileNodeDiff,
 } from './filetypeAssert';
 import { addFile } from './api';
+import { $array, $number } from 'lizod';
 
 /**
  * 生成
@@ -503,7 +504,7 @@ export const buildFileTable = (files: FileCryptoInfo<FileInfo>[]):BuildFileTable
         const fileInfoWithEncx: Record<string, unknown> = fileInfoWithEnc;
         const fileInfoWithEncMustHaveBin: { encryptedFileIVBin?: unknown } = fileInfoWithEncx;
         const { encryptedFileIVBin } = fileInfoWithEncMustHaveBin;
-        assertArrayNumber(encryptedFileIVBin);
+        if(!$array($number)(encryptedFileIVBin)) throw new Error('Unexpected Error!');
         fileTable[fileInfo.id] = {
           ...fileInfo,
           expansion: restoreExpansion(fileInfo.expansion),
