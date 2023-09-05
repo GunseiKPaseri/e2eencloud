@@ -6,8 +6,7 @@ import { type AuthState } from '~/features/auth/authSlice';
  * */
 export const removeMFACode = createAction('auth/removeMFACode');
 
-export const afterRemoveMFACode:
-CaseReducer<AuthState> = (state) => {
+export const afterRemoveMFACode: CaseReducer<AuthState> = (state) => {
   // 指定タグのディレクトリをactiveにする
   state.mfacode = null;
 };

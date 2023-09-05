@@ -5,6 +5,6 @@ import { useAppSelector } from '~/lib/react-redux';
 export default function RequireAuth({ children }: { children: JSX.Element }) {
   const user = useAppSelector((state) => state.auth.user);
   const location = useLocation();
-  if (user === null) return <Navigate to="/" state={{ from: location }} />;
+  if (user === null) return <Navigate to='/' state={{ from: location }} />;
   return children;
 }

@@ -9,7 +9,7 @@ const allProgress = <T>(
   let rejectcnt = 0;
   const all = values.length;
   callback(resolvecnt, rejectcnt, all);
-  const thenFunc = (u:T) => {
+  const thenFunc = (u: T) => {
     resolvecnt += 1;
     callback(resolvecnt, rejectcnt, all);
     return u;
@@ -19,9 +19,7 @@ const allProgress = <T>(
     callback(resolvecnt, rejectcnt, all);
     return Promise.resolve(null);
   };
-  return Promise.all(
-    values.map((x) => x.then(thenFunc, rejectFunc)),
-  );
+  return Promise.all(values.map((x) => x.then(thenFunc, rejectFunc)));
 };
 
 export default allProgress;

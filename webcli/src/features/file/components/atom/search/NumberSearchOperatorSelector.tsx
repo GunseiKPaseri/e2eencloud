@@ -1,13 +1,21 @@
-import Select, { type SelectChangeEvent } from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
+import MenuItem from '@mui/material/MenuItem';
+import Select, { type SelectChangeEvent } from '@mui/material/Select';
+import {
+  numberSearchTypeValidator,
+  type NumberSearchType,
+} from '../../../util/search.type';
 
-import { numberSearchTypeValidator, type NumberSearchType } from "../../../util/search.type";
-
-function NumberSearchOperatorSelector(props: {value: NumberSearchType, onChange: (operator: NumberSearchType) => void}){
+function NumberSearchOperatorSelector(props: {
+  value: NumberSearchType;
+  onChange: (operator: NumberSearchType) => void;
+}) {
   return (
     <Select
       value={props.value}
-      onChange={(e: SelectChangeEvent)=> numberSearchTypeValidator(e.target.value) && props.onChange(e.target.value)}
+      onChange={(e: SelectChangeEvent) =>
+        numberSearchTypeValidator(e.target.value) &&
+        props.onChange(e.target.value)
+      }
     >
       <MenuItem value={'=='}>=</MenuItem>
       <MenuItem value={'>='}>≧</MenuItem>

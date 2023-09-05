@@ -1,7 +1,7 @@
+import type { FormEvent } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-import type { FormEvent } from 'react';
 import PasswordField from '~/features/auth/components/PasswordField';
 
 interface PutPasswordProps {
@@ -14,11 +14,15 @@ interface PutPasswordProps {
 
 export default function PutPassword(props: PutPasswordProps) {
   const {
-    password, confirmPassword, onChangeConfirmPassword, onCancel, onDecidePassword,
+    password,
+    confirmPassword,
+    onChangeConfirmPassword,
+    onCancel,
+    onDecidePassword,
   } = props;
   return (
     <Box
-      component="form"
+      component='form'
       onSubmit={(e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         onDecidePassword();
@@ -27,23 +31,23 @@ export default function PutPassword(props: PutPasswordProps) {
       sx={{ mt: 1 }}
     >
       <PasswordField
-        margin="normal"
+        margin='normal'
         required
         fullWidth
-        name="password"
-        label="パスワード（確認のため再入力）"
-        id="password"
-        autoComplete="current-password"
+        name='password'
+        label='パスワード（確認のため再入力）'
+        id='password'
+        autoComplete='current-password'
         value={confirmPassword}
         onChange={(e) => onChangeConfirmPassword(e.target.value)}
-        helperText="先程入力したものと同じものを入力してください"
+        helperText='先程入力したものと同じものを入力してください'
       />
       <Grid container spacing={2}>
         <Grid item xs={6}>
           <Button
-            type="button"
+            type='button'
             fullWidth
-            variant="outlined"
+            variant='outlined'
             sx={{ mt: 3, mb: 2 }}
             onClick={onCancel}
           >
@@ -52,9 +56,9 @@ export default function PutPassword(props: PutPasswordProps) {
         </Grid>
         <Grid item xs={6}>
           <Button
-            type="submit"
+            type='submit'
             fullWidth
-            variant="contained"
+            variant='contained'
             sx={{ mt: 3, mb: 2 }}
             disabled={password !== confirmPassword}
             onClick={onDecidePassword}

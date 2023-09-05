@@ -1,5 +1,3 @@
-import type { Highlight, SearchQueryForRedux } from './util/search.type';
-
 import type {
   FileDifference,
   ExpansionInfoImage,
@@ -9,6 +7,7 @@ import type {
   FileInfo,
   FileInfoVersions,
 } from './fileinfoMigration/fileinfo';
+import type { Highlight, SearchQueryForRedux } from './util/search.type';
 
 export type {
   FileDifference,
@@ -24,57 +23,61 @@ export type {
  */
 
 export type FileCryptoInfoWithBin = {
-  encryptedFileIVBin: number[],
-  fileKeyBin: number[],
-  fileInfo: FileInfoFile,
-  originalVersion: FileInfoVersions
+  encryptedFileIVBin: number[];
+  fileKeyBin: number[];
+  fileInfo: FileInfoFile;
+  originalVersion: FileInfoVersions;
 };
 
-export type FileCryptoInfoWithoutBin<T extends Exclude<FileInfo, FileInfoFile>> = {
-  fileKeyBin: number[],
-  fileInfo: T,
-  originalVersion: FileInfoVersions
+export type FileCryptoInfoWithoutBin<
+  T extends Exclude<FileInfo, FileInfoFile>,
+> = {
+  fileKeyBin: number[];
+  fileInfo: T;
+  originalVersion: FileInfoVersions;
 };
 
-export type FileCryptoInfo<T extends FileInfo> =
-  T extends Exclude<FileInfo, FileInfoFile>
-    ? FileCryptoInfoWithoutBin<T>
-    : FileCryptoInfoWithBin;
+export type FileCryptoInfo<T extends FileInfo> = T extends Exclude<
+  FileInfo,
+  FileInfoFile
+>
+  ? FileCryptoInfoWithoutBin<T>
+  : FileCryptoInfoWithBin;
 
 export interface ExpansionInfoImageLocal {
-  type: 'img',
-  ahashObj: number[],
-  dhashObj: number[],
-  phashObj: number[],
+  type: 'img';
+  ahashObj: number[];
+  dhashObj: number[];
+  phashObj: number[];
 }
 
 export type FileNode<T extends FileInfo> = {
-  nextId?: string
+  nextId?: string;
 } & (T extends FileInfoFolder
   ? FileInfoFolder & {
-    history: string[], // new => old
-    files: string[],
-    origin: FileCryptoInfo<FileInfoFolder>
-  }
-  : T extends FileInfoDiffFile
-    ? FileInfoDiffFile & {
-      blobURL?: string,
-      origin: FileCryptoInfo<FileInfoDiffFile>
+      history: string[]; // new => old
+      files: string[];
+      origin: FileCryptoInfo<FileInfoFolder>;
     }
-    : FileInfoFile & {
-      expansion?: ExpansionInfoImageLocal,
-      history: string[], // new => old
-      blobURL?: string,
-      previewURL?: string,
-      origin: FileCryptoInfo<FileInfoFile>
+  : T extends FileInfoDiffFile
+  ? FileInfoDiffFile & {
+      blobURL?: string;
+      origin: FileCryptoInfo<FileInfoDiffFile>;
+    }
+  : FileInfoFile & {
+      expansion?: ExpansionInfoImageLocal;
+      history: string[]; // new => old
+      blobURL?: string;
+      previewURL?: string;
+      origin: FileCryptoInfo<FileInfoFile>;
     });
 
 /**
-  * ディレクトリテーブル
-  */
+ * ディレクトリテーブル
+ */
 export type FileTable = Record<string, FileNode<FileInfo>>;
 
-type GroupCommon = { files: string[], selecting: string[] };
+type GroupCommon = { files: string[]; selecting: string[] };
 
 export type TagGroup = GroupCommon & {
   type: 'tag';
@@ -95,17 +98,17 @@ export type SearchGroup = GroupCommon & {
 };
 
 export interface GetfileinfoJSONRow {
-  id: string,
-  encryptedFileIVBase64?: string,
-  encryptedFileKeyBase64: string,
-  encryptedFileInfoBase64: string,
-  encryptedFileInfoIVBase64: string,
+  id: string;
+  encryptedFileIVBase64?: string;
+  encryptedFileKeyBase64: string;
+  encryptedFileInfoBase64: string;
+  encryptedFileInfoIVBase64: string;
   encryptedSize: string;
 }
 
 export type BuildFileTableAsyncResult = {
-  fileTable: FileTable,
-  tagTree: Record<string, string[]>
+  fileTable: FileTable;
+  tagTree: Record<string, string[]>;
 };
 
 /* 容量情報 */

@@ -1,33 +1,30 @@
 import React, { useId, useState } from 'react';
-import ToggleButton from '@mui/material/ToggleButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Tooltip from '@mui/material/Tooltip';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-
 import AddIcon from '@mui/icons-material/Add';
-import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-
-import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
-import { type FileState, createFolderAsync } from '~/features/file/fileSlice';
+import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
+import { ListItemIcon, ListItemText } from '@mui/material';
+import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
+import ToggleButton from '@mui/material/ToggleButton';
+import Tooltip from '@mui/material/Tooltip';
+import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
 import StyledToggleButtonGroup from '~/components/atom/StyledToggleButtonGroup';
-import { ListItemIcon, ListItemText } from '@mui/material';
+import { type FileState, createFolderAsync } from '~/features/file/fileSlice';
 
-function AddFolderDialog(props: {
-  open: boolean;
-  onClose: ()=>void;
-}) {
-  const addFolderDialogId = useId()
+function AddFolderDialog(props: { open: boolean; onClose: () => void }) {
+  const addFolderDialogId = useId();
 
   const [name, setName] = useState<string>('');
   const dispatch = useAppDispatch();
-  const filegroup = useAppSelector<FileState['activeFileGroup']>((state) => state.file.activeFileGroup);
+  const filegroup = useAppSelector<FileState['activeFileGroup']>(
+    (state) => state.file.activeFileGroup,
+  );
   if (filegroup?.type !== 'dir') return null;
   const handleAddDir = async () => {
     await dispatch(createFolderAsync({ name }));
@@ -43,20 +40,19 @@ function AddFolderDialog(props: {
       <DialogTitle id={addFolderDialogId}>新規ディレクトリの作成</DialogTitle>
       <DialogContent>
         <TextField
-          margin="normal"
+          margin='normal'
           fullWidth
-          name="newname"
-          label="新規ディレクトリ名"
-          type="normal"
+          name='newname'
+          label='新規ディレクトリ名'
+          type='normal'
           value={name}
-          onChange={(e) => { setName(e.target.value); }}
+          onChange={(e) => {
+            setName(e.target.value);
+          }}
         />
       </DialogContent>
       <DialogActions>
-        <Button
-          disabled={name === ''}
-          onClick={handleAddDir}
-        >
+        <Button disabled={name === ''} onClick={handleAddDir}>
           作成
         </Button>
       </DialogActions>
@@ -64,17 +60,16 @@ function AddFolderDialog(props: {
   );
 }
 
-
 export default function DirGroupFileListToolbarButton() {
   const anchorId = useId();
   const [anchorAddEl, setAnchorAddEl] = useState<null | HTMLElement>(null);
-  const openAddMenu = Boolean(anchorAddEl)
+  const openAddMenu = Boolean(anchorAddEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorAddEl(event.currentTarget);
-  }
+  };
   const handleClose = () => {
     setAnchorAddEl(null);
-  }
+  };
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const handleDialogClickOpen = () => {
@@ -87,22 +82,21 @@ export default function DirGroupFileListToolbarButton() {
   return (
     <>
       <StyledToggleButtonGroup size='small'>
-        <Tooltip title="新規作成">
+        <Tooltip title='新規作成'>
           <ToggleButton
             onClick={handleClick}
-            value="add"
-            aria-label="add"
+            value='add'
+            aria-label='add'
             aria-controls={openAddMenu ? anchorId : undefined}
-            aria-haspopup="true"
+            aria-haspopup='true'
             aria-expanded={openAddMenu ? 'true' : undefined}
           >
-              <AddIcon />
-              <ArrowDropDownIcon />
+            <AddIcon />
+            <ArrowDropDownIcon />
           </ToggleButton>
         </Tooltip>
       </StyledToggleButtonGroup>
-      {
-        openAddMenu &&
+      {openAddMenu && (
         <Menu
           id={anchorId}
           anchorEl={anchorAddEl}
@@ -121,19 +115,19 @@ export default function DirGroupFileListToolbarButton() {
             filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
           }}
         >
-          <MenuItem onClick={() => {
-            handleDialogClickOpen();
-            handleClose();
-          }}>
+          <MenuItem
+            onClick={() => {
+              handleDialogClickOpen();
+              handleClose();
+            }}
+          >
             <ListItemIcon>
               <CreateNewFolderIcon />
             </ListItemIcon>
-            <ListItemText>
-              新しいフォルダー
-            </ListItemText>
+            <ListItemText>新しいフォルダー</ListItemText>
           </MenuItem>
         </Menu>
-      }
+      )}
       <AddFolderDialog open={dialogOpen} onClose={handleDialogClose} />
     </>
   );

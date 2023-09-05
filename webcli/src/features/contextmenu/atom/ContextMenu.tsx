@@ -1,20 +1,22 @@
 import React from 'react';
-import { ExhaustiveError } from '~/utils/assert';
 import type { Awaitable } from 'vitest';
-import type { AppDispatch } from '~/store/store';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
+import type { AppDispatch } from '~/store/store';
+import { ExhaustiveError } from '~/utils/assert';
 import { closeContextmenu } from '../contextmenuSlice';
 import MenuFileListItem from '../features/MenuFileListItem';
 
-const genHandleContextMenu = (dispatch: AppDispatch) => (
-  (onClick:
-  (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => Awaitable<void>) => (
-    async (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
-      await onClick(event);
-      dispatch(closeContextmenu());
-    }
-  )
-);
+const genHandleContextMenu =
+  (dispatch: AppDispatch) =>
+  (
+    onClick: (
+      event: React.MouseEvent<HTMLLIElement, MouseEvent>,
+    ) => Awaitable<void>,
+  ) =>
+  async (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+    await onClick(event);
+    dispatch(closeContextmenu());
+  };
 
 export default function ContextMenu() {
   const dispatch = useAppDispatch();

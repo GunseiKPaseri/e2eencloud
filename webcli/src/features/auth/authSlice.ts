@@ -1,11 +1,27 @@
 import { createAction, createSlice } from '@reduxjs/toolkit';
-
-// Thunk
-import { signupAsync } from './thunk/signupAsync';
-import { confirmEmailAsync, afterConfirmEmailAsyncFullfilled } from './thunk/confirmEmailAsync';
-import { addFIDO2Async, afterAddFIDO2AsyncFullfilled } from './thunk/addFIDO2Async';
-import { addTOTPAsync, afterAddTOTPAsyncFullfilled } from './thunk/addTOTPAsync';
-import { deleteTOTPAsync, afterDeleteTOTPAsyncFullfilled } from './thunk/deleteTOTPAsync';
+import {
+  addFIDO2Async,
+  afterAddFIDO2AsyncFullfilled,
+} from './thunk/addFIDO2Async';
+import {
+  addTOTPAsync,
+  afterAddTOTPAsyncFullfilled,
+} from './thunk/addTOTPAsync';
+import { changePasswordAsync } from './thunk/changePasswordAsync';
+import {
+  confirmEmailAsync,
+  afterConfirmEmailAsyncFullfilled,
+} from './thunk/confirmEmailAsync';
+import {
+  deleteTOTPAsync,
+  afterDeleteTOTPAsyncFullfilled,
+} from './thunk/deleteTOTPAsync';
+import {
+  afterFIDO2LoginAsyncFullfilled,
+  afterFIDO2LoginAsyncPending,
+  afterFIDO2LoginAsyncRejected,
+  fido2LoginAsync,
+} from './thunk/fido2LoginAsync';
 import {
   afterLoginAsyncFullfilled,
   afterLoginAsyncPending,
@@ -16,9 +32,20 @@ import {
   loginSuccess,
   afterLoginSuccessFullfilled,
 } from './thunk/loginSuccessAsync';
-
 import { afterLogoutAsyncFullfilled, logoutAsync } from './thunk/logoutAsync';
-import { changePasswordAsync } from './thunk/changePasswordAsync';
+import {
+  afterMFACancelAsyncFullfilled,
+  mfaCancelAsync,
+} from './thunk/mfaCancelAsync';
+import {
+  afterMFACodeLoginAsyncFullfilled,
+  afterMFACodeLoginAsyncPending,
+  afterMFACodeLoginAsyncRejected,
+  mfacodeLoginAsync,
+} from './thunk/mfacodeLoginAsync';
+import { removeMFACode, afterRemoveMFACode } from './thunk/removeMFACode';
+// Thunk
+import { signupAsync } from './thunk/signupAsync';
 import {
   afterTOTPLoginAsyncFullfilled,
   afterTOTPLoginAsyncPending,
@@ -26,23 +53,9 @@ import {
   totpLoginAsync,
 } from './thunk/totpLoginAsync';
 
-import {
-  afterMFACodeLoginAsyncFullfilled,
-  afterMFACodeLoginAsyncPending,
-  afterMFACodeLoginAsyncRejected,
-  mfacodeLoginAsync,
-} from './thunk/mfacodeLoginAsync';
-
-import { removeMFACode, afterRemoveMFACode } from './thunk/removeMFACode';
-import {
-  afterFIDO2LoginAsyncFullfilled,
-  afterFIDO2LoginAsyncPending,
-  afterFIDO2LoginAsyncRejected,
-  fido2LoginAsync,
-} from './thunk/fido2LoginAsync';
-import { afterMFACancelAsyncFullfilled, mfaCancelAsync } from './thunk/mfaCancelAsync';
-
-export const selectMFASolution = createAction<AuthState['loginStatus']['step']>('auth/selectMFASolution');
+export const selectMFASolution = createAction<AuthState['loginStatus']['step']>(
+  'auth/selectMFASolution',
+);
 
 export { removeMFACode };
 export { signupAsync };
@@ -62,15 +75,15 @@ export interface PostSignUp {
 }
 
 export interface EmailConfirm {
-  type: 'ADD_USER',
-  token: string,
-  clientRandomValueBase64: string,
-  encryptedMasterKeyBase64: string,
-  encryptedMasterKeyIVBase64: string,
-  hashedAuthenticationKeyBase64: string,
-  encryptedRSAPrivateKeyBase64: string,
-  encryptedRSAPrivateKeyIVBase64: string,
-  RSAPublicKeyBase64: string
+  type: 'ADD_USER';
+  token: string;
+  clientRandomValueBase64: string;
+  encryptedMasterKeyBase64: string;
+  encryptedMasterKeyIVBase64: string;
+  hashedAuthenticationKeyBase64: string;
+  encryptedRSAPrivateKeyBase64: string;
+  encryptedRSAPrivateKeyIVBase64: string;
+  RSAPublicKeyBase64: string;
 }
 
 export interface UserState {
@@ -88,7 +101,9 @@ export interface AuthState {
   suggestedMfa: MFASolution[];
   user: UserState | null;
   signupStatus: 'failed' | null;
-  loginStatus: { step: 'EmailAndPass' | MFASolution, state: null | 'pending' | 'error' } | { step: 'SelectMFASolution' };
+  loginStatus:
+    | { step: 'EmailAndPass' | MFASolution; state: null | 'pending' | 'error' }
+    | { step: 'SelectMFASolution' };
   confirmstate: Record<string, ConfirmState | undefined>;
 }
 

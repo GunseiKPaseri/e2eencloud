@@ -1,4 +1,11 @@
 import { describe, test, expect } from 'vitest';
+import type { FileInfoDiffFile, FileTable } from './file.type';
+import { latestVersion } from './fileinfoMigration/fileinfo';
+import {
+  genFileInfoFolder,
+  genFileInfoFile,
+  genFileInfoDiff,
+} from './util/testutil';
 import {
   buildFileTable,
   createDiff,
@@ -7,35 +14,26 @@ import {
   getSafeName,
   isDiffExt,
 } from './utils';
-import type {
-  FileInfoDiffFile,
-  FileTable,
-} from './file.type';
-import {
-  genFileInfoFolder,
-  genFileInfoFile,
-  genFileInfoDiff,
-} from './util/testutil';
-import { latestVersion } from './fileinfoMigration/fileinfo';
 
 describe('#genUUID', () => {
-  test('\'-\'を含まない', () => {
+  test("'-'を含まない", () => {
     expect(genUUID().indexOf('-')).toBe(-1);
   });
 });
 
 describe('#getSafeName', () => {
   test('安全な文字列に変換される', () => {
-    expect(getSafeName([
-      'test',
-      '\\/:*?<>|',
-      'hoge.fuga.piyo',
-      'hoge.fuga.piyo',
-    ], ['test', 'hoge.fuga.piyo'])).toEqual([
+    expect(
+      getSafeName(
+        ['test', '\\/:*?<>|', 'hoge.fuga.piyo', 'hoge.fuga.piyo'],
+        ['test', 'hoge.fuga.piyo'],
+      ),
+    ).toEqual([
       'test (2)',
       '＼／：＊？＜＞｜',
       'hoge.fuga (2).piyo',
-      'hoge.fuga (3).piyo']);
+      'hoge.fuga (3).piyo',
+    ]);
   });
 });
 
@@ -54,7 +52,10 @@ describe('#createDiff', () => {
     const b = genFileInfoFile({ id: 'b', parentId: 'a', tag: ['あ'] });
     const c = genFileInfoFile({ id: 'c', parentId: 'a', tag: [] });
     const d = genFileInfoDiff({
-      id: 'j', parentId: null, prevId: 'a', diff: { addtag: ['い'] },
+      id: 'j',
+      parentId: null,
+      prevId: 'a',
+      diff: { addtag: ['い'] },
     });
     const fileTable: FileTable = {
       // folder
@@ -83,7 +84,18 @@ describe('#createDiff', () => {
         },
       },
       a: {
-        ...a.fileInfo, type: 'folder', name: 'a', prevId: undefined, files: ['b', 'c'], parentId: 'root', history: ['a'], origin: { fileInfo: a.fileInfo, fileKeyBin: [], originalVersion: latestVersion },
+        ...a.fileInfo,
+        type: 'folder',
+        name: 'a',
+        prevId: undefined,
+        files: ['b', 'c'],
+        parentId: 'root',
+        history: ['a'],
+        origin: {
+          fileInfo: a.fileInfo,
+          fileKeyBin: [],
+          originalVersion: latestVersion,
+        },
       },
       // file
       b: {
@@ -121,10 +133,20 @@ describe('#createDiff', () => {
       },
       // diff
       d: {
-        ...d.fileInfo, type: 'diff', name: 'd', prevId: 'b', parentId: 'a', diff: { addtag: ['い'] }, origin: { fileInfo: d.fileInfo, fileKeyBin: [], originalVersion: latestVersion },
+        ...d.fileInfo,
+        type: 'diff',
+        name: 'd',
+        prevId: 'b',
+        parentId: 'a',
+        diff: { addtag: ['い'] },
+        origin: {
+          fileInfo: d.fileInfo,
+          fileKeyBin: [],
+          originalVersion: latestVersion,
+        },
       },
     };
-    const testSet:[FileInfoDiffFile, FileInfoDiffFile][] = [
+    const testSet: [FileInfoDiffFile, FileInfoDiffFile][] = [
       [
         createDiff({ targetId: 'b', newName: 'x' }, fileTable),
         {
@@ -168,7 +190,13 @@ describe('#createDiff', () => {
         },
       ],
       [
-        createDiff({ targetId: 'b', newTags: { addtag: ['え', 'お', 'お'], deltag: ['え'] } }, fileTable),
+        createDiff(
+          {
+            targetId: 'b',
+            newTags: { addtag: ['え', 'お', 'お'], deltag: ['え'] },
+          },
+          fileTable,
+        ),
         {
           type: 'diff',
           id: 'PRESET',
@@ -183,7 +211,10 @@ describe('#createDiff', () => {
         },
       ],
       [
-        createDiff({ targetId: 'b', newTags: { addtag: ['い'], deltag: ['い'] } }, fileTable),
+        createDiff(
+          { targetId: 'b', newTags: { addtag: ['い'], deltag: ['い'] } },
+          fileTable,
+        ),
         {
           type: 'diff',
           id: 'PRESET',
@@ -209,27 +240,48 @@ describe('#buildFileTable', () => {
     const a = genFileInfoFolder({ id: 'a', parentId: null, tag: [] });
     const b = genFileInfoFile({ id: 'b', parentId: 'a', tag: [] });
     const c = genFileInfoDiff({
-      id: 'c', parentId: 'a', prevId: 'b', diff: { addtag: ['あ'] },
+      id: 'c',
+      parentId: 'a',
+      prevId: 'b',
+      diff: { addtag: ['あ'] },
     });
     const d = genFileInfoDiff({
-      id: 'd', parentId: 'a', prevId: 'c', diff: { addtag: ['い'] },
+      id: 'd',
+      parentId: 'a',
+      prevId: 'c',
+      diff: { addtag: ['い'] },
     });
     const e = genFileInfoFile({
-      id: 'e', parentId: 'a', prevId: 'd', tag: ['あ', 'い'],
+      id: 'e',
+      parentId: 'a',
+      prevId: 'd',
+      tag: ['あ', 'い'],
     });
     const f = genFileInfoFile({
-      id: 'f', parentId: 'a', prevId: 'e', tag: ['あ'],
+      id: 'f',
+      parentId: 'a',
+      prevId: 'e',
+      tag: ['あ'],
     });
     const g = genFileInfoDiff({
-      id: 'g', parentId: 'a', prevId: 'f', diff: { addtag: ['い'] },
+      id: 'g',
+      parentId: 'a',
+      prevId: 'f',
+      diff: { addtag: ['い'] },
     });
     const h = genFileInfoFile({ id: 'h', parentId: 'a', tag: ['い'] });
     const i = genFileInfoFile({ id: 'i', parentId: 'a', tag: [] });
     const j = genFileInfoDiff({
-      id: 'j', parentId: null, prevId: 'a', diff: {},
+      id: 'j',
+      parentId: null,
+      prevId: 'a',
+      diff: {},
     });
     const k = genFileInfoDiff({
-      id: 'k', parentId: 'a', prevId: 'g', diff: { deltag: ['あ'], addtag: ['う', 'え'] },
+      id: 'k',
+      parentId: 'a',
+      prevId: 'g',
+      diff: { deltag: ['あ'], addtag: ['う', 'え'] },
     });
     const expectFileTable: FileTable = {
       // folder
@@ -258,7 +310,19 @@ describe('#buildFileTable', () => {
         },
       },
       a: {
-        ...a.fileInfo, type: 'folder', name: 'j', prevId: undefined, nextId: 'j', files: ['f', 'h', 'i'], parentId: 'root', history: ['j', 'a'], origin: { fileInfo: a.fileInfo, fileKeyBin: [], originalVersion: latestVersion },
+        ...a.fileInfo,
+        type: 'folder',
+        name: 'j',
+        prevId: undefined,
+        nextId: 'j',
+        files: ['f', 'h', 'i'],
+        parentId: 'root',
+        history: ['j', 'a'],
+        origin: {
+          fileInfo: a.fileInfo,
+          fileKeyBin: [],
+          originalVersion: latestVersion,
+        },
       },
       // file(dirobj) 最新の情報が反映される
       f: {
@@ -347,24 +411,80 @@ describe('#buildFileTable', () => {
       },
       // diff
       c: {
-        ...c.fileInfo, type: 'diff', name: 'c', prevId: 'b', nextId: 'd', parentId: 'a', diff: { addtag: ['あ'] }, origin: { fileInfo: c.fileInfo, fileKeyBin: [], originalVersion: latestVersion },
+        ...c.fileInfo,
+        type: 'diff',
+        name: 'c',
+        prevId: 'b',
+        nextId: 'd',
+        parentId: 'a',
+        diff: { addtag: ['あ'] },
+        origin: {
+          fileInfo: c.fileInfo,
+          fileKeyBin: [],
+          originalVersion: latestVersion,
+        },
       },
       d: {
-        ...d.fileInfo, type: 'diff', name: 'd', prevId: 'c', nextId: 'e', parentId: 'a', diff: { addtag: ['い'] }, origin: { fileInfo: d.fileInfo, fileKeyBin: [], originalVersion: latestVersion },
+        ...d.fileInfo,
+        type: 'diff',
+        name: 'd',
+        prevId: 'c',
+        nextId: 'e',
+        parentId: 'a',
+        diff: { addtag: ['い'] },
+        origin: {
+          fileInfo: d.fileInfo,
+          fileKeyBin: [],
+          originalVersion: latestVersion,
+        },
       },
       g: {
-        ...g.fileInfo, type: 'diff', name: 'g', prevId: 'f', nextId: 'k', parentId: 'a', diff: { addtag: ['い'] }, origin: { fileInfo: g.fileInfo, fileKeyBin: [], originalVersion: latestVersion },
+        ...g.fileInfo,
+        type: 'diff',
+        name: 'g',
+        prevId: 'f',
+        nextId: 'k',
+        parentId: 'a',
+        diff: { addtag: ['い'] },
+        origin: {
+          fileInfo: g.fileInfo,
+          fileKeyBin: [],
+          originalVersion: latestVersion,
+        },
       },
       j: {
-        ...j.fileInfo, type: 'diff', name: 'j', prevId: 'a', parentId: 'root', diff: {}, origin: { fileInfo: j.fileInfo, fileKeyBin: [], originalVersion: latestVersion },
+        ...j.fileInfo,
+        type: 'diff',
+        name: 'j',
+        prevId: 'a',
+        parentId: 'root',
+        diff: {},
+        origin: {
+          fileInfo: j.fileInfo,
+          fileKeyBin: [],
+          originalVersion: latestVersion,
+        },
       },
       k: {
-        ...k.fileInfo, type: 'diff', name: 'k', prevId: 'g', parentId: 'a', diff: { addtag: ['う', 'え'], deltag: ['あ'] }, origin: { fileInfo: k.fileInfo, fileKeyBin: [], originalVersion: latestVersion },
+        ...k.fileInfo,
+        type: 'diff',
+        name: 'k',
+        prevId: 'g',
+        parentId: 'a',
+        diff: { addtag: ['う', 'え'], deltag: ['あ'] },
+        origin: {
+          fileInfo: k.fileInfo,
+          fileKeyBin: [],
+          originalVersion: latestVersion,
+        },
       },
     };
     const result = buildFileTable([a, b, c, d, e, f, g, h, i, j, k]);
     // setな要素はソートしておく
-    [...Object.values(result.fileTable), ...Object.values(expectFileTable)].forEach((node) => {
+    [
+      ...Object.values(result.fileTable),
+      ...Object.values(expectFileTable),
+    ].forEach((node) => {
       // tag
       if (node.type === 'file') node.tag.sort();
       // children
@@ -382,15 +502,14 @@ describe('#buildFileTable', () => {
     });
 
     // いざ実行
-    expect(result)
-      .toEqual({
-        tagTree: {
-          う: ['f'],
-          い: ['f', 'h'],
-          え: ['f'],
-        },
-        fileTable: expectFileTable,
-      });
+    expect(result).toEqual({
+      tagTree: {
+        う: ['f'],
+        い: ['f', 'h'],
+        え: ['f'],
+      },
+      fileTable: expectFileTable,
+    });
   });
 });
 
@@ -399,27 +518,48 @@ describe('#getAllDependentFile', () => {
     const a = genFileInfoFolder({ id: 'a', parentId: null, tag: [] });
     const b = genFileInfoFile({ id: 'b', parentId: 'a', tag: [] });
     const c = genFileInfoDiff({
-      id: 'c', parentId: 'a', prevId: 'b', diff: { addtag: ['あ'] },
+      id: 'c',
+      parentId: 'a',
+      prevId: 'b',
+      diff: { addtag: ['あ'] },
     });
     const d = genFileInfoDiff({
-      id: 'd', parentId: 'a', prevId: 'c', diff: { addtag: ['い'] },
+      id: 'd',
+      parentId: 'a',
+      prevId: 'c',
+      diff: { addtag: ['い'] },
     });
     const e = genFileInfoFile({
-      id: 'e', parentId: 'a', prevId: 'd', tag: ['あ', 'い'],
+      id: 'e',
+      parentId: 'a',
+      prevId: 'd',
+      tag: ['あ', 'い'],
     });
     const f = genFileInfoFile({
-      id: 'f', parentId: 'a', prevId: 'e', tag: ['あ'],
+      id: 'f',
+      parentId: 'a',
+      prevId: 'e',
+      tag: ['あ'],
     });
     const g = genFileInfoDiff({
-      id: 'g', parentId: 'a', prevId: 'f', diff: { addtag: ['い'] },
+      id: 'g',
+      parentId: 'a',
+      prevId: 'f',
+      diff: { addtag: ['い'] },
     });
     const h = genFileInfoFile({ id: 'h', parentId: 'a', tag: ['い'] });
     const i = genFileInfoFile({ id: 'i', parentId: 'a', tag: [] });
     const j = genFileInfoDiff({
-      id: 'j', parentId: null, prevId: 'a', diff: {},
+      id: 'j',
+      parentId: null,
+      prevId: 'a',
+      diff: {},
     });
     const k = genFileInfoDiff({
-      id: 'k', parentId: 'a', prevId: 'g', diff: { deltag: ['あ'], addtag: ['う', 'え'] },
+      id: 'k',
+      parentId: 'a',
+      prevId: 'g',
+      diff: { deltag: ['あ'], addtag: ['う', 'え'] },
     });
     const { fileTable } = buildFileTable([a, b, c, d, e, f, g, h, i, j, k]);
 
@@ -428,7 +568,6 @@ describe('#getAllDependentFile', () => {
     const expectArray = ['b', 'c', 'd', 'e', 'f', 'g', 'k'];
 
     // いざ実行
-    expect(result)
-      .toEqual(expectArray);
+    expect(result).toEqual(expectArray);
   });
 });

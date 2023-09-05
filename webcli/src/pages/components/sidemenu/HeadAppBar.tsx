@@ -1,19 +1,17 @@
 import React from 'react';
-
-import { styled } from '@mui/material/styles';
-import MuiAppBar, { type AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
+import MenuIcon from '@mui/icons-material/Menu';
+import MuiAppBar, {
+  type AppBarProps as MuiAppBarProps,
+} from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
-
-import MenuIcon from '@mui/icons-material/Menu';
-import { useAppSelector } from '~/lib/react-redux';
-
-import { type ProgressState } from '~/features/progress/progressSlice';
-
+import Toolbar from '@mui/material/Toolbar';
+import { styled } from '@mui/material/styles';
 import { SIDEBAR_WIDTH } from '~/const/const';
+import { useAppSelector } from '~/lib/react-redux';
 import LangSelector from '~/features/language/LangSelector';
+import { type ProgressState } from '~/features/progress/progressSlice';
 import UserIcon from './UserIcon';
 
 interface AppBarProps extends MuiAppBarProps {
@@ -38,20 +36,24 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
-export default function HeadAppBar(
-  { isSidebarOpen, onSidebarToggle }: { isSidebarOpen: boolean, onSidebarToggle: () => void },
-) {
+export default function HeadAppBar({
+  isSidebarOpen,
+  onSidebarToggle,
+}: {
+  isSidebarOpen: boolean;
+  onSidebarToggle: () => void;
+}) {
   const { progress } = useAppSelector<ProgressState>((state) => state.progress);
   return (
-    <AppBar position="fixed" open={isSidebarOpen}>
+    <AppBar position='fixed' open={isSidebarOpen}>
       <>
         <Toolbar>
           <Box sx={{ flexGrow: 1 }}>
             <IconButton
-              size="large"
-              edge="start"
-              color="inherit"
-              aria-label="menu"
+              size='large'
+              edge='start'
+              color='inherit'
+              aria-label='menu'
               sx={{ mr: 2 }}
               onClick={onSidebarToggle}
             >
@@ -63,16 +65,13 @@ export default function HeadAppBar(
             <UserIcon />
           </Box>
         </Toolbar>
-        {(
-            progress
-              && (
-                <LinearProgress
-                  variant="buffer"
-                  value={progress.real * 100}
-                  valueBuffer={progress.buffer * 100}
-                />
-              )
-          )}
+        {progress && (
+          <LinearProgress
+            variant='buffer'
+            value={progress.real * 100}
+            valueBuffer={progress.buffer * 100}
+          />
+        )}
       </>
     </AppBar>
   );

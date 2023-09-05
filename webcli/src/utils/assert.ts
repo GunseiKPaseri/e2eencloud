@@ -1,19 +1,22 @@
 /**
-* 要素がnullでもundefinedでもないと確信
-*/
-export const assertNotNull:
-  <T>(x: T | null | undefined) => asserts x is T = (x) => {
-    if (x === undefined || x === null) {
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      throw new Error(`This(${x}) is bad!!`);
-    }
-  };
+ * 要素がnullでもundefinedでもないと確信
+ */
+export const assertNotNull: <T>(x: T | null | undefined) => asserts x is T = (
+  x,
+) => {
+  if (x === undefined || x === null) {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    throw new Error(`This(${x}) is bad!!`);
+  }
+};
 
 /**
-  * 要素が指定文字列と確信
-  */
-export const assertString:
-<T extends string, U extends string>(x: T | U, y: U) => asserts x is U = (x, y) => {
+ * 要素が指定文字列と確信
+ */
+export const assertString: <T extends string, U extends string>(
+  x: T | U,
+  y: U,
+) => asserts x is U = (x, y) => {
   if (x !== y) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     throw new Error(`This(${x}) is bad!!`);
@@ -37,7 +40,7 @@ export type Expand<T> = T extends object
   ? T extends infer O
     ? { [K in keyof O]: Expand<O[K]> }
     : never
-  : T
+  : T;
 
 type KeyOfUnion<T> = T extends T ? keyof T : never;
 

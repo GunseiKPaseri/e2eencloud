@@ -1,18 +1,19 @@
 import type { AxiosProgressEvent, AxiosResponse } from 'axios';
 import { axiosWithSession } from '~/lib/axios';
-import type { GetfileinfoJSONRow } from './file.type';
 import socket from '~/class/socketio';
+import type { GetfileinfoJSONRow } from './file.type';
 
 export const getAllFileInfoRaw = async ({
   onDownloadProgress,
-}: { onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void }) => {
+}: {
+  onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void;
+}) => {
   const rawfiles = await axiosWithSession.get<
-  Record<string, never>, AxiosResponse<GetfileinfoJSONRow[]>>(
-    '/api/my/files',
-    {
-      onDownloadProgress,
-    },
-  );
+    Record<string, never>,
+    AxiosResponse<GetfileinfoJSONRow[]>
+  >('/api/my/files', {
+    onDownloadProgress,
+  });
   return rawfiles.data;
 };
 
@@ -20,12 +21,12 @@ export const deleteFile = async ({
   deleteItems,
   onDownloadProgress,
 }: {
-  deleteItems: string[],
-  onDownloadProgress?:(progressEvent: AxiosProgressEvent) => void
+  deleteItems: string[];
+  onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void;
 }) => {
   const rawfiles = await axiosWithSession.post<
-  { files: string[] },
-  AxiosResponse<{ deleted: string[] }>
+    { files: string[] },
+    AxiosResponse<{ deleted: string[] }>
   >(
     '/api/files/delete',
     { files: deleteItems },
@@ -36,24 +37,31 @@ export const deleteFile = async ({
   return rawfiles.data;
 };
 
-export const addFile = async (props: {
-  id: string,
-  encryptedFileInfoBase64: string,
-  encryptedFileInfoIVBase64: string,
-  encryptedFileKeyBase64: string,
-} | {
-  id: string,
-  encryptedFileInfoBase64: string,
-  encryptedFileInfoIVBase64: string,
-  encryptedFileKeyBase64: string,
-  encryptedFileBlob: Blob,
-  encryptedFileIVBase64: string,
-}) => {
+export const addFile = async (
+  props:
+    | {
+        id: string;
+        encryptedFileInfoBase64: string;
+        encryptedFileInfoIVBase64: string;
+        encryptedFileKeyBase64: string;
+      }
+    | {
+        id: string;
+        encryptedFileInfoBase64: string;
+        encryptedFileInfoIVBase64: string;
+        encryptedFileKeyBase64: string;
+        encryptedFileBlob: Blob;
+        encryptedFileIVBase64: string;
+      },
+) => {
   const fileSendData = new FormData();
   fileSendData.append('socketid', socket.id);
   fileSendData.append('id', props.id);
   fileSendData.append('encryptedFileInfoBase64', props.encryptedFileInfoBase64);
-  fileSendData.append('encryptedFileInfoIVBase64', props.encryptedFileInfoIVBase64);
+  fileSendData.append(
+    'encryptedFileInfoIVBase64',
+    props.encryptedFileInfoIVBase64,
+  );
   fileSendData.append('encryptedFileKeyBase64', props.encryptedFileKeyBase64);
   if ('encryptedFileBlob' in props) {
     fileSendData.append('encryptedFile', props.encryptedFileBlob);
@@ -70,6 +78,9 @@ export const addFile = async (props: {
  * 対象ファイルの生データを取得
  */
 export const getEncryptedFileRaw = async (fileId: string) => {
-  const encryptedFileRowDL = await axiosWithSession.get<Record<string, never>, AxiosResponse<ArrayBuffer>>(`/api/files/${fileId}/bin`, { responseType: 'arraybuffer' });
+  const encryptedFileRowDL = await axiosWithSession.get<
+    Record<string, never>,
+    AxiosResponse<ArrayBuffer>
+  >(`/api/files/${fileId}/bin`, { responseType: 'arraybuffer' });
   return encryptedFileRowDL.data;
 };

@@ -2,16 +2,20 @@ import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosResponse } from 'axios';
 import { axiosWithSession } from '~/lib/axios';
-
 import type { AuthState } from '~/features/auth/authSlice';
+import {
+  setProgress,
+  deleteProgress,
+  progress,
+} from '~/features/progress/progressSlice';
 import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
-import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
-
-import { loginSuccess, type APILoginSuccessResopnse } from './loginSuccessAsync';
+import {
+  loginSuccess,
+  type APILoginSuccessResopnse,
+} from './loginSuccessAsync';
 
 // ログイン処理
-export const totpLoginAsync = createAsyncThunk<
-boolean, { token: string }>(
+export const totpLoginAsync = createAsyncThunk<boolean, { token: string }>(
   'auth/mfaTOTPLogin',
   async (info, { dispatch }) => {
     type APITOTPLoginResponse = APILoginSuccessResopnse | { success: false };
@@ -20,8 +24,8 @@ boolean, { token: string }>(
     let result: AxiosResponse<APITOTPLoginResponse>;
     try {
       result = await axiosWithSession.post<
-      { token: string },
-      AxiosResponse<APITOTPLoginResponse>
+        { token: string },
+        AxiosResponse<APITOTPLoginResponse>
       >(
         '/api/totplogin',
         { token: info.token },
@@ -34,7 +38,12 @@ boolean, { token: string }>(
       // console.log(result.data);
     } catch (e) {
       dispatch(deleteProgress());
-      dispatch(enqueueSnackbar({ message: 'ログインに失敗しました', options: { variant: 'error' } }));
+      dispatch(
+        enqueueSnackbar({
+          message: 'ログインに失敗しました',
+          options: { variant: 'error' },
+        }),
+      );
       throw e;
     }
 
@@ -54,7 +63,11 @@ export const afterTOTPLoginAsyncRejected = (state: AuthState) => {
   state.loginStatus = { step: 'TOTP', state: 'error' };
 };
 
-export const afterTOTPLoginAsyncFullfilled:
-CaseReducer<AuthState, PayloadAction<boolean>> = (state, action) => {
-  state.loginStatus = action ? { step: 'EmailAndPass', state: null } : { step: 'TOTP', state: 'error' };
+export const afterTOTPLoginAsyncFullfilled: CaseReducer<
+  AuthState,
+  PayloadAction<boolean>
+> = (state, action) => {
+  state.loginStatus = action
+    ? { step: 'EmailAndPass', state: null }
+    : { step: 'TOTP', state: 'error' };
 };

@@ -1,11 +1,8 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import type { WritableDraft } from 'immer/dist/internal';
-
 import i18n from 'i18next';
-
+import type { WritableDraft } from 'immer/dist/internal';
 import initI18N from './init_i18n';
-
 import { initialState, type LanguageState } from './languageState';
 
 export const initI18NAsync = createAsyncThunk<{ language: string }>(
@@ -30,10 +27,9 @@ export const languageSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(initI18NAsync.fulfilled, (state: LanguageState, action) => {
-        state.language = action.payload.language as LanguageState['language'];
-      });
+    builder.addCase(initI18NAsync.fulfilled, (state: LanguageState, action) => {
+      state.language = action.payload.language as LanguageState['language'];
+    });
   },
 });
 

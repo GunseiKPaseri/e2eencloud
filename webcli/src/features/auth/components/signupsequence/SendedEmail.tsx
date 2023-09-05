@@ -1,8 +1,8 @@
+import type { FormEvent } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import type { FormEvent } from 'react';
 
 interface SendedEmailProps {
   timer: number;
@@ -12,12 +12,10 @@ interface SendedEmailProps {
 }
 
 export default function SendedEmail(props: SendedEmailProps) {
-  const {
-    timer, email, onCancel, onResend,
-  } = props;
+  const { timer, email, onCancel, onResend } = props;
   return (
     <Box
-      component="form"
+      component='form'
       onSubmit={(e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         onResend();
@@ -25,8 +23,8 @@ export default function SendedEmail(props: SendedEmailProps) {
       noValidate
       sx={{ mt: 1 }}
     >
-      <Typography component="p">
-        <Typography component="em">{email}</Typography>
+      <Typography component='p'>
+        <Typography component='em'>{email}</Typography>
         にメールを送信しました。受信したメールに含まれる確認リンクにアクセスしてください。
       </Typography>
       <ul>
@@ -37,9 +35,9 @@ export default function SendedEmail(props: SendedEmailProps) {
       <Grid container spacing={2}>
         <Grid item xs={6}>
           <Button
-            type="button"
+            type='button'
             fullWidth
-            variant="outlined"
+            variant='outlined'
             sx={{ mt: 3, mb: 2 }}
             onClick={onCancel}
           >
@@ -48,14 +46,14 @@ export default function SendedEmail(props: SendedEmailProps) {
         </Grid>
         <Grid item xs={6}>
           <Button
-            type="submit"
+            type='submit'
             fullWidth
-            variant="contained"
+            variant='contained'
             sx={{ mt: 3, mb: 2 }}
             disabled={timer !== 0}
           >
             再送信
-            {(timer > 0 ? `(${timer})` : '')}
+            {timer > 0 ? `(${timer})` : ''}
           </Button>
         </Grid>
       </Grid>

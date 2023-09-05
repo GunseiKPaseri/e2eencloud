@@ -1,5 +1,5 @@
-import MFAList from './MFAList';
 import MFACodeDialog from './MFACodeDialog';
+import MFAList from './MFAList';
 
 function MFASetting() {
   return (

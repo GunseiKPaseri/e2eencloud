@@ -1,7 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-
 import { logoutAsync } from '~/features/auth/thunk/logoutAsync';
-
 import type {
   FileTable,
   TagGroup,
@@ -9,33 +7,10 @@ import type {
   SearchGroup,
   StorageInfo,
 } from './file.type';
-
 import {
   buildFileTableAsync,
   afterBuildFileTableAsyncFullfilled,
 } from './thunk/buildFileTableAsync';
-import {
-  createDiffAsync,
-  afterCreateDiffAsyncFullfilled,
-} from './thunk/createDiffAsync';
-import {
-  fileuploadAsync,
-  afterFileuploadAsyncFullfilled,
-} from './thunk/fileuploadAsync';
-import {
-  createFolderAsync,
-  afterCreateFolderAsyncFullfilled,
-} from './thunk/createFolderAsync';
-import {
-  filedownloadAsync,
-  afterFiledownloadAsyncFullfilled,
-} from './thunk/filedownloadAsync';
-
-import {
-  fileDeleteAsync,
-  afterFileDeleteAsyncFullfilled,
-} from './thunk/fileDeleteAsync';
-
 import {
   changeActiveFileGroupDir,
   changeActiveFileGroupTag,
@@ -47,7 +22,30 @@ import {
   afterChangeSelection,
 } from './thunk/changeActiveFileGroup';
 import {
-  afterUpdateUsage, afterUpdateUsageAsyncFullfilled, updateUsage, updateUsageAsync,
+  createDiffAsync,
+  afterCreateDiffAsyncFullfilled,
+} from './thunk/createDiffAsync';
+import {
+  createFolderAsync,
+  afterCreateFolderAsyncFullfilled,
+} from './thunk/createFolderAsync';
+import {
+  fileDeleteAsync,
+  afterFileDeleteAsyncFullfilled,
+} from './thunk/fileDeleteAsync';
+import {
+  filedownloadAsync,
+  afterFiledownloadAsyncFullfilled,
+} from './thunk/filedownloadAsync';
+import {
+  fileuploadAsync,
+  afterFileuploadAsyncFullfilled,
+} from './thunk/fileuploadAsync';
+import {
+  afterUpdateUsage,
+  afterUpdateUsageAsyncFullfilled,
+  updateUsage,
+  updateUsageAsync,
 } from './thunk/updateUsageAsync';
 
 export { buildFileTableAsync };
@@ -68,16 +66,16 @@ export { updateUsageAsync };
  * ファイル関連のReduxState
  */
 export interface FileState {
-  loading: 0 | 1,
-  fileTable: FileTable,
-  tagTree: Record<string, string[]>,
+  loading: 0 | 1;
+  fileTable: FileTable;
+  tagTree: Record<string, string[]>;
   activeFile: {
-    link: string,
-    fileId: string,
-    similarFiles: string[]
-  } | null,
-  activeFileGroup: null | TagGroup | DirGroup | SearchGroup,
-  storage: StorageInfo
+    link: string;
+    fileId: string;
+    similarFiles: string[];
+  } | null;
+  activeFileGroup: null | TagGroup | DirGroup | SearchGroup;
+  storage: StorageInfo;
 }
 
 const initialState: FileState = {
@@ -98,7 +96,10 @@ export const fileSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(buildFileTableAsync.fulfilled, afterBuildFileTableAsyncFullfilled)
+      .addCase(
+        buildFileTableAsync.fulfilled,
+        afterBuildFileTableAsyncFullfilled,
+      )
       .addCase(fileuploadAsync.fulfilled, afterFileuploadAsyncFullfilled)
       .addCase(createDiffAsync.fulfilled, afterCreateDiffAsyncFullfilled)
       .addCase(createFolderAsync.fulfilled, afterCreateFolderAsyncFullfilled)

@@ -5,7 +5,7 @@ export const langSet = {
 } as const;
 
 export interface LanguageState {
-  language: keyof typeof langSet,
+  language: keyof typeof langSet;
 }
 
 export const initialState: LanguageState = {

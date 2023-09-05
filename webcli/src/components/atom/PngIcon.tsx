@@ -1,5 +1,4 @@
 import React from 'react';
-
 import SvgIcon, { type SvgIconProps } from '@mui/material/SvgIcon';
 
 interface Props extends React.HTMLProps<SvgIconProps> {
@@ -21,8 +20,13 @@ export default function PngIcon({
       aria-label={ariaLabel}
       className={className}
     >
-      <svg width="1em" height="1em" fill="none" xmlns="https://www.w3.org/2000/svg">
-        <image width="1em" height="1em" xlinkHref={src} />
+      <svg
+        width='1em'
+        height='1em'
+        fill='none'
+        xmlns='https://www.w3.org/2000/svg'
+      >
+        <image width='1em' height='1em' xlinkHref={src} />
       </svg>
     </SvgIcon>
   );

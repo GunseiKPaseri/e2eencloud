@@ -1,6 +1,6 @@
+import { useTranslation } from 'react-i18next';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { type SelectChangeEvent } from '@mui/material/Select';
-import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
 import { changeLanguage } from './languageSlice';
 import { langSet } from './languageState';
@@ -17,18 +17,28 @@ export default function LangSelector() {
   return (
     <Select
       native={native}
-      color="primary"
+      color='primary'
       value={language}
       onChange={handleChange}
     >
-      {
-        (Object.entries(langSet) as [keyof typeof langSet, typeof langSet[keyof typeof langSet]][])
-          .map(([code, name]) => (
-            native
-              ? <option key={code} value={code}>{`${name} - ${t(`language.${code}`, '')}`}</option>
-              : <MenuItem key={code} value={code}>{`${name} - ${t(`language.${code}`, '')}`}</MenuItem>
-          ))
-      }
+      {(
+        Object.entries(langSet) as [
+          keyof typeof langSet,
+          (typeof langSet)[keyof typeof langSet],
+        ][]
+      ).map(([code, name]) =>
+        native ? (
+          <option key={code} value={code}>{`${name} - ${t(
+            `language.${code}`,
+            '',
+          )}`}</option>
+        ) : (
+          <MenuItem key={code} value={code}>{`${name} - ${t(
+            `language.${code}`,
+            '',
+          )}`}</MenuItem>
+        ),
+      )}
     </Select>
   );
 }

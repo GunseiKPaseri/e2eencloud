@@ -2,7 +2,6 @@ import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import type { FilterOptionsState } from '@mui/material/useAutocomplete';
 import { useAppSelector, useAppDispatch } from '~/lib/react-redux';
-
 import type { FileState } from '~/features/file/fileSlice';
 import { createDiffAsync } from '~/features/file/fileSlice';
 import { assertFileNodeFile } from '~/features/file/filetypeAssert';
@@ -10,7 +9,9 @@ import { assertFileNodeFile } from '~/features/file/filetypeAssert';
 const filter = createFilterOptions();
 
 function TagEditor() {
-  const { activeFile, fileTable, tagTree } = useAppSelector<FileState>((state) => state.file);
+  const { activeFile, fileTable, tagTree } = useAppSelector<FileState>(
+    (state) => state.file,
+  );
   const dispatch = useAppDispatch();
   if (!activeFile) return null;
 
@@ -23,18 +24,18 @@ function TagEditor() {
     <Autocomplete
       multiple
       options={allTags}
-      getOptionLabel={(option) => (typeof option === 'string' ? option : `"${option.addition}"を追加`)}
+      getOptionLabel={(option) =>
+        typeof option === 'string' ? option : `"${option.addition}"を追加`
+      }
       value={targetNode.tag}
       filterSelectedOptions
       renderInput={(params) => (
-        <TextField
-          {...params}
-          label="タグ"
-          placeholder="追加タグ"
-        />
+        <TextField {...params} label='タグ' placeholder='追加タグ' />
       )}
       onChange={(_event, newTagItems) => {
-        const newTags = newTagItems.map((x) => (typeof x === 'string' ? x : x.addition));
+        const newTags = newTagItems.map((x) =>
+          typeof x === 'string' ? x : x.addition,
+        );
         // console.log(newTags);
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         dispatch(createDiffAsync({ targetId: targetNode.id, newTags }));

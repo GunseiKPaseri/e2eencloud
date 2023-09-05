@@ -1,12 +1,9 @@
-import type {
-  GridRowModel,
-} from '@mui/x-data-grid';
 import { useTranslation } from 'react-i18next';
-
+import type { GridRowModel } from '@mui/x-data-grid';
 import { useAppDispatch } from '~/lib/react-redux';
-import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
 import EditableDataGrid from '~/components/molecule/EditableDataGrid';
 import type { ComputeMutation } from '~/components/molecule/EditableDataGrid';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
 import { deleteUser, editUser, getUserList } from './adminrequest';
 
 export type UserDataGridRowModel = GridRowModel<{
@@ -18,11 +15,28 @@ export type UserDataGridRowModel = GridRowModel<{
   role: 'ADMIN' | 'USER';
 }>;
 
-const computeMutation: ComputeMutation<UserDataGridRowModel> = ({ newRow, oldRow, t }) => {
+const computeMutation: ComputeMutation<UserDataGridRowModel> = ({
+  newRow,
+  oldRow,
+  t,
+}) => {
   if (newRow.max_capacity !== oldRow.max_capacity) {
-    return `${t('admin.capacity', '容量')}：${oldRow.max_capacity}=>${newRow.max_capacity} (${(oldRow.max_capacity > newRow.max_capacity ? `-${oldRow.max_capacity - newRow.max_capacity}` : `+${newRow.max_capacity - oldRow.max_capacity}`)})`;
-  } if (newRow.multi_factor_authentication !== oldRow.multi_factor_authentication) {
-    return `${t('auth.multifactorauth', '多要素認証')}：${newRow.multi_factor_authentication ? t('admin.on', 'オン') : t('admin.off', 'オフ')}`;
+    return `${t('admin.capacity', '容量')}：${oldRow.max_capacity}=>${
+      newRow.max_capacity
+    } (${
+      oldRow.max_capacity > newRow.max_capacity
+        ? `-${oldRow.max_capacity - newRow.max_capacity}`
+        : `+${newRow.max_capacity - oldRow.max_capacity}`
+    })`;
+  }
+  if (
+    newRow.multi_factor_authentication !== oldRow.multi_factor_authentication
+  ) {
+    return `${t('auth.multifactorauth', '多要素認証')}：${
+      newRow.multi_factor_authentication
+        ? t('admin.on', 'オン')
+        : t('admin.off', 'オフ')
+    }`;
   }
   return null;
 };
@@ -31,7 +45,7 @@ function UserList() {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   return (
-    <EditableDataGrid <UserDataGridRowModel>
+    <EditableDataGrid<UserDataGridRowModel>
       computeMutation={computeMutation}
       getName={(params) => params.row.email}
       initialState={{
@@ -79,10 +93,20 @@ function UserList() {
         await deleteUser(params.row.id);
       }}
       onEditSuccess={() => {
-        dispatch(enqueueSnackbar({ message: t('admin.ChangeSuccessful', '変更が正常に反映されました'), options: { variant: 'success' } }));
+        dispatch(
+          enqueueSnackbar({
+            message: t('admin.ChangeSuccessful', '変更が正常に反映されました'),
+            options: { variant: 'success' },
+          }),
+        );
       }}
       onEditFailure={() => {
-        dispatch(enqueueSnackbar({ message: t('admin.ChangeFailed', '反映に失敗しました'), options: { variant: 'error' } }));
+        dispatch(
+          enqueueSnackbar({
+            message: t('admin.ChangeFailed', '反映に失敗しました'),
+            options: { variant: 'error' },
+          }),
+        );
       }}
     />
   );

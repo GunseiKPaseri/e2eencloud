@@ -1,49 +1,46 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import {
-  importRSAKey,
-  getAESCTRKey,
-} from '~/utils/crypto';
-import { base642ByteArray } from '~/utils/uint8';
+import { push } from 'redux-first-history';
 import { decryptoByDerivedEncryptionKey, setRSAKey } from '~/class/encrypt';
+import socket from '~/class/socketio';
 import type { AuthState, UserState } from '~/features/auth/authSlice';
-import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
 import { buildFileTableAsync } from '~/features/file/thunk/buildFileTableAsync';
-
 import { updateUsageAsync } from '~/features/file/thunk/updateUsageAsync';
 import { deleteProgress } from '~/features/progress/progressSlice';
-import { push } from 'redux-first-history';
-import socket from '~/class/socketio';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import { importRSAKey, getAESCTRKey } from '~/utils/crypto';
+import { base642ByteArray } from '~/utils/uint8';
 
 type LoginSuccess = {
-  role: 'ADMIN' | 'USER',
-  email: string,
-  encryptedMasterKeyBase64: string,
-  encryptedMasterKeyIVBase64: string,
-  useMultiFactorAuth: boolean,
-  encryptedRSAPrivateKeyBase64: string,
-  encryptedRSAPrivateKeyIVBase64: string,
-  RSAPublicKeyBase64: string,
+  role: 'ADMIN' | 'USER';
+  email: string;
+  encryptedMasterKeyBase64: string;
+  encryptedMasterKeyIVBase64: string;
+  useMultiFactorAuth: boolean;
+  encryptedRSAPrivateKeyBase64: string;
+  encryptedRSAPrivateKeyIVBase64: string;
+  RSAPublicKeyBase64: string;
 };
 
 export type APILoginSuccessResopnse = {
-  success: true,
-  email: string,
-  role: 'ADMIN' | 'USER',
-  encryptedMasterKeyBase64: string,
-  encryptedMasterKeyIVBase64: string,
-  useMultiFactorAuth: boolean,
-  encryptedRSAPrivateKeyBase64: string,
-  encryptedRSAPrivateKeyIVBase64: string,
-  RSAPublicKeyBase64: string,
+  success: true;
+  email: string;
+  role: 'ADMIN' | 'USER';
+  encryptedMasterKeyBase64: string;
+  encryptedMasterKeyIVBase64: string;
+  useMultiFactorAuth: boolean;
+  encryptedRSAPrivateKeyBase64: string;
+  encryptedRSAPrivateKeyIVBase64: string;
+  RSAPublicKeyBase64: string;
 };
 
 // ログイン処理
-export const loginSuccess = createAsyncThunk<
-UserState, LoginSuccess>(
+export const loginSuccess = createAsyncThunk<UserState, LoginSuccess>(
   'auth/loginSuccess',
   async (result, { dispatch }) => {
-    const EncryptedMasterKey = base642ByteArray(result.encryptedMasterKeyBase64);
+    const EncryptedMasterKey = base642ByteArray(
+      result.encryptedMasterKeyBase64,
+    );
     // console.log(result.data.encryptedMasterKeyIVBase64);
 
     const MasterKeyRaw = await decryptoByDerivedEncryptionKey({
@@ -63,10 +60,18 @@ UserState, LoginSuccess>(
         encryptedPrivateKeyIVBase64: result.encryptedRSAPrivateKeyIVBase64,
         publicKeyBase64: result.RSAPublicKeyBase64,
       });
-      setRSAKey({ rsaPublicKey: importKey.publicKey, rsaPrivateKey: importKey.privateKey });
+      setRSAKey({
+        rsaPublicKey: importKey.publicKey,
+        rsaPrivateKey: importKey.privateKey,
+      });
     } catch (e) {
       dispatch(deleteProgress());
-      dispatch(enqueueSnackbar({ message: '暗号鍵の復元に失敗しました', options: { variant: 'error' } }));
+      dispatch(
+        enqueueSnackbar({
+          message: '暗号鍵の復元に失敗しました',
+          options: { variant: 'error' },
+        }),
+      );
       throw e;
     }
     // file tree
@@ -76,13 +81,18 @@ UserState, LoginSuccess>(
     ]);
 
     // join user room
-    socket.emit('LOGGED_IN')
+    socket.emit('LOGGED_IN');
 
     dispatch(deleteProgress());
 
     dispatch(push('/'));
 
-    dispatch(enqueueSnackbar({ message: 'ログインに成功しました', options: { variant: 'success' } }));
+    dispatch(
+      enqueueSnackbar({
+        message: 'ログインに成功しました',
+        options: { variant: 'success' },
+      }),
+    );
     return {
       authority: result.role === 'ADMIN' ? 'ADMIN' : null,
       email: result.email,
@@ -92,7 +102,9 @@ UserState, LoginSuccess>(
   },
 );
 
-export const afterLoginSuccessFullfilled:
-CaseReducer<AuthState, PayloadAction<UserState>> = (state, action) => {
+export const afterLoginSuccessFullfilled: CaseReducer<
+  AuthState,
+  PayloadAction<UserState>
+> = (state, action) => {
   state.user = action.payload;
 };

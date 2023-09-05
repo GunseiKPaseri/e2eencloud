@@ -13,21 +13,28 @@ type GetListJSON<T> = {
   items: T[];
 };
 
-export type ComputeMutation<T extends GridValidRowModel, N extends Namespace<'translations'> = 'translations', TKPrefix = undefined>
-  = (params: { newRow: T, oldRow: T, t: TFunction<N, TKPrefix> }) => string | null;
+export type ComputeMutation<
+  T extends GridValidRowModel,
+  N extends Namespace<'translations'> = 'translations',
+  TKPrefix = undefined,
+> = (params: {
+  newRow: T;
+  oldRow: T;
+  t: TFunction<N, TKPrefix>;
+}) => string | null;
 
 function DeletableDataGrid<T extends GridValidRowModel>(
   props: Omit<DataGridProps<T>, 'rows'> & {
-    getName: (params: GridRowParams<T>) => string,
-    getList: (props:{
-      offset: number,
-      limit: number,
-      sortQuery: GridSortItem[],
-      filterQuery: GridFilterModel,
+    getName: (params: GridRowParams<T>) => string;
+    getList: (props: {
+      offset: number;
+      limit: number;
+      sortQuery: GridSortItem[];
+      filterQuery: GridFilterModel;
     }) => Promise<GetListJSON<T>>;
     onDelete: (props: GridRowParams<T>) => void;
-    parentHeight: number,
-    reloader?: symbol,
+    parentHeight: number;
+    reloader?: symbol;
   },
 ) {
   const perfectProps = {

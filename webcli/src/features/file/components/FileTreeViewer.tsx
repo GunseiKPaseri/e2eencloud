@@ -1,26 +1,33 @@
 import { useCallback } from 'react';
-
-import TreeView from '@mui/lab/TreeView';
-
+import { useDrop } from 'react-dnd';
 import FolderIcon from '@mui/icons-material/Folder';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import type { Theme } from '@mui/material/styles';
+import TreeView from '@mui/lab/TreeView';
 import Box from '@mui/material/Box';
+import type { Theme } from '@mui/material/styles';
 import type { SystemStyleObject } from '@mui/system/styleFunctionSx';
-
-import { useDrop } from 'react-dnd';
-import StyledTreeItem from '~/components/atom/StyledTreeItem';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
-import type { FileNode, FileInfoFile, FileInfoFolder } from '~/features/file/file.type';
-import { type FileState, changeActiveFileGroupDir, filedownloadAsync } from '~/features/file/fileSlice';
-
+import StyledTreeItem from '~/components/atom/StyledTreeItem';
+import type {
+  FileNode,
+  FileInfoFile,
+  FileInfoFolder,
+} from '~/features/file/file.type';
+import {
+  type FileState,
+  changeActiveFileGroupDir,
+  filedownloadAsync,
+} from '~/features/file/fileSlice';
 import { genUseDropReturn } from './dnd';
 
-function FileTreeItemFile(
-  { target, onDoubleClick }
-  : { target: FileNode<FileInfoFile>, onDoubleClick: React.MouseEventHandler<HTMLLIElement> },
-) {
+function FileTreeItemFile({
+  target,
+  onDoubleClick,
+}: {
+  target: FileNode<FileInfoFile>;
+  onDoubleClick: React.MouseEventHandler<HTMLLIElement>;
+}) {
   return (
     <StyledTreeItem
       key={target.id}
@@ -37,46 +44,49 @@ function FileTreeItemFolder({
   onSelectFile,
   onSelectFolder,
 }: {
-  target: FileNode<FileInfoFolder>,
-  onSelectFile: (id :string) => void,
-  onSelectFolder: (id: string) => void
+  target: FileNode<FileInfoFolder>;
+  onSelectFile: (id: string) => void;
+  onSelectFolder: (id: string) => void;
 }) {
   const dispatch = useAppDispatch();
 
-  const [{ canDrop, isOver }, drop] = useDrop(() => (
-    genUseDropReturn(target.id, dispatch)
-  ), [target.id]);
+  const [{ canDrop, isOver }, drop] = useDrop(
+    () => genUseDropReturn(target.id, dispatch),
+    [target.id],
+  );
 
-  const customStyle = useCallback<((theme: Theme) => SystemStyleObject<Theme>)>((theme) => ({
-    boxSizing: 'border-box',
-    border: 3,
-    borderStyle: 'dashed',
-    transitionDuration: '0.2s',
-    ...(isOver && canDrop ? { borderColor: theme.palette.info.light } : { borderColor: 'rgba(0,0,0,0)' }),
-  }), [isOver, canDrop]);
+  const customStyle = useCallback<(theme: Theme) => SystemStyleObject<Theme>>(
+    (theme) => ({
+      boxSizing: 'border-box',
+      border: 3,
+      borderStyle: 'dashed',
+      transitionDuration: '0.2s',
+      ...(isOver && canDrop
+        ? { borderColor: theme.palette.info.light }
+        : { borderColor: 'rgba(0,0,0,0)' }),
+    }),
+    [isOver, canDrop],
+  );
 
   return (
-    <Box
-      ref={drop}
-      sx={customStyle}
-    >
+    <Box ref={drop} sx={customStyle}>
       <StyledTreeItem
         nodeId={target.id}
         labelText={target.name}
         endIcon={<FolderIcon />}
-        onClick={() => { onSelectFolder(target.id); }}
+        onClick={() => {
+          onSelectFolder(target.id);
+        }}
       >
-        {
-          target.files.map((c) => (
-            // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            <FileTreeItem
-              key={c}
-              targetId={c}
-              onSelectFile={onSelectFile}
-              onSelectFolder={onSelectFolder}
-            />
-          ))
-        }
+        {target.files.map((c) => (
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          <FileTreeItem
+            key={c}
+            targetId={c}
+            onSelectFile={onSelectFile}
+            onSelectFolder={onSelectFolder}
+          />
+        ))}
       </StyledTreeItem>
     </Box>
   );
@@ -87,35 +97,39 @@ function FileTreeItem({
   onSelectFile,
   onSelectFolder,
 }: {
-  targetId: string,
-  onSelectFile: (id :string) => void
-  onSelectFolder: (id: string) => void
+  targetId: string;
+  onSelectFile: (id: string) => void;
+  onSelectFolder: (id: string) => void;
 }) {
-  const fileTable = useAppSelector<FileState['fileTable']>((store) => store.file.fileTable);
+  const fileTable = useAppSelector<FileState['fileTable']>(
+    (store) => store.file.fileTable,
+  );
   const target = fileTable[targetId];
   if (!target || target.type === 'diff') return null;
 
-  return target.type === 'folder'
-    ? (
-      <FileTreeItemFolder
-        target={target}
-        onSelectFile={onSelectFile}
-        onSelectFolder={onSelectFolder}
-      />
-    )
-    : (
-      <FileTreeItemFile
-        target={target}
-        onDoubleClick={() => { onSelectFile(targetId); }}
-      />
-    );
+  return target.type === 'folder' ? (
+    <FileTreeItemFolder
+      target={target}
+      onSelectFile={onSelectFile}
+      onSelectFolder={onSelectFolder}
+    />
+  ) : (
+    <FileTreeItemFile
+      target={target}
+      onDoubleClick={() => {
+        onSelectFile(targetId);
+      }}
+    />
+  );
 }
 
 function FileTreeViewer() {
   const dispatch = useAppDispatch();
 
-  const onSelectFile = (fileId: string) => dispatch(filedownloadAsync({ fileId, active: true }));
-  const onSelectFolder = (id: string) => dispatch(changeActiveFileGroupDir({ id }));
+  const onSelectFile = (fileId: string) =>
+    dispatch(filedownloadAsync({ fileId, active: true }));
+  const onSelectFolder = (id: string) =>
+    dispatch(changeActiveFileGroupDir({ id }));
 
   return (
     <TreeView
@@ -124,7 +138,7 @@ function FileTreeViewer() {
       defaultEndIcon={<InsertDriveFileIcon />}
     >
       <FileTreeItem
-        targetId="root"
+        targetId='root'
         onSelectFile={onSelectFile}
         onSelectFolder={onSelectFolder}
       />

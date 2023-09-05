@@ -1,13 +1,26 @@
-import type { SnackbarMessage, VariantType, SnackbarKey } from 'notistack';
 import { createAction, createSlice } from '@reduxjs/toolkit';
+import type { SnackbarMessage, VariantType, SnackbarKey } from 'notistack';
 
-type NotificationOption = { key?: SnackbarKey, variant?: VariantType, dismissed?: boolean };
-type NotificationOptionWithKey = Omit<NotificationOption, 'key'> & { key: SnackbarKey };
-type Notification = { message: SnackbarMessage, options?: NotificationOption };
-type NotificationWithKey = { message: SnackbarMessage, options: NotificationOptionWithKey };
-const initialState: { notifications: NotificationWithKey[] } = { notifications: [] };
+type NotificationOption = {
+  key?: SnackbarKey;
+  variant?: VariantType;
+  dismissed?: boolean;
+};
+type NotificationOptionWithKey = Omit<NotificationOption, 'key'> & {
+  key: SnackbarKey;
+};
+type Notification = { message: SnackbarMessage; options?: NotificationOption };
+type NotificationWithKey = {
+  message: SnackbarMessage;
+  options: NotificationOptionWithKey;
+};
+const initialState: { notifications: NotificationWithKey[] } = {
+  notifications: [],
+};
 
-export const enqueueSnackbar = createAction<(props: Notification) => { payload: NotificationWithKey }>('snackbar/enqueue', (props) => {
+export const enqueueSnackbar = createAction<
+  (props: Notification) => { payload: NotificationWithKey }
+>('snackbar/enqueue', (props) => {
   const payload = {
     message: props.message,
     options: { ...props.options, key: new Date().getTime() + Math.random() },
@@ -15,7 +28,11 @@ export const enqueueSnackbar = createAction<(props: Notification) => { payload: 
   return { payload };
 });
 
-export const closeSnackbar = createAction<(props: NotificationOption) => { payload: NotificationOptionWithKey }>('snackbar/close', (props) => ({ payload: { ...props, key: new Date().getTime() + Math.random() } }));
+export const closeSnackbar = createAction<
+  (props: NotificationOption) => { payload: NotificationOptionWithKey }
+>('snackbar/close', (props) => ({
+  payload: { ...props, key: new Date().getTime() + Math.random() },
+}));
 
 export const removeSnackbar = createAction<SnackbarKey>('snackbar/remove');
 
@@ -33,15 +50,16 @@ const snackbarSlice = createSlice({
           const shouldDismiss = notification.options.key === payload.key;
           return shouldDismiss
             ? {
-              message: notification.message, options: { ...notification.options, dismissed: true },
-            }
+                message: notification.message,
+                options: { ...notification.options, dismissed: true },
+              }
             : { ...notification };
         });
       })
       .addCase(removeSnackbar, (state, { payload }) => {
-        state.notifications = state.notifications.filter((notification) => (
-          notification.options.key !== payload
-        ));
+        state.notifications = state.notifications.filter(
+          (notification) => notification.options.key !== payload,
+        );
       });
   },
 });

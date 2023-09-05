@@ -1,5 +1,5 @@
-import { NativeTypes } from 'react-dnd-html5-backend';
 import type { DragSourceHookSpec, DropTargetHookSpec } from 'react-dnd';
+import { NativeTypes } from 'react-dnd-html5-backend';
 import type { useAppDispatch } from '~/lib/react-redux';
 import { fileuploadAsync, createDiffAsync } from '~/features/file/fileSlice';
 
@@ -12,13 +12,15 @@ type DnDFileObject = {
 };
 
 const APP_FILE_NODE = '__APP_FILE_NODE__';
-type DnDFileNodeObject = { type: typeof APP_FILE_NODE, id: string };
+type DnDFileNodeObject = { type: typeof APP_FILE_NODE; id: string };
 
-export const genUseDropReturn = (dirId: string | null, dispatch: ReturnType<typeof useAppDispatch>):
-DropTargetHookSpec<
-DnDFileObject | DnDFileNodeObject,
-void,
-{ isOver: boolean; canDrop: boolean; }
+export const genUseDropReturn = (
+  dirId: string | null,
+  dispatch: ReturnType<typeof useAppDispatch>,
+): DropTargetHookSpec<
+  DnDFileObject | DnDFileNodeObject,
+  void,
+  { isOver: boolean; canDrop: boolean }
 > => ({
   accept: [NativeTypes.FILE, APP_FILE_NODE],
   drop: (props, monitor) => {
@@ -42,17 +44,15 @@ void,
         }
     }
   },
-  canDrop: () => (!!dirId),
+  canDrop: () => !!dirId,
   collect: (monitor) => ({
     isOver: monitor.isOver({ shallow: true }),
     canDrop: monitor.canDrop(),
   }),
 });
-export const genUseDragReturn = (id: string): DragSourceHookSpec<
-DnDFileNodeObject,
-void,
-{ isDragging: boolean; }
-> => ({
+export const genUseDragReturn = (
+  id: string,
+): DragSourceHookSpec<DnDFileNodeObject, void, { isDragging: boolean }> => ({
   type: APP_FILE_NODE,
   item: { type: APP_FILE_NODE, id },
   collect: (monitor) => ({

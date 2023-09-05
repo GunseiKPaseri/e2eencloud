@@ -7,4 +7,5 @@ const solutionName = {
   TOTP: 'ワンタイムコード',
 } as const satisfies { [key in MFASolution]: string };
 
-export const mfasolution2name = (solution: MFASolution) => solutionName[solution];
+export const mfasolution2name = (solution: MFASolution) =>
+  solutionName[solution];

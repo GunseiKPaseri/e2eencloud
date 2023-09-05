@@ -8,14 +8,14 @@ import type {
 import { latestVersion } from '~/features/file/fileinfoMigration/fileinfo';
 
 export const genFileInfoFile = (props: {
-  id: string,
-  name?: string,
-  parentId: string | null,
-  fileKeyBin?: number[],
-  encryptedFileIVBin?: number[],
-  prevId?: string,
-  createdAt?: number,
-  tag: string[],
+  id: string;
+  name?: string;
+  parentId: string | null;
+  fileKeyBin?: number[];
+  encryptedFileIVBin?: number[];
+  prevId?: string;
+  createdAt?: number;
+  tag: string[];
 }): FileCryptoInfoWithBin => ({
   fileKeyBin: props.fileKeyBin ?? [],
   fileInfo: {
@@ -36,13 +36,13 @@ export const genFileInfoFile = (props: {
 });
 
 export const genFileInfoFolder = (props: {
-  id: string,
-  parentId: string | null,
-  createdAt?: number,
-  prevId?: string,
-  fileKeyBin?: number[],
-  tag: string[],
-}):FileCryptoInfoWithoutBin<FileInfoFolder> => ({
+  id: string;
+  parentId: string | null;
+  createdAt?: number;
+  prevId?: string;
+  fileKeyBin?: number[];
+  tag: string[];
+}): FileCryptoInfoWithoutBin<FileInfoFolder> => ({
   fileKeyBin: props.fileKeyBin ?? [],
   fileInfo: {
     type: 'folder',
@@ -58,14 +58,14 @@ export const genFileInfoFolder = (props: {
 });
 
 export const genFileInfoDiff = (props: {
-  id: string,
-  name?: string,
-  parentId: string | null,
-  createdAt?: number,
-  prevId?: string,
-  diff?: FileDifference,
-  fileKeyBin?: number[]
-}):FileCryptoInfoWithoutBin<FileInfoDiffFile> => ({
+  id: string;
+  name?: string;
+  parentId: string | null;
+  createdAt?: number;
+  prevId?: string;
+  diff?: FileDifference;
+  fileKeyBin?: number[];
+}): FileCryptoInfoWithoutBin<FileInfoDiffFile> => ({
   fileKeyBin: props.fileKeyBin ?? [],
   fileInfo: {
     type: 'diff',

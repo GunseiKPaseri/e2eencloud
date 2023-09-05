@@ -1,10 +1,14 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
-import { buildFileTable, decryptoFileInfo } from '~/features/file/utils';
-import type { FileState } from '~/features/file/fileSlice';
 import type { BuildFileTableAsyncResult } from '~/features/file/file.type';
+import type { FileState } from '~/features/file/fileSlice';
 import { assertFileNodeFolder } from '~/features/file/filetypeAssert';
+import { buildFileTable, decryptoFileInfo } from '~/features/file/utils';
+import {
+  setProgress,
+  deleteProgress,
+  progress,
+} from '~/features/progress/progressSlice';
 import { getAllFileInfoRaw } from '../api';
 
 /**
@@ -34,14 +38,20 @@ export const buildFileTableAsync = createAsyncThunk<BuildFileTableAsyncResult>(
   },
 );
 
-export const afterBuildFileTableAsyncFullfilled:
-CaseReducer<FileState, PayloadAction<BuildFileTableAsyncResult>> = (state, action) => {
+export const afterBuildFileTableAsyncFullfilled: CaseReducer<
+  FileState,
+  PayloadAction<BuildFileTableAsyncResult>
+> = (state, action) => {
   // 生成したファイルツリーをstateに反映
   state.fileTable = action.payload.fileTable;
   state.tagTree = action.payload.tagTree;
   const rootOrigin = action.payload.fileTable.root;
   assertFileNodeFolder(rootOrigin);
   state.activeFileGroup = {
-    type: 'dir', folderId: 'root', files: rootOrigin.files, selecting: [], parents: ['root'],
+    type: 'dir',
+    folderId: 'root',
+    files: rootOrigin.files,
+    selecting: [],
+    parents: ['root'],
   };
 };

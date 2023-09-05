@@ -1,7 +1,9 @@
-import Paper from "@mui/material/Paper";
+import Paper from '@mui/material/Paper';
 
-export default function StyledToggleButtonGroupWrapper(props: React.ComponentProps<typeof Paper>){
-  const {sx, ...propsCore} = props;
+export default function StyledToggleButtonGroupWrapper(
+  props: React.ComponentProps<typeof Paper>,
+) {
+  const { sx, ...propsCore } = props;
   return (
     <Paper
       elevation={0}

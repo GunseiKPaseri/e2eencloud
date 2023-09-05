@@ -1,11 +1,8 @@
-import {
-  useEffect,
-  useState,
-  useCallback,
-} from 'react';
-import {
-  DataGrid, GridActionsCellItem, jaJP,
-} from '@mui/x-data-grid';
+import { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Tooltip, Typography } from '@mui/material';
+import { DataGrid, GridActionsCellItem, jaJP } from '@mui/x-data-grid';
 import type {
   DataGridProps,
   GridRowParams,
@@ -14,9 +11,6 @@ import type {
   GridValidRowModel,
   GridFilterModel,
 } from '@mui/x-data-grid';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { Tooltip, Typography } from '@mui/material';
-import { useTranslation } from 'react-i18next';
 import type { Namespace, TFunction } from 'i18next';
 import ConfirmDialog from '../atom/ConfirmDialog';
 
@@ -25,25 +19,32 @@ type GetListJSON<T> = {
   items: T[];
 };
 
-export type ComputeMutation<T extends GridValidRowModel, N extends Namespace<'translations'> = 'translations', TKPrefix = undefined>
-  = (params: { newRow: T, oldRow: T, t: TFunction<N, TKPrefix> }) => string | null;
+export type ComputeMutation<
+  T extends GridValidRowModel,
+  N extends Namespace<'translations'> = 'translations',
+  TKPrefix = undefined,
+> = (params: {
+  newRow: T;
+  oldRow: T;
+  t: TFunction<N, TKPrefix>;
+}) => string | null;
 
 function EditableDataGrid<T extends GridValidRowModel>(
   props: Omit<DataGridProps<T>, 'rows'> & {
     computeMutation: ComputeMutation<T>;
-    getName: (params: GridRowParams<T>) => string,
-    getList: (props:{
-      offset: number,
-      limit: number,
-      sortQuery: GridSortItem[],
-      filterQuery: GridFilterModel,
+    getName: (params: GridRowParams<T>) => string;
+    getList: (props: {
+      offset: number;
+      limit: number;
+      sortQuery: GridSortItem[];
+      filterQuery: GridFilterModel;
     }) => Promise<GetListJSON<T>>;
     editItem?: (targetItem: T, edited: Partial<T>) => Promise<T>;
     onEditSuccess?: () => void;
     onEditFailure?: () => void;
     onDelete: (props: GridRowParams<T>) => void;
-    parentHeight: number,
-    reloader?: symbol,
+    parentHeight: number;
+    reloader?: symbol;
   },
 ) {
   const {
@@ -65,20 +66,21 @@ function EditableDataGrid<T extends GridValidRowModel>(
   const { t } = useTranslation();
   const [rows, setRows] = useState<GridRowsProp<T>>([]);
   const [sortQuery, setSortQuery] = useState<GridSortItem[]>([]);
-  const [filterQuery, setFilterQuery] = useState<GridFilterModel>({ items: [] });
+  const [filterQuery, setFilterQuery] = useState<GridFilterModel>({
+    items: [],
+  });
   const [rowLength, setRowLength] = useState(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [pageReloader, setPageReloader] = useState<symbol>(Symbol('pageload'));
-  const [editConfirmPromiseArguments, setEditConfirmPromiseArguments] = useState<
-  {
-    resolve:(x: T) => void,
-    reject: (x: T) => void,
-    newRow: T,
-    oldRow: T
-  } | null>(null);
-  const [deleteConfirmArguments, setDeleteConfirmArguments] = useState<
-  {
-    params: GridRowParams<T>,
+  const [editConfirmPromiseArguments, setEditConfirmPromiseArguments] =
+    useState<{
+      resolve: (x: T) => void;
+      reject: (x: T) => void;
+      newRow: T;
+      oldRow: T;
+    } | null>(null);
+  const [deleteConfirmArguments, setDeleteConfirmArguments] = useState<{
+    params: GridRowParams<T>;
   } | null>(null);
 
   // get collect information
@@ -95,7 +97,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
         sortQuery,
         filterQuery,
       });
-      const newRows:GridRowsProp<T> = list.items;
+      const newRows: GridRowsProp<T> = list.items;
 
       if (!active) {
         return;
@@ -112,7 +114,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
   }, [paginationModel, sortQuery, filterQuery, pageReloader, reloader]);
 
   const processRowUpdate = useCallback(
-    (newRow: T, oldRow: T) => (
+    (newRow: T, oldRow: T) =>
       new Promise<T>((resolve, reject) => {
         const mutation = computeMutation({ newRow, oldRow, t });
         if (mutation) {
@@ -126,7 +128,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
         } else {
           resolve(oldRow); // Nothing was changed
         }
-      })),
+      }),
     [],
   );
 
@@ -137,27 +139,25 @@ function EditableDataGrid<T extends GridValidRowModel>(
     setEditConfirmPromiseArguments(null);
   };
 
-  const handleEditConfirmYes = editItem ? async () => {
-    if (!editConfirmPromiseArguments) return;
-    const {
-      newRow,
-      oldRow,
-      resolve,
-    } = editConfirmPromiseArguments;
+  const handleEditConfirmYes = editItem
+    ? async () => {
+        if (!editConfirmPromiseArguments) return;
+        const { newRow, oldRow, resolve } = editConfirmPromiseArguments;
 
-    try {
-      // Make the HTTP request to save in the backend
-      const response = await editItem(oldRow, newRow);
-      onEditSuccess();
-      resolve({ ...oldRow, ...response });
-      setEditConfirmPromiseArguments(null);
-      setPageReloader(Symbol('reload'));
-    } catch (error) {
-      onEditFailure();
-      resolve(oldRow);
-      setEditConfirmPromiseArguments(null);
-    }
-  } : () => Promise.resolve();
+        try {
+          // Make the HTTP request to save in the backend
+          const response = await editItem(oldRow, newRow);
+          onEditSuccess();
+          resolve({ ...oldRow, ...response });
+          setEditConfirmPromiseArguments(null);
+          setPageReloader(Symbol('reload'));
+        } catch (error) {
+          onEditFailure();
+          resolve(oldRow);
+          setEditConfirmPromiseArguments(null);
+        }
+      }
+    : () => Promise.resolve();
 
   const handleDeleteConfirmNo = () => {
     if (!deleteConfirmArguments) return;
@@ -166,9 +166,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
 
   const handleDeleteConfirmYes = () => {
     if (!deleteConfirmArguments) return;
-    const {
-      params,
-    } = deleteConfirmArguments;
+    const { params } = deleteConfirmArguments;
 
     onDelete(params);
     setPageReloader(Symbol('reload'));
@@ -181,7 +179,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
       field: 'actions',
       type: 'actions',
       // eslint-disable-next-line react/no-unstable-nested-components
-      getActions: (params: GridRowParams<T>) => ([
+      getActions: (params: GridRowParams<T>) => [
         <Tooltip title={t('admin.delete', '削除')}>
           <GridActionsCellItem
             icon={<DeleteIcon />}
@@ -191,19 +189,23 @@ function EditableDataGrid<T extends GridValidRowModel>(
             }}
           />
         </Tooltip>,
-      ]),
+      ],
     },
   ];
-  const editConfirmDirlogMain = editConfirmPromiseArguments ? computeMutation({ newRow: editConfirmPromiseArguments.newRow, oldRow: editConfirmPromiseArguments.oldRow, t }) : '';
+  const editConfirmDirlogMain = editConfirmPromiseArguments
+    ? computeMutation({
+        newRow: editConfirmPromiseArguments.newRow,
+        oldRow: editConfirmPromiseArguments.oldRow,
+        t,
+      })
+    : '';
 
   return (
     <div style={{ height: parentHeight, width: '100%' }}>
       <ConfirmDialog
         title={t('admin.ConfirmSave', '以下の内容で変更を保存しますか？')}
         open={!!editConfirmPromiseArguments}
-        contents={
-          <Typography>{editConfirmDirlogMain}</Typography>
-        }
+        contents={<Typography>{editConfirmDirlogMain}</Typography>}
         handleEditConfirmNo={handleEditConfirmNo}
         handleEditConfirmYes={handleEditConfirmYes}
         textYes={t('admin.edit', '編集')}
@@ -213,7 +215,11 @@ function EditableDataGrid<T extends GridValidRowModel>(
         title={t('admin.ConfirmDeleteElement', '以下の要素を削除しますか？')}
         open={!!deleteConfirmArguments}
         contents={
-          <Typography>{deleteConfirmArguments ? getName(deleteConfirmArguments.params) : ''}</Typography>
+          <Typography>
+            {deleteConfirmArguments
+              ? getName(deleteConfirmArguments.params)
+              : ''}
+          </Typography>
         }
         handleEditConfirmNo={handleDeleteConfirmNo}
         handleEditConfirmYes={handleDeleteConfirmYes}
@@ -228,13 +234,15 @@ function EditableDataGrid<T extends GridValidRowModel>(
         pagination
         rows={rows}
         rowCount={rowLength}
-        paginationMode="server"
-        onPaginationModelChange={(newPaginationModel) => setPaginationModel(newPaginationModel)}
-        sortingMode="server"
+        paginationMode='server'
+        onPaginationModelChange={(newPaginationModel) =>
+          setPaginationModel(newPaginationModel)
+        }
+        sortingMode='server'
         onSortModelChange={(model) => {
           setSortQuery([...model]);
         }}
-        filterMode="server"
+        filterMode='server'
         onFilterModelChange={(model) => {
           setFilterQuery(model);
         }}

@@ -4,7 +4,11 @@ import Typography from '@mui/material/Typography';
 import { useAppDispatch } from '~/lib/react-redux';
 import { addFIDO2Async } from '~/features/auth/authSlice';
 
-export default function FIDO2Register({ onSuccess }: { onSuccess: () => void }) {
+export default function FIDO2Register({
+  onSuccess,
+}: {
+  onSuccess: () => void;
+}) {
   const dispatch = useAppDispatch();
   const handleRegister = async () => {
     await dispatch(addFIDO2Async());
@@ -12,10 +16,8 @@ export default function FIDO2Register({ onSuccess }: { onSuccess: () => void }) 
   };
   return (
     <Box>
-      <Typography variant="h5">FIDO2 WebAuthn</Typography>
-      <Button onClick={handleRegister}>
-        新規登録
-      </Button>
+      <Typography variant='h5'>FIDO2 WebAuthn</Typography>
+      <Button onClick={handleRegister}>新規登録</Button>
     </Box>
   );
 }

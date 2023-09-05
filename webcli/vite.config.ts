@@ -1,8 +1,8 @@
-import path from 'path';
-import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react-swc';
-import checker from 'vite-plugin-checker';
+import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
+import checker from 'vite-plugin-checker';
+import { defineConfig } from 'vitest/config';
 
 const relativePath = (...list: string[]) => path.resolve(__dirname, ...list);
 
@@ -15,19 +15,25 @@ export default defineConfig(({ mode }) => ({
     minify: 'terser',
     rollupOptions: {
       plugins: [
-        mode === 'analyze' ? visualizer({
-          filename: relativePath('dist', 'analyze', 'bundlesize-visualize.html'),
-          gzipSize: true,
-          brotliSize: true,
-        }) : undefined,
+        mode === 'analyze'
+          ? visualizer({
+              filename: relativePath(
+                'dist',
+                'analyze',
+                'bundlesize-visualize.html',
+              ),
+              gzipSize: true,
+              brotliSize: true,
+            })
+          : undefined,
       ],
       manualChunks: {
-        'react': ['react-dom', 'react-router', 'react-dnd'],
-        'mui': ['@mui/material'],
+        react: ['react-dom', 'react-router', 'react-dnd'],
+        mui: ['@mui/material'],
         'mui-grid': ['@mui/x-data-grid'],
-        'bin': ['@zip.js/zip.js', 'hash-wasm', '@noble/hashes'],
+        bin: ['@zip.js/zip.js', 'hash-wasm', '@noble/hashes'],
         'date-fns': ['date-fns'],
-      }
+      },
     },
     chunkSizeWarningLimit: 850,
     emptyOutDir: true,
@@ -51,7 +57,7 @@ export default defineConfig(({ mode }) => ({
       provider: 'v8',
       reportsDirectory: relativePath('dist', 'analyze', 'coverage'),
     },
-    cache: {dir: relativePath('node_modules', '.vitest')},
+    cache: { dir: relativePath('node_modules', '.vitest') },
     environment: 'happy-dom',
     setupFiles: relativePath('src', 'dev', 'setup.ts'),
     deps: {
@@ -63,13 +69,15 @@ export default defineConfig(({ mode }) => ({
     checker({
       typescript: true,
       eslint: {
-        lintCommand: `eslint ${
-          relativePath('src')
-        } --ext ts,tsx --ignore-path ${
-          relativePath('.gitignore')
-        } --cache --cache-location ${
-          relativePath('node_modules', '.cache', '.eslintcache')
-        }`,
+        lintCommand: `eslint ${relativePath(
+          'src',
+        )} --ext ts,tsx --ignore-path ${relativePath(
+          '.gitignore',
+        )} --cache --cache-location ${relativePath(
+          'node_modules',
+          '.cache',
+          '.eslintcache',
+        )}`,
       },
     }),
   ],

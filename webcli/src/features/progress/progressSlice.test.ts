@@ -1,14 +1,17 @@
 import { configureStore } from '@reduxjs/toolkit';
-import {
-  describe, test, expect, beforeEach,
-} from 'vitest';
-import progressReducer, { setProgress, deleteProgress, progress } from './progressSlice';
+import { describe, test, expect, beforeEach } from 'vitest';
+import progressReducer, {
+  setProgress,
+  deleteProgress,
+  progress,
+} from './progressSlice';
 
-const genStore = () => configureStore({
-  reducer: {
-    progress: progressReducer,
-  },
-});
+const genStore = () =>
+  configureStore({
+    reducer: {
+      progress: progressReducer,
+    },
+  });
 
 describe('#progressReducer', () => {
   let store: ReturnType<typeof genStore>;
@@ -18,9 +21,13 @@ describe('#progressReducer', () => {
 
   test('reducer', () => {
     store.dispatch(setProgress({ progress: 0.5 }));
-    expect(store.getState().progress).toEqual({ progress: { buffer: 0, real: 0.5 } });
+    expect(store.getState().progress).toEqual({
+      progress: { buffer: 0, real: 0.5 },
+    });
     store.dispatch(setProgress({ progress: 0.5, progressBuffer: 0.7 }));
-    expect(store.getState().progress).toEqual({ progress: { buffer: 0.7, real: 0.5 } });
+    expect(store.getState().progress).toEqual({
+      progress: { buffer: 0.7, real: 0.5 },
+    });
     store.dispatch(deleteProgress());
     expect(store.getState().progress).toEqual({ progress: null });
   });

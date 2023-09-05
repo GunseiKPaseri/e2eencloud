@@ -1,79 +1,125 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { RootState } from '~/store/store';
-import { setProgress, deleteProgress, progress } from '~/features/progress/progressSlice';
-import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import type {
+  FileCryptoInfo,
+  FileInfoDiffFile,
+} from '~/features/file/file.type';
+import type { FileState } from '~/features/file/fileSlice';
+import {
+  assertFileInfoDiffFile,
+  assertNonWritableDraftFileNodeDiff,
+  assertWritableDraftFileNodeFolder,
+} from '~/features/file/filetypeAssert';
 import {
   submitFileInfoWithEncryption,
   createDiff,
   integrateDifference,
   fileSort,
 } from '~/features/file/utils';
-import type { FileState } from '~/features/file/fileSlice';
-import type { FileCryptoInfo, FileInfoDiffFile } from '~/features/file/file.type';
 import {
-  assertFileInfoDiffFile,
-  assertNonWritableDraftFileNodeDiff,
-  assertWritableDraftFileNodeFolder,
-} from '~/features/file/filetypeAssert';
+  setProgress,
+  deleteProgress,
+  progress,
+} from '~/features/progress/progressSlice';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import type { RootState } from '~/store/store';
 import { updateUsageAsync } from './updateUsageAsync';
 
-type CreateDiffAsyncResult = { uploaded: FileCryptoInfo<FileInfoDiffFile>, targetId: string };
+type CreateDiffAsyncResult = {
+  uploaded: FileCryptoInfo<FileInfoDiffFile>;
+  targetId: string;
+};
 
 /**
  *  差分を作成するThunk
  */
 export const createDiffAsync = createAsyncThunk<
-CreateDiffAsyncResult,
-Parameters<typeof createDiff>[0],
-{ state: RootState }
->(
-  'file/creatediff',
-  async (params, { getState, dispatch }) => {
-    const step = 2;
-    dispatch(setProgress(progress(0, step)));
+  CreateDiffAsyncResult,
+  Parameters<typeof createDiff>[0],
+  { state: RootState }
+>('file/creatediff', async (params, { getState, dispatch }) => {
+  const step = 2;
+  dispatch(setProgress(progress(0, step)));
 
-    const state = getState();
-    const { fileTable } = state.file;
+  const state = getState();
+  const { fileTable } = state.file;
 
-    let uploaded: FileInfoDiffFile;
-    try {
-      uploaded = createDiff(params, fileTable);
-    } catch (e) {
-      dispatch(deleteProgress());
-      if (e instanceof Error) {
-        dispatch(enqueueSnackbar({ message: e.message, options: { variant: 'error' } }));
-      } else {
-        dispatch(enqueueSnackbar({ message: '不明な内部エラー', options: { variant: 'error' } }));
-      }
-      throw e;
-    }
-
-    const addObject = await submitFileInfoWithEncryption(uploaded);
-    dispatch(setProgress(progress(1, step)));
+  let uploaded: FileInfoDiffFile;
+  try {
+    uploaded = createDiff(params, fileTable);
+  } catch (e) {
     dispatch(deleteProgress());
-    // 変更を表示
-    if (addObject.fileInfo.diff.addtag && addObject.fileInfo.diff.addtag.length > 0) {
-      dispatch(enqueueSnackbar({ message: `『${addObject.fileInfo.diff.addtag.join('』,『')}』タグを追加しました`, options: { variant: 'success' } }));
+    if (e instanceof Error) {
+      dispatch(
+        enqueueSnackbar({ message: e.message, options: { variant: 'error' } }),
+      );
+    } else {
+      dispatch(
+        enqueueSnackbar({
+          message: '不明な内部エラー',
+          options: { variant: 'error' },
+        }),
+      );
     }
-    if (addObject.fileInfo.diff.deltag && addObject.fileInfo.diff.deltag.length > 0) {
-      dispatch(enqueueSnackbar({ message: `『${addObject.fileInfo.diff.deltag.join('』,『')}』タグを削除しました`, options: { variant: 'success' } }));
-    }
-    if (params.newName) {
-      dispatch(enqueueSnackbar({ message: `名称を${params.newName}に変更しました`, options: { variant: 'success' } }));
-    }
-    if (params.newParentId) {
-      dispatch(enqueueSnackbar({ message: 'ファイルを移動しました', options: { variant: 'success' } }));
-    }
-    // storage更新
-    await dispatch(updateUsageAsync());
+    throw e;
+  }
 
-    return { uploaded: addObject, targetId: params.targetId };
-  },
-);
+  const addObject = await submitFileInfoWithEncryption(uploaded);
+  dispatch(setProgress(progress(1, step)));
+  dispatch(deleteProgress());
+  // 変更を表示
+  if (
+    addObject.fileInfo.diff.addtag &&
+    addObject.fileInfo.diff.addtag.length > 0
+  ) {
+    dispatch(
+      enqueueSnackbar({
+        message: `『${addObject.fileInfo.diff.addtag.join(
+          '』,『',
+        )}』タグを追加しました`,
+        options: { variant: 'success' },
+      }),
+    );
+  }
+  if (
+    addObject.fileInfo.diff.deltag &&
+    addObject.fileInfo.diff.deltag.length > 0
+  ) {
+    dispatch(
+      enqueueSnackbar({
+        message: `『${addObject.fileInfo.diff.deltag.join(
+          '』,『',
+        )}』タグを削除しました`,
+        options: { variant: 'success' },
+      }),
+    );
+  }
+  if (params.newName) {
+    dispatch(
+      enqueueSnackbar({
+        message: `名称を${params.newName}に変更しました`,
+        options: { variant: 'success' },
+      }),
+    );
+  }
+  if (params.newParentId) {
+    dispatch(
+      enqueueSnackbar({
+        message: 'ファイルを移動しました',
+        options: { variant: 'success' },
+      }),
+    );
+  }
+  // storage更新
+  await dispatch(updateUsageAsync());
 
-export const afterCreateDiffAsyncFullfilled:
-CaseReducer<FileState, PayloadAction<CreateDiffAsyncResult>> = (state, action) => {
+  return { uploaded: addObject, targetId: params.targetId };
+});
+
+export const afterCreateDiffAsyncFullfilled: CaseReducer<
+  FileState,
+  PayloadAction<CreateDiffAsyncResult>
+> = (state, action) => {
   const { uploaded, targetId } = action.payload;
   const { fileInfo } = uploaded;
   const fileTable = { ...state.fileTable };
@@ -81,9 +127,16 @@ CaseReducer<FileState, PayloadAction<CreateDiffAsyncResult>> = (state, action) =
   // fileTableを更新
   if (!fileInfo.prevId) throw new Error('前方が指定されていません');
   fileTable[fileInfo.prevId].nextId = fileInfo.id;
-  fileTable[fileInfo.id] = { ...fileInfo, parentId: fileInfo.parentId, origin: uploaded };
+  fileTable[fileInfo.id] = {
+    ...fileInfo,
+    parentId: fileInfo.parentId,
+    origin: uploaded,
+  };
   // tagTreeを更新
-  if (fileInfo.diff.addtag !== undefined || fileInfo.diff.deltag !== undefined) {
+  if (
+    fileInfo.diff.addtag !== undefined ||
+    fileInfo.diff.deltag !== undefined
+  ) {
     const tagTree = { ...state.tagTree };
     if (fileInfo.diff.addtag) {
       fileInfo.diff.addtag.forEach((tag) => {
@@ -99,7 +152,8 @@ CaseReducer<FileState, PayloadAction<CreateDiffAsyncResult>> = (state, action) =
     state.tagTree = tagTree;
 
     if (state.activeFileGroup && state.activeFileGroup.type === 'tag') {
-      state.activeFileGroup.files = tagTree[state.activeFileGroup.tagName] ?? [];
+      state.activeFileGroup.files =
+        tagTree[state.activeFileGroup.tagName] ?? [];
     }
   }
 
@@ -114,23 +168,40 @@ CaseReducer<FileState, PayloadAction<CreateDiffAsyncResult>> = (state, action) =
   if (beforeParentId !== afterParentId) {
     const beforeParent = fileTable[beforeParentId];
     assertWritableDraftFileNodeFolder(beforeParent);
-    const beforeParentChildren = beforeParent.files.filter((child) => child !== targetId);
-    fileTable[beforeParentId] = { ...beforeParent, files: beforeParentChildren };
+    const beforeParentChildren = beforeParent.files.filter(
+      (child) => child !== targetId,
+    );
+    fileTable[beforeParentId] = {
+      ...beforeParent,
+      files: beforeParentChildren,
+    };
 
     const afterParent = fileTable[afterParentId];
     assertWritableDraftFileNodeFolder(afterParent);
-    const afterParentChildren = fileSort([...afterParent.files, targetId], fileTable);
+    const afterParentChildren = fileSort(
+      [...afterParent.files, targetId],
+      fileTable,
+    );
     fileTable[afterParentId] = { ...afterParent, files: afterParentChildren };
     if (state.activeFileGroup?.type === 'dir') {
       if (state.activeFileGroup.folderId === afterParentId) {
-        state.activeFileGroup = { ...state.activeFileGroup, files: [...afterParentChildren] };
+        state.activeFileGroup = {
+          ...state.activeFileGroup,
+          files: [...afterParentChildren],
+        };
       } else if (state.activeFileGroup.folderId === beforeParentId) {
-        state.activeFileGroup = { ...state.activeFileGroup, files: [...beforeParentChildren] };
+        state.activeFileGroup = {
+          ...state.activeFileGroup,
+          files: [...beforeParentChildren],
+        };
       }
     }
   }
   // historyの追加
-  fileTable[targetId] = { ...copied, history: [fileInfo.id, ...copied.history] };
+  fileTable[targetId] = {
+    ...copied,
+    history: [fileInfo.id, ...copied.history],
+  };
   // テーブルの更新
   state.fileTable = fileTable;
 };

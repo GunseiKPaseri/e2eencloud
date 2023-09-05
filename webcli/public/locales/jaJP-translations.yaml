@@ -16,8 +16,7 @@ admin:
 auth:
   email: メールアドレス
   login: ログイン
-  loginfailed:
-    ログインに失敗しました。
+  loginfailed: ログインに失敗しました。
   logout: ログアウト
   password: パスワード
   registifyoudonothaveanaccount: アカウントが無ければ登録

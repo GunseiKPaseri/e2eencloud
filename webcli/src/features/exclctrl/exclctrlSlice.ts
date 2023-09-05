@@ -2,8 +2,8 @@ import { createAction, createSlice } from '@reduxjs/toolkit';
 import socket from '~/class/socketio';
 
 export interface ExclCtrlState {
-  usable: boolean,
-  pending: boolean,
+  usable: boolean;
+  pending: boolean;
 }
 
 const initialState: ExclCtrlState = {
@@ -13,7 +13,9 @@ const initialState: ExclCtrlState = {
 
 export const requestedExclCtrl = createAction('exclctrl/request');
 
-export const decideExclCtrl = createAction<[{leader: string}]>('SOCKET.IO/DECIDED_EXCLCTRL');
+export const decideExclCtrl = createAction<[{ leader: string }]>(
+  'SOCKET.IO/DECIDED_EXCLCTRL',
+);
 
 export const exclctrlSlice = createSlice({
   name: 'exclctrl',

@@ -12,30 +12,33 @@ type GetUserListJSONRow = {
     file_usage: string;
     role: 'ADMIN' | 'USER';
     multi_factor_authentication: boolean;
-  }[]
+  }[];
 };
 
 export const getUserList = async (props: {
-  offset: number,
-  limit: number,
-  sortQuery: GridSortItem[],
-  filterQuery: GridFilterModel,
+  offset: number;
+  limit: number;
+  sortQuery: GridSortItem[];
+  filterQuery: GridFilterModel;
 }) => {
   const result = await axiosWithSession.get<
-  Record<string, never>,
-  AxiosResponse<GetUserListJSONRow>,
-  { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(
-    '/api/users',
+    Record<string, never>,
+    AxiosResponse<GetUserListJSONRow>,
     {
-      params: {
-        offset: props.offset,
-        limit: props.limit,
-        orderby: props.sortQuery[0]?.field,
-        order: props.sortQuery[0]?.sort,
-        q: JSON.stringify(props.filterQuery),
-      },
+      offset: number;
+      limit: number;
+      orderby?: string;
+      order?: GridSortItem['sort'];
+    }
+  >('/api/users', {
+    params: {
+      offset: props.offset,
+      limit: props.limit,
+      orderby: props.sortQuery[0]?.field,
+      order: props.sortQuery[0]?.sort,
+      q: JSON.stringify(props.filterQuery),
     },
-  );
+  });
   return {
     total_number: result.data.number_of_user,
     items: result.data.users.map((x) => ({
@@ -55,17 +58,25 @@ export const editUser = async (
   targetUser: UserDataGridRowModel,
   edited: Partial<UserDataGridRowModel>,
 ) => {
-  await axiosWithSession.patch(`/api/user/${targetUser.id}`, { ...edited, max_capacity: edited.max_capacity?.toString(), file_usage: edited.file_usage?.toString() });
+  await axiosWithSession.patch(`/api/user/${targetUser.id}`, {
+    ...edited,
+    max_capacity: edited.max_capacity?.toString(),
+    file_usage: edited.file_usage?.toString(),
+  });
   return {
     ...targetUser,
-    max_capacity: typeof edited.max_capacity === 'undefined' ? targetUser.max_capacity : edited.max_capacity,
+    max_capacity:
+      typeof edited.max_capacity === 'undefined'
+        ? targetUser.max_capacity
+        : edited.max_capacity,
   };
 };
 
 export const issuanceCoupon = async (num: number) => {
   const result = await axiosWithSession.post<
-  Record<string, never>,
-  AxiosResponse<{ coupons_id: string[] }>>('/api/coupons', {
+    Record<string, never>,
+    AxiosResponse<{ coupons_id: string[] }>
+  >('/api/coupons', {
     coupon: {
       method: 'ADD_CAPACITY',
       value: (5n * 1024n * 1024n * 1024n).toString(),

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import Stepper from '@mui/material/Stepper';
+import Typography from '@mui/material/Typography';
 import { useAppDispatch } from '~/lib/react-redux';
 import { signupAsync } from '~/features/auth/authSlice';
 import PutEmail from './signupsequence/PutEmail';
@@ -52,28 +52,27 @@ export default function Signup() {
       <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
         <LockOutlinedIcon />
       </Avatar>
-      <Typography component="h1" variant="h5">
+      <Typography component='h1' variant='h5'>
         メールアドレス受信確認
       </Typography>
-      <Typography component="p">受信可能なメールアドレスを選択してください。</Typography>
-      {(stepState === 0
-        ? (
-          <PutEmail
-            timer={timer}
-            email={email}
-            onChangeEmail={setEmail}
-            onConfirm={sendMail}
-          />
-        )
-        : (
-          <SendedEmail
-            timer={timer}
-            email={email}
-            onCancel={() => setStepState(0)}
-            onResend={sendMail}
-          />
-        )
-        )}
+      <Typography component='p'>
+        受信可能なメールアドレスを選択してください。
+      </Typography>
+      {stepState === 0 ? (
+        <PutEmail
+          timer={timer}
+          email={email}
+          onChangeEmail={setEmail}
+          onConfirm={sendMail}
+        />
+      ) : (
+        <SendedEmail
+          timer={timer}
+          email={email}
+          onCancel={() => setStepState(0)}
+          onResend={sendMail}
+        />
+      )}
     </Box>
   );
 }

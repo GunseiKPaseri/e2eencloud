@@ -1,24 +1,26 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { axiosWithSession } from '~/lib/axios';
+import type { AuthState } from '~/features/auth/authSlice';
 import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
 import {
-  base642ByteArray, byteArray2base64, UUID2ByteArray,
+  base642ByteArray,
+  byteArray2base64,
+  UUID2ByteArray,
 } from '~/utils/uint8';
-import { axiosWithSession } from '~/lib/axios';
 
-import type { AuthState } from '~/features/auth/authSlice';
 // TOTP追加処理
 export const addFIDO2Async = createAsyncThunk<{ mfacode: string[] | null }>(
   'auth/add_fido2',
   async (_, { dispatch }) => {
     type GetAttestation = PublicKeyCredentialCreationOptions & {
-      challenge: string,
-      user: { id: string, displayName: string },
-      rp: { id: string, name: string, icon: string }
+      challenge: string;
+      user: { id: string; displayName: string };
+      rp: { id: string; name: string; icon: string };
     };
-    const optionsOrigin = (await axiosWithSession.get<GetAttestation>(
-      '/api/fido2/attestation',
-    )).data;
+    const optionsOrigin = (
+      await axiosWithSession.get<GetAttestation>('/api/fido2/attestation')
+    ).data;
     const options = {
       ...optionsOrigin,
       challenge: base642ByteArray(optionsOrigin.challenge),
@@ -30,25 +32,38 @@ export const addFIDO2Async = createAsyncThunk<{ mfacode: string[] | null }>(
 
     const cred = await navigator.credentials.create({ publicKey: options });
     if (cred === null) {
-      dispatch(enqueueSnackbar({ message: 'WebAuthnに失敗しました', options: { variant: 'success' } }));
+      dispatch(
+        enqueueSnackbar({
+          message: 'WebAuthnに失敗しました',
+          options: { variant: 'success' },
+        }),
+      );
       return { mfacode: null };
     }
     const rawId = (cred as { rawId?: unknown })?.rawId;
 
     const { response } = cred as {
-      response?: { attestationObject?: unknown, clientDataJSON?: unknown }
+      response?: { attestationObject?: unknown; clientDataJSON?: unknown };
     };
-    const fixResponse = response?.attestationObject && response?.clientDataJSON ? {
-      attestationObject: response.attestationObject instanceof ArrayBuffer
-        ? byteArray2base64(new Uint8Array(response.attestationObject))
-        : undefined,
-      clientDataJSON: response.clientDataJSON instanceof ArrayBuffer
-        ? byteArray2base64(new Uint8Array(response.clientDataJSON))
-        : undefined,
-    } : undefined;
+    const fixResponse =
+      response?.attestationObject && response?.clientDataJSON
+        ? {
+            attestationObject:
+              response.attestationObject instanceof ArrayBuffer
+                ? byteArray2base64(new Uint8Array(response.attestationObject))
+                : undefined,
+            clientDataJSON:
+              response.clientDataJSON instanceof ArrayBuffer
+                ? byteArray2base64(new Uint8Array(response.clientDataJSON))
+                : undefined,
+          }
+        : undefined;
     const credentials = {
       id: cred.id,
-      rawId: rawId instanceof ArrayBuffer ? byteArray2base64(new Uint8Array(rawId)) : undefined,
+      rawId:
+        rawId instanceof ArrayBuffer
+          ? byteArray2base64(new Uint8Array(rawId))
+          : undefined,
       type: cred.type,
       response: fixResponse,
     };
@@ -57,16 +72,28 @@ export const addFIDO2Async = createAsyncThunk<{ mfacode: string[] | null }>(
         '/api/fido2/attestation',
         credentials,
       );
-      dispatch(enqueueSnackbar({ message: '正常に反映しました', options: { variant: 'success' } }));
+      dispatch(
+        enqueueSnackbar({
+          message: '正常に反映しました',
+          options: { variant: 'success' },
+        }),
+      );
       return result.data;
     } catch (_e) {
-      dispatch(enqueueSnackbar({ message: 'エラーが発生しました', options: { variant: 'success' } }));
+      dispatch(
+        enqueueSnackbar({
+          message: 'エラーが発生しました',
+          options: { variant: 'success' },
+        }),
+      );
     }
     return { mfacode: null };
   },
 );
 
-export const afterAddFIDO2AsyncFullfilled:
-CaseReducer<AuthState, PayloadAction<{ mfacode: string[] | null }>> = (state, action) => {
+export const afterAddFIDO2AsyncFullfilled: CaseReducer<
+  AuthState,
+  PayloadAction<{ mfacode: string[] | null }>
+> = (state, action) => {
   state.mfacode = action.payload.mfacode;
 };

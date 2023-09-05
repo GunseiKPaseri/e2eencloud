@@ -1,30 +1,31 @@
+import { useState } from 'react';
+import AddIcon from '@mui/icons-material/Add';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import type {
   GridFilterModel,
-  GridRowModel, GridSortItem,
+  GridRowModel,
+  GridSortItem,
 } from '@mui/x-data-grid';
 import { GridToolbarContainer } from '@mui/x-data-grid';
-import Button from '@mui/material/Button';
-import AddIcon from '@mui/icons-material/Add';
 import type { AxiosResponse } from 'axios';
-import { useState } from 'react';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-
-import EditableDataGrid, { type ComputeMutation } from '~/components/molecule/EditableDataGrid';
 import { axiosWithSession } from '~/lib/axios';
-
-import TOTPAdder from './TOTPAdder';
+import EditableDataGrid, {
+  type ComputeMutation,
+} from '~/components/molecule/EditableDataGrid';
 import FIDO2Register from './FIDO2Register';
+import TOTPAdder from './TOTPAdder';
 
 type GetMFAListJSONRow = {
   number_of_mfa: number;
   mfa: {
     id: string;
     name: string;
-    type: 'EMAIL' | 'FIDO2' | 'TOTP' | 'CODE'
+    type: 'EMAIL' | 'FIDO2' | 'TOTP' | 'CODE';
     available: boolean;
-  }[]
+  }[];
 };
 
 export type MFADataGridRowModel = GridRowModel<{
@@ -35,26 +36,29 @@ export type MFADataGridRowModel = GridRowModel<{
 }>;
 
 const getMFAList = async (props: {
-  offset: number,
-  limit: number,
-  sortQuery: GridSortItem[],
-  filterQuery: GridFilterModel,
+  offset: number;
+  limit: number;
+  sortQuery: GridSortItem[];
+  filterQuery: GridFilterModel;
 }) => {
   const result = await axiosWithSession.get<
-  Record<string, never>,
-  AxiosResponse<GetMFAListJSONRow>,
-  { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(
-    '/api/my/mfa',
+    Record<string, never>,
+    AxiosResponse<GetMFAListJSONRow>,
     {
-      params: {
-        offset: props.offset,
-        limit: props.limit,
-        orderby: props.sortQuery[0]?.field,
-        order: props.sortQuery[0]?.sort,
-        q: JSON.stringify(props.filterQuery),
-      },
+      offset: number;
+      limit: number;
+      orderby?: string;
+      order?: GridSortItem['sort'];
+    }
+  >('/api/my/mfa', {
+    params: {
+      offset: props.offset,
+      limit: props.limit,
+      orderby: props.sortQuery[0]?.field,
+      order: props.sortQuery[0]?.sort,
+      q: JSON.stringify(props.filterQuery),
     },
-  );
+  });
   return {
     total_number: result.data.number_of_mfa,
     items: result.data.mfa,
@@ -65,7 +69,10 @@ const editMFA = async (
   targetMFA: MFADataGridRowModel,
   edited: Partial<MFADataGridRowModel>,
 ) => {
-  await axiosWithSession.patch(`/api/my/mfa/${targetMFA.id}`, { available: edited.available, name: edited.name });
+  await axiosWithSession.patch(`/api/my/mfa/${targetMFA.id}`, {
+    available: edited.available,
+    name: edited.name,
+  });
   return {
     ...targetMFA,
     available: edited.available ?? false,
@@ -74,18 +81,28 @@ const editMFA = async (
 
 const deleteMFA = async (id: string) => {
   const result = await axiosWithSession.delete<
-  Record<string, never>,
-  AxiosResponse<GetMFAListJSONRow>,
-  { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>(
-    `/api/my/mfa/${id}`,
-  );
+    Record<string, never>,
+    AxiosResponse<GetMFAListJSONRow>,
+    {
+      offset: number;
+      limit: number;
+      orderby?: string;
+      order?: GridSortItem['sort'];
+    }
+  >(`/api/my/mfa/${id}`);
   return result;
 };
 
-const computeMutation: ComputeMutation<MFADataGridRowModel> = ({ newRow, oldRow, t }) => {
+const computeMutation: ComputeMutation<MFADataGridRowModel> = ({
+  newRow,
+  oldRow,
+  t,
+}) => {
   let str = '';
   if (newRow.available !== oldRow.available) {
-    str += `${t('auth.multifactorauth', '多要素認証')}：${newRow.available ? t('admin.on', 'オン') : t('admin.off', 'オフ')}`;
+    str += `${t('auth.multifactorauth', '多要素認証')}：${
+      newRow.available ? t('admin.on', 'オン') : t('admin.off', 'オフ')
+    }`;
   }
   if (newRow.name !== oldRow.name) {
     str += `${str === '' ? '' : '\n'}名前：${newRow.name}`;
@@ -101,37 +118,53 @@ function MFAList() {
 
   const renderCustomToolbar = () => (
     <GridToolbarContainer>
-      <Button startIcon={<AddIcon />} color="primary" onClick={() => { setOpenAdditionDialog(true); }}>追加</Button>
+      <Button
+        startIcon={<AddIcon />}
+        color='primary'
+        onClick={() => {
+          setOpenAdditionDialog(true);
+        }}
+      >
+        追加
+      </Button>
     </GridToolbarContainer>
   );
 
   return (
     <>
       <Dialog
-        maxWidth="xs"
+        maxWidth='xs'
         open={openAdditionDialog}
-        onClose={() => { setOpenAdditionDialog(false); }}
+        onClose={() => {
+          setOpenAdditionDialog(false);
+        }}
       >
         <DialogTitle>MFAの追加</DialogTitle>
         <DialogContent dividers>
-          <TOTPAdder onSuccess={() => {
-            setPageReloader(Symbol('reload'));
-            setOpenAdditionDialog(false);
-          }}
+          <TOTPAdder
+            onSuccess={() => {
+              setPageReloader(Symbol('reload'));
+              setOpenAdditionDialog(false);
+            }}
           />
-          <FIDO2Register onSuccess={() => {
-            setPageReloader(Symbol('reload'));
-            setOpenAdditionDialog(false);
-          }}
+          <FIDO2Register
+            onSuccess={() => {
+              setPageReloader(Symbol('reload'));
+              setOpenAdditionDialog(false);
+            }}
           />
         </DialogContent>
       </Dialog>
-      <EditableDataGrid <MFADataGridRowModel>
+      <EditableDataGrid<MFADataGridRowModel>
         computeMutation={computeMutation}
         getName={(params) => `${params.row.name}`}
         columns={[
           { field: 'id', minWidth: 200 },
-          { field: 'type', type: 'singleSelect', valueOptions: ['TOTP', 'FIDO2', 'CODE'] },
+          {
+            field: 'type',
+            type: 'singleSelect',
+            valueOptions: ['TOTP', 'FIDO2', 'CODE'],
+          },
           { field: 'name', minWidth: 300, editable: true },
           {
             field: 'available',

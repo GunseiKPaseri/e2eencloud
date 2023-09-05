@@ -11,7 +11,9 @@ export const deleteTOTPAsync = createAsyncThunk<void, void>(
   },
 );
 
-export const afterDeleteTOTPAsyncFullfilled:
-CaseReducer<AuthState, PayloadAction<void>> = () => {
+export const afterDeleteTOTPAsyncFullfilled: CaseReducer<
+  AuthState,
+  PayloadAction<void>
+> = () => {
   //
 };

@@ -4,8 +4,8 @@ import type { SessionInfo } from './api';
 import { deleteSessions, changeClientName, getSessions } from './api';
 
 export interface SessionsState {
-  sessions: SessionInfo[],
-  loading: boolean
+  sessions: SessionInfo[];
+  loading: boolean;
 }
 
 const initialState: SessionsState = {
@@ -21,12 +21,12 @@ export const getSessionsAsync = createAsyncThunk<SessionInfo[]>(
   },
 );
 
-export const changeClientNameAsync = createAsyncThunk<void, { id:string, newClientName: string }>(
-  'session/changeClientName',
-  async (params) => {
-    await changeClientName(params);
-  },
-);
+export const changeClientNameAsync = createAsyncThunk<
+  void,
+  { id: string; newClientName: string }
+>('session/changeClientName', async (params) => {
+  await changeClientName(params);
+});
 
 export const deleteSessionAsync = createAsyncThunk<void, { id: string }>(
   'session/changeClientName',

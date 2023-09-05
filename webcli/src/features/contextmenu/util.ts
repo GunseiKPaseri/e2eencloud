@@ -1,4 +1,10 @@
-export const downloadLocal = ({ uri, fileName }: { uri: string, fileName: string }) => {
+export const downloadLocal = ({
+  uri,
+  fileName,
+}: {
+  uri: string;
+  fileName: string;
+}) => {
   // Download
   const a = document.createElement('a');
   a.href = uri;
@@ -12,6 +18,7 @@ export const downloadLocal = ({ uri, fileName }: { uri: string, fileName: string
 
 export type ContextMenuProps<T extends { type: string }> = {
   menu: T;
-  genHandleContextMenu: (onClick: () => void) =>
-  (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => void;
+  genHandleContextMenu: (
+    onClick: () => void,
+  ) => (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => void;
 };

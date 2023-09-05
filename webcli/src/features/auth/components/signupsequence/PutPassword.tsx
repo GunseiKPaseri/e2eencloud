@@ -1,7 +1,7 @@
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import zxcvbn from 'zxcvbn';
 import PasswordChecker from '~/features/auth/components/PasswordChecker';
 import PasswordField from '~/features/auth/components/PasswordField';
@@ -13,15 +13,13 @@ interface PutPasswordProps {
 }
 
 export default function PutPassword(props: PutPasswordProps) {
-  const {
-    password, onChangePassword, onDecidePassword,
-  } = props;
+  const { password, onChangePassword, onDecidePassword } = props;
   const [changed, setChanged] = useState(false);
   const res = zxcvbn(password, []);
-  const passwordScore:0 | 1 | 2 | 3 | 4 = password.length < 8 ? 0 : res.score;
+  const passwordScore: 0 | 1 | 2 | 3 | 4 = password.length < 8 ? 0 : res.score;
   return (
     <Box
-      component="form"
+      component='form'
       onSubmit={(e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         onDecidePassword();
@@ -30,13 +28,13 @@ export default function PutPassword(props: PutPasswordProps) {
       sx={{ mt: 1 }}
     >
       <PasswordField
-        margin="normal"
+        margin='normal'
         required
         fullWidth
-        name="password"
-        label="パスワード"
-        id="password"
-        autoComplete="current-password"
+        name='password'
+        label='パスワード'
+        id='password'
+        autoComplete='current-password'
         value={password}
         onChange={(e) => {
           setChanged(true);
@@ -46,9 +44,9 @@ export default function PutPassword(props: PutPasswordProps) {
         helperText={changed ? <PasswordChecker score={passwordScore} /> : <></>}
       />
       <Button
-        type="submit"
+        type='submit'
         fullWidth
-        variant="contained"
+        variant='contained'
         sx={{ mt: 3, mb: 2 }}
         disabled={passwordScore < 2}
       >

@@ -1,22 +1,14 @@
-import type {
-  GridValueFormatterParams,
-  GridRowModel,
-} from '@mui/x-data-grid';
-import TextField from '@mui/material/TextField';
-import { DateTimePicker } from '@mui/x-date-pickers';
-import Button from '@mui/material/Button';
 import { useState } from 'react';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import type { GridValueFormatterParams, GridRowModel } from '@mui/x-data-grid';
+import { DateTimePicker } from '@mui/x-date-pickers';
 import addMonths from 'date-fns/addMonths';
-import type { ComputeMutation } from '~/components/molecule/EditableDataGrid';
-
-import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
 import { useAppDispatch } from '~/lib/react-redux';
+import type { ComputeMutation } from '~/components/molecule/EditableDataGrid';
 import EditableDataGrid from '~/components/molecule/EditableDataGrid';
-
-import {
-  addHock,
-  deleteHook, editHook, getHookList,
-} from './hookrequest';
+import { enqueueSnackbar } from '~/features/snackbar/snackbarSlice';
+import { addHock, deleteHook, editHook, getHookList } from './hookrequest';
 
 export type HookDataGridRowModel = GridRowModel<{
   id: string;
@@ -26,26 +18,23 @@ export type HookDataGridRowModel = GridRowModel<{
   expired_at: Date | null;
 }>;
 
-const computeMutation: ComputeMutation<HookDataGridRowModel> = ({ newRow, oldRow }) => {
+const computeMutation: ComputeMutation<HookDataGridRowModel> = ({
+  newRow,
+  oldRow,
+}) => {
   if (newRow.name !== oldRow.name) {
     return `フック名：${oldRow.name} => ${newRow.name}`;
-  } if ((
-    (newRow.expired_at === null || oldRow.expired_at === null)
-    && (newRow.expired_at !== oldRow.expired_at)
-  ) || (
-    newRow.expired_at !== null
-    && oldRow.expired_at !== null
-    && newRow.expired_at.valueOf() !== oldRow.expired_at.valueOf()
-  )) {
+  }
+  if (
+    ((newRow.expired_at === null || oldRow.expired_at === null) &&
+      newRow.expired_at !== oldRow.expired_at) ||
+    (newRow.expired_at !== null &&
+      oldRow.expired_at !== null &&
+      newRow.expired_at.valueOf() !== oldRow.expired_at.valueOf())
+  ) {
     return `有効期限：${
-      oldRow.expired_at
-        ? oldRow.expired_at.toString()
-        : 'なし'
-    } => ${
-      newRow.expired_at
-        ? newRow.expired_at.toString()
-        : 'なし'
-    }`;
+      oldRow.expired_at ? oldRow.expired_at.toString() : 'なし'
+    } => ${newRow.expired_at ? newRow.expired_at.toString() : 'なし'}`;
   }
   return null;
 };
@@ -53,26 +42,28 @@ const computeMutation: ComputeMutation<HookDataGridRowModel> = ({ newRow, oldRow
 function HookList() {
   const dispatch = useAppDispatch();
   const [name, setName] = useState('');
-  const [expiredAt, setExpiredAt] = useState<Date | null>(addMonths(new Date(Date.now()), 6));
+  const [expiredAt, setExpiredAt] = useState<Date | null>(
+    addMonths(new Date(Date.now()), 6),
+  );
   const [pageReloader, setPageReloader] = useState<symbol>(Symbol('pageload'));
   return (
     <>
       <TextField
-        label="Hook名"
+        label='Hook名'
         value={name}
         onChange={(e) => {
           setName(e.target.value);
         }}
       />
       <DateTimePicker
-        label="有効期限"
+        label='有効期限'
         value={expiredAt}
         onChange={(newExpiredAt) => {
           setExpiredAt(newExpiredAt);
         }}
       />
       <Button
-        variant="outlined"
+        variant='outlined'
         onClick={async () => {
           await addHock(name, { method: 'USER_DELETE' }, expiredAt);
           setPageReloader(Symbol('reload'));
@@ -80,17 +71,18 @@ function HookList() {
       >
         追加
       </Button>
-      <EditableDataGrid <HookDataGridRowModel>
+      <EditableDataGrid<HookDataGridRowModel>
         computeMutation={computeMutation}
-        getName={(params) => (params.row.name === '' ? '<無名のHook>' : params.row.name)}
+        getName={(params) =>
+          params.row.name === '' ? '<無名のHook>' : params.row.name
+        }
         columns={[
           {
             field: 'id',
             headerName: 'url',
             width: 600,
-            valueFormatter: (params: GridValueFormatterParams<string>) => (
-              `/api/hook/${params.value}`
-            ),
+            valueFormatter: (params: GridValueFormatterParams<string>) =>
+              `/api/hook/${params.value}`,
           },
           {
             field: 'name',
@@ -122,13 +114,28 @@ function HookList() {
         editItem={editHook}
         onDelete={async (params) => {
           await deleteHook(params.row.id);
-          dispatch(enqueueSnackbar({ message: '削除しました', options: { variant: 'success' } }));
+          dispatch(
+            enqueueSnackbar({
+              message: '削除しました',
+              options: { variant: 'success' },
+            }),
+          );
         }}
         onEditSuccess={() => {
-          dispatch(enqueueSnackbar({ message: '正常に変更を反映しました', options: { variant: 'success' } }));
+          dispatch(
+            enqueueSnackbar({
+              message: '正常に変更を反映しました',
+              options: { variant: 'success' },
+            }),
+          );
         }}
         onEditFailure={() => {
-          dispatch(enqueueSnackbar({ message: '反映に失敗しました', options: { variant: 'error' } }));
+          dispatch(
+            enqueueSnackbar({
+              message: '反映に失敗しました',
+              options: { variant: 'error' },
+            }),
+          );
         }}
         reloader={pageReloader}
       />

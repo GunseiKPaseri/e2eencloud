@@ -10,11 +10,18 @@ type ParentComponent = React.ComponentType<{ children: ReactNode }>;
  */
 const composeComponents = (
   ...components: [ParentComponent, ...ParentComponent[]]
-):ParentComponent => {
+): ParentComponent => {
   if (components.length === 1) return components[0];
-  return components.reduce((Acc, Cur) => function reducer(props) {
-    return <Acc><Cur {...props} /></Acc>;
-  });
+  return components.reduce(
+    (Acc, Cur) =>
+      function reducer(props) {
+        return (
+          <Acc>
+            <Cur {...props} />
+          </Acc>
+        );
+      },
+  );
 };
 
 export default composeComponents;

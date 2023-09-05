@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
 import type { SessionsState } from './sessionSlice';
 import {
-  changeClientNameAsync, deleteSessionAsync, getSessionsAsync,
+  changeClientNameAsync,
+  deleteSessionAsync,
+  getSessionsAsync,
 } from './sessionSlice';
 
-function NameChanger({ id, name }:{ id: string, name: string }) {
+function NameChanger({ id, name }: { id: string; name: string }) {
   const [newName, setNewName] = useState(name);
   const dispatch = useAppDispatch();
   const handleClick = () => {
@@ -20,7 +22,9 @@ function NameChanger({ id, name }:{ id: string, name: string }) {
   return (
     <>
       <input value={name} onChange={(e) => setNewName(e.target.value)} />
-      <button type="button" onClick={handleClick}>変更</button>
+      <button type='button' onClick={handleClick}>
+        変更
+      </button>
     </>
   );
 }
@@ -40,7 +44,9 @@ function SessionConfig() {
   return (
     <article>
       <h2>セッション</h2>
-      <button type="button" onClick={getSession}>更新</button>
+      <button type='button' onClick={getSession}>
+        更新
+      </button>
       <table>
         <thead>
           <tr>
@@ -53,9 +59,20 @@ function SessionConfig() {
           {sessionState.sessions.map((x) => (
             <tr key={x.id}>
               <td>{x.isMe ? '◎' : ''}</td>
-              <td>{x.isMe ? <NameChanger id={x.id} name={x.clientName} /> : x.clientName}</td>
               <td>
-                <button type="button" onClick={() => dispatch(deleteSessionAsync({ id: x.id }))}>削除</button>
+                {x.isMe ? (
+                  <NameChanger id={x.id} name={x.clientName} />
+                ) : (
+                  x.clientName
+                )}
+              </td>
+              <td>
+                <button
+                  type='button'
+                  onClick={() => dispatch(deleteSessionAsync({ id: x.id }))}
+                >
+                  削除
+                </button>
               </td>
             </tr>
           ))}

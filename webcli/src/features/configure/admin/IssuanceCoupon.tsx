@@ -1,27 +1,28 @@
+import { useState, useReducer } from 'react';
+import { useTranslation } from 'react-i18next';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import { useState, useReducer } from 'react';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { useTranslation } from 'react-i18next';
-
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import { issuanceCoupon } from './adminrequest';
 
-type CouponState = { coupon: string[], isLoading: boolean };
+type CouponState = { coupon: string[]; isLoading: boolean };
 const initialState: CouponState = { coupon: [], isLoading: false };
 
 type CouponAction = string[] | 'loading';
 
-const couponReducerFunc = (couponState: CouponState, action: CouponAction): CouponState => (
+const couponReducerFunc = (
+  couponState: CouponState,
+  action: CouponAction,
+): CouponState =>
   action === 'loading'
     ? { ...couponState, isLoading: true }
-    : { coupon: [...couponState.coupon, ...action], isLoading: false }
-);
+    : { coupon: [...couponState.coupon, ...action], isLoading: false };
 
 export default function BasicCard() {
   const [numOfCoupon, setNumOfCoupon] = useState(1);
@@ -34,14 +35,16 @@ export default function BasicCard() {
   return (
     <Card sx={{ minWidth: 275 }}>
       <CardContent>
-        <Typography variant="h5" component="div">
+        <Typography variant='h5' component='div'>
           {t('admin.IssueCoupon', 'クーポンを発行')}
         </Typography>
 
         <TextField
-          type="number"
+          type='number'
           value={numOfCoupon}
-          onChange={(e) => { setNumOfCoupon(parseInt(e.target.value, 10)); }}
+          onChange={(e) => {
+            setNumOfCoupon(parseInt(e.target.value, 10));
+          }}
           InputProps={{
             inputProps: {
               min: 1,
@@ -58,19 +61,17 @@ export default function BasicCard() {
             maxHeight: 300,
           }}
         >
-          {
-            couponState.coupon.map((couponId) => (
-              <ListItem
-                key={couponId}
-              >
-                <ListItemText primary={couponId} />
-              </ListItem>
-            ))
-          }
+          {couponState.coupon.map((couponId) => (
+            <ListItem key={couponId}>
+              <ListItemText primary={couponId} />
+            </ListItem>
+          ))}
         </List>
       </CardContent>
       <CardActions>
-        <Button size="small" onClick={handleIssue}>{t('admin.issue', '発行')}</Button>
+        <Button size='small' onClick={handleIssue}>
+          {t('admin.issue', '発行')}
+        </Button>
       </CardActions>
     </Card>
   );

@@ -1,30 +1,31 @@
 import { useState, useEffect } from 'react';
-import * as OTPAuth from 'otpauth';
-import QRcode from 'qrcode';
-
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-import CopyableField from '~/components/atom/CopyableField';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import * as OTPAuth from 'otpauth';
+import QRcode from 'qrcode';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
+import CopyableField from '~/components/atom/CopyableField';
 import { addTOTPAsync, type AuthState } from '~/features/auth/authSlice';
 
-const genQR = (totp: OTPAuth.TOTP) => new Promise<string>((resolve, reject) => {
-  QRcode.toDataURL(totp.toString(), (err, qrcode) => {
-    if (err) return reject(err);
-    return resolve(qrcode);
+const genQR = (totp: OTPAuth.TOTP) =>
+  new Promise<string>((resolve, reject) => {
+    QRcode.toDataURL(totp.toString(), (err, qrcode) => {
+      if (err) return reject(err);
+      return resolve(qrcode);
+    });
   });
-});
 
-const genTOTP = (email: string) => new OTPAuth.TOTP({
-  issuer: 'E2EEncloud',
-  label: `${email}`,
-  algorithm: 'SHA1',
-  digits: 6,
-  period: 30,
-  secret: new OTPAuth.Secret(),
-});
+const genTOTP = (email: string) =>
+  new OTPAuth.TOTP({
+    issuer: 'E2EEncloud',
+    label: `${email}`,
+    algorithm: 'SHA1',
+    digits: 6,
+    period: 30,
+    secret: new OTPAuth.Secret(),
+  });
 
 export default function TOTPAdder({ onSuccess }: { onSuccess: () => void }) {
   const user = useAppSelector<AuthState['user']>((state) => state.auth.user);
@@ -64,18 +65,23 @@ export default function TOTPAdder({ onSuccess }: { onSuccess: () => void }) {
   return (
     <Grid container spacing={2}>
       <Grid item xs={12}>
-        <Typography variant="h5">TOTP</Typography>
-        <img alt="TOTP用QRコード" src={qrlink} />
+        <Typography variant='h5'>TOTP</Typography>
+        <img alt='TOTP用QRコード' src={qrlink} />
       </Grid>
       <Grid item xs={12}>
-        <CopyableField fullWidth readOnly size="small" value={secretkey.toString()} />
+        <CopyableField
+          fullWidth
+          readOnly
+          size='small'
+          value={secretkey.toString()}
+        />
       </Grid>
       <Grid item xs={8}>
         <TextField
           fullWidth
-          autoComplete="one-time-code"
-          size="small"
-          label="表示されたトークン"
+          autoComplete='one-time-code'
+          size='small'
+          label='表示されたトークン'
           value={token}
           onChange={(e) => setToken(e.target.value)}
         />
@@ -83,7 +89,7 @@ export default function TOTPAdder({ onSuccess }: { onSuccess: () => void }) {
       <Grid item xs={4}>
         <Button
           fullWidth
-          variant="outlined"
+          variant='outlined'
           onClick={reloadkey}
           disabled={qrlink === ''}
         >
@@ -93,7 +99,7 @@ export default function TOTPAdder({ onSuccess }: { onSuccess: () => void }) {
       <Grid item xs={12}>
         <Button
           fullWidth
-          variant="contained"
+          variant='contained'
           onClick={sendKey}
           disabled={!codeVerified}
         >

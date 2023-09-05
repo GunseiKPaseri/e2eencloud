@@ -8,48 +8,48 @@ declare module 'i18next' {
     defaultNS: 'translations';
     // custom resources type
     resources: {
-      'translations': {
+      translations: {
         admin: {
-          authority: string
-          capacity: string
-          cancel: string
-          ChangeSuccessful: string
-          ChangeFailed: string
-          ConfirmDeleteElement: string
-          ConfirmSave: string
-          delete: string
-          edit: string
-          issue: string
-          IssueCoupon: string
-          on: string
-          off: string
-          usage: string
-        }
+          authority: string;
+          capacity: string;
+          cancel: string;
+          ChangeSuccessful: string;
+          ChangeFailed: string;
+          ConfirmDeleteElement: string;
+          ConfirmSave: string;
+          delete: string;
+          edit: string;
+          issue: string;
+          IssueCoupon: string;
+          on: string;
+          off: string;
+          usage: string;
+        };
         auth: {
-          delete: string
-          edit: string
-          email: string
-          login: string
-          loginfailed: string
-          logout: string
-          password: string
-          registifyoudonothaveanaccount: string
-          multifactorauth: string
-          totptoken: string
-          youalreadyloggined: string
-          DisposableCode: string
-          SelectMFASolution: string
-          UseOtherAuthMethod: string
-        }
+          delete: string;
+          edit: string;
+          email: string;
+          login: string;
+          loginfailed: string;
+          logout: string;
+          password: string;
+          registifyoudonothaveanaccount: string;
+          multifactorauth: string;
+          totptoken: string;
+          youalreadyloggined: string;
+          DisposableCode: string;
+          SelectMFASolution: string;
+          UseOtherAuthMethod: string;
+        };
         language: {
-          jaJP: string
-          enUS: string
-          zhCN: string
-        }
-        conf:{
-          dateFnsLocale: 'ja' | 'zhCN' | 'enUS'
-        }
-      }
+          jaJP: string;
+          enUS: string;
+          zhCN: string;
+        };
+        conf: {
+          dateFnsLocale: 'ja' | 'zhCN' | 'enUS';
+        };
+      };
     };
   }
 }

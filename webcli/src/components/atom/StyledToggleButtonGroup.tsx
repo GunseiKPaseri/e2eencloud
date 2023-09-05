@@ -1,5 +1,5 @@
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import { styled } from "@mui/material/styles";
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { styled } from '@mui/material/styles';
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   '& .MuiToggleButtonGroup-grouped': {

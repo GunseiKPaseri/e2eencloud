@@ -1,26 +1,26 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { createLogger } from 'redux-logger';
-import { createReduxHistoryContext } from "redux-first-history";
 import { createBrowserHistory } from 'history';
-
+import { createReduxHistoryContext } from 'redux-first-history';
+import { createLogger } from 'redux-logger';
+import socket, { socketIOListener } from '~/class/socketio';
 import authReducer from '~/features/auth/authSlice';
 import contextmenuReducer from '~/features/contextmenu/contextmenuSlice';
+import exclctrlSlice from '~/features/exclctrl/exclctrlSlice';
 import fileReducer, { buildFileTableAsync } from '~/features/file/fileSlice';
 import languageReducer from '~/features/language/languageSlice';
 import progressReducer from '~/features/progress/progressSlice';
 import sessionReducer from '~/features/session/sessionSlice';
 import snackbarReducer from '~/features/snackbar/snackbarSlice';
-import socket, { socketIOListener } from '~/class/socketio';
-import exclctrlSlice from '~/features/exclctrl/exclctrlSlice';
 
-const { createReduxHistory, routerMiddleware, routerReducer } = createReduxHistoryContext({ 
-  history: createBrowserHistory(),
-});
+const { createReduxHistory, routerMiddleware, routerReducer } =
+  createReduxHistoryContext({
+    history: createBrowserHistory(),
+  });
 
 const logger = createLogger({
   collapsed: true,
   diff: true,
-})
+});
 
 export const store = configureStore({
   reducer: {
@@ -34,17 +34,21 @@ export const store = configureStore({
     session: sessionReducer,
     snackbar: snackbarReducer,
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat([logger, routerMiddleware]),
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat([logger, routerMiddleware]),
   devTools: true,
 });
 
 socketIOListener(store.dispatch, {
   DECIDED_EXCLCTRL: async (args, dispatch) => {
     console.log(args);
-    if(typeof args[0] === 'object' && (args[0] as {leader: unknown}).leader === socket.id){
-      await dispatch(buildFileTableAsync())
+    if (
+      typeof args[0] === 'object' &&
+      (args[0] as { leader: unknown }).leader === socket.id
+    ) {
+      await dispatch(buildFileTableAsync());
     }
-  }
+  },
 });
 
 export const history = createReduxHistory(store);

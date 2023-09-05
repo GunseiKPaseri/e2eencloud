@@ -5,11 +5,12 @@ extends:
   - eslint:recommended
   - plugin:@typescript-eslint/recommended-type-checked
   - plugin:@typescript-eslint/stylistic-type-checked
+  - prettier
 parserOptions:
   project: './tsconfig.eslint.json'
 settings:
   react:
-    version: "18.2.0"
+    version: '18.2.0'
   import/resolver:
     typescript: []
 plugins:
@@ -24,16 +25,16 @@ globals:
   JSX: true
 rules:
   # 許容
-  "@typescript-eslint/no-misused-promises": "off"
-  "@typescript-eslint/consistent-type-definitions": "off"
-  import/no-default-export: "off"
-  import/prefer-default-export: "off"
-  jsx-a11y/label-has-associated-control: "off"
-  no-nested-ternary: "off"
-  react/jsx-props-no-spreading: "off"
-  react/jsx-no-useless-fragment: "off"
-  react/no-unused-prop-types: "off"
-  react/require-default-props: "off"
+  '@typescript-eslint/no-misused-promises': 'off'
+  '@typescript-eslint/consistent-type-definitions': 'off'
+  import/no-default-export: 'off'
+  import/prefer-default-export: 'off'
+  jsx-a11y/label-has-associated-control: 'off'
+  no-nested-ternary: 'off'
+  react/jsx-props-no-spreading: 'off'
+  react/jsx-no-useless-fragment: 'off'
+  react/no-unused-prop-types: 'off'
+  react/require-default-props: 'off'
   # 未使用変数はアンダーバー開始のものを許容
   '@typescript-eslint/no-unused-vars':
     - warn
@@ -44,11 +45,11 @@ rules:
   # swc向け https://github.com/ArnaudBarre/eslint-plugin-react-refresh
   react-refresh/only-export-components: error
   # 強化
-  "@typescript-eslint/no-use-before-define": error
-  "@typescript-eslint/consistent-type-imports": error
+  '@typescript-eslint/no-use-before-define': error
+  '@typescript-eslint/consistent-type-imports': error
   # 依存関係の階層設定
   strict-dependencies/strict-dependencies:
-    - "error"
+    - 'error'
     - - module: ./src/features/*/thunk
         allowReferenceFrom:
           - ./src/features/*
@@ -63,4 +64,3 @@ rules:
           - ./src/pages/*
         allowSameModule: true
     - resolveRelativeImport: true
-

@@ -1,14 +1,16 @@
-import type { AxiosResponse } from 'axios';
 import type { GridFilterModel, GridSortItem } from '@mui/x-data-grid/models';
-import { ExhaustiveError } from '~/utils/assert';
+import type { AxiosResponse } from 'axios';
 import { axiosWithSession } from '~/lib/axios';
+import { ExhaustiveError } from '~/utils/assert';
 import type { HookDataGridRowModel } from './HookList';
 
-export type HookData = {
-  method: 'USER_DELETE';
-} | {
-  method: 'NONE';
-};
+export type HookData =
+  | {
+      method: 'USER_DELETE';
+    }
+  | {
+      method: 'NONE';
+    };
 
 type GetHookListJSONRow = {
   number_of_hook: number;
@@ -18,7 +20,7 @@ type GetHookListJSONRow = {
     name: string;
     data: HookData;
     expired_at: string | null;
-  }[]
+  }[];
 };
 
 export const explainHook = (hook: HookData) => {
@@ -35,15 +37,21 @@ export const explainHook = (hook: HookData) => {
 };
 
 export const getHookList = async (params: {
-  offset: number,
-  limit: number,
-  sortQuery: GridSortItem[],
-  filterQuery: GridFilterModel,
+  offset: number;
+  limit: number;
+  sortQuery: GridSortItem[];
+  filterQuery: GridFilterModel;
 }) => {
   const result = await axiosWithSession.get<
-  Record<string, never>,
-  AxiosResponse<GetHookListJSONRow>,
-  { offset: number, limit: number, orderby?: string, order?: GridSortItem['sort'] }>('/api/hooks', {
+    Record<string, never>,
+    AxiosResponse<GetHookListJSONRow>,
+    {
+      offset: number;
+      limit: number;
+      orderby?: string;
+      order?: GridSortItem['sort'];
+    }
+  >('/api/hooks', {
     params: {
       offset: params.offset,
       limit: params.limit,
@@ -63,7 +71,11 @@ export const getHookList = async (params: {
   };
 };
 
-export const addHock = async (name: string, hook: HookData, expired_at: Date | null) => {
+export const addHock = async (
+  name: string,
+  hook: HookData,
+  expired_at: Date | null,
+) => {
   await axiosWithSession.post('/api/hooks', { name, data: hook, expired_at });
 };
 
@@ -79,6 +91,9 @@ export const editHook = async (
   return {
     ...targetHook,
     name: typeof edited.name === 'undefined' ? targetHook.name : edited.name,
-    expired_at: typeof edited.expired_at === 'undefined' ? targetHook.expired_at : edited.expired_at,
+    expired_at:
+      typeof edited.expired_at === 'undefined'
+        ? targetHook.expired_at
+        : edited.expired_at,
   };
 };
