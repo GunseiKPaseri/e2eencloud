@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import { type MouseEventHandler, useCallback } from 'react';
 import { useDrop, useDrag, DragPreviewImage } from 'react-dnd';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -41,9 +41,7 @@ function FileListListFolder({
 }) {
   const dispatch = useAppDispatch();
 
-  const handleContextMenu: React.MouseEventHandler<HTMLDivElement> = (
-    event,
-  ) => {
+  const handleContextMenu: MouseEventHandler<HTMLDivElement> = (event) => {
     event.preventDefault();
     dispatch(
       openContextmenu({
@@ -126,9 +124,7 @@ function FileListListFile({
   );
   const dispatch = useAppDispatch();
 
-  const handleContextMenu: React.MouseEventHandler<HTMLDivElement> = (
-    event,
-  ) => {
+  const handleContextMenu: MouseEventHandler<HTMLDivElement> = (event) => {
     event.preventDefault();
     dispatch(
       openContextmenu({

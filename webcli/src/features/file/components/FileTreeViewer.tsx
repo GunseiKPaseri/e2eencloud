@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { type MouseEventHandler, useCallback } from 'react';
 import { useDrop } from 'react-dnd';
 import FolderIcon from '@mui/icons-material/Folder';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
@@ -26,7 +26,7 @@ function FileTreeItemFile({
   onDoubleClick,
 }: {
   target: FileNode<FileInfoFile>;
-  onDoubleClick: React.MouseEventHandler<HTMLLIElement>;
+  onDoubleClick: MouseEventHandler<HTMLLIElement>;
 }) {
   return (
     <StyledTreeItem

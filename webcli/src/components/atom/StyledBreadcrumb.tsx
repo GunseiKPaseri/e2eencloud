@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { type ReactNode, useCallback, useState } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Chip from '@mui/material/Chip';
 import Menu from '@mui/material/Menu';
@@ -26,7 +26,7 @@ export const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 
 export function StyledBreadcrumbWithMenu(
   props: React.ComponentProps<typeof Chip> & {
-    menuItems: JSX.Element[];
+    menuItems: ReactNode[];
     innerRef?:
       | ((instance: HTMLDivElement | null) => void)
       | React.RefObject<HTMLDivElement>;

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { type ReactNode, useRef } from 'react';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -18,7 +18,7 @@ export default function ConfirmDialog({
   open: boolean;
   handleEditConfirmYes: () => void;
   handleEditConfirmNo: () => void;
-  contents: JSX.Element;
+  contents: ReactNode;
   textYes: string;
   textNo: string;
 }) {

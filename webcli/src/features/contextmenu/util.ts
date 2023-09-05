@@ -1,3 +1,5 @@
+import type React from 'react';
+
 export const downloadLocal = ({
   uri,
   fileName,

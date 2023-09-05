@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import Menu from '@mui/material/Menu';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
 import { closeContextmenu } from '../contextmenuSlice';
@@ -5,7 +6,7 @@ import { closeContextmenu } from '../contextmenuSlice';
 export default function ContextMenuWrapper({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   const menuState = useAppSelector((store) => store.contextmenu.menuState);
   const dispatch = useAppDispatch();

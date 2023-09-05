@@ -69,9 +69,7 @@ export default defineConfig(({ mode }) => ({
     checker({
       typescript: true,
       eslint: {
-        lintCommand: `eslint ${relativePath(
-          'src',
-        )} --ext ts,tsx --ignore-path ${relativePath(
+        lintCommand: `eslint --ignore-pattern ${relativePath(
           '.gitignore',
         )} --cache --cache-location ${relativePath(
           'node_modules',

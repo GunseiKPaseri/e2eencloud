@@ -1,8 +1,9 @@
+import { type ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '~/lib/react-redux';
 
 // ログインしていない時・管理者でない時ログイン画面へ遷移
-export default function RequireAuth({ children }: { children: JSX.Element }) {
+export default function RequireAuth({ children }: { children: ReactNode }) {
   const user = useAppSelector((state) => state.auth.user);
   const location = useLocation();
   if (user === null || user.authority !== 'ADMIN')

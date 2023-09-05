@@ -1,3 +1,4 @@
+import { type ReactNode } from 'react';
 import Divider from '@mui/material/Divider';
 import Link from '@mui/material/Link';
 import MenuItem from '@mui/material/MenuItem';
@@ -45,7 +46,7 @@ export default function MenuFileListItem(
       ? activeFileGroup && activeFileGroup.type === 'dir'
       : false;
 
-  const result: JSX.Element[] = [];
+  const result: ReactNode[] = [];
 
   if (menu.selected && activeFileGroup) {
     // (All Item) Add Bin or Restore From Bin

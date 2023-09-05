@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -46,10 +47,10 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 function ListItem(props: {
-  icon: JSX.Element;
+  icon: ReactNode;
   text: string;
   onClick: () => void;
-  buttonRight?: JSX.Element;
+  buttonRight?: ReactNode;
   pl?: number;
 }) {
   const { pl, text, icon, onClick, buttonRight } = props;

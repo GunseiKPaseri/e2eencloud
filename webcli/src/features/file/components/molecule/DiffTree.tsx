@@ -1,4 +1,5 @@
-import React from 'react';
+import type { ReactNode } from 'react';
+import React, { Fragment } from 'react';
 import Timeline from '@mui/lab/Timeline';
 import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
@@ -18,41 +19,41 @@ import TagButton from '../atom/TagButton';
 export function CreateDiffExpression(params: {
   before: FileInfo;
   after: FileInfo;
-}): JSX.Element {
+}) {
   const { before, after } = params;
-  const result: JSX.Element[] = [];
+  const result: ReactNode[] = [];
   if (before.name !== after.name) {
     result.push(
-      <React.Fragment key='0'>{`ファイル名を"${after.name}"に変更`}</React.Fragment>,
+      <Fragment key='0'>{`ファイル名を"${after.name}"に変更`}</Fragment>,
     );
   }
   if (before.parentId !== after.parentId) {
-    result.push(<React.Fragment key='1'>ディレクトリを移動</React.Fragment>);
+    result.push(<Fragment key='1'>ディレクトリを移動</Fragment>);
   }
   if (after.type === 'diff') {
     if (after.diff.addtag && after.diff.addtag.length > 0) {
       // console.log(after.diff.addtag);
       result.push(
-        <React.Fragment key='2'>
+        <Fragment key='2'>
           {[
             ...after.diff.addtag.map((x) => <TagButton key={x} tag={x} />),
-            <React.Fragment key='_'>タグを追加</React.Fragment>,
+            <Fragment key='_'>タグを追加</Fragment>,
           ]}
-        </React.Fragment>,
+        </Fragment>,
       );
     }
     if (after.diff.deltag && after.diff.deltag.length > 0) {
       result.push(
-        <React.Fragment key='3'>
+        <Fragment key='3'>
           {[
             ...after.diff.deltag.map((x) => <TagButton key={x} tag={x} />),
-            <React.Fragment key='_'>タグを削除</React.Fragment>,
+            <Fragment key='_'>タグを削除</Fragment>,
           ]}
-        </React.Fragment>,
+        </Fragment>,
       );
     }
   }
-  return <>{[...result, <React.Fragment key='4'>しました</React.Fragment>]}</>;
+  return <>{[...result, <Fragment key='4'>しました</Fragment>]}</>;
 }
 
 export function DiffTree() {

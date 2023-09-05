@@ -1,6 +1,7 @@
 {
   "name": "webcli",
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev": "run-p watch:*",
     "watch:ts": "vite",
@@ -8,10 +9,10 @@
     "build": "tsc && vitest run && vite build --emptyOutDir",
     "preview": "vite preview --port 3000",
     "test": "npm run lint & npm run check:prettier & tsc & vitest run",
-    "lint": "eslint ./src/ --ext ts,tsx --ignore-path ./.gitignore --cache --cache-location ./node_modules/.cache/.eslintcache",
+    "lint": "ESLINT_USE_FLAT_CONFIG=true eslint ./src/ --ignore-pattern ./.gitignore",
     "check:prettier": "prettier . --check --ignore-path .gitignore",
     "fix": "npm run fix:lint & npm run fix:prettier",
-    "fix:lint": "eslint ./src/ --fix --ext ts,tsx --ignore-path ./.gitignore --cache --cache-location ./node_modules/.cache/.eslintcache",
+    "fix:lint": "ESLINT_USE_FLAT_CONFIG=true eslint ./src/ --fix --ignore-pattern ./.gitignore",
     "fix:prettier": "prettier . --write --ignore-path .gitignore",
     "analyze": "npm run analyze:buildsize && npm run analyze:coverage",
     "analyze:buildsize": "vite build --mode analyze",
@@ -93,6 +94,7 @@
     "eslint-plugin-react-refresh": "^0.4.3",
     "eslint-plugin-strict-dependencies": "^1.1.0",
     "eslint-plugin-vitest": "^0.2.6",
+    "globals": "^13.21.0",
     "happy-dom": "^10.5.2",
     "npm-check-updates": "^16.10.16",
     "npm-run-all": "^4.1.5",

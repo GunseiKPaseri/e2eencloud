@@ -1,4 +1,4 @@
-import React from 'react';
+import { StrictMode } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Provider as ReduxProvider } from 'react-redux';
@@ -9,7 +9,7 @@ import ThemeWithLocalizeProvider from '~/features/theme/ThemeWithLocalizeProvide
 import { store } from '~/store/store';
 
 const ComposedProvider = composeComponents(
-  React.StrictMode,
+  StrictMode,
   (props) => <ReduxProvider {...props} store={store} />,
   (props) => <Initialize {...props} />,
   (props) => <ThemeWithLocalizeProvider {...props} />,

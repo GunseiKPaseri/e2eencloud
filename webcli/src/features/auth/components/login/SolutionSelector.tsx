@@ -24,6 +24,5 @@ export default function SolutionSelector() {
       return <></>;
     default:
       throw new ExhaustiveError(loginStatus);
-      return <></>;
   }
 }
