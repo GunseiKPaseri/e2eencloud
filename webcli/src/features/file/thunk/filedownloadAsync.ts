@@ -73,7 +73,7 @@ export const filedownloadAsync = createAsyncThunk<
   const local = await expandServerData(fileObj, url);
 
   dispatch(deleteProgress());
-  return { fileId, local, active };
+  return { active, fileId, local };
 });
 
 export const afterFiledownloadAsyncFullfilled: CaseReducer<
@@ -86,8 +86,8 @@ export const afterFiledownloadAsyncFullfilled: CaseReducer<
   assertFileNodeFile(target);
   const nextFileNode = {
     ...target,
-    expansion: target.expansion ?? local.expansion,
     blobURL: local.blobURL,
+    expansion: target.expansion ?? local.expansion,
   };
   if (local.previewURL) nextFileNode.previewURL = local.previewURL;
 
@@ -97,8 +97,8 @@ export const afterFiledownloadAsyncFullfilled: CaseReducer<
 
   if (active) {
     state.activeFile = {
-      link: local.blobURL,
       fileId,
+      link: local.blobURL,
       similarFiles: listUpSimilarFile(nextFileNode, newFileTable),
     };
   }

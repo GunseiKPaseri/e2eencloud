@@ -32,21 +32,21 @@ export const getUserList = async (props: {
     }
   >('/api/users', {
     params: {
-      offset: props.offset,
       limit: props.limit,
-      orderby: props.sortQuery[0]?.field,
+      offset: props.offset,
       order: props.sortQuery[0]?.sort,
+      orderby: props.sortQuery[0]?.field,
       q: JSON.stringify(props.filterQuery),
     },
   });
   return {
-    total_number: result.data.number_of_user,
     items: result.data.users.map((x) => ({
       ...x,
-      max_capacity: Number(x.max_capacity),
       file_usage: Number(x.file_usage),
+      max_capacity: Number(x.max_capacity),
       role: x.role,
     })),
+    total_number: result.data.number_of_user,
   };
 };
 
@@ -60,13 +60,13 @@ export const editUser = async (
 ) => {
   await axiosWithSession.patch(`/api/user/${targetUser.id}`, {
     ...edited,
-    max_capacity: edited.max_capacity?.toString(),
     file_usage: edited.file_usage?.toString(),
+    max_capacity: edited.max_capacity?.toString(),
   });
   return {
     ...targetUser,
     max_capacity:
-      typeof edited.max_capacity === 'undefined'
+      edited.max_capacity === undefined
         ? targetUser.max_capacity
         : edited.max_capacity,
   };

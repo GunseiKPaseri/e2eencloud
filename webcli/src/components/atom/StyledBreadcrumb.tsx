@@ -10,17 +10,17 @@ export const StyledBreadcrumb = styled(Chip)(({ theme }) => {
       ? theme.palette.grey[100]
       : theme.palette.grey[800];
   return {
-    backgroundColor,
-    height: theme.spacing(3),
-    color: theme.palette.text.primary,
-    fontWeight: theme.typography.fontWeightRegular,
+    '&:active': {
+      backgroundColor: emphasize(backgroundColor, 0.12),
+      boxShadow: theme.shadows[1],
+    },
     '&:hover, &:focus': {
       backgroundColor: emphasize(backgroundColor, 0.06),
     },
-    '&:active': {
-      boxShadow: theme.shadows[1],
-      backgroundColor: emphasize(backgroundColor, 0.12),
-    },
+    backgroundColor,
+    color: theme.palette.text.primary,
+    fontWeight: theme.typography.fontWeightRegular,
+    height: theme.spacing(3),
   };
 });
 
@@ -61,12 +61,12 @@ export function StyledBreadcrumbWithMenu(
           id='menu-appbar'
           anchorEl={anchorMenuEl}
           anchorOrigin={{
-            vertical: 'bottom',
             horizontal: 'right',
+            vertical: 'bottom',
           }}
           transformOrigin={{
-            vertical: 'top',
             horizontal: 'right',
+            vertical: 'top',
           }}
           keepMounted
           open={Boolean(anchorMenuEl)}

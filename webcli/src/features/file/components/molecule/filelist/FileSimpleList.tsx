@@ -1,5 +1,4 @@
 import { type MouseEventHandler, useCallback } from 'react';
-import { useDrop, useDrag, DragPreviewImage } from 'react-dnd';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -13,6 +12,7 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import type { Theme } from '@mui/material/styles';
 import type { SystemStyleObject } from '@mui/system/styleFunctionSx';
+import { useDrop, useDrag, DragPreviewImage } from 'react-dnd';
 import { useAppSelector, useAppDispatch } from '~/lib/react-redux';
 import PngIcon from '~/components/atom/PngIcon';
 import { openContextmenu } from '~/features/contextmenu/contextmenuSlice';
@@ -46,7 +46,7 @@ function FileListListFolder({
     dispatch(
       openContextmenu({
         anchor: { left: event.clientX, top: event.clientY },
-        menu: { type: 'filelistitem', target: targetFolder, selected },
+        menu: { selected, target: targetFolder, type: 'filelistitem' },
       }),
     );
   };
@@ -54,7 +54,7 @@ function FileListListFolder({
   const drag = useDrag(() => genUseDragReturn(targetFolder.id))[1];
 
   const [{ canDrop, isOver }, drop] = useDrop(
-    () => genUseDropReturn(targetFolder.id, dispatch),
+    () => genUseDropReturn(dispatch, targetFolder.id),
     [targetFolder.id],
   );
 
@@ -65,9 +65,9 @@ function FileListListFolder({
 
   const customSX = useCallback<(theme: Theme) => SystemStyleObject<Theme>>(
     (theme) => ({
-      boxSizing: 'border-box',
       border: 3,
       borderStyle: 'dashed',
+      boxSizing: 'border-box',
       transitionDuration: '0.2s',
       ...(isOver && canDrop
         ? { borderColor: theme.palette.info.light }
@@ -87,13 +87,13 @@ function FileListListFolder({
       <ListItemAvatar>
         <Badge
           overlap='circular'
-          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+          anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
           invisible={!selected}
           badgeContent={<CheckCircleIcon color='info' />}
         >
           <Badge
             overlap='circular'
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             invisible={!targetFolder.tag.includes('bin')}
             badgeContent={<DeleteIcon />}
           >
@@ -129,7 +129,7 @@ function FileListListFile({
     dispatch(
       openContextmenu({
         anchor: { left: event.clientX, top: event.clientY },
-        menu: { type: 'filelistitem', target: targetFile, selected },
+        menu: { selected, target: targetFile, type: 'filelistitem' },
       }),
     );
   };
@@ -149,13 +149,13 @@ function FileListListFile({
           <ListItemAvatar>
             <Badge
               overlap='circular'
-              anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+              anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
               invisible={!selected}
               badgeContent={<CheckCircleIcon color='info' />}
             >
               <Badge
                 overlap='circular'
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                 invisible={!targetFile.tag.includes('bin')}
                 badgeContent={<DeleteIcon />}
               >
@@ -173,7 +173,7 @@ function FileListListFile({
             primary={
               <SearchHighLight
                 value={targetFile.name}
-                search={mark ? { target: 'name', mark } : undefined}
+                search={mark ? { mark, target: 'name' } : undefined}
               />
             }
           />

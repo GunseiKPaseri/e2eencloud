@@ -32,12 +32,12 @@ export interface ExpansionInfoImage {
 
 const schemaExpansionInfoImage = schemaForType<ExpansionInfoImage>()(
   z.object({
-    type: z.literal('img'),
-    width: z.number(),
-    height: z.number(),
     ahash: z.string(),
     dhash: z.string(),
+    height: z.number(),
     phash: z.string(),
+    type: z.literal('img'),
+    width: z.number(),
   }),
 );
 
@@ -48,19 +48,19 @@ interface FileInfoCommon {
   id: string;
   name: string;
   createdAt: number;
-  version: 202204081414;
+  version: 202_204_081_414;
   parentId: string | null;
   prevId?: string;
 }
 
 const schemaFileInfoCommon = schemaForType<FileInfoCommon>()(
   z.object({
+    createdAt: z.number(),
     id: z.string(),
     name: z.string(),
-    createdAt: z.number(),
-    version: z.literal(202204081414),
     parentId: z.string().nullable().default(null),
     prevId: z.string().optional(),
+    version: z.literal(202_204_081_414),
   }),
 );
 
@@ -79,12 +79,12 @@ export interface FileInfoFile extends FileInfoCommon {
 const schemaFileInfoFile = schemaForType<FileInfoFile>()(
   z
     .object({
-      type: z.literal('file'),
-      sha256: z.string(),
+      expansion: schemaExpansionInfoImage,
       mime: z.string(),
+      sha256: z.string(),
       size: z.number().min(0),
       tag: z.string().array(),
-      expansion: schemaExpansionInfoImage,
+      type: z.literal('file'),
     })
     .and(schemaFileInfoCommon),
 );
@@ -100,8 +100,8 @@ export interface FileInfoFolder extends FileInfoCommon {
 const schemaFileInfoFolder = schemaForType<FileInfoFolder>()(
   z
     .object({
-      type: z.literal('folder'),
       tag: z.string().array(),
+      type: z.literal('folder'),
     })
     .and(schemaFileInfoCommon),
 );
@@ -117,8 +117,8 @@ export interface FileInfoDiffFile extends FileInfoCommon {
 const schemaFileInfoDiffFile = schemaForType<FileInfoDiffFile>()(
   z
     .object({
-      type: z.literal('diff'),
       diff: schemaFileDifference,
+      type: z.literal('diff'),
     })
     .and(schemaFileInfoCommon),
 );

@@ -43,17 +43,17 @@ export default function PasswordChanger() {
   return (
     <Box
       sx={{
-        marginTop: 2,
+        alignItems: 'center',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
+        marginTop: 2,
       }}
     >
       <Typography component='h1' variant='h5'>
         パスワード変更
       </Typography>
       <Stepper
-        sx={{ marginTop: 2, marginBottm: 2 }}
+        sx={{ marginBottm: 2, marginTop: 2 }}
         activeStep={stepState}
         alternativeLabel
       >
@@ -99,7 +99,7 @@ export default function PasswordChanger() {
                 type='button'
                 fullWidth
                 variant='outlined'
-                sx={{ mt: 3, mb: 2 }}
+                sx={{ mb: 2, mt: 3 }}
                 onClick={cancel}
               >
                 戻る
@@ -110,7 +110,7 @@ export default function PasswordChanger() {
                 type='submit'
                 fullWidth
                 variant='contained'
-                sx={{ mt: 3, mb: 2 }}
+                sx={{ mb: 2, mt: 3 }}
                 disabled={password !== confirmPassword}
               >
                 登録
@@ -122,7 +122,7 @@ export default function PasswordChanger() {
             type='button'
             fullWidth
             variant='contained'
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ mb: 2, mt: 3 }}
             disabled={passwordScore < 2}
             onClick={confirm}
           >

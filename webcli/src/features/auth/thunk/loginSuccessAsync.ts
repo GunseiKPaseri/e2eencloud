@@ -55,14 +55,14 @@ export const loginSuccess = createAsyncThunk<UserState, LoginSuccess>(
     try {
       // dispatch(setProgress(progress(3, step, 0)));
       const importKey = await importRSAKey({
-        masterkey: MasterKey,
         encryptedPrivateKeyBase64: result.encryptedRSAPrivateKeyBase64,
         encryptedPrivateKeyIVBase64: result.encryptedRSAPrivateKeyIVBase64,
+        masterkey: MasterKey,
         publicKeyBase64: result.RSAPublicKeyBase64,
       });
       setRSAKey({
-        rsaPublicKey: importKey.publicKey,
         rsaPrivateKey: importKey.privateKey,
+        rsaPublicKey: importKey.publicKey,
       });
     } catch (e) {
       dispatch(deleteProgress());
@@ -94,9 +94,9 @@ export const loginSuccess = createAsyncThunk<UserState, LoginSuccess>(
       }),
     );
     return {
+      MasterKey: [...MasterKeyRaw],
       authority: result.role === 'ADMIN' ? 'ADMIN' : null,
       email: result.email,
-      MasterKey: Array.from(MasterKeyRaw),
       useMultiFactorAuth: result.useMultiFactorAuth,
     };
   },

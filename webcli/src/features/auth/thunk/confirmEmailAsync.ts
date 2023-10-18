@@ -90,15 +90,15 @@ export const confirmEmailAsync = createAsyncThunk<
     const generatedRSAKey = await generateRSAKey(await getAESCTRKey(MasterKey));
 
     const sendData: EmailConfirm = {
-      type: 'ADD_USER',
-      token: usertoken.token,
+      RSAPublicKeyBase64: generatedRSAKey.public_key,
       clientRandomValueBase64: byteArray2base64(ClientRandomValue),
       encryptedMasterKeyBase64: byteArray2base64(EncryptedMasterKey.encrypt),
       encryptedMasterKeyIVBase64: byteArray2base64(EncryptedMasterKey.iv),
-      hashedAuthenticationKeyBase64: byteArray2base64(HashedAuthenticationKey),
       encryptedRSAPrivateKeyBase64: generatedRSAKey.encripted_private_key,
       encryptedRSAPrivateKeyIVBase64: generatedRSAKey.encripted_private_key_iv,
-      RSAPublicKeyBase64: generatedRSAKey.public_key,
+      hashedAuthenticationKeyBase64: byteArray2base64(HashedAuthenticationKey),
+      token: usertoken.token,
+      type: 'ADD_USER',
     };
 
     const result = await axiosWithSession.post<
@@ -124,7 +124,7 @@ export const confirmEmailAsync = createAsyncThunk<
     dispatch(updateUsage(result.data.storage)); // file usage
 
     const loginUser: UserState = {
-      MasterKey: Array.from(MasterKey),
+      MasterKey: [...MasterKey],
       authority: null,
       ...result.data.user,
     };
@@ -132,10 +132,10 @@ export const confirmEmailAsync = createAsyncThunk<
     dispatch(deleteProgress());
     return {
       success: true,
-      user: loginUser,
       token: usertoken.token,
+      user: loginUser,
     };
-  } catch (e) {
+  } catch {
     // console.error(e);
     dispatch(deleteProgress());
     return { success: false, token: usertoken.token };

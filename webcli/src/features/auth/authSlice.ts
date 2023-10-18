@@ -7,7 +7,6 @@ import {
   addTOTPAsync,
   afterAddTOTPAsyncFullfilled,
 } from './thunk/addTOTPAsync';
-import { changePasswordAsync } from './thunk/changePasswordAsync';
 import {
   confirmEmailAsync,
   afterConfirmEmailAsyncFullfilled,
@@ -45,7 +44,6 @@ import {
 } from './thunk/mfacodeLoginAsync';
 import { removeMFACode, afterRemoveMFACode } from './thunk/removeMFACode';
 // Thunk
-import { signupAsync } from './thunk/signupAsync';
 import {
   afterTOTPLoginAsyncFullfilled,
   afterTOTPLoginAsyncPending,
@@ -57,18 +55,8 @@ export const selectMFASolution = createAction<AuthState['loginStatus']['step']>(
   'auth/selectMFASolution',
 );
 
-export { removeMFACode };
-export { signupAsync };
-export { confirmEmailAsync };
-export { addFIDO2Async };
-export { addTOTPAsync };
-export { deleteTOTPAsync };
-export { loginAsync };
-export { logoutAsync };
-export { totpLoginAsync };
-export { changePasswordAsync };
-export { mfaCancelAsync };
-export { mfacodeLoginAsync };
+export { mfaCancelAsync } from './thunk/mfaCancelAsync';
+export { mfacodeLoginAsync } from './thunk/mfacodeLoginAsync';
 
 export interface PostSignUp {
   email: string;
@@ -108,19 +96,16 @@ export interface AuthState {
 }
 
 const initialState: AuthState = {
+  confirmstate: {},
+  loginStatus: { state: null, step: 'EmailAndPass' },
   mfacode: null,
+  signupStatus: null,
   suggestedMfa: [],
   user: null,
-  signupStatus: null,
-  loginStatus: { step: 'EmailAndPass', state: null },
-  confirmstate: {},
 };
 
 // Slice
 export const authSlice = createSlice({
-  name: 'auth',
-  initialState,
-  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(confirmEmailAsync.fulfilled, afterConfirmEmailAsyncFullfilled)
@@ -145,9 +130,23 @@ export const authSlice = createSlice({
       .addCase(mfaCancelAsync.fulfilled, afterMFACancelAsyncFullfilled)
       .addCase(selectMFASolution, (state, action) => {
         // 指定MFA手段に変更する
-        state.loginStatus = { step: action.payload, state: null };
+        state.loginStatus = { state: null, step: action.payload };
       });
   },
+  initialState,
+  name: 'auth',
+  reducers: {},
 });
 
 export default authSlice.reducer;
+
+export { changePasswordAsync } from './thunk/changePasswordAsync';
+export { signupAsync } from './thunk/signupAsync';
+export { removeMFACode } from './thunk/removeMFACode';
+export { confirmEmailAsync } from './thunk/confirmEmailAsync';
+export { addFIDO2Async } from './thunk/addFIDO2Async';
+export { addTOTPAsync } from './thunk/addTOTPAsync';
+export { deleteTOTPAsync } from './thunk/deleteTOTPAsync';
+export { loginAsync } from './thunk/loginAsync';
+export { logoutAsync } from './thunk/logoutAsync';
+export { totpLoginAsync } from './thunk/totpLoginAsync';

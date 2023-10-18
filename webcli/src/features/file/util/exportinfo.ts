@@ -9,6 +9,28 @@ import { ExhaustiveError } from '~/utils/assert';
 
 type ExportFileType = Omit<FileInfoFile, 'type' | 'parentId' | 'prevId'>;
 
+const trimFileInfo = ({
+  createdAt,
+  expansion,
+  id,
+  mime,
+  name,
+  sha256,
+  size,
+  tag,
+  version,
+}: FileInfoFile) => ({
+  createdAt,
+  expansion,
+  id,
+  mime,
+  name,
+  sha256,
+  size,
+  tag,
+  version,
+});
+
 /**
  * filenodeinfo to export file info
  * @param target FileNode
@@ -17,17 +39,7 @@ type ExportFileType = Omit<FileInfoFile, 'type' | 'parentId' | 'prevId'>;
 export const exportFileInfo = (
   target: FileNode<FileInfoFile>,
 ): ExportFileType =>
-  (({ id, name, createdAt, version, sha256, mime, size, tag, expansion }) => ({
-    id,
-    name,
-    createdAt,
-    version,
-    sha256,
-    mime,
-    size,
-    tag,
-    expansion: trimExpansion(expansion),
-  }))(target);
+  trimFileInfo({ ...target, expansion: trimExpansion(target.expansion) });
 
 type ExportFolderType = {
   name: string;
@@ -45,8 +57,6 @@ export const exportFolderInfo = (
   target: FileNode<FileInfoFolder>,
   fileTable: FileTable,
 ): ExportFolderType => ({
-  name: target.name,
-  id: target.id,
   files: target.files
     .map((id) => {
       const t = fileTable[id];
@@ -56,4 +66,6 @@ export const exportFolderInfo = (
       throw new ExhaustiveError(t);
     })
     .filter((x): x is NonNullable<typeof x> => x !== null),
+  id: target.id,
+  name: target.name,
 });

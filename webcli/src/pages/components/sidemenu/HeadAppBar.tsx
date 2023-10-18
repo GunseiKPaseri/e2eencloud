@@ -21,18 +21,18 @@ interface AppBarProps extends MuiAppBarProps {
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== 'open',
 })<AppBarProps>(({ theme, open }) => ({
-  zIndex: theme.zIndex.drawer + 1,
   transition: theme.transitions.create(['width', 'margin'], {
-    easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
+    easing: theme.transitions.easing.sharp,
   }),
+  zIndex: theme.zIndex.drawer + 1,
   ...(open && {
     marginLeft: SIDEBAR_WIDTH,
-    width: `calc(100% - ${SIDEBAR_WIDTH}px)`,
     transition: theme.transitions.create(['width', 'margin'], {
-      easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
+      easing: theme.transitions.easing.sharp,
     }),
+    width: `calc(100% - ${SIDEBAR_WIDTH}px)`,
   }),
 }));
 

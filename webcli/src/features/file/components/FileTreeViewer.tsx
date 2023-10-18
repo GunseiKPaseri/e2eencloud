@@ -1,5 +1,4 @@
 import { type MouseEventHandler, useCallback } from 'react';
-import { useDrop } from 'react-dnd';
 import FolderIcon from '@mui/icons-material/Folder';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
@@ -7,6 +6,7 @@ import TreeView from '@mui/lab/TreeView';
 import Box from '@mui/material/Box';
 import type { Theme } from '@mui/material/styles';
 import type { SystemStyleObject } from '@mui/system/styleFunctionSx';
+import { useDrop } from 'react-dnd';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
 import StyledTreeItem from '~/components/atom/StyledTreeItem';
 import type {
@@ -51,15 +51,15 @@ function FileTreeItemFolder({
   const dispatch = useAppDispatch();
 
   const [{ canDrop, isOver }, drop] = useDrop(
-    () => genUseDropReturn(target.id, dispatch),
+    () => genUseDropReturn(dispatch, target.id),
     [target.id],
   );
 
   const customStyle = useCallback<(theme: Theme) => SystemStyleObject<Theme>>(
     (theme) => ({
-      boxSizing: 'border-box',
       border: 3,
       borderStyle: 'dashed',
+      boxSizing: 'border-box',
       transitionDuration: '0.2s',
       ...(isOver && canDrop
         ? { borderColor: theme.palette.info.light }
@@ -127,7 +127,7 @@ function FileTreeViewer() {
   const dispatch = useAppDispatch();
 
   const onSelectFile = (fileId: string) =>
-    dispatch(filedownloadAsync({ fileId, active: true }));
+    dispatch(filedownloadAsync({ active: true, fileId }));
   const onSelectFolder = (id: string) =>
     dispatch(changeActiveFileGroupDir({ id }));
 

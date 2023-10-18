@@ -38,7 +38,7 @@ function FilePreviewRenamerDialog({
   );
   if (filegroup?.type !== 'dir') return null;
   const handleRename = async () => {
-    await dispatch(createDiffAsync({ targetId: id, newName }));
+    await dispatch(createDiffAsync({ newName, targetId: id }));
     onClose();
   };
 

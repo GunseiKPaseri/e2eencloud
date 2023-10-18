@@ -17,8 +17,8 @@ export const updateUsageAsync = createAsyncThunk<StorageInfo>(
       AxiosResponse<{ usage: string; max_capacity: string }>
     >('/api/my/capacity');
     const result: StorageInfo = {
-      usage: Number(capacity.data.usage),
       capacity: Number(capacity.data.max_capacity),
+      usage: Number(capacity.data.usage),
     };
     return result;
   },

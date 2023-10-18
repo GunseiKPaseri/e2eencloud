@@ -64,8 +64,8 @@ export const addFIDO2Async = createAsyncThunk<{ mfacode: string[] | null }>(
         rawId instanceof ArrayBuffer
           ? byteArray2base64(new Uint8Array(rawId))
           : undefined,
-      type: cred.type,
       response: fixResponse,
+      type: cred.type,
     };
     try {
       const result = await axiosWithSession.post<{ mfacode: string[] | null }>(
@@ -79,7 +79,7 @@ export const addFIDO2Async = createAsyncThunk<{ mfacode: string[] | null }>(
         }),
       );
       return result.data;
-    } catch (_e) {
+    } catch {
       dispatch(
         enqueueSnackbar({
           message: 'エラーが発生しました',

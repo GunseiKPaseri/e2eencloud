@@ -47,7 +47,7 @@ export default function PutPassword(props: PutPasswordProps) {
         type='submit'
         fullWidth
         variant='contained'
-        sx={{ mt: 3, mb: 2 }}
+        sx={{ mb: 2, mt: 3 }}
         disabled={passwordScore < 2}
       >
         次へ

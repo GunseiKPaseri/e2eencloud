@@ -1,6 +1,6 @@
-import { useTranslation } from 'react-i18next';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { type SelectChangeEvent } from '@mui/material/Select';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
 import { changeLanguage } from './languageSlice';
 import { langSet } from './languageState';

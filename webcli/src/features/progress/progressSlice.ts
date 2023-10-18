@@ -11,9 +11,12 @@ const initialState: ProgressState = {
 };
 
 export const progressSlice = createSlice({
-  name: 'progress',
   initialState,
+  name: 'progress',
   reducers: {
+    deleteProgress: (state: WritableDraft<ProgressState>) => {
+      state.progress = null;
+    },
     setProgress: (
       state: WritableDraft<ProgressState>,
       action: PayloadAction<{ progress?: number; progressBuffer?: number }>,
@@ -30,10 +33,7 @@ export const progressSlice = createSlice({
         ? state.progress.buffer
         : 0;
 
-      state.progress = { real, buffer };
-    },
-    deleteProgress: (state: WritableDraft<ProgressState>) => {
-      state.progress = null;
+      state.progress = { buffer, real };
     },
   },
 });
@@ -51,7 +51,7 @@ export const progress = (
     (numberator +
       (typeof subprogress === 'number'
         ? subprogress
-        : typeof subprogress === 'undefined'
+        : subprogress === undefined
         ? 0
         : subprogress.loaded / (subprogress.total ?? subprogress.loaded))) /
     denominator,

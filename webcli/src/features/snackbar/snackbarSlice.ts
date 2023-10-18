@@ -23,7 +23,7 @@ export const enqueueSnackbar = createAction<
 >('snackbar/enqueue', (props) => {
   const payload = {
     message: props.message,
-    options: { ...props.options, key: new Date().getTime() + Math.random() },
+    options: { ...props.options, key: Date.now() + Math.random() },
   };
   return { payload };
 });
@@ -31,15 +31,12 @@ export const enqueueSnackbar = createAction<
 export const closeSnackbar = createAction<
   (props: NotificationOption) => { payload: NotificationOptionWithKey }
 >('snackbar/close', (props) => ({
-  payload: { ...props, key: new Date().getTime() + Math.random() },
+  payload: { ...props, key: Date.now() + Math.random() },
 }));
 
 export const removeSnackbar = createAction<SnackbarKey>('snackbar/remove');
 
 const snackbarSlice = createSlice({
-  name: 'snackbar',
-  initialState,
-  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(enqueueSnackbar, (state, { payload }) => {
@@ -62,6 +59,9 @@ const snackbarSlice = createSlice({
         );
       });
   },
+  initialState,
+  name: 'snackbar',
+  reducers: {},
 });
 
 export default snackbarSlice.reducer;

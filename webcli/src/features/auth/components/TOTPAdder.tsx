@@ -19,10 +19,10 @@ const genQR = (totp: OTPAuth.TOTP) =>
 
 const genTOTP = (email: string) =>
   new OTPAuth.TOTP({
-    issuer: 'E2EEncloud',
-    label: `${email}`,
     algorithm: 'SHA1',
     digits: 6,
+    issuer: 'E2EEncloud',
+    label: `${email}`,
     period: 30,
     secret: new OTPAuth.Secret(),
   });

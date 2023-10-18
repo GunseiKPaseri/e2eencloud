@@ -42,47 +42,43 @@ export default function MenuFileListItem(
 
   const { target } = menu;
   const isInDir =
-    menu.isInDir !== false
-      ? activeFileGroup && activeFileGroup.type === 'dir'
-      : false;
+    menu.isInDir === false
+      ? false
+      : activeFileGroup && activeFileGroup.type === 'dir';
 
   const result: ReactNode[] = [];
 
   if (menu.selected && activeFileGroup) {
     // (All Item) Add Bin or Restore From Bin
     const handleMenuAllAddBin = genHandleContextMenu(() => {
-      if (activeFileGroup) {
-        activeFileGroup.selecting.forEach((id) => {
-          const bintarget = fileState.fileTable[id];
-          // console.log(id, bintarget);
-          if (
-            (bintarget.type === 'file' || bintarget.type === 'folder') &&
-            !bintarget.tag.includes('bin')
-          ) {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            dispatch(
-              createDiffAsync({ targetId: id, newTags: { addtag: ['bin'] } }),
-            );
-          }
-        });
-      }
+      activeFileGroup.selecting.forEach((id) => {
+        const bintarget = fileState.fileTable[id];
+        // console.log(id, bintarget);
+        if (
+          (bintarget.type === 'file' || bintarget.type === 'folder') &&
+          !bintarget.tag.includes('bin')
+        ) {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          dispatch(
+            createDiffAsync({ newTags: { addtag: ['bin'] }, targetId: id }),
+          );
+        }
+      });
     });
     const handleMenuAllRestoreFromBin = genHandleContextMenu(() => {
-      if (activeFileGroup) {
-        activeFileGroup.selecting.forEach((id) => {
-          const bintarget = fileState.fileTable[id];
-          // console.log(id, bintarget);
-          if (
-            (bintarget.type === 'file' || bintarget.type === 'folder') &&
-            bintarget.tag.includes('bin')
-          ) {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            dispatch(
-              createDiffAsync({ targetId: id, newTags: { deltag: ['bin'] } }),
-            );
-          }
-        });
-      }
+      activeFileGroup.selecting.forEach((id) => {
+        const bintarget = fileState.fileTable[id];
+        // console.log(id, bintarget);
+        if (
+          (bintarget.type === 'file' || bintarget.type === 'folder') &&
+          bintarget.tag.includes('bin')
+        ) {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          dispatch(
+            createDiffAsync({ newTags: { deltag: ['bin'] }, targetId: id }),
+          );
+        }
+      });
     });
     const [haveBinItem, haveNotBinItem] = activeFileGroup.selecting.reduce(
       (acc, value) => {
@@ -133,7 +129,7 @@ export default function MenuFileListItem(
 
     const handleMenuDecrypto = genHandleContextMenu(() => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      dispatch(filedownloadAsync({ fileId: target.id, active: true }));
+      dispatch(filedownloadAsync({ active: true, fileId: target.id }));
     });
     if (target.blobURL)
       result.push(
@@ -154,10 +150,10 @@ export default function MenuFileListItem(
       );
   } else if (target.type === 'folder') {
     const handleDirDownload = genHandleContextMenu(async () => {
-      const zipblob = genZipFile(target, fileState.fileTable);
+      const zipblob = genZipFile(target, fileState.fileTable, dispatch);
       const metadataURI = URL.createObjectURL(await zipblob);
 
-      downloadLocal({ uri: metadataURI, fileName: `${target.name}.zip` });
+      downloadLocal({ fileName: `${target.name}.zip`, uri: metadataURI });
 
       URL.revokeObjectURL(metadataURI);
     });
@@ -172,15 +168,15 @@ export default function MenuFileListItem(
   const handleMenuAddBin = genHandleContextMenu(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     dispatch(
-      createDiffAsync({ targetId: target.id, newTags: [...target.tag, 'bin'] }),
+      createDiffAsync({ newTags: [...target.tag, 'bin'], targetId: target.id }),
     );
   });
   const handleMenuRestoreFromBin = genHandleContextMenu(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     dispatch(
       createDiffAsync({
-        targetId: target.id,
         newTags: target.tag.filter((x) => x !== 'bin'),
+        targetId: target.id,
       }),
     );
   });
@@ -213,7 +209,7 @@ export default function MenuFileListItem(
       }),
     );
 
-    downloadLocal({ uri: metadataURI, fileName: `${target.name}.meta.json` });
+    downloadLocal({ fileName: `${target.name}.meta.json`, uri: metadataURI });
 
     URL.revokeObjectURL(metadataURI);
   });

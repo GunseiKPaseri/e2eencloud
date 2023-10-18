@@ -27,7 +27,7 @@ export default function UseCoupon() {
           couponid,
         },
       );
-      if (posted.status !== 204) throw new Error('');
+      if (posted.status !== 204) throw new Error('Failure use Coupon');
       await dispatch(updateUsageAsync());
       dispatch(
         enqueueSnackbar({
@@ -36,7 +36,7 @@ export default function UseCoupon() {
         }),
       );
       setCouponId('');
-    } catch (_) {
+    } catch {
       dispatch(
         enqueueSnackbar({
           message: '無効なチケットです',

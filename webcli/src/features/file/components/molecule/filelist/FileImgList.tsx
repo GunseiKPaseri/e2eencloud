@@ -43,7 +43,7 @@ function FileImgList({
                 dispatch(
                   openContextmenu({
                     anchor: { left: event.clientX, top: event.clientY },
-                    menu: { type: 'filelistitem', target },
+                    menu: { target, type: 'filelistitem' },
                   }),
                 );
               }}

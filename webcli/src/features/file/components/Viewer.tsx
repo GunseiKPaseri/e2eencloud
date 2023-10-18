@@ -32,9 +32,9 @@ function Viewer() {
       <ImageList
         rowHeight={164}
         sx={{
+          gridAutoColumns: 'minmax(160px, 1fr)',
           gridAutoFlow: 'column',
           gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr)) !important',
-          gridAutoColumns: 'minmax(160px, 1fr)',
         }}
       >
         {activeFile.similarFiles.map((x) => {
@@ -45,7 +45,7 @@ function Viewer() {
             <ImageListItem
               key={x}
               onDoubleClick={() =>
-                dispatch(filedownloadAsync({ fileId: target.id, active: true }))
+                dispatch(filedownloadAsync({ active: true, fileId: target.id }))
               }
               onContextMenu={(event) => {
                 event.preventDefault();
@@ -53,7 +53,7 @@ function Viewer() {
                 dispatch(
                   openContextmenu({
                     anchor: { left: event.clientX, top: event.clientY },
-                    menu: { type: 'filelistitem', target, isInDir: false },
+                    menu: { isInDir: false, target, type: 'filelistitem' },
                   }),
                 );
               }}

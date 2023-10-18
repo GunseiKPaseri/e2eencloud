@@ -3,14 +3,15 @@ import type { SearchQuerySetForRedux } from '../../../util/search.type';
 
 function QueryKeyWordLabel({ querySet }: { querySet: SearchQuerySetForRedux }) {
   switch (querySet.type) {
-    case 'dir':
+    case 'dir': {
       return (
         <>
           ファイルID：<em>{querySet.id}</em>
         </>
       );
+    }
     case 'mime':
-    case 'name':
+    case 'name': {
       return (
         <>
           {querySet.type === 'mime' ? 'MIMEタイプ' : 'ファイル名'}：
@@ -34,13 +35,15 @@ function QueryKeyWordLabel({ querySet }: { querySet: SearchQuerySetForRedux }) {
           )}
         </>
       );
-    case 'tag':
+    }
+    case 'tag': {
       return (
         <>
           タグ：<em>{querySet.value}</em>
         </>
       );
-    case 'size':
+    }
+    case 'size': {
       return (
         <>
           ファイルサイズ：
@@ -50,6 +53,7 @@ function QueryKeyWordLabel({ querySet }: { querySet: SearchQuerySetForRedux }) {
           </em>
         </>
       );
+    }
   }
 }
 

@@ -1,10 +1,10 @@
 import React, { useId, useState } from 'react';
-import { Link } from 'react-router-dom';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
 import { logoutAsync, type AuthState } from '~/features/auth/authSlice';
 
@@ -46,38 +46,38 @@ export default function UserIcon() {
         id={menuAppberId}
         anchorEl={anchorMenuEl}
         anchorOrigin={{
-          vertical: 'bottom',
           horizontal: 'right',
+          vertical: 'bottom',
         }}
         transformOrigin={{
-          vertical: 'top',
           horizontal: 'right',
+          vertical: 'top',
         }}
         slotProps={{
           paper: {
             elevation: 0,
             sx: {
-              overflow: 'visible',
-              filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-              mt: 1.5,
               '& .MuiAvatar-root': {
-                width: 32,
                 height: 32,
                 ml: -0.5,
                 mr: 1,
+                width: 32,
               },
               '&:before': {
+                bgcolor: 'background.paper',
                 content: '""',
                 display: 'block',
-                position: 'absolute',
-                top: 0,
-                right: 14,
-                width: 10,
                 height: 10,
-                bgcolor: 'background.paper',
+                position: 'absolute',
+                right: 14,
+                top: 0,
                 transform: 'translateY(-50%) rotate(45deg)',
+                width: 10,
                 zIndex: 0,
               },
+              filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+              mt: 1.5,
+              overflow: 'visible',
             },
           },
         }}

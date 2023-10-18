@@ -33,11 +33,11 @@ export const afterChangeActiveFileGroupDir: CaseReducer<
     throw new Error('指定オブジェクトはactiveDirになれません');
   const parents = getFileParentsList(firstId, state.fileTable);
   state.activeFileGroup = {
-    type: 'dir',
-    folderId: firstId,
     files: activeDir.files,
-    selecting: [],
+    folderId: firstId,
     parents,
+    selecting: [],
+    type: 'dir',
   };
 };
 
@@ -54,10 +54,10 @@ export const afterChangeActiveFileGroupTag: CaseReducer<
 > = (state, action) => {
   // 指定タグのディレクトリをactiveにする
   state.activeFileGroup = {
-    type: 'tag',
     files: state.tagTree[action.payload.tag] ?? [],
     selecting: [],
     tagName: action.payload.tag,
+    type: 'tag',
   };
 };
 
@@ -97,9 +97,9 @@ export const afterChangeActiveFileGroupSearch: CaseReducer<
   // 何も入力されていなかったらディレクトリに復元
   if (query.term.length === 0) {
     state.activeFileGroup =
-      state.activeFileGroup?.type !== 'search'
-        ? state.activeFileGroup
-        : state.activeFileGroup.preGroup;
+      state.activeFileGroup?.type === 'search'
+        ? state.activeFileGroup.preGroup
+        : state.activeFileGroup;
     return;
   }
 
@@ -111,18 +111,18 @@ export const afterChangeActiveFileGroupSearch: CaseReducer<
       : state.activeFileGroup.exfiles;
 
   const preGroup =
-    state.activeFileGroup?.type !== 'search'
-      ? state.activeFileGroup
-      : state.activeFileGroup.preGroup;
+    state.activeFileGroup?.type === 'search'
+      ? state.activeFileGroup.preGroup
+      : state.activeFileGroup;
   state.activeFileGroup = {
-    type: 'search',
-    files: exfiles.map((x) => x[0]),
-    selecting: state.activeFileGroup?.selecting ?? [],
     exfiles,
-    query,
-    queryString,
-    queryHasError: hasSearchQueryHasError(query),
+    files: exfiles.map((x) => x[0]),
     preGroup,
+    query,
+    queryHasError: hasSearchQueryHasError(query),
+    queryString,
+    selecting: state.activeFileGroup?.selecting ?? [],
+    type: 'search',
   };
 };
 

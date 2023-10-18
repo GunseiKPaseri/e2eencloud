@@ -12,9 +12,9 @@ import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
 
 const variantComponent = {
-  standard: Input,
   filled: FilledInput,
   outlined: OutlinedInput,
+  standard: Input,
 };
 
 export default function PasswordField({

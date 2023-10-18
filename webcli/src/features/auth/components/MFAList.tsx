@@ -52,16 +52,16 @@ const getMFAList = async (props: {
     }
   >('/api/my/mfa', {
     params: {
-      offset: props.offset,
       limit: props.limit,
-      orderby: props.sortQuery[0]?.field,
+      offset: props.offset,
       order: props.sortQuery[0]?.sort,
+      orderby: props.sortQuery[0]?.field,
       q: JSON.stringify(props.filterQuery),
     },
   });
   return {
-    total_number: result.data.number_of_mfa,
     items: result.data.mfa,
+    total_number: result.data.number_of_mfa,
   };
 };
 
@@ -80,7 +80,7 @@ const editMFA = async (
 };
 
 const deleteMFA = async (id: string) => {
-  const result = await axiosWithSession.delete<
+  return await axiosWithSession.delete<
     Record<string, never>,
     AxiosResponse<GetMFAListJSONRow>,
     {
@@ -90,7 +90,6 @@ const deleteMFA = async (id: string) => {
       order?: GridSortItem['sort'];
     }
   >(`/api/my/mfa/${id}`);
-  return result;
 };
 
 const computeMutation: ComputeMutation<MFADataGridRowModel> = ({
@@ -165,12 +164,12 @@ function MFAList() {
             type: 'singleSelect',
             valueOptions: ['TOTP', 'FIDO2', 'CODE'],
           },
-          { field: 'name', minWidth: 300, editable: true },
+          { editable: true, field: 'name', minWidth: 300 },
           {
+            editable: true,
             field: 'available',
             headerName: '有効',
             type: 'boolean',
-            editable: true,
           },
         ]}
         parentHeight={400}

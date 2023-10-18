@@ -11,7 +11,7 @@ const checksumFn = (payload: Uint8Array) => sha256(sha256(payload));
 export const bs58CheckEncode = (payload: Uint8Array) => {
   const checksum = checksumFn(payload).slice(0, 4);
   return bs58.encode(
-    new Uint8Array([...Array.from(payload), ...Array.from(checksum)]),
+    new Uint8Array([...payload, ...checksum]),
   );
 };
 

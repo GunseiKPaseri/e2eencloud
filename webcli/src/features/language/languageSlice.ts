@@ -14,8 +14,13 @@ export const initI18NAsync = createAsyncThunk<{ language: string }>(
 );
 
 export const languageSlice = createSlice({
-  name: 'language',
+  extraReducers: (builder) => {
+    builder.addCase(initI18NAsync.fulfilled, (state: LanguageState, action) => {
+      state.language = action.payload.language as LanguageState['language'];
+    });
+  },
   initialState,
+  name: 'language',
   reducers: {
     changeLanguage: (
       state: WritableDraft<LanguageState>,
@@ -25,11 +30,6 @@ export const languageSlice = createSlice({
       i18n.changeLanguage(action.payload);
       state.language = action.payload;
     },
-  },
-  extraReducers: (builder) => {
-    builder.addCase(initI18NAsync.fulfilled, (state: LanguageState, action) => {
-      state.language = action.payload.language as LanguageState['language'];
-    });
   },
 });
 

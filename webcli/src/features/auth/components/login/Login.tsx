@@ -1,5 +1,3 @@
-import { useTranslation } from 'react-i18next';
-import { Link as RouterLink } from 'react-router-dom';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -7,6 +5,8 @@ import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
+import { Link as RouterLink } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
 import {
   type AuthState,
@@ -59,19 +59,21 @@ export default function Login() {
   return (
     <Box
       sx={{
-        marginTop: 8,
+        alignItems: 'center',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
+        marginTop: 8,
       }}
     >
-      <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+      <Avatar sx={{ bgcolor: 'secondary.main', m: 1 }}>
         <LockOutlinedIcon />
       </Avatar>
       <Typography component='h1' variant='h5'>
         {t('auth.login', 'ログイン')}
       </Typography>
-      {user !== null ? (
+      {user === null ? (
+        <></>
+      ) : (
         <>
           <Typography component='p'>
             {t('auth.youalreadyloggined', {
@@ -83,8 +85,6 @@ export default function Login() {
             {t('auth.logout', 'ログアウト')}
           </Button>
         </>
-      ) : (
-        <></>
       )}
       <SolutionSelector />
       <OtherStepGuide />

@@ -34,10 +34,10 @@ const searchNormalize = (before: string) =>
   before
     .normalize('NFKC') // Unicode normalize
     .toLowerCase() // UpperCase → LowerCase
-    .replace(/[\u30a1-\u30f6]/g, (match) => {
+    .replaceAll(/[\u30A1-\u30F6]/g, (match) => {
       // KATAKANA(ア) → HIRAGANA(あ)
-      const chr = match.charCodeAt(0) - 0x60;
-      return String.fromCharCode(chr);
+      const chr = (match.codePointAt(0) ?? 0) - 0x60;
+      return String.fromCodePoint(chr);
     });
 
 const strtest = (
@@ -56,13 +56,13 @@ const strtest = (
       case 'in': {
         // include
         const p = target.normalize('NFC').indexOf(word.normalize('NFC'));
-        return p !== -1 ? [p, p + word.length] : null;
+        return p === -1 ? null : [p, p + word.length];
       }
-      case 'inlike':
+      //case 'inlike':
       default: {
         // include like
         const q = searchNormalize(target).indexOf(searchNormalize(word));
-        return q !== -1 ? [q, q + word.length] : null;
+        return q === -1 ? null : [q, q + word.length];
       }
     }
   }
@@ -76,19 +76,25 @@ const numtest = (
   operator: NumberSearchType,
 ): boolean => {
   switch (operator) {
-    case '>':
+    case '>': {
       return target > value;
-    case '<':
+    }
+    case '<': {
       return target < value;
-    case '>=':
+    }
+    case '>=': {
       return target >= value;
-    case '<=':
+    }
+    case '<=': {
       return target <= value;
-    case '==':
+    }
+    case '==': {
       return target === value;
-    default:
+    }
+    default: {
       // Comprehensiveness check
       throw new ExhaustiveError(operator);
+    }
   }
 };
 
@@ -110,9 +116,10 @@ export const searchTest = (
     const marker: Highlight[] = [];
     const isOK = orterm.term.every((andterm) => {
       switch (andterm.type) {
-        case 'tag':
+        case 'tag': {
           return target.tag.includes(andterm.value);
-        case 'dir':
+        }
+        case 'dir': {
           if (andterm.searchSubDir) {
             let t: string | null = target.id;
             let isSubDir = false;
@@ -127,8 +134,10 @@ export const searchTest = (
             return isSubDir;
           }
           return target.prevId === andterm.id;
-        case 'size':
+        }
+        case 'size': {
           return numtest(target[andterm.type], andterm.value, andterm.operator);
+        }
         case 'name':
         case 'mime': {
           const mk = strtest(
@@ -141,9 +150,10 @@ export const searchTest = (
           }
           return !!mk;
         }
-        default:
+        default: {
           // Comprehensiveness check
           throw new ExhaustiveError(andterm);
+        }
       }
     });
     if (isOK) allMarker = [...allMarker, ...marker];
@@ -157,8 +167,8 @@ export const searchTest = (
 const compareString = (a: string, b: string) => (a > b ? 1 : a < b ? -1 : 0);
 const compareArray = <T>(a: T[], b: T[], compareFn: (a: T, b: T) => number) => {
   if (a.length !== b.length) return a.length - b.length;
-  for (let i = 0; i < a.length; i++) {
-    const c = compareFn(a[i], b[i]);
+  for (const [i, element] of a.entries()) {
+    const c = compareFn(element, b[i]);
     if (c !== 0) return c;
   }
   return 0;
@@ -186,17 +196,20 @@ const compareTerm = (
 ) => {
   if (a.type !== b.type) return compareString(a.type, b.type);
   switch (a.type) {
-    case 'tag':
+    case 'tag': {
       assertString(b.type, 'tag');
       return compareString(a.value, b.value);
-    case 'dir':
+    }
+    case 'dir': {
       assertString(b.type, 'dir');
       return compareString(a.dirid, b.dirid);
-    case 'size':
+    }
+    case 'size': {
       assertString(b.type, 'size');
-      return a.operator !== b.operator
-        ? compareString(a.operator, b.operator)
-        : a.value - b.value;
+      return a.operator === b.operator
+        ? a.value - b.value
+        : compareString(a.operator, b.operator);
+    }
     case 'name': {
       assertString(b.type, 'name');
       return compareStringQuery(a, b);
@@ -205,9 +218,10 @@ const compareTerm = (
       assertString(b.type, 'mime');
       return compareStringQuery(a, b);
     }
-    default:
+    default: {
       // Comprehensiveness check
       throw new ExhaustiveError(a);
+    }
   }
 };
 
@@ -229,7 +243,7 @@ export const isRegExpText = (str: string) => {
   try {
     const _test = new RegExp(str);
     return true;
-  } catch (_) {
+  } catch {
     return false;
   }
 };
@@ -248,7 +262,7 @@ const genStrToken = (
     plainStr.endsWith('"') &&
     plainStr.length > 2
   ) {
-    return { type, word: plainStr.slice(1, -1), searchType: 'in', id: '' };
+    return { id: '', searchType: 'in', type, word: plainStr.slice(1, -1) };
   }
   if (
     plainStr.startsWith('/') &&
@@ -256,12 +270,12 @@ const genStrToken = (
     plainStr.length > 2
   ) {
     try {
-      return { type, word: new RegExp(plainStr.slice(1, -1)), id: '' };
-    } catch (e) {
-      return { type, word: plainStr, error: true, id: '' };
+      return { id: '', type, word: new RegExp(plainStr.slice(1, -1)) };
+    } catch {
+      return { error: true, id: '', type, word: plainStr };
     }
   }
-  return { type, word: plainStr, id: '' };
+  return { id: '', type, word: plainStr };
 };
 
 /**
@@ -277,17 +291,15 @@ export const exchangeSearchQueryForRedux = (
     term: query.term.map((x) => ({
       ...x,
       term: x.term.map((set): SearchQuerySetForRedux => {
-        if (set.type === 'name' || set.type === 'mime') {
-          return {
-            ...set,
-            word:
-              typeof set.word === 'string' || !(set.word instanceof RegExp)
-                ? set.word
-                : { type: 'RegExp', word: set.word.toString().slice(1, -1) },
-          };
-        } else {
-          return set as SearchQuerySetPrimitiveOnly;
-        }
+        return set.type === 'name' || set.type === 'mime'
+          ? {
+              ...set,
+              word:
+                typeof set.word === 'string' || !(set.word instanceof RegExp)
+                  ? set.word
+                  : { type: 'RegExp', word: set.word.toString().slice(1, -1) },
+            }
+          : (set as SearchQuerySetPrimitiveOnly);
       }),
     })),
   };
@@ -306,17 +318,15 @@ export const exchangeSearchQuery = (
     term: query.term.map((x) => ({
       ...x,
       term: x.term.map((set): SearchQuerySet => {
-        if (set.type === 'name' || set.type === 'mime') {
-          return {
-            ...set,
-            word:
-              typeof set.word === 'string'
-                ? set.word
-                : new RegExp(set.word.word),
-          };
-        } else {
-          return set as SearchQuerySetPrimitiveOnly;
-        }
+        return set.type === 'name' || set.type === 'mime'
+          ? {
+              ...set,
+              word:
+                typeof set.word === 'string'
+                  ? set.word
+                  : new RegExp(set.word.word),
+            }
+          : (set as SearchQuerySetPrimitiveOnly);
       }),
     })),
   };
@@ -404,7 +414,7 @@ const searchQueryStringToString = (
     if (input instanceof RegExp) return input.toString();
     return `/${input.word}/`;
   }
-  if (input.indexOf(' ') !== -1) return `"${input}"`;
+  if (input.includes(' ')) return `"${input}"`;
   return input;
 };
 
@@ -412,23 +422,27 @@ const searchQuerySetToString = (
   set: (SearchQuery | SearchQueryForRedux)['term'][number]['term'][number],
 ) => {
   switch (set.type) {
-    case 'tag':
+    case 'tag': {
       return `tag: ${searchQueryStringToString(set.value)}`;
-    case 'dir':
+    }
+    case 'dir': {
       // NO
       return '';
-    case 'size':
-      return `${set.type}: ${set.operator === '==' ? '' : `${set.operator} `}${
-        set.value
-      }`;
+    }
+    case 'size': {
+      const operator = set.operator === '==' ? '' : `${set.operator} `;
+      return `${set.type}: ${operator}${set.value}`;
+    }
     case 'name':
-    case 'mime':
+    case 'mime': {
       return `${
-        set.type !== 'name' ? `${set.type}: ` : ''
+        set.type === 'name' ? '' : `${set.type}: `
       }${searchQueryStringToString(set.word)}`;
-    default:
+    }
+    default: {
       // Comprehensiveness check
       return new ExhaustiveError(set);
+    }
   }
 };
 
@@ -439,7 +453,7 @@ export const searchQueryBuilder = (
     .map((orTerm) =>
       orTerm.term.map((andTerm) => searchQuerySetToString(andTerm)).join(' '),
     )
-    .filter((orTerm) => orTerm.length !== 0)
+    .filter((orTerm) => orTerm.length > 0)
     .join(' OR ');
 
 /**
@@ -510,7 +524,7 @@ export const searchQueryNormalizer = (
 ): SearchQueryForRedux => {
   const queryForRedux = exchangeSearchQueryForRedux(query);
   const andTerms = queryForRedux.term
-    .filter((andTerm) => andTerm.term.length !== 0)
+    .filter((andTerm) => andTerm.term.length > 0)
     .map((andTerm) => {
       const validTerm = new Set<string>();
       const flaggedTerm: SearchQueryForRedux['term'][number]['term'] = [];
@@ -564,7 +578,7 @@ export const searchTermById = <T extends { id: string }>(
   queryItem: { term: T[] },
   id: UniqueIdentifier,
 ): T | undefined => {
-  return queryItem.term.filter((item) => item.id === id)[0];
+  return queryItem.term.find((item) => item.id === id);
 };
 export const getTermById = (
   searchQueryItem: SearchQueryForRedux,
@@ -572,7 +586,7 @@ export const getTermById = (
 ): { id: string; term: SearchQuerySetForRedux } | undefined => {
   const t = searchQueryItem.term
     .map((x) => ({ id: x.id, terms: x.term.filter((x) => x.id === termId) }))
-    .filter((x) => x.terms.length !== 0);
+    .filter((x) => x.terms.length > 0);
   return t.length > 0 && t[0].terms.length > 0
     ? { id: t[0].id, term: t[0].terms[0] }
     : undefined;
@@ -592,7 +606,7 @@ export const searchTerm = (
   searchQueryItem: SearchQueryForRedux,
   termId: UniqueIdentifier,
 ): SearchQueryAndTermForRedux | undefined => {
-  return searchQueryItem.term.filter((andTerm) => hasById(andTerm, termId))[0];
+  return searchQueryItem.term.find((andTerm) => hasById(andTerm, termId));
 };
 
 type SearchQueryToken = SearchQuerySet | { type: 'OR' } | null;
@@ -634,14 +648,14 @@ export class SearchQueryParser {
     // eslint-disable-next-line no-cond-assign
     while ((token = this.#nextToken())) {
       if (token.type === 'OR') {
-        if (andterms.length > 0) orterms.push({ term: andterms, id: '' });
+        if (andterms.length > 0) orterms.push({ id: '', term: andterms });
         andterms = [];
       } else {
         andterms.push(token);
       }
     }
-    if (andterms.length > 0) orterms.push({ term: andterms, id: '' });
-    return { term: orterms, id: '' };
+    if (andterms.length > 0) orterms.push({ id: '', term: andterms });
+    return { id: '', term: orterms };
   }
 
   /**
@@ -684,7 +698,7 @@ export class SearchQueryParser {
       // normal
       while (
         this.#currentPoint < this.#querySize &&
-        /[^\s]/.test(this.#queryString[this.#currentPoint])
+        /\S/.test(this.#queryString[this.#currentPoint])
       ) {
         t += this.#queryString[this.#currentPoint];
         this.#currentPoint += 1;
@@ -702,7 +716,7 @@ export class SearchQueryParser {
       this.#currentPoint < this.#querySize &&
       /\d/.test(this.#queryString[this.#currentPoint])
     ) {
-      n = n * 10 + parseInt(this.#queryString[this.#currentPoint], 10);
+      n = n * 10 + Number.parseInt(this.#queryString[this.#currentPoint], 10);
       this.#currentPoint += 1;
     }
     return n;
@@ -749,8 +763,8 @@ export class SearchQueryParser {
       this.#skipSpace();
       const value = this.#word();
       if (value.startsWith('"') && value.endsWith('"') && value.length > 2)
-        return { type: 'tag', value: value.slice(1, -1), id: '' };
-      return { type: 'tag', value, id: '' };
+        return { id: '', type: 'tag', value: value.slice(1, -1) };
+      return { id: '', type: 'tag', value };
     }
     const next5 = this.#queryString
       .slice(this.#currentPoint, this.#currentPoint + 5)
@@ -768,7 +782,7 @@ export class SearchQueryParser {
       const operator = this.#operator() ?? '==';
       this.#skipSpace();
       const value = this.#number();
-      return { type: 'size', value, operator, id: '' };
+      return { id: '', operator, type: 'size', value };
     }
     const value = this.#word();
     if (searchNormalize(value) === 'or') {

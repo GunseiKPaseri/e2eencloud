@@ -97,8 +97,8 @@ export const fileuploadAsync = createAsyncThunk<
   await dispatch(updateUsageAsync());
 
   return {
-    uploaded: loadedfile.flatMap((x) => (x !== null ? [x] : [])),
     parentId,
+    uploaded: loadedfile.flatMap((x) => (x === null ? [] : [x])),
   };
 });
 
@@ -118,15 +118,15 @@ export const afterFileuploadAsyncFullfilled: CaseReducer<
         const { blobURL, previewURL, expansion } = item.local;
         const fileObj: FileNode<FileInfo> = {
           ...fileInfo,
+          blobURL,
           expansion,
           history: [fileInfo.id],
           origin: {
+            encryptedFileIVBin,
             fileInfo,
             fileKeyBin,
-            encryptedFileIVBin,
             originalVersion,
           },
-          blobURL,
           previewURL,
         };
         return [fileInfo.id, fileObj];
@@ -143,7 +143,7 @@ export const afterFileuploadAsyncFullfilled: CaseReducer<
   if (
     state.activeFileGroup &&
     state.activeFileGroup.type === 'dir' &&
-    state.activeFileGroup.parents[state.activeFileGroup.parents.length - 1] ===
+    state.activeFileGroup.parents.at(-1) ===
       parentId
   ) {
     state.activeFileGroup = {

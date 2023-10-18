@@ -11,18 +11,24 @@ export default function SolutionSelector() {
     (state) => state.auth.loginStatus,
   );
   switch (loginStatus.step) {
-    case 'EmailAndPass':
+    case 'EmailAndPass': {
       return <EmailAndPassSender state={loginStatus.state} />;
-    case 'TOTP':
+    }
+    case 'TOTP': {
       return <TOTPSender state={loginStatus.state} />;
-    case 'CODE':
+    }
+    case 'CODE': {
       return <CODESender state={loginStatus.state} />;
+    }
     case 'FIDO2':
-    case 'SelectMFASolution':
+    case 'SelectMFASolution': {
       return <MFASolutionList />;
-    case 'EMAIL':
+    }
+    case 'EMAIL': {
       return <></>;
-    default:
+    }
+    default: {
       throw new ExhaustiveError(loginStatus);
+    }
   }
 }

@@ -19,9 +19,9 @@ function QueryKeyWordChip(props: QueryKeyWordChipProps) {
       onDelete={onDelete}
       sx={{
         backgroundColor: 'white',
-        cursor: isDragging ? 'grabbing' : 'grab',
         borderColor: ignore ? '#eee' : '',
         color: ignore ? 'text.disabled' : '',
+        cursor: isDragging ? 'grabbing' : 'grab',
         opacity: overlay ? 0 : 1,
       }}
     />

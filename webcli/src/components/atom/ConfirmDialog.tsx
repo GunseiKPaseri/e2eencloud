@@ -24,6 +24,7 @@ export default function ConfirmDialog({
 }) {
   const noButtonRef = useRef<HTMLButtonElement>(null);
 
+  // eslint-disable-next-line unicorn/consistent-function-scoping
   const handleEditConfirmEntered = () => {
     // The `autoFocus` is not used because, if used, the same Enter that saves
     // the cell triggers "No". Instead, we manually focus the "No" button once

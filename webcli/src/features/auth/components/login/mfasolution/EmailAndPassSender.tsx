@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from '~/lib/react-redux';
 import { loginAsync } from '~/features/auth/authSlice';
 import PasswordField from '~/features/auth/components/PasswordField';
@@ -55,7 +55,7 @@ export default function EmailAndPassSender({
         fullWidth
         variant='contained'
         disabled={state === 'pending'}
-        sx={{ mt: 3, mb: 2 }}
+        sx={{ mb: 2, mt: 3 }}
       >
         {t('auth.login', 'ログイン')}
       </Button>

@@ -9,8 +9,8 @@ export default function StyledToggleButtonGroupWrapper(
     <Paper
       elevation={0}
       sx={{
-        display: 'flex',
         border: (theme) => `1px solid ${theme.palette.divider}`,
+        display: 'flex',
         flexWrap: 'wrap',
         ...sx,
       }}

@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import EmailIcon from '@mui/icons-material/Email';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import LockClockIcon from '@mui/icons-material/LockClock';
@@ -6,6 +5,7 @@ import PasswordIcon from '@mui/icons-material/Password';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
 import {
   type AuthState,
@@ -22,16 +22,21 @@ function MFASolutionLogo({
   solution: AuthState['suggestedMfa'][0];
 }) {
   switch (solution) {
-    case 'TOTP':
+    case 'TOTP': {
       return <LockClockIcon />;
-    case 'CODE':
+    }
+    case 'CODE': {
       return <PasswordIcon />;
-    case 'FIDO2':
+    }
+    case 'FIDO2': {
       return <FingerprintIcon />;
-    case 'EMAIL':
+    }
+    case 'EMAIL': {
       return <EmailIcon />;
-    default:
+    }
+    default: {
       throw new ExhaustiveError(solution);
+    }
   }
 }
 
@@ -52,7 +57,7 @@ export default function MFASolutionList() {
           key={x}
           fullWidth
           variant='contained'
-          sx={{ mt: 3, mb: 2 }}
+          sx={{ mb: 2, mt: 3 }}
           startIcon={<MFASolutionLogo solution={x} />}
           onClick={async () => {
             if (x === 'FIDO2') {
@@ -68,7 +73,7 @@ export default function MFASolutionList() {
       <Button
         key='logout'
         fullWidth
-        sx={{ mt: 3, mb: 2 }}
+        sx={{ mb: 2, mt: 3 }}
         onClick={async () => {
           await dispatch(mfaCancelAsync());
         }}

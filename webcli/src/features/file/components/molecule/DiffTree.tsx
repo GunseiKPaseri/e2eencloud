@@ -88,12 +88,12 @@ export function DiffTree() {
               {history.length - 1 !== i && <TimelineConnector />}
             </TimelineSeparator>
             <TimelineContent>
-              {history.length - 1 !== i
-                ? CreateDiffExpression({
-                    before: fileTable[history[i + 1]].origin.fileInfo,
+              {history.length - 1 === i
+                ? `${node.origin.fileInfo.name}をアップロードしました`
+                : CreateDiffExpression({
                     after: node.origin.fileInfo,
-                  })
-                : `${node.origin.fileInfo.name}をアップロードしました`}
+                    before: fileTable[history[i + 1]].origin.fileInfo,
+                  })}
             </TimelineContent>
           </TimelineItem>
         );

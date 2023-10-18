@@ -48,10 +48,10 @@ export const afterBuildFileTableAsyncFullfilled: CaseReducer<
   const rootOrigin = action.payload.fileTable.root;
   assertFileNodeFolder(rootOrigin);
   state.activeFileGroup = {
-    type: 'dir',
-    folderId: 'root',
     files: rootOrigin.files,
-    selecting: [],
+    folderId: 'root',
     parents: ['root'],
+    selecting: [],
+    type: 'dir',
   };
 };

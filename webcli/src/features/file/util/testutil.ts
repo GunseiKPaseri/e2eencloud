@@ -17,22 +17,22 @@ export const genFileInfoFile = (props: {
   createdAt?: number;
   tag: string[];
 }): FileCryptoInfoWithBin => ({
-  fileKeyBin: props.fileKeyBin ?? [],
+  encryptedFileIVBin: props.encryptedFileIVBin ?? [],
   fileInfo: {
-    type: 'file',
-    id: props.id,
-    name: props.name ?? props.id,
-    version: latestVersion,
     createdAt: props.createdAt ?? 0,
-    sha256: props.id,
+    id: props.id,
     mime: props.id,
-    size: 0,
+    name: props.name ?? props.id,
     parentId: props.parentId,
     prevId: props.prevId,
+    sha256: props.id,
+    size: 0,
     tag: props.tag,
+    type: 'file',
+    version: latestVersion,
   },
+  fileKeyBin: props.fileKeyBin ?? [],
   originalVersion: latestVersion,
-  encryptedFileIVBin: props.encryptedFileIVBin ?? [],
 });
 
 export const genFileInfoFolder = (props: {
@@ -43,17 +43,17 @@ export const genFileInfoFolder = (props: {
   fileKeyBin?: number[];
   tag: string[];
 }): FileCryptoInfoWithoutBin<FileInfoFolder> => ({
-  fileKeyBin: props.fileKeyBin ?? [],
   fileInfo: {
-    type: 'folder',
+    createdAt: props.createdAt ?? 0,
     id: props.id,
     name: props.id,
-    version: latestVersion,
-    createdAt: props.createdAt ?? 0,
     parentId: props.parentId,
     prevId: props.prevId,
     tag: props.tag,
+    type: 'folder',
+    version: latestVersion,
   },
+  fileKeyBin: props.fileKeyBin ?? [],
   originalVersion: latestVersion,
 });
 
@@ -66,16 +66,16 @@ export const genFileInfoDiff = (props: {
   diff?: FileDifference;
   fileKeyBin?: number[];
 }): FileCryptoInfoWithoutBin<FileInfoDiffFile> => ({
-  fileKeyBin: props.fileKeyBin ?? [],
   fileInfo: {
-    type: 'diff',
+    createdAt: props.createdAt ?? 0,
+    diff: props.diff ?? {},
     id: props.id,
     name: props.name ?? props.id,
-    version: latestVersion,
-    createdAt: props.createdAt ?? 0,
     parentId: props.parentId,
     prevId: props.prevId,
-    diff: props.diff ?? {},
+    type: 'diff',
+    version: latestVersion,
   },
+  fileKeyBin: props.fileKeyBin ?? [],
   originalVersion: latestVersion,
 });

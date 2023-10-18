@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import { createRoot } from 'react-dom/client';
 import CssBaseline from '@mui/material/CssBaseline';
+import { createRoot } from 'react-dom/client';
 import ContextMenuProvider from '~/features/contextmenu/ContextMenuProvider';
 import Notifier from '~/features/snackbar/Notifier';
 import AppFallback from '~/pages/AppFallback';
@@ -8,7 +8,7 @@ import AppRouter from '~/pages/AppRouter';
 import ComposedProvider from '~/pages/ComposedProvider';
 import './index.css';
 
-const rootElement = document.getElementById('root');
+const rootElement = document.querySelector('#root');
 
 if (rootElement) {
   const root = createRoot(rootElement);

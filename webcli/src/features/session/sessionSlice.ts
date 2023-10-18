@@ -9,15 +9,14 @@ export interface SessionsState {
 }
 
 const initialState: SessionsState = {
-  sessions: [],
   loading: false,
+  sessions: [],
 };
 
 export const getSessionsAsync = createAsyncThunk<SessionInfo[]>(
   'session/getSessions',
   async () => {
-    const result = await getSessions();
-    return result;
+    return await getSessions();
   },
 );
 
@@ -36,9 +35,6 @@ export const deleteSessionAsync = createAsyncThunk<void, { id: string }>(
 );
 
 export const sessionSlice = createSlice({
-  name: 'session',
-  initialState,
-  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(getSessionsAsync.pending, (state) => {
@@ -62,6 +58,9 @@ export const sessionSlice = createSlice({
         state.loading = false;
       });
   },
+  initialState,
+  name: 'session',
+  reducers: {},
 });
 
 export default sessionSlice.reducer;

@@ -1,6 +1,6 @@
 import type {
-  FileDifference,
-  ExpansionInfoImage,
+  
+  
   FileInfoFile,
   FileInfoFolder,
   FileInfoDiffFile,
@@ -9,14 +9,7 @@ import type {
 } from './fileinfoMigration/fileinfo';
 import type { Highlight, SearchQueryForRedux } from './util/search.type';
 
-export type {
-  FileDifference,
-  ExpansionInfoImage,
-  FileInfoFile,
-  FileInfoFolder,
-  FileInfoDiffFile,
-  FileInfo,
-};
+
 
 /**
  * サーバDBから取得した情報
@@ -116,3 +109,5 @@ export interface StorageInfo {
   usage: number;
   capacity: number;
 }
+
+export {type FileDifference, type ExpansionInfoImage, type FileInfoFile, type FileInfoFolder, type FileInfoDiffFile, type FileInfo} from './fileinfoMigration/fileinfo';

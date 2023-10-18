@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Tooltip, Typography } from '@mui/material';
 import { DataGrid, GridActionsCellItem, jaJP } from '@mui/x-data-grid';
@@ -12,6 +11,7 @@ import type {
   GridFilterModel,
 } from '@mui/x-data-grid';
 import type { Namespace, TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import ConfirmDialog from '../atom/ConfirmDialog';
 
 type GetListJSON<T> = {
@@ -61,7 +61,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
     ...originProps
   } = props;
   const [paginationModel, setPaginationModel] = useState(
-    originProps.paginationModel ?? { pageSize: 10, page: 0 },
+    originProps.paginationModel ?? { page: 0, pageSize: 10 },
   );
   const { t } = useTranslation();
   const [rows, setRows] = useState<GridRowsProp<T>>([]);
@@ -92,10 +92,10 @@ function EditableDataGrid<T extends GridValidRowModel>(
     (async () => {
       setLoading(true);
       const list = await getList({
-        offset: paginationModel.page * paginationModel.pageSize,
-        limit: paginationModel.pageSize,
-        sortQuery,
         filterQuery,
+        limit: paginationModel.pageSize,
+        offset: paginationModel.page * paginationModel.pageSize,
+        sortQuery,
       });
       const newRows: GridRowsProp<T> = list.items;
 
@@ -120,10 +120,10 @@ function EditableDataGrid<T extends GridValidRowModel>(
         if (mutation) {
           // Save the arguments to resolve or reject the promise later
           setEditConfirmPromiseArguments({
-            resolve,
-            reject,
             newRow,
             oldRow,
+            reject,
+            resolve,
           });
         } else {
           resolve(oldRow); // Nothing was changed
@@ -151,7 +151,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
           resolve({ ...oldRow, ...response });
           setEditConfirmPromiseArguments(null);
           setPageReloader(Symbol('reload'));
-        } catch (error) {
+        } catch {
           onEditFailure();
           resolve(oldRow);
           setEditConfirmPromiseArguments(null);
@@ -177,7 +177,6 @@ function EditableDataGrid<T extends GridValidRowModel>(
     ...columns,
     {
       field: 'actions',
-      type: 'actions',
       // eslint-disable-next-line react/no-unstable-nested-components
       getActions: (params: GridRowParams<T>) => [
         <Tooltip title={t('admin.delete', '削除')}>
@@ -190,6 +189,7 @@ function EditableDataGrid<T extends GridValidRowModel>(
           />
         </Tooltip>,
       ],
+      type: 'actions',
     },
   ];
   const editConfirmDirlogMain = editConfirmPromiseArguments

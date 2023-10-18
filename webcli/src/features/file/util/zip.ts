@@ -1,4 +1,5 @@
 import * as zip from '@zip.js/zip.js';
+import type { useAppDispatch } from '~/lib/react-redux';
 import type {
   FileInfoFolder,
   FileNode,
@@ -21,34 +22,37 @@ const getDir = (
   fileTable: FileTable,
   tree: string,
 ): Promise<Item>[] =>
-  root.files
-    .map((id): Promise<Item> | Promise<Item>[] => {
-      const target = fileTable[id];
-      switch (target.type) {
-        case 'file':
-          return fetch(target.blobURL!).then(async (res) => ({
-            blob: await res.blob(),
-            name: `${tree}${target.name}`,
-          }));
-        case 'folder':
-          return getDir(target, fileTable, `${tree}${target.name}/`);
-        case 'diff':
-          return [];
-        default:
-          throw new ExhaustiveError(target);
+  root.files.flatMap((id): Promise<Item> | Promise<Item>[] => {
+    const target = fileTable[id];
+    switch (target.type) {
+      case 'file': {
+        return fetch(target.blobURL!).then(async (res) => ({
+          blob: await res.blob(),
+          name: `${tree}${target.name}`,
+        }));
       }
-    })
-    .flat();
+      case 'folder': {
+        return getDir(target, fileTable, `${tree}${target.name}/`);
+      }
+      case 'diff': {
+        return [];
+      }
+      default: {
+        throw new ExhaustiveError(target);
+      }
+    }
+  });
 
 const genZipFile = async (
   root: FileNode<FileInfoFolder>,
   fileTable: FileTable,
+  dispatch: ReturnType<typeof useAppDispatch>,
 ) => {
   // get all file
   const children = getFileChildren(root, fileTable);
   await Promise.all(
     children.map((id) =>
-      store.dispatch(filedownloadAsync({ fileId: id, active: false })),
+      dispatch(filedownloadAsync({ active: false, fileId: id })),
     ),
   );
   const newFileTable = store.getState().file.fileTable;

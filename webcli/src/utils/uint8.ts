@@ -9,26 +9,26 @@ export const base642ByteArray = (base64: string) => toByteArray(base64);
 export const base64uri2ByteArray = (base64uri: string) =>
   toByteArray(
     base64uri
-      .replace(/-/g, '+')
-      .replace(/_/g, '/')
+      .replaceAll('-', '+')
+      .replaceAll('_', '/')
       .padEnd(Math.ceil(base64uri.length / 4) * 4, '='),
   );
 export const byteArray2base64uri = (x: Uint8Array) =>
-  fromByteArray(x).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  fromByteArray(x).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
 
 export const hex2bytearray = (hex: string) => {
-  const array = hex.match(/.{2}/g)?.map((x) => parseInt(x, 16));
+  const array = hex.match(/.{2}/g)?.map((x) => Number.parseInt(x, 16));
   if (!array) throw new Error('bad hex');
   return new Uint8Array(array);
 };
 
 export const byteArray2hex = (x: Uint8Array) =>
-  Array.from(new Uint8Array(x))
+  [...new Uint8Array(x)]
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
 
 export const UUID2ByteArray = (uuid: string) =>
-  hex2bytearray(uuid.replace(/-/g, ''));
+  hex2bytearray(uuid.replaceAll('-', ''));
 
 export const blob2DataURL = (x: Blob) =>
   new Promise<string>((resolve) => {

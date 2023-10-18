@@ -23,14 +23,16 @@ export default function ContextMenu() {
   const menuState = useAppSelector((store) => store.contextmenu.menuState);
   if (menuState === null) return <></>;
   switch (menuState.menu.type) {
-    case 'filelistitem':
+    case 'filelistitem': {
       return (
         <MenuFileListItem
           menu={menuState.menu}
           genHandleContextMenu={genHandleContextMenu(dispatch)}
         />
       );
-    default:
+    }
+    default: {
       throw new ExhaustiveError(menuState.menu.type);
+    }
   }
 }

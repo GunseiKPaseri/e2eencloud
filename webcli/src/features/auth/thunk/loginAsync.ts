@@ -83,7 +83,7 @@ export const loginAsync = createAsyncThunk<
       AxiosResponse<APILoginResponse>
     >(
       '/api/login',
-      { email: userinfo.email, authenticationKeyBase64 },
+      { authenticationKeyBase64, email: userinfo.email },
       {
         onUploadProgress: (progressEvent) => {
           dispatch(setProgress(progress(0, 1, progressEvent)));
@@ -104,32 +104,32 @@ export const loginAsync = createAsyncThunk<
 
   if (result.data.success) {
     await dispatch(loginSuccess(result.data));
-    return { suggestedMfa: [], next: 'EmailAndPass' };
+    return { next: 'EmailAndPass', suggestedMfa: [] };
   }
   if (result.data.suggestedSolution.includes('FIDO2')) {
     // FIDO2がある場合はそれを優先
     try {
       await dispatch(fido2LoginAsync({ auto: true }));
-      return { suggestedMfa: result.data.suggestedSolution, next: null };
-    } catch (_e) {
+      return { next: null, suggestedMfa: result.data.suggestedSolution };
+    } catch {
       return {
-        suggestedMfa: result.data.suggestedSolution,
         next: result.data.suggestedSolution[0] ?? 'EmailAndPass',
+        suggestedMfa: result.data.suggestedSolution,
       };
     }
   }
   return {
-    suggestedMfa: result.data.suggestedSolution,
     next: result.data.suggestedSolution[0] ?? 'EmailAndPass',
+    suggestedMfa: result.data.suggestedSolution,
   };
 });
 
 export const afterLoginAsyncPending = (state: AuthState) => {
-  state.loginStatus = { step: 'EmailAndPass', state: 'pending' };
+  state.loginStatus = { state: 'pending', step: 'EmailAndPass' };
 };
 
 export const afterLoginAsyncRejected = (state: AuthState) => {
-  state.loginStatus = { step: 'EmailAndPass', state: 'error' };
+  state.loginStatus = { state: 'error', step: 'EmailAndPass' };
   state.user = null;
 };
 
@@ -140,7 +140,7 @@ export const afterLoginAsyncFullfilled: CaseReducer<
   if (action.payload !== null) {
     state.suggestedMfa = action.payload.suggestedMfa;
     if (action.payload.next !== null) {
-      state.loginStatus = { step: action.payload.next, state: null };
+      state.loginStatus = { state: null, step: action.payload.next };
     }
   }
 };

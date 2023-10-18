@@ -1,7 +1,7 @@
 import type { Infer } from 'lizod';
 import { describe, test, expect } from 'vitest';
 import { buildFileTable } from '~/features/file/utils';
-import { assertType, type IsExact } from '~/utils/testing_types';
+import { assertType, type IsExact } from '~/utils/testingTypes';
 import {
   addEmptyIdToQuery,
   highlightMark,
@@ -76,80 +76,80 @@ describe('#searchFromTable', () => {
     const a = genFileInfoFolder({ id: 'a', parentId: null, tag: [] });
     const b = genFileInfoFile({
       id: 'b',
+      name: 'b.hoge',
       parentId: 'a',
       tag: [],
-      name: 'b.hoge',
     });
     const c = genFileInfoDiff({
+      diff: { addtag: ['あ'] },
       id: 'c',
+      name: 'b.hoge',
       parentId: 'a',
       prevId: 'b',
-      diff: { addtag: ['あ'] },
-      name: 'b.hoge',
     });
     const d = genFileInfoDiff({
+      diff: { addtag: ['い'] },
       id: 'd',
+      name: 'b.hoge',
       parentId: 'a',
       prevId: 'c',
-      diff: { addtag: ['い'] },
-      name: 'b.hoge',
     });
     const e = genFileInfoFile({
       id: 'e',
+      name: 'b.hoge',
       parentId: 'a',
       prevId: 'd',
       tag: ['あ', 'い'],
-      name: 'b.hoge',
     });
     const f = genFileInfoFile({
       id: 'f',
+      name: 'b.hoge',
       parentId: 'a',
       prevId: 'e',
       tag: ['あ'],
-      name: 'b.hoge',
     });
     const g = genFileInfoDiff({
+      diff: { addtag: ['い'] },
       id: 'g',
+      name: 'b.hoge',
       parentId: 'a',
       prevId: 'f',
-      diff: { addtag: ['い'] },
-      name: 'b.hoge',
     });
     const h = genFileInfoFile({
       id: 'h',
+      name: 'h.hoge',
       parentId: 'a',
       tag: ['う'],
-      name: 'h.hoge',
     });
     const i = genFileInfoFile({
       id: 'i',
+      name: 'i.hoge',
       parentId: 'a',
       tag: [],
-      name: 'i.hoge',
     });
     const j = genFileInfoDiff({
+      diff: { addtag: ['い'] },
       id: 'j',
+      name: 'がi.fuga',
       parentId: null,
       prevId: 'i',
-      diff: { addtag: ['い'] },
-      name: 'がi.fuga',
     });
     const k = genFileInfoDiff({
+      diff: { addtag: ['う', 'え'], deltag: ['あ'] },
       id: 'k',
+      name: 'g.hoge',
       parentId: 'a',
       prevId: 'g',
-      diff: { deltag: ['あ'], addtag: ['う', 'え'] },
-      name: 'g.hoge',
     });
     const { fileTable } = buildFileTable([a, b, c, d, e, f, g, h, i, j, k]);
     const resultName = searchFromTable(fileTable, {
-      term: [{ term: [{ type: 'name', word: 'g.hoge', id: '' }], id: '' }],
       id: '',
+      term: [{ id: '', term: [{ id: '', type: 'name', word: 'g.hoge' }] }],
     }).sort();
     expect(resultName).toEqual([['f', [['name', 0, 6]]]]);
     const resultNameReg = searchFromTable(fileTable, {
-      term: [{ term: [{ type: 'name', word: /.hoge$/, id: '' }], id: '' }],
       id: '',
+      term: [{ id: '', term: [{ id: '', type: 'name', word: /.hoge$/ }] }],
     }).sort();
     expect(resultNameReg).toEqual([
       ['f', [['name', 1, 6]]],
@@ -157,8 +157,8 @@ describe('#searchFromTable', () => {
     ]);
 
     const resultTag = searchFromTable(fileTable, {
-      term: [{ term: [{ type: 'tag', value: 'い', id: '' }], id: '' }],
       id: '',
+      term: [{ id: '', term: [{ id: '', type: 'tag', value: 'い' }] }],
     }).sort();
     expect(resultTag).toEqual([
       ['f', []],
@@ -166,24 +166,24 @@ describe('#searchFromTable', () => {
     ]);
 
     const resultNameRegAndTag = searchFromTable(fileTable, {
+      id: '',
       term: [
         {
-          term: [
-            { type: 'name', word: /.hoge$/, id: '' },
-            { type: 'tag', value: 'い', id: '' },
-          ],
           id: '',
+          term: [
+            { id: '', type: 'name', word: /.hoge$/ },
+            { id: '', type: 'tag', value: 'い' },
+          ],
         },
       ],
-      id: '',
     }).sort();
     expect(resultNameRegAndTag).toEqual([['f', [['name', 1, 6]]]]);
     const resultNameRegOrTag = searchFromTable(fileTable, {
-      term: [
-        { term: [{ type: 'name', word: /.hoge$/, id: '' }], id: '' },
-        { term: [{ type: 'tag', value: 'い', id: '' }], id: '' },
-      ],
       id: '',
+      term: [
+        { id: '', term: [{ id: '', type: 'name', word: /.hoge$/ }] },
+        { id: '', term: [{ id: '', type: 'tag', value: 'い' }] },
+      ],
     }).sort();
     expect(resultNameRegOrTag).toEqual([
       ['f', [['name', 1, 6]]],
@@ -191,13 +191,13 @@ describe('#searchFromTable', () => {
       ['i', []],
     ]);
     const resultNameNFKD = searchFromTable(fileTable, {
-      term: [{ term: [{ type: 'name', word: 'が', id: '' }], id: '' }],
       id: '',
+      term: [{ id: '', term: [{ id: '', type: 'name', word: 'が' }] }],
     }).sort();
     expect(resultNameNFKD).toEqual([['i', [['name', 0, 2]]]]);
     const resultNameUpperCase = searchFromTable(fileTable, {
-      term: [{ term: [{ type: 'name', word: 'Ｇ．HOGE', id: '' }], id: '' }],
       id: '',
+      term: [{ id: '', term: [{ id: '', type: 'name', word: 'Ｇ．HOGE' }] }],
     }).sort();
     expect(resultNameUpperCase).toEqual([['f', [['name', 0, 6]]]]);
   });
@@ -209,7 +209,7 @@ const SearchQueryTestCase: [string, SearchQueryForReduxOmitId][] = [
   [
     '"Hogehoge"',
     {
-      term: [{ term: [{ type: 'name', word: 'Hogehoge', searchType: 'in' }] }],
+      term: [{ term: [{ searchType: 'in', type: 'name', word: 'Hogehoge' }] }],
     },
   ],
   ['tag:', { term: [{ term: [{ type: 'tag', value: '' }] }] }],
@@ -240,7 +240,7 @@ const SearchQueryTestCase: [string, SearchQueryForReduxOmitId][] = [
       term: [
         {
           term: [
-            { type: 'name', word: 'b b', searchType: 'in' },
+            { searchType: 'in', type: 'name', word: 'b b' },
             { type: 'tag', value: 'a a' },
           ],
         },
@@ -254,7 +254,7 @@ const SearchQueryTestCase: [string, SearchQueryForReduxOmitId][] = [
         {
           term: [
             { type: 'name', word: 'Hogehoge' },
-            { type: 'size', value: 128, operator: '<=' },
+            { operator: '<=', type: 'size', value: 128 },
           ],
         },
       ],
@@ -267,7 +267,7 @@ const SearchQueryTestCase: [string, SearchQueryForReduxOmitId][] = [
         {
           term: [
             { type: 'name', word: 'Hogehoge' },
-            { type: 'size', value: 128, operator: '==' },
+            { operator: '==', type: 'size', value: 128 },
           ],
         },
       ],
@@ -280,7 +280,7 @@ const SearchQueryTestCase: [string, SearchQueryForReduxOmitId][] = [
         {
           term: [
             { type: 'name', word: 'Hogehoge' },
-            { type: 'size', value: 128, operator: '==' },
+            { operator: '==', type: 'size', value: 128 },
           ],
         },
       ],
@@ -293,7 +293,7 @@ const SearchQueryTestCase: [string, SearchQueryForReduxOmitId][] = [
         {
           term: [
             { type: 'name', word: 'Hogehoge' },
-            { type: 'size', value: 128, operator: '>' },
+            { operator: '>', type: 'size', value: 128 },
           ],
         },
       ],
@@ -315,7 +315,7 @@ const SearchQueryTestCase: [string, SearchQueryForReduxOmitId][] = [
           term: [
             { type: 'name', word: 'b' },
             { type: 'name', word: 'a' },
-            { type: 'name', word: 'b', ignore: true },
+            { ignore: true, type: 'name', word: 'b' },
           ],
         },
       ],
@@ -332,11 +332,11 @@ const SearchQueryTestCase: [string, SearchQueryForReduxOmitId][] = [
           ],
         },
         {
+          ignore: true,
           term: [
             { type: 'name', word: 'a' },
             { type: 'name', word: 'b' },
           ],
-          ignore: true,
         },
       ],
     },
@@ -383,7 +383,7 @@ const SearchQueryBuilderTestCase: [SearchQueryForReduxOmitId, string][] = [
       term: [
         {
           term: [
-            { type: 'name', word: 'b b', searchType: 'in' },
+            { searchType: 'in', type: 'name', word: 'b b' },
             { type: 'tag', value: 'a a' },
           ],
         },
@@ -397,7 +397,7 @@ const SearchQueryBuilderTestCase: [SearchQueryForReduxOmitId, string][] = [
         {
           term: [
             { type: 'name', word: 'Hogehoge' },
-            { type: 'size', value: 128, operator: '<=' },
+            { operator: '<=', type: 'size', value: 128 },
           ],
         },
       ],
@@ -410,7 +410,7 @@ const SearchQueryBuilderTestCase: [SearchQueryForReduxOmitId, string][] = [
         {
           term: [
             { type: 'name', word: 'Hogehoge' },
-            { type: 'size', value: 128, operator: '==' },
+            { operator: '==', type: 'size', value: 128 },
           ],
         },
       ],
@@ -423,7 +423,7 @@ const SearchQueryBuilderTestCase: [SearchQueryForReduxOmitId, string][] = [
         {
           term: [
             { type: 'name', word: 'Hogehoge' },
-            { type: 'size', value: 128, operator: '>' },
+            { operator: '>', type: 'size', value: 128 },
           ],
         },
       ],

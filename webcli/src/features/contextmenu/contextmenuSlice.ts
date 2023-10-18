@@ -14,18 +14,18 @@ export type ContextMenuState = {
 const initialState: ContextMenuState = { menuState: null };
 
 export const contextmenuSlice = createSlice({
-  name: 'contextmenu',
   initialState,
+  name: 'contextmenu',
   reducers: {
+    closeContextmenu: (state: WritableDraft<ContextMenuState>) => {
+      state.menuState = null;
+    },
     openContextmenu: (
       state: WritableDraft<ContextMenuState>,
       action: PayloadAction<Exclude<ContextMenuState['menuState'], null>>,
     ) => {
       state.menuState = { ...action.payload };
       // console.log(state);
-    },
-    closeContextmenu: (state: WritableDraft<ContextMenuState>) => {
-      state.menuState = null;
     },
   },
 });

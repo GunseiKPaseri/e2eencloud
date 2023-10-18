@@ -27,33 +27,33 @@ import { useAppSelector } from '~/lib/react-redux';
 import type { LanguageState } from '~/features/language/languageState';
 
 const MUILocales = {
+  enUS: MUILocaleenUS,
   jaJP: MUILocalejaJP,
   zhCN: MUILocalezhCN,
-  enUS: MUILocaleenUS,
 } as const satisfies Record<LanguageState['language'], typeof MUILocalejaJP>;
 
 const dateFnsLocale = {
+  enUS: dateFnsLocaleenUS,
   jaJP: dateFnsLocalejaJP,
   zhCN: dateFnsLocalezhCN,
-  enUS: dateFnsLocaleenUS,
 } as const satisfies Record<
   LanguageState['language'],
   typeof dateFnsLocalejaJP
 >;
 
 const MUIDateLocales = {
+  enUS: MUIDateLocaleenUS,
   jaJP: MUIDateLocalejaJP,
   zhCN: MUIDateLocalezhCN,
-  enUS: MUIDateLocaleenUS,
 } as const satisfies Record<
   LanguageState['language'],
   typeof MUIDateLocalejaJP
 >;
 
 const MUIDataGridLocales = {
+  enUS: MUIDataGridLocaleenUS,
   jaJP: MUIDataGridLocalejaJP,
   zhCN: MUIDataGridLocalezhCN,
-  enUS: MUIDataGridLocaleenUS,
 } as const satisfies Record<
   LanguageState['language'],
   typeof MUIDataGridLocalejaJP

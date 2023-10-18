@@ -31,8 +31,9 @@ export const explainHook = (hook: HookData) => {
     case 'NONE': {
       return '無効';
     }
-    default:
+    default: {
       throw new ExhaustiveError(hook);
+    }
   }
 };
 
@@ -53,21 +54,21 @@ export const getHookList = async (params: {
     }
   >('/api/hooks', {
     params: {
-      offset: params.offset,
       limit: params.limit,
-      orderby: params.sortQuery[0]?.field,
+      offset: params.offset,
       order: params.sortQuery[0]?.sort,
+      orderby: params.sortQuery[0]?.field,
       q: JSON.stringify(params.filterQuery),
     },
   });
   return {
-    total_number: result.data.number_of_hook,
     items: result.data.hooks.map((x) => ({
       ...x,
-      data: explainHook(x.data),
       created_at: new Date(x.created_at),
+      data: explainHook(x.data),
       expired_at: x.expired_at === null ? null : new Date(x.expired_at),
     })),
+    total_number: result.data.number_of_hook,
   };
 };
 
@@ -76,7 +77,7 @@ export const addHock = async (
   hook: HookData,
   expired_at: Date | null,
 ) => {
-  await axiosWithSession.post('/api/hooks', { name, data: hook, expired_at });
+  await axiosWithSession.post('/api/hooks', { data: hook, expired_at, name });
 };
 
 export const deleteHook = async (id: string) => {
@@ -90,10 +91,10 @@ export const editHook = async (
   await axiosWithSession.patch(`/api/hook/${targetHook.id}`, edited);
   return {
     ...targetHook,
-    name: typeof edited.name === 'undefined' ? targetHook.name : edited.name,
     expired_at:
-      typeof edited.expired_at === 'undefined'
+      edited.expired_at === undefined
         ? targetHook.expired_at
         : edited.expired_at,
+    name: edited.name === undefined ? targetHook.name : edited.name,
   };
 };

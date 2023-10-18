@@ -16,11 +16,11 @@ import NumberSearchOperatorSelector from '../../atom/search/NumberSearchOperator
 import SearchStringQueryInput from '../../atom/search/SearchStringQueryInput';
 
 const nullQuerySet = {
-  name: { type: 'name', word: '', ignore: false, id: '' },
-  mime: { type: 'mime', word: '', ignore: false, id: '' },
-  size: { type: 'size', value: 1000, operator: '>', ignore: false, id: '' },
-  tag: { type: 'tag', value: '', ignore: false, id: '' },
-  dir: { type: 'dir', dirid: '', searchSubDir: false, ignore: false, id: '' },
+  dir: { dirid: '', id: '', ignore: false, searchSubDir: false, type: 'dir' },
+  mime: { id: '', ignore: false, type: 'mime', word: '' },
+  name: { id: '', ignore: false, type: 'name', word: '' },
+  size: { id: '', ignore: false, operator: '>', type: 'size', value: 1000 },
+  tag: { id: '', ignore: false, type: 'tag', value: '' },
 } as const satisfies Record<
   SearchQuerySetForRedux['type'],
   SearchQuerySetForRedux
@@ -77,16 +77,17 @@ function AddQueryDialog(props: {
               onChange={(e) => {
                 try {
                   const value = Number(e.target.value);
-                  if (!isNaN(value) && value > 0)
+                  if (!Number.isNaN(value) && value > 0)
                     setQuerySet({ ...querySet, value });
-                } catch (_) {
+                } catch {
                   //
                 }
               }}
             />
           </>
         ) : querySet.type === 'tag' ? (
-          <></>
+          // TODO
+          <>tag input</>
         ) : (
           <></>
         )}

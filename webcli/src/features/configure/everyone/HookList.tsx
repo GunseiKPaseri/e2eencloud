@@ -80,15 +80,15 @@ function HookList() {
           {
             field: 'id',
             headerName: 'url',
-            width: 600,
             valueFormatter: (params: GridValueFormatterParams<string>) =>
               `/api/hook/${params.value}`,
+            width: 600,
           },
           {
+            editable: true,
             field: 'name',
             headerName: '名前',
             width: 200,
-            editable: true,
           },
           {
             field: 'data',
@@ -102,10 +102,10 @@ function HookList() {
             width: 170,
           },
           {
+            editable: true,
             field: 'expired_at',
             headerName: '有効期限',
             type: 'dateTime',
-            editable: true,
             width: 170,
           },
         ]}

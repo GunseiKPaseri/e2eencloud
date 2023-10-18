@@ -7,8 +7,8 @@ export interface ExclCtrlState {
 }
 
 const initialState: ExclCtrlState = {
-  usable: false,
   pending: false,
+  usable: false,
 };
 
 export const requestedExclCtrl = createAction('exclctrl/request');
@@ -18,9 +18,6 @@ export const decideExclCtrl = createAction<[{ leader: string }]>(
 );
 
 export const exclctrlSlice = createSlice({
-  name: 'exclctrl',
-  initialState,
-  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(requestedExclCtrl, (state) => {
@@ -31,6 +28,9 @@ export const exclctrlSlice = createSlice({
         state.pending = false;
       });
   },
+  initialState,
+  name: 'exclctrl',
+  reducers: {},
 });
 
 export default exclctrlSlice.reducer;

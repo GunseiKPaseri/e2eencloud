@@ -29,8 +29,7 @@ export const fileDeleteAsync = createAsyncThunk<
   const { fileTable } = state.file;
 
   const deleteItems = targetIds
-    .map((targetId) => getAllDependentFile(fileTable[targetId], fileTable))
-    .flat();
+    .flatMap((targetId) => getAllDependentFile(fileTable[targetId], fileTable));
 
   const rawFiles = await deleteFile({ deleteItems });
 
@@ -66,10 +65,10 @@ export const afterFileDeleteAsyncFullfilled: CaseReducer<
   assertFileNodeFolder(action.payload.fileTable.root);
   state.activeFile = null;
   state.activeFileGroup = {
-    type: 'dir',
-    folderId: 'root',
     files: action.payload.fileTable.root.files,
-    selecting: [],
+    folderId: 'root',
     parents: ['root'],
+    selecting: [],
+    type: 'dir',
   };
 };

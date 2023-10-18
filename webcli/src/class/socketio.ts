@@ -39,8 +39,8 @@ export const socketIOListener = <
     if (typeof eventName === 'string' && on[eventName])
       await on[eventName](args, dispatch);
     dispatch({
-      type: `SOCKET.IO/${eventName}`,
       payload: args,
+      type: `SOCKET.IO/${eventName}`,
     } as unknown as BasicAction);
   });
 };

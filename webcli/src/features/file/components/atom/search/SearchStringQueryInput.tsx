@@ -1,8 +1,8 @@
-import { VscRegex } from 'react-icons/vsc';
 import { SvgIcon } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
+import { VscRegex } from 'react-icons/vsc';
 
 type SearchStringQueryInputProps = {
   value: string | { type: 'RegExp'; word: string };

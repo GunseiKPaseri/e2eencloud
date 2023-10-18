@@ -1,11 +1,15 @@
-import pluginReact from 'eslint-plugin-react';
-import pluginReactHooks from 'eslint-plugin-react-hooks';
-import pluginReactRefresh from 'eslint-plugin-react-refresh';
 import configEsLintJS from '@eslint/js';
 import pluginTsEsLint from '@typescript-eslint/eslint-plugin';
 import parserTsEsLint from '@typescript-eslint/parser';
 import configPrettier from 'eslint-config-prettier';
+import pluginReact from 'eslint-plugin-react';
+import pluginReactHooks from 'eslint-plugin-react-hooks';
+import pluginReactRefresh from 'eslint-plugin-react-refresh';
+import pluginSonarJS from 'eslint-plugin-sonarjs';
+import pluginSortKey from 'eslint-plugin-sort-keys';
 import pluginStrictDependencies from 'eslint-plugin-strict-dependencies';
+import pluginUnicorn from 'eslint-plugin-unicorn';
+import pluginUnusedImport from 'eslint-plugin-unused-imports';
 import pluginVitest from 'eslint-plugin-vitest';
 import globals from 'globals';
 
@@ -19,6 +23,7 @@ export default [
       parser: parserTsEsLint,
       parserOptions: {
         project: './tsconfig.eslint.json',
+        sourceType: 'module',
       },
       globals: {
         PublicKeyCredentialRequestOptions: false,
@@ -56,6 +61,7 @@ export default [
       parser: parserTsEsLint,
       parserOptions: {
         project: './tsconfig.eslint.json',
+        sourceType: 'module',
       },
       ecmaVersion: 'latest',
       globals: {
@@ -74,10 +80,22 @@ export default [
       react: pluginReact,
       'react-hooks': pluginReactHooks,
       'react-refresh': pluginReactRefresh,
+      sonarjs: pluginSonarJS,
+      'sort-keys': pluginSortKey,
+      'unused-imports': pluginUnusedImport,
       'strict-dependencies': pluginStrictDependencies,
       vitest: pluginVitest,
+      unicorn: pluginUnicorn,
     },
     rules: {
+      ...pluginSonarJS.configs['recommended'].rules,
+      ...pluginUnicorn.configs['recommended'].rules,
+      'sort-keys': 0,
+      'sort-keys/sort-keys-fix': 'error',
+      'sonarjs/no-small-switch': 'off',
+      'sonarjs/cognitive-complexity': 'off',
+      'sonarjs/no-duplicate-string': 'off',
+      'sonarjs/no-identical-functions': 'off',
       'import/no-default-export': 'off',
       'import/prefer-default-export': 'off',
       'jsx-a11y/label-has-associated-control': 'off',
@@ -86,6 +104,31 @@ export default [
       'react/jsx-no-useless-fragment': 'off',
       'react/no-unused-prop-types': 'off',
       'react/require-default-props': 'off',
+      'unicorn/prevent-abbreviations': 'off',
+      'unicorn/no-useless-undefined': 'off',
+      'unicorn/no-null': 'off',
+      'unicorn/filename-case': 'off',
+      // 'unicorn/filename-case': [
+      //   'error',
+      //   {
+      //     cases: {
+      //       camelCase: true,
+      //       kebabCase: true,
+      //       pascalCase: true,
+      //     },
+      //     ignore: ['vite-env.d.ts'],
+      //   },
+      // ],
+      'unicorn/no-array-reduce': 'off',
+      'unicorn/catch-error-name': 'off',
+      'unicorn/number-literal-case': 'off',
+      'unicorn/no-nested-ternary': 'off',
+      'unicorn/consistent-destructuring': 'off',
+      // 後で消す
+      'unicorn/no-array-for-each': 'off',
+      'unicorn/prefer-add-event-listener': 'off',
+      'unicorn/no-await-expression-member': 'off',
+
       // swc向け https://github.com/ArnaudBarre/eslint-plugin-react-refresh
       'react-refresh/only-export-components': 'error',
       // 依存関係の階層設定
@@ -112,6 +155,7 @@ export default [
           resolveRelativeImport: true,
         },
       ],
+      'unused-imports/no-unused-imports': 'error',
     },
   },
 ];

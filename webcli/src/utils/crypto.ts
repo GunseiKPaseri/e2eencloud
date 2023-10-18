@@ -34,7 +34,7 @@ export const AESCTR = async (message: SupportArray, key: CryptoKey) => {
   const iv = window.crypto.getRandomValues(new Uint8Array(AES_AUTH_KEY_LENGTH));
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const aesctr: ArrayBuffer = await crypto.subtle.encrypt(
-    { name: 'AES-CTR', counter: iv, length: 64 },
+    { counter: iv, length: 64, name: 'AES-CTR' },
     key,
     message,
   );
@@ -48,7 +48,7 @@ export const decryptAESCTR = (
 ): Promise<Uint8Array> =>
   crypto.subtle
     .decrypt(
-      { name: 'AES-CTR', counter: iv, length: 64 },
+      { counter: iv, length: 64, name: 'AES-CTR' },
       key,
       encryptedMessage,
     )
@@ -62,7 +62,7 @@ export const AESGCM = async (message: SupportArray, key: CryptoKey) => {
   const iv = window.crypto.getRandomValues(new Uint8Array(12));
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const aesgcm: ArrayBuffer = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
+    { iv, name: 'AES-GCM' },
     key,
     message,
   );
@@ -75,23 +75,22 @@ export const decryptAESGCM = (
   iv: Uint8Array,
 ): Promise<Uint8Array> =>
   crypto.subtle
-    .decrypt({ name: 'AES-GCM', iv }, key, encryptedMessage)
+    .decrypt({ iv, name: 'AES-GCM' }, key, encryptedMessage)
     .then((x: ArrayBuffer) => new Uint8Array(x, 0));
 
 export const argon2encrypt = async (password: string, salt: Uint8Array) => {
   const key = await argon2id({
-    password,
-    salt,
-    parallelism: ARGON2_PARALLELISM,
     hashLength: AES_AUTH_KEY_LENGTH * 2,
     iterations: ARGON2_ITERATIONS,
     memorySize: ARGON2_MEMORYSISE,
     outputType: 'hex',
+    parallelism: ARGON2_PARALLELISM,
+    password,
+    salt,
   });
   // console.log(key);
-  const bytes = hex2bytearray(key);
   // console.log(bytes);
-  return bytes;
+  return hex2bytearray(key);
 };
 
 /**
@@ -117,9 +116,9 @@ export const createSalt = (ClientRandomValue: Uint8Array) => {
 export const generateRSAKey = async (masterkey: CryptoKey) => {
   const { privateKey, publicKey } = await crypto.subtle.generateKey(
     {
-      name: 'RSA-OAEP',
-      modulusLength: 4096,
       hash: 'SHA-512',
+      modulusLength: 4096,
+      name: 'RSA-OAEP',
       publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
     },
     true,
@@ -135,12 +134,12 @@ export const generateRSAKey = async (masterkey: CryptoKey) => {
   const encriptedPrivateKey = AESCTR(privateKeyArrayBuffer, masterkey);
 
   return {
-    privateKey,
-    publicKey,
     encripted_private_key: byteArray2base64(
       (await encriptedPrivateKey).encrypt,
     ),
     encripted_private_key_iv: byteArray2base64((await encriptedPrivateKey).iv),
+    privateKey,
+    publicKey,
     public_key: byteArray2base64(publicKeyU),
   };
 };
@@ -161,14 +160,14 @@ export const importRSAKey = async (params: {
     crypto.subtle.importKey(
       'pkcs8',
       PrivateKeyArrayBuffer,
-      { name: 'RSA-OAEP', hash: 'SHA-512' },
+      { hash: 'SHA-512', name: 'RSA-OAEP' },
       true,
       ['decrypt'],
     ),
     crypto.subtle.importKey(
       'spki',
       PublicKeyArrayBuffer,
-      { name: 'RSA-OAEP', hash: 'SHA-512' },
+      { hash: 'SHA-512', name: 'RSA-OAEP' },
       true,
       ['encrypt'],
     ),

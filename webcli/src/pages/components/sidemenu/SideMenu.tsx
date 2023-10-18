@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -16,6 +15,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import { styled } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
 import { SIDEBAR_WIDTH } from '~/const/const';
 import { useAppSelector } from '~/lib/react-redux';
 import HeadAppBar from './HeadAppBar';
@@ -24,19 +24,19 @@ const Drawer = styled(MuiDrawer, {
   shouldForwardProp: (prop) => prop !== 'open',
 })(({ theme, open }) => ({
   '& .MuiDrawer-paper': {
+    boxSizing: 'border-box',
     position: 'relative',
+    transition: theme.transitions.create('width', {
+      duration: theme.transitions.duration.enteringScreen,
+      easing: theme.transitions.easing.sharp,
+    }),
     whiteSpace: 'nowrap',
     width: SIDEBAR_WIDTH,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    boxSizing: 'border-box',
     ...(!open && {
       overflowX: 'hidden',
       transition: theme.transitions.create('width', {
-        easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
+        easing: theme.transitions.easing.sharp,
       }),
       width: theme.spacing(7),
       [theme.breakpoints.up('sm')]: {
@@ -82,8 +82,8 @@ export default function SideMenu() {
       <Drawer variant='permanent' open={open}>
         <Toolbar
           sx={{
-            display: 'flex',
             alignItems: 'center',
+            display: 'flex',
             justifyContent: 'flex-end',
             px: [1],
           }}

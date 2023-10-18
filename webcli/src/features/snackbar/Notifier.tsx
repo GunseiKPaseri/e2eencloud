@@ -17,7 +17,7 @@ function Notifier() {
   };
 
   const removeDisplayed = (id: SnackbarKey) => {
-    displayed = [...displayed.filter((key) => id !== key)];
+    displayed = displayed.filter((key) => id !== key);
   };
 
   useEffect(() => {

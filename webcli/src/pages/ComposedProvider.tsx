@@ -1,8 +1,8 @@
 import { StrictMode } from 'react';
+import { SnackbarProvider } from 'notistack';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Provider as ReduxProvider } from 'react-redux';
-import { SnackbarProvider } from 'notistack';
 import composeComponents from '~/components/utils/composeComponents';
 import Initialize from '~/features/init/Initialize';
 import ThemeWithLocalizeProvider from '~/features/theme/ThemeWithLocalizeProvider';
@@ -17,7 +17,7 @@ const ComposedProvider = composeComponents(
     <SnackbarProvider
       {...props}
       maxSnack={3}
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
     />
   ),
   (props) => <DndProvider {...props} backend={HTML5Backend} />,

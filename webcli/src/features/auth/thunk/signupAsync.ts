@@ -28,7 +28,7 @@ export const signupAsync = createAsyncThunk<
     );
     dispatch(deleteProgress());
     return { success: result.data.success ?? false };
-  } catch (e) {
+  } catch {
     // console.error(e);
     dispatch(deleteProgress());
     return { success: false };

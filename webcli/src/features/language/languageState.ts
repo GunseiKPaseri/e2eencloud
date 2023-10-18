@@ -1,6 +1,6 @@
 export const langSet = {
-  jaJP: '日本語',
   enUS: 'English',
+  jaJP: '日本語',
   zhCN: '汉文',
 } as const;
 

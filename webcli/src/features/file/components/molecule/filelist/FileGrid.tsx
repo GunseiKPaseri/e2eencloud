@@ -56,15 +56,15 @@ function FileGrid({
             return target.type === 'folder'
               ? {
                   id: target.id,
-                  name: target.name,
                   mime: '',
+                  name: target.name,
                   size: -1,
                   tags: null,
                 }
               : {
                   id: target.id,
-                  name: target.name,
                   mime: target.mime,
+                  name: target.name,
                   size: target.size,
                   tags: serializeTags(target.tag),
                 };
@@ -89,13 +89,13 @@ function FileGrid({
             {
               field: 'tags',
               headerName: 'タグ',
-              width: 600,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               renderCell: (params: GridRenderCellParams<any, string>) =>
                 params.value &&
                 deserializeTags(params.value).map((x) => (
                   <TagButton key={x} tag={x} />
                 )),
+              width: 600,
             },
           ]}
         />

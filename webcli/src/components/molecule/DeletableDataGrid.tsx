@@ -39,8 +39,8 @@ function DeletableDataGrid<T extends GridValidRowModel>(
 ) {
   const perfectProps = {
     computeMutation: () => null,
-    onEditSuccess: () => undefined,
     onEditFailure: () => undefined,
+    onEditSuccess: () => undefined,
     ...props,
   };
   return EditableDataGrid(perfectProps);

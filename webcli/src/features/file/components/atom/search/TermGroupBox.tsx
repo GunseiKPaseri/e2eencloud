@@ -12,12 +12,12 @@ function TermGroupBox(props: TermGroupBoxProps) {
   return (
     <Box
       sx={{
+        borderColor: props.disabled ? '#eee' : 'gray',
+        borderRadius: 1,
+        borderStyle: 'solid',
+        borderWidth: 1,
         margin: 0.5,
         padding: 1,
-        borderRadius: 1,
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor: props.disabled ? '#eee' : 'gray',
       }}
     >
       <Typography

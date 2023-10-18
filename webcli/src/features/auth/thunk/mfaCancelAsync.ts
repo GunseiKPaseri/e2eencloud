@@ -24,7 +24,7 @@ export const mfaCancelAsync = createAsyncThunk(
 export const afterMFACancelAsyncFullfilled: CaseReducer<AuthState> = (
   state,
 ) => {
-  state.loginStatus = { step: 'EmailAndPass', state: null };
+  state.loginStatus = { state: null, step: 'EmailAndPass' };
   state.mfacode = null;
   state.suggestedMfa = [];
 };

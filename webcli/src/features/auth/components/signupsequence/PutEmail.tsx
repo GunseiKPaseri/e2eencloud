@@ -48,7 +48,7 @@ export default function PutEmail(props: PutEmailProps) {
         type='submit'
         fullWidth
         variant='contained'
-        sx={{ mt: 3, mb: 2 }}
+        sx={{ mb: 2, mt: 3 }}
         disabled={!isGoodMailAddress}
       >
         次へ

@@ -113,7 +113,7 @@ export const createDiffAsync = createAsyncThunk<
   // storage更新
   await dispatch(updateUsageAsync());
 
-  return { uploaded: addObject, targetId: params.targetId };
+  return { targetId: params.targetId, uploaded: addObject };
 });
 
 export const afterCreateDiffAsyncFullfilled: CaseReducer<
@@ -129,8 +129,8 @@ export const afterCreateDiffAsyncFullfilled: CaseReducer<
   fileTable[fileInfo.prevId].nextId = fileInfo.id;
   fileTable[fileInfo.id] = {
     ...fileInfo,
-    parentId: fileInfo.parentId,
     origin: uploaded,
+    parentId: fileInfo.parentId,
   };
   // tagTreeを更新
   if (

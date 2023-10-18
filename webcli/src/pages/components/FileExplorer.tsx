@@ -14,22 +14,28 @@ export default function FileExplorer() {
   return (
     <Box
       sx={{
+        alignItems: 'stretch',
         display: 'grid',
         gridAutoFlow: 'column',
-        alignItems: 'stretch',
+        gridGap: (theme) => theme.spacing(1),
         gridTemplateColumns: '300px 1fr',
         gridTemplateRows: '1fr 1fr',
-        padding: 1,
-        gridGap: (theme) => theme.spacing(1),
         height: '100%',
+        padding: 1,
       }}
     >
-      <Paper sx={{ overflow: 'scroll', gridRow: '1/3', padding: 1 }}>
+      <Paper sx={{ gridRow: '1/3', overflow: 'scroll', padding: 1 }}>
         <Exclctrl />
         <FileTreeViewer />
         <TagButton tag='bin' />
       </Paper>
-      {activeFile !== null ? (
+      {activeFile === null ? (
+        <>
+          <Paper sx={{ gridRow: '1/3', overflowY: 'scroll', padding: 1 }}>
+            <FileList />
+          </Paper>
+        </>
+      ) : (
         <>
           <Paper sx={{ overflowY: 'scroll', padding: 1 }}>
             <FileList />
@@ -38,12 +44,6 @@ export default function FileExplorer() {
             <Viewer />
             <Detail />
             <DiffTree />
-          </Paper>
-        </>
-      ) : (
-        <>
-          <Paper sx={{ overflowY: 'scroll', gridRow: '1/3', padding: 1 }}>
-            <FileList />
           </Paper>
         </>
       )}

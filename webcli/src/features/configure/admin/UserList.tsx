@@ -1,5 +1,5 @@
-import { useTranslation } from 'react-i18next';
 import type { GridRowModel } from '@mui/x-data-grid';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from '~/lib/react-redux';
 import EditableDataGrid from '~/components/molecule/EditableDataGrid';
 import type { ComputeMutation } from '~/components/molecule/EditableDataGrid';
@@ -59,17 +59,17 @@ function UserList() {
         { field: 'id' },
         { field: 'email', headerName: t('auth.login', 'ログイン'), width: 200 },
         {
+          editable: true,
           field: 'multi_factor_authentication',
           headerName: t('auth.multifactorauth', '多要素認証'),
           type: 'boolean',
-          editable: true,
           width: 100,
         },
         {
+          editable: true,
           field: 'max_capacity',
           headerName: t('admin.capacity', '容量'),
           type: 'number',
-          editable: true,
           width: 120,
         },
         {

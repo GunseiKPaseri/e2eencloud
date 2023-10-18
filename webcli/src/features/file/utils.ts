@@ -37,7 +37,7 @@ import { assertFileNodeFolder, assertNonFileNodeDiff } from './filetypeAssert';
 /**
  * 生成
  */
-export const genUUID = () => v4().replace(/-/g, '_');
+export const genUUID = () => v4().replaceAll('-', '_');
 
 /**
  * 拡張子が変化しているかを確認する
@@ -93,29 +93,15 @@ export const getSafeName = (hopedName: string[], samelevelfiles: string[]) => {
 };
 
 /**
- * FileオブジェクトをArrayBufferに変換
- */
-export const readfile = (x: File) =>
-  new Promise<ArrayBuffer>((resolve, reject) => {
-    const fileReader = new FileReader();
-    fileReader.readAsArrayBuffer(x);
-    fileReader.onload = () => {
-      if (typeof fileReader.result === 'string' || fileReader.result === null)
-        return reject(new Error('bad file'));
-      return resolve(fileReader.result);
-    };
-  });
-
-/**
  * ファイルのハッシュ値を生成
  */
 export const getFileHash = async (bin: ArrayBuffer) => {
   const hash = await crypto.subtle.digest('SHA-256', bin);
   return {
-    hashStr: Array.from(new Uint8Array(hash))
+    bin,
+    hashStr: [...new Uint8Array(hash)]
       .map((b) => b.toString(16).padStart(2, '0'))
       .join(''),
-    bin,
   };
 };
 
@@ -150,8 +136,9 @@ export const restoreExpansion = (
         phashObj: new ImgHash('phash', expansion.phash, 'hex').byte,
       };
     }
-    default:
+    default: {
       throw new ExhaustiveError(expansion.type);
+    }
   }
 };
 
@@ -172,8 +159,9 @@ export const trimExpansion = (
       } = expansionLocal;
       return expansion;
     }
-    default:
+    default: {
       throw new ExhaustiveError(expansionLocal.type);
+    }
   }
 };
 
@@ -200,12 +188,12 @@ export const genExpansion = async (
       phashObj: phash(img),
     };
     const expansion: FileInfoFile['expansion'] = {
-      type: 'img',
-      width: img.width,
-      height: img.height,
       ahash: imghashs.ahashObj.hex,
       dhash: imghashs.dhashObj.hex,
+      height: img.height,
       phash: imghashs.phashObj.hex,
+      type: 'img',
+      width: img.width,
     };
     return {
       expansion,
@@ -249,7 +237,7 @@ export const expandServerData = async (
     }
   }
 
-  return { blobURL, previewURL, expansion };
+  return { blobURL, expansion, previewURL };
 };
 
 /**
@@ -283,15 +271,15 @@ export const submitFileInfoWithEncryption = async <
 
   // send encryptedfile, send encryptedfileinfo, encryptedfilekey iv,iv
   await addFile({
-    id: fileInfo.id,
-    encryptedFileKeyBase64,
     encryptedFileInfoBase64,
     encryptedFileInfoIVBase64,
+    encryptedFileKeyBase64,
+    id: fileInfo.id,
   });
 
   return {
-    fileKeyBin: Array.from(fileKeyRaw),
     fileInfo,
+    fileKeyBin: [...fileKeyRaw],
     originalVersion: fileInfo.version,
   };
 };
@@ -317,19 +305,21 @@ export const submitFileWithEncryption = async (
   );
   // readfile,getHash | getKey
   const fileKeyAsync = getAESGCMKey(fileKeyRaw);
-  const { bin, hashStr } = await readfile(x).then((raw) => getFileHash(raw));
+  const { bin, hashStr } = await x
+    .arrayBuffer()
+    .then((raw) => getFileHash(raw));
 
   const fileInfo: FileInfoFile = {
-    id: uuid,
-    name,
     createdAt: Date.now(),
-    version: latestVersion,
-    sha256: hashStr,
+    id: uuid,
     mime: x.type,
-    type: 'file',
-    size: bin.byteLength,
+    name,
     parentId: parentId ?? 'root',
+    sha256: hashStr,
+    size: bin.byteLength,
     tag: [],
+    type: 'file',
+    version: latestVersion,
   };
   const expansion = await genExpansion(fileInfo, blobURL);
   // console.log(fileInfo, expansion);
@@ -362,29 +352,29 @@ export const submitFileWithEncryption = async (
 
   // send encryptedfile, send encryptedfileinfo, encryptedfilekey iv,iv
   await addFile({
-    id: uuid,
     encryptedFileBlob,
     encryptedFileIVBase64,
-    encryptedFileKeyBase64,
     encryptedFileInfoBase64,
     encryptedFileInfoIVBase64,
+    encryptedFileKeyBase64,
+    id: uuid,
   });
 
   // memory file to indexedDB
-  const encryptedFileIVBin = Array.from(encryptedFileIV);
-  const fileKeyBin = Array.from(fileKeyRaw);
+  const encryptedFileIVBin = [...encryptedFileIV];
+  const fileKeyBin = [...fileKeyRaw];
 
   const fileObj: FileNode<FileInfoFile> = {
     ...fileInfo,
+    blobURL,
     expansion: undefined,
     history: [fileInfo.id],
     origin: {
+      encryptedFileIVBin,
       fileInfo,
       fileKeyBin,
-      encryptedFileIVBin,
       originalVersion: fileInfo.version,
     },
-    blobURL,
   };
 
   const local = await expandServerData(fileObj, blobURL, {
@@ -392,13 +382,13 @@ export const submitFileWithEncryption = async (
   });
 
   return {
+    local,
     server: {
       encryptedFileIVBin,
-      fileKeyBin,
       fileInfo,
+      fileKeyBin,
       originalVersion: fileInfo.version,
     },
-    local,
   };
 };
 
@@ -419,7 +409,7 @@ export const decryptoFileInfo = async (
   const fileKeyRaw = new Uint8Array(await decryptByRSA(encryptedFileKey));
 
   const fileKey = await getAESGCMKey(fileKeyRaw);
-  const fileKeyBin = Array.from(fileKeyRaw);
+  const fileKeyBin = [...fileKeyRaw];
   const res = fileInfoMigrate(
     byteArray2string(
       await decryptAESGCM(encryptedFileInfo, fileKey, encryptedFileInfoIV),
@@ -434,17 +424,17 @@ export const decryptoFileInfo = async (
         '取得情報が矛盾しています。fileにも関わらずencryptedFileIVが含まれていません',
       );
     const encryptedFileIV = base642ByteArray(fileinforaw.encryptedFileIVBase64);
-    const encryptedFileIVBin = Array.from(encryptedFileIV);
+    const encryptedFileIVBin = [...encryptedFileIV];
     return {
       encryptedFileIVBin,
-      fileKeyBin,
       fileInfo,
+      fileKeyBin,
       originalVersion,
     };
   }
   if (fileInfo.type === 'folder')
-    return { fileKeyBin, fileInfo, originalVersion };
-  return { fileKeyBin, fileInfo, originalVersion };
+    return { fileInfo, fileKeyBin, originalVersion };
+  return { fileInfo, fileKeyBin, originalVersion };
 };
 
 /**
@@ -515,21 +505,23 @@ export const getFileChildren = (
   root: FileNode<FileInfoFolder>,
   fileTable: FileTable,
 ): string[] =>
-  root.files
-    .map((id) => {
-      const target = fileTable[id];
-      switch (target.type) {
-        case 'file':
-          return id;
-        case 'folder':
-          return getFileChildren(target, fileTable);
-        case 'diff':
-          return [];
-        default:
-          throw new ExhaustiveError(target);
+  root.files.flatMap((id) => {
+    const target = fileTable[id];
+    switch (target.type) {
+      case 'file': {
+        return id;
       }
-    })
-    .flat();
+      case 'folder': {
+        return getFileChildren(target, fileTable);
+      }
+      case 'diff': {
+        return [];
+      }
+      default: {
+        throw new ExhaustiveError(target);
+      }
+    }
+  });
 
 /**
  * 与えられたファイルIdをファイル名でソート
@@ -551,43 +543,44 @@ export const buildFileTable = (
 ): BuildFileTableAsyncResult => {
   const fileTable: FileTable = {
     root: {
-      id: 'root',
-      type: 'folder',
-      name: 'root',
       createdAt: 0,
-      version: latestVersion,
       files: [],
-      parentId: null,
       history: [],
-      tag: [],
+      id: 'root',
+      name: 'root',
       origin: {
         fileInfo: {
-          type: 'folder',
           createdAt: 0,
-          version: latestVersion,
           id: 'root',
           name: 'root',
           parentId: null,
           tag: [],
+          type: 'folder',
+          version: latestVersion,
         },
         fileKeyBin: [],
         originalVersion: latestVersion,
       },
+      parentId: null,
+      tag: [],
+      type: 'folder',
+      version: latestVersion,
     },
   };
   const nextTable: Record<string, string | undefined> = {};
   files.forEach((fileInfoWithEnc) => {
     const { fileInfo, fileKeyBin, originalVersion } = fileInfoWithEnc;
     switch (fileInfo.type) {
-      case 'folder':
+      case 'folder': {
         fileTable[fileInfo.id] = {
           ...fileInfo,
-          parentId: fileInfo.parentId ?? 'root',
-          history: [],
           files: [],
+          history: [],
           origin: { fileInfo, fileKeyBin, originalVersion },
+          parentId: fileInfo.parentId ?? 'root',
         };
         break;
+      }
       case 'file': {
         const fileInfoWithEncx: Record<string, unknown> = fileInfoWithEnc;
         const fileInfoWithEncMustHaveBin: { encryptedFileIVBin?: unknown } =
@@ -598,27 +591,29 @@ export const buildFileTable = (
         fileTable[fileInfo.id] = {
           ...fileInfo,
           expansion: restoreExpansion(fileInfo.expansion),
-          parentId: fileInfo.parentId ?? 'root',
           history: [],
           origin: {
+            encryptedFileIVBin,
             fileInfo,
             fileKeyBin,
-            encryptedFileIVBin,
             originalVersion,
           },
+          parentId: fileInfo.parentId ?? 'root',
         };
         break;
       }
-      case 'diff':
+      case 'diff': {
         fileTable[fileInfo.id] = {
           ...fileInfo,
-          parentId: fileInfo.parentId ?? 'root',
           origin: { fileInfo, fileKeyBin, originalVersion },
+          parentId: fileInfo.parentId ?? 'root',
         };
         break;
-      default:
+      }
+      default: {
         // Comprehensiveness check
         throw new ExhaustiveError(fileInfo);
+      }
     }
     if (fileInfo.prevId) nextTable[fileInfo.prevId] = fileInfo.id;
   });
@@ -842,14 +837,14 @@ export const createDiff = (
   }
 
   return {
+    createdAt: Date.now(),
+    diff,
     id: genUUID(),
     name,
-    createdAt: Date.now(),
-    version: latestVersion,
-    type: 'diff',
     parentId: parent === 'root' ? null : parent,
     prevId,
-    diff,
+    type: 'diff',
+    version: latestVersion,
   };
 };
 
@@ -864,9 +859,9 @@ export const getAllDependentFile = (
     target.type === 'folder'
       ? [
           target.id,
-          ...target.files
-            .map((x) => getAllDependentFile(fileTable[x], fileTable))
-            .flat(),
+          ...target.files.flatMap((x) =>
+            getAllDependentFile(fileTable[x], fileTable),
+          ),
         ]
       : [target.id];
   // 変更履歴全て

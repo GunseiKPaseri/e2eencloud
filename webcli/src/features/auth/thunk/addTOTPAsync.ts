@@ -30,7 +30,7 @@ export const addTOTPAsync = createAsyncThunk<
         options: { variant: 'success' },
       }),
     );
-  } catch (_e) {
+  } catch {
     dispatch(
       enqueueSnackbar({
         message: 'エラーが発生しました',

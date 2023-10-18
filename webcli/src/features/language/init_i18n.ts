@@ -1,9 +1,9 @@
-import { initReactI18next } from 'react-i18next';
 import i18n from 'i18next';
 import type { TFunction } from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
 import { load } from 'js-yaml';
+import { initReactI18next } from 'react-i18next';
 import { defaultLanguage } from './languageState';
 
 const lngDetector = new LanguageDetector();
@@ -14,10 +14,12 @@ const initI18N = (): Promise<TFunction> =>
     .use(lngDetector)
     .use(initReactI18next)
     .init({
-      fallbackLng: defaultLanguage,
-      ns: ['translations'],
-      defaultNS: 'translations',
+      backend: {
+        loadPath: '/locales/{{lng}}-{{ns}}.yaml',
+        parse: (data: string) => load(data) as Record<string, string>,
+      },
       debug: true,
+      defaultNS: 'translations',
       detection: {
         order: [
           'querystring',
@@ -27,13 +29,11 @@ const initI18N = (): Promise<TFunction> =>
           'htmlTag',
         ],
       },
+      fallbackLng: defaultLanguage,
       interpolation: {
         escapeValue: false,
       },
-      backend: {
-        loadPath: '/locales/{{lng}}-{{ns}}.yaml',
-        parse: (data: string) => load(data) as Record<string, string>,
-      },
+      ns: ['translations'],
     });
 
 export default initI18N;

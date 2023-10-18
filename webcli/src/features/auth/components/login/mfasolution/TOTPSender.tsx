@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from '~/lib/react-redux';
 import { totpLoginAsync } from '~/features/auth/authSlice';
 
@@ -39,7 +39,7 @@ export default function TOTPSender({
         fullWidth
         disabled={state === 'pending'}
         variant='contained'
-        sx={{ mt: 3, mb: 2 }}
+        sx={{ mb: 2, mt: 3 }}
       >
         {t('auth.login', 'ログイン')}
       </Button>

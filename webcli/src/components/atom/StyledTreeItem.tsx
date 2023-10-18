@@ -23,9 +23,9 @@ const StyledTreeItemRoot = styled(TreeItem)(({ theme }) => ({
     },
   },
   [`& .${treeItemClasses.group}`]: {
+    borderLeft: `1px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
     marginLeft: theme.spacing(2),
     paddingLeft: theme.spacing(2.5),
-    borderLeft: `1px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
   },
 }));
 
@@ -44,8 +44,8 @@ function StyledTreeItem({
   labelText: string;
 }) {
   const trueStyle: React.CSSProperties = {
-    '--tree-view-color': color,
     '--tree-view-bg-color': bgColor,
+    '--tree-view-color': color,
     ...style,
   };
 
@@ -54,8 +54,8 @@ function StyledTreeItem({
       label={
         <Box
           sx={{
-            display: 'flex',
             alignItems: 'center',
+            display: 'flex',
             p: 0.5,
             pr: 0,
           }}
@@ -63,7 +63,7 @@ function StyledTreeItem({
           <Box component={labelIcon} color='inherit' sx={{ mr: 1 }} />
           <Typography
             variant='body2'
-            sx={{ fontWeight: 'inherit', flexGrow: 1 }}
+            sx={{ flexGrow: 1, fontWeight: 'inherit' }}
           >
             {labelText}
           </Typography>

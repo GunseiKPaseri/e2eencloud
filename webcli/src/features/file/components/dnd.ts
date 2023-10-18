@@ -15,25 +15,31 @@ const APP_FILE_NODE = '__APP_FILE_NODE__';
 type DnDFileNodeObject = { type: typeof APP_FILE_NODE; id: string };
 
 export const genUseDropReturn = (
-  dirId: string | null,
   dispatch: ReturnType<typeof useAppDispatch>,
+  dirId?: string | null,
 ): DropTargetHookSpec<
   DnDFileObject | DnDFileNodeObject,
   void,
   { isOver: boolean; canDrop: boolean }
 > => ({
   accept: [NativeTypes.FILE, APP_FILE_NODE],
+  canDrop: () => !!dirId,
+  collect: (monitor) => ({
+    canDrop: monitor.canDrop(),
+    isOver: monitor.isOver({ shallow: true }),
+  }),
   drop: (props, monitor) => {
     // avoid deep
     if (!monitor.isOver({ shallow: true }) || !dirId) return;
     // console.log(props);
     switch (props.type) {
-      case APP_FILE_NODE:
+      case APP_FILE_NODE: {
         // オブジェクトなら親を移動する
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        dispatch(createDiffAsync({ targetId: props.id, newParentId: dirId }));
+        dispatch(createDiffAsync({ newParentId: dirId, targetId: props.id }));
         break;
-      default:
+      }
+      default: {
         // ローカルからD&Dしたファイルオブジェクト
         // avoid folder
         if (props.files.length > 0 && props.files.every((x) => x.type !== '')) {
@@ -42,20 +48,16 @@ export const genUseDropReturn = (
           dispatch(fileuploadAsync({ files: acceptedFiles, parentId: dirId }));
           // console.log(acceptedFiles, dirId);
         }
+      }
     }
   },
-  canDrop: () => !!dirId,
-  collect: (monitor) => ({
-    isOver: monitor.isOver({ shallow: true }),
-    canDrop: monitor.canDrop(),
-  }),
 });
 export const genUseDragReturn = (
   id: string,
 ): DragSourceHookSpec<DnDFileNodeObject, void, { isDragging: boolean }> => ({
-  type: APP_FILE_NODE,
-  item: { type: APP_FILE_NODE, id },
   collect: (monitor) => ({
     isDragging: !!monitor.isDragging(),
   }),
+  item: { id, type: APP_FILE_NODE },
+  type: APP_FILE_NODE,
 });

@@ -56,11 +56,11 @@ export const mfacodeLoginAsync = createAsyncThunk<boolean, { mfacode: string }>(
 );
 
 export const afterMFACodeLoginAsyncPending = (state: AuthState) => {
-  state.loginStatus = { step: 'CODE', state: 'pending' };
+  state.loginStatus = { state: 'pending', step: 'CODE' };
 };
 
 export const afterMFACodeLoginAsyncRejected = (state: AuthState) => {
-  state.loginStatus = { step: 'CODE', state: 'error' };
+  state.loginStatus = { state: 'error', step: 'CODE' };
 };
 
 export const afterMFACodeLoginAsyncFullfilled: CaseReducer<
@@ -68,6 +68,6 @@ export const afterMFACodeLoginAsyncFullfilled: CaseReducer<
   PayloadAction<boolean>
 > = (state, action) => {
   state.loginStatus = action
-    ? { step: 'EmailAndPass', state: null }
-    : { step: 'CODE', state: 'error' };
+    ? { state: null, step: 'EmailAndPass' }
+    : { state: 'error', step: 'CODE' };
 };

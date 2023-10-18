@@ -48,7 +48,7 @@ export default function PutPassword(props: PutPasswordProps) {
             type='button'
             fullWidth
             variant='outlined'
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ mb: 2, mt: 3 }}
             onClick={onCancel}
           >
             戻る
@@ -59,7 +59,7 @@ export default function PutPassword(props: PutPasswordProps) {
             type='submit'
             fullWidth
             variant='contained'
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ mb: 2, mt: 3 }}
             disabled={password !== confirmPassword}
             onClick={onDecidePassword}
           >

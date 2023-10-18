@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import { useDrop } from 'react-dnd';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FolderIcon from '@mui/icons-material/Folder';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
@@ -16,6 +15,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import type { Theme } from '@mui/material/styles';
 import type { SystemStyleObject } from '@mui/system/styleFunctionSx';
+import { useDrop } from 'react-dnd';
 import { useAppDispatch, useAppSelector } from '~/lib/react-redux';
 import {
   StyledBreadcrumb,
@@ -46,15 +46,15 @@ function DIRBreadcrumb(props: { target: FileNode<FileInfoFolder> }) {
   const fileTable = useAppSelector((state) => state.file.fileTable);
 
   const [{ canDrop, isOver }, drop] = useDrop(
-    () => genUseDropReturn(target.id, dispatch),
+    () => genUseDropReturn(dispatch, target.id),
     [target.id],
   );
 
   const customSX = useCallback<(theme: Theme) => SystemStyleObject<Theme>>(
     (theme) => ({
-      boxSizing: 'border-box',
       border: 3,
       borderStyle: 'dashed',
+      boxSizing: 'border-box',
       transitionDuration: '0.2s',
       ...(isOver && canDrop
         ? { borderColor: theme.palette.info.light }
@@ -70,7 +70,7 @@ function DIRBreadcrumb(props: { target: FileNode<FileInfoFolder> }) {
     dispatch(
       openContextmenu({
         anchor: { left: event.clientX, top: event.clientY },
-        menu: { type: 'filelistitem', target, selected: false },
+        menu: { selected: false, target, type: 'filelistitem' },
       }),
     );
   };
@@ -123,25 +123,23 @@ function FileList() {
 
   const onSelectFile = useCallback((fileId: string) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    dispatch(filedownloadAsync({ fileId, active: true }));
+    dispatch(filedownloadAsync({ active: true, fileId }));
   }, []);
 
   const [{ canDrop, isOver }, drop] = useDrop(
     () =>
       genUseDropReturn(
-        activeFileGroup?.type === 'dir'
-          ? activeFileGroup.parents[activeFileGroup.parents.length - 1]
-          : null,
         dispatch,
+        activeFileGroup?.type === 'dir' ? activeFileGroup.parents.at(-1) : null,
       ),
     [activeFileGroup],
   );
 
   const customSX = useCallback<(theme: Theme) => SystemStyleObject<Theme>>(
     (theme) => ({
-      boxSizing: 'border-box',
       border: 3,
       borderStyle: 'dashed',
+      boxSizing: 'border-box',
       transitionDuration: '0.2s',
       ...(isOver && canDrop
         ? { borderColor: theme.palette.info.light }

@@ -38,7 +38,7 @@ function TagEditor() {
         );
         // console.log(newTags);
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        dispatch(createDiffAsync({ targetId: targetNode.id, newTags }));
+        dispatch(createDiffAsync({ newTags, targetId: targetNode.id }));
       }}
       filterOptions={(options, params) => {
         const filtered = filter(

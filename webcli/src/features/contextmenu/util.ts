@@ -11,11 +11,10 @@ export const downloadLocal = ({
   const a = document.createElement('a');
   a.href = uri;
   a.download = fileName;
-  document.body.appendChild(a);
+  document.body.append(a);
 
   a.click();
-
-  a.parentNode?.removeChild(a);
+  a.remove();
 };
 
 export type ContextMenuProps<T extends { type: string }> = {

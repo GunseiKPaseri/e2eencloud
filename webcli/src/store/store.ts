@@ -23,6 +23,9 @@ const logger = createLogger({
 });
 
 export const store = configureStore({
+  devTools: true,
+  middleware: (getDefaultMiddleware) =>
+    [...getDefaultMiddleware(), logger, routerMiddleware],
   reducer: {
     auth: authReducer,
     contextmenu: contextmenuReducer,
@@ -34,9 +37,6 @@ export const store = configureStore({
     session: sessionReducer,
     snackbar: snackbarReducer,
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat([logger, routerMiddleware]),
-  devTools: true,
 });
 
 socketIOListener(store.dispatch, {

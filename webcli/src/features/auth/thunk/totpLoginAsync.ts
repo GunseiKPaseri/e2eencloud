@@ -56,11 +56,11 @@ export const totpLoginAsync = createAsyncThunk<boolean, { token: string }>(
 );
 
 export const afterTOTPLoginAsyncPending = (state: AuthState) => {
-  state.loginStatus = { step: 'TOTP', state: 'pending' };
+  state.loginStatus = { state: 'pending', step: 'TOTP' };
 };
 
 export const afterTOTPLoginAsyncRejected = (state: AuthState) => {
-  state.loginStatus = { step: 'TOTP', state: 'error' };
+  state.loginStatus = { state: 'error', step: 'TOTP' };
 };
 
 export const afterTOTPLoginAsyncFullfilled: CaseReducer<
@@ -68,6 +68,6 @@ export const afterTOTPLoginAsyncFullfilled: CaseReducer<
   PayloadAction<boolean>
 > = (state, action) => {
   state.loginStatus = action
-    ? { step: 'EmailAndPass', state: null }
-    : { step: 'TOTP', state: 'error' };
+    ? { state: null, step: 'EmailAndPass' }
+    : { state: 'error', step: 'TOTP' };
 };

@@ -38,7 +38,7 @@ export default function SendedEmail(props: SendedEmailProps) {
             type='button'
             fullWidth
             variant='outlined'
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ mb: 2, mt: 3 }}
             onClick={onCancel}
           >
             戻る
@@ -49,7 +49,7 @@ export default function SendedEmail(props: SendedEmailProps) {
             type='submit'
             fullWidth
             variant='contained'
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ mb: 2, mt: 3 }}
             disabled={timer !== 0}
           >
             再送信

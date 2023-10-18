@@ -48,19 +48,7 @@ import {
   updateUsageAsync,
 } from './thunk/updateUsageAsync';
 
-export { buildFileTableAsync };
-export { createDiffAsync };
-export { fileuploadAsync };
-export { createFolderAsync };
-export { filedownloadAsync };
-export { fileDeleteAsync };
-export {
-  changeActiveFileGroupDir,
-  changeActiveFileGroupTag,
-  changeActiveFileGroupSearch,
-  changeSelection,
-};
-export { updateUsageAsync };
+export { updateUsageAsync } from './thunk/updateUsageAsync';
 
 /**
  * ファイル関連のReduxState
@@ -79,21 +67,18 @@ export interface FileState {
 }
 
 const initialState: FileState = {
-  loading: 0,
-  fileTable: {},
-  tagTree: {},
   activeFile: null,
   activeFileGroup: null,
+  fileTable: {},
+  loading: 0,
   storage: {
-    usage: 0,
     capacity: 0,
+    usage: 0,
   },
+  tagTree: {},
 };
 
 export const fileSlice = createSlice({
-  name: 'file',
-  initialState,
-  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(
@@ -124,9 +109,25 @@ export const fileSlice = createSlice({
         state.tagTree = {};
         state.activeFile = null;
         state.activeFileGroup = null;
-        state.storage = { usage: 0, capacity: 0 };
+        state.storage = { capacity: 0, usage: 0 };
       });
   },
+  initialState,
+  name: 'file',
+  reducers: {},
 });
 
 export default fileSlice.reducer;
+
+export { buildFileTableAsync } from './thunk/buildFileTableAsync';
+export { createDiffAsync } from './thunk/createDiffAsync';
+export { fileuploadAsync } from './thunk/fileuploadAsync';
+export { createFolderAsync } from './thunk/createFolderAsync';
+export { filedownloadAsync } from './thunk/filedownloadAsync';
+export { fileDeleteAsync } from './thunk/fileDeleteAsync';
+export {
+  changeActiveFileGroupDir,
+  changeActiveFileGroupTag,
+  changeActiveFileGroupSearch,
+  changeSelection,
+} from './thunk/changeActiveFileGroup';

@@ -51,15 +51,15 @@ export const createFolderAsync = createAsyncThunk<
   const parent =
     activeFileGroup.parents.length === 0
       ? null
-      : activeFileGroup.parents[activeFileGroup.parents.length - 1];
+      : activeFileGroup.parents.at(-1) ?? null;
   const fileInfo: FileInfoFolder = {
+    createdAt: Date.now(),
     id: genUUID(),
     name: changedFolderName,
-    version: latestVersion,
-    createdAt: Date.now(),
-    type: 'folder',
     parentId: parent,
     tag: [],
+    type: 'folder',
+    version: latestVersion,
   };
   const addFolder = await submitFileInfoWithEncryption(fileInfo);
 
@@ -72,7 +72,7 @@ export const createFolderAsync = createAsyncThunk<
   // storage更新
   await dispatch(updateUsageAsync());
 
-  return { uploaded: addFolder, parents: activeFileGroup.parents };
+  return { parents: activeFileGroup.parents, uploaded: addFolder };
 });
 
 export const afterCreateFolderAsyncFullfilled: CaseReducer<
@@ -82,8 +82,7 @@ export const afterCreateFolderAsyncFullfilled: CaseReducer<
   const { uploaded, parents } = action.payload;
   const { fileInfo } = uploaded;
   // 作成したフォルダをstateに反映
-  const parent: string =
-    parents.length === 0 ? 'root' : parents[parents.length - 1];
+  const parent: string = parents.length === 0 ? 'root' : parents.at(-1) ?? '';
   // add table
   assertFileInfoFolder(fileInfo);
   const newFileTable: FileTable = {
@@ -105,10 +104,10 @@ export const afterCreateFolderAsyncFullfilled: CaseReducer<
   state.fileTable = { ...newFileTable };
   // add activeGroup
   state.activeFileGroup = {
-    type: 'dir',
-    folderId: parent,
     files: sortedNewFiles,
-    selecting: [],
+    folderId: parent,
     parents,
+    selecting: [],
+    type: 'dir',
   };
 };

@@ -70,11 +70,11 @@ const KeyWordChipSortable = (props: KeyWordChipSortableProps) => {
     <div
       ref={setNodeRef}
       style={{
-        transition,
-        transform: CSS.Translate.toString(transform),
-        zIndex: isDragging ? 1 : 0,
-        position: 'relative',
         cursor: isDragging ? 'grabbing' : 'grab',
+        position: 'relative',
+        transform: CSS.Translate.toString(transform),
+        transition,
+        zIndex: isDragging ? 1 : 0,
       }}
       {...listeners}
       {...attributes}
@@ -101,8 +101,8 @@ const QuerySetBuilder = ({
   const keyWordProps = {
     ...props,
     ignore,
-    onDelete: onDelete ? () => onDelete(querySet) : () => undefined,
     label: <QueryKeyWordLabel querySet={querySet} />,
+    onDelete: onDelete ? () => onDelete(querySet) : () => undefined,
   };
   return <KeyWordChipSortable {...keyWordProps} />;
 };
@@ -119,8 +119,8 @@ const AddButton = (props: {
       disabled={props.disabled}
       sx={{
         '&.Mui-disabled': {
-          borderStyle: 'dashed',
           borderColor: 'black',
+          borderStyle: 'dashed',
           color: 'black',
         },
       }}
@@ -180,20 +180,20 @@ const collisionDetectionStrategyGenerator =
       }
 
       const containerItems = searchTermById(items, overId);
-      if (containerItems !== undefined) {
-        // If a container is matched and it contains items (columns 'A', 'B', 'C')
-        if (containerItems && containerItems.term.length > 0) {
-          // Return the closest droppable within that container
-          overId = closestCenter({
-            ...args,
+      if (
+        containerItems !== undefined &&
+        containerItems &&
+        containerItems.term.length > 0
+      ) {
+        // Return the closest droppable within that container
+        overId = closestCenter({
+          ...args,
 
-            droppableContainers: args.droppableContainers.filter(
-              (container) =>
-                container.id !== overId &&
-                hasById(containerItems, container.id),
-            ),
-          })[0]?.id;
-        }
+          droppableContainers: args.droppableContainers.filter(
+            (container) =>
+              container.id !== overId && hasById(containerItems, container.id),
+          ),
+        })[0]?.id;
       }
 
       lastOverItem.current = overId;
@@ -268,7 +268,7 @@ function LichSearchInput(props: {
   const collisionDetectionStrategy = useCallback(
     collisionDetectionStrategyGenerator({
       activeId: dndActiveItem,
-      items: searchQueryItem ?? { term: [], id: '' },
+      items: searchQueryItem ?? { id: '', term: [] },
       lastOverItem,
       recentlyMovedToNewContainer,
     }),
@@ -353,7 +353,7 @@ function LichSearchInput(props: {
             </DragOverlay>
           }
           {andSection.term.length === 0 ? (
-            <div style={{ width: 10, height: 50 }}></div>
+            <div style={{ height: 50, width: 10 }}></div>
           ) : (
             <></>
           )}
@@ -514,8 +514,9 @@ function LichSearchInput(props: {
               const activeIndex = indexOfById(activeContainer, active.id);
               const overIndex = indexOfById(overContainer, overId);
               const afterSearchQueryItem =
-                activeIndex !== overIndex
+                activeIndex === overIndex
                   ? searchQueryItem
+                  : searchQueryItem
                     ? {
                         ...searchQueryItem,
                         term: searchQueryItem.term.map((x) =>
@@ -527,8 +528,7 @@ function LichSearchInput(props: {
                             : x,
                         ),
                       }
-                    : null
-                  : searchQueryItem;
+                    : null;
               afterSearchQueryItem && changeQuery(afterSearchQueryItem);
             }
             setDndActiveItem(null);
@@ -625,14 +625,14 @@ function SearchInput(props: { sx?: SxProps<Theme> }) {
                   term:
                     x.id === addQueryDialogTarget ? [...x.term, query] : x.term,
                 }))
-              : [{ term: [], id: 'added' }];
+              : [{ id: 'added', term: [] }];
           dispatch(
             changeActiveFileGroupSearch({
               query: {
                 ...query,
                 term:
                   addQueryDialogTarget === ''
-                    ? [...newQuery, { term: [query], id: 'added' }]
+                    ? [...newQuery, { id: 'added', term: [query] }]
                     : newQuery,
               },
             }),

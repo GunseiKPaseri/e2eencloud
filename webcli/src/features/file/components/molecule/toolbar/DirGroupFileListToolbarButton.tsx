@@ -104,12 +104,12 @@ export default function DirGroupFileListToolbarButton() {
           onClose={handleClose}
           elevation={0}
           anchorOrigin={{
-            vertical: 'bottom',
             horizontal: 'right',
+            vertical: 'bottom',
           }}
           transformOrigin={{
-            vertical: 'top',
             horizontal: 'right',
+            vertical: 'top',
           }}
           sx={{
             filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',

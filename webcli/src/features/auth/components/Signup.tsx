@@ -36,10 +36,10 @@ export default function Signup() {
   return (
     <Box
       sx={{
-        marginTop: 8,
+        alignItems: 'center',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
+        marginTop: 8,
       }}
     >
       <Stepper activeStep={stepState} alternativeLabel>
@@ -49,7 +49,7 @@ export default function Signup() {
           </Step>
         ))}
       </Stepper>
-      <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+      <Avatar sx={{ bgcolor: 'secondary.main', m: 1 }}>
         <LockOutlinedIcon />
       </Avatar>
       <Typography component='h1' variant='h5'>

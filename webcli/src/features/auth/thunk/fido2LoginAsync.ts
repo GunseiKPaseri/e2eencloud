@@ -61,7 +61,6 @@ export const fido2LoginAsync = createAsyncThunk<
 
       const credentialJSON = {
         id: credential.id,
-        type: credential.type,
         rawId:
           rawId instanceof ArrayBuffer
             ? byteArray2base64uri(new Uint8Array(rawId))
@@ -84,6 +83,7 @@ export const fido2LoginAsync = createAsyncThunk<
               ? byteArray2base64(new Uint8Array(userHandle))
               : undefined,
         },
+        type: credential.type,
       };
 
       const result2 = await axiosWithSession.post<
@@ -95,18 +95,18 @@ export const fido2LoginAsync = createAsyncThunk<
         return { auto, success: true };
       }
     }
-  } catch (e) {
+  } catch {
     return { auto, success: false };
   }
   return { auto, success: false };
 });
 
 export const afterFIDO2LoginAsyncPending = (state: AuthState) => {
-  state.loginStatus = { step: 'FIDO2', state: 'pending' };
+  state.loginStatus = { state: 'pending', step: 'FIDO2' };
 };
 
 export const afterFIDO2LoginAsyncRejected = (state: AuthState) => {
-  state.loginStatus = { step: 'FIDO2', state: 'error' };
+  state.loginStatus = { state: 'error', step: 'FIDO2' };
 };
 
 export const afterFIDO2LoginAsyncFullfilled: CaseReducer<
@@ -114,8 +114,8 @@ export const afterFIDO2LoginAsyncFullfilled: CaseReducer<
   ReturnType<typeof fido2LoginAsync.fulfilled>
 > = (state, action) => {
   state.loginStatus = action.payload.success
-    ? { step: 'EmailAndPass', state: null }
+    ? { state: null, step: 'EmailAndPass' }
     : action.payload.auto
     ? { step: 'SelectMFASolution' }
-    : { step: 'FIDO2', state: 'error' };
+    : { state: 'error', step: 'FIDO2' };
 };

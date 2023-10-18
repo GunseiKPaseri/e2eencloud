@@ -1,5 +1,4 @@
 import { useState, useReducer } from 'react';
-import { useTranslation } from 'react-i18next';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
@@ -9,6 +8,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 import { issuanceCoupon } from './adminrequest';
 
 type CouponState = { coupon: string[]; isLoading: boolean };
@@ -43,7 +43,7 @@ export default function BasicCard() {
           type='number'
           value={numOfCoupon}
           onChange={(e) => {
-            setNumOfCoupon(parseInt(e.target.value, 10));
+            setNumOfCoupon(Number.parseInt(e.target.value, 10));
           }}
           InputProps={{
             inputProps: {
@@ -53,12 +53,12 @@ export default function BasicCard() {
         />
         <List
           sx={{
-            width: '100%',
-            maxWidth: 360,
             bgcolor: 'background.paper',
-            position: 'relative',
-            overflow: 'auto',
             maxHeight: 300,
+            maxWidth: 360,
+            overflow: 'auto',
+            position: 'relative',
+            width: '100%',
           }}
         >
           {couponState.coupon.map((couponId) => (
