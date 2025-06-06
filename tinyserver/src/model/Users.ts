@@ -101,7 +101,7 @@ export class User {
       if (diffUsage > 0) {
         // want `UPDATE users SET file_usage = file_usage + ? WHERE id = ? AND max_capacity - file_usage >= ?`
         if (this.#max_capacity - this.#file_usage >= diffUsage) {
-          prisma.user.update({
+          await prisma.user.update({
             where: { id: this.id },
             data: {
               file_usage: Number(this.#file_usage + diffUsage),
